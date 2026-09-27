@@ -1,0 +1,97 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "pattern": "^[A-Za-z0-9_.-]+$",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^[A-Za-z0-9_.:+-]+$",
+      "title": "Version",
+      "type": "string"
+    },
+    "source_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Version"
+    },
+    "source_url": {
+      "minLength": 1,
+      "title": "Source Url",
+      "type": "string"
+    },
+    "local_path": {
+      "title": "Local Path",
+      "type": "string"
+    },
+    "size_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "download_status": {
+      "const": "complete",
+      "title": "Download Status",
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "geo_matrix",
+        "geo_platform",
+        "csv",
+        "tsv",
+        "parquet",
+        "json"
+      ],
+      "title": "Format",
+      "type": "string"
+    },
+    "evidence_kind": {
+      "default": "public_observational",
+      "enum": [
+        "public_observational",
+        "synthetic",
+        "experimental"
+      ],
+      "title": "Evidence Kind",
+      "type": "string"
+    },
+    "required_columns": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Columns",
+      "type": "array"
+    },
+    "license": {
+      "default": "unverified",
+      "title": "License",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "version",
+    "source_url",
+    "local_path",
+    "size_bytes",
+    "sha256",
+    "download_status",
+    "format"
+  ],
+  "title": "DatasetVersion",
+  "type": "object"
+}

@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "title": "AI-native biotech 资产研究 MVP",
+  "evidence_kind": "public_research",
+  "as_of": "2026-09-25",
+  "sources": [
+    {
+      "evidence_id": "M_A08",
+      "family": "A08",
+      "title": "Gilead TUB-040 / TUB-030 与 Tubutecan",
+      "url": "https://www.gilead.com/news/news-details/2026/gilead-to-acquire-tubulis-adding-potentially-best-in-class-antibody-drug-conjugate-and-next-generation-platform-to-further-strengthen-oncology-pipeline",
+      "locator": "企业公告；日期 2026-04-07",
+      "summary": "宣布收购 Tubulis；后续完成；购买临床资产和可复用ADC能力",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "早期活性不是注册性获益；不能只按靶点判断ADC价值",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A10",
+      "family": "A10",
+      "title": "AbbVie CPTX2309 / Capstan",
+      "url": "https://news.abbvie.com/2025-08-19-AbbVie-Completes-Acquisition-of-Capstan-Therapeutics",
+      "locator": "企业公告；日期 2025-08-19",
+      "summary": "完成收购；重视免疫重置及体内递送",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "一期，不等于持久缓解或安全性已经证明",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A11",
+      "family": "A11",
+      "title": "Sanofi DR-0201 / SAR448501",
+      "url": "https://www.sanofi.com/en/media-room/press-releases/2025/2025-05-27-05-00-00-3088324",
+      "locator": "企业公告；日期 2025-05-27",
+      "summary": "完成资产相关实体收购；不同于CAR-T的深度B细胞清除路径",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "未把机制等同于临床免疫重置成功",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A12",
+      "family": "A12",
+      "title": "Gilead gamgertamig / OM336 (Ouro)",
+      "url": "https://investors.gilead.com/news/news-details/2026/Gilead-Sciences-and-Lakefront-Complete-Acquisition-of-Ouro-Medicines-to-Further-Expand-Inflammation-Pipeline/default.aspx",
+      "locator": "企业公告；日期 2026-06-04",
+      "summary": "与Lakefront完成Ouro交易及合作；有限疗程和持久控制目标",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "注册研究时间为预期；Keymed保留大中华区权益",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A13",
+      "family": "A13",
+      "title": "Lilly MER511 / MER769 (Merida)",
+      "url": "https://investor.lilly.com/node/54871/pdf",
+      "locator": "企业公告；日期 2026-08-31",
+      "summary": "签署收购协议；从广泛免疫抑制转向病理抗体选择性",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "公告预计Q4交割；不能称28.75亿美元全部首付或已经完成",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A16",
+      "family": "A16",
+      "title": "Sanofi / Teva duvakitug",
+      "url": "https://www.sanofi.com/en/media-room/press-releases/2026/2026-02-17-11-00-00-3239014",
+      "locator": "企业公告；日期 2026-02-17",
+      "summary": "披露维持数据并确认三期推进；IBD依然获得后期开发投入",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "跨试验缓解率不能直接排排名",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "M_A17",
+      "family": "A17",
+      "title": "Roche afimkibart / RG6631",
+      "url": "https://assets.roche.com/f/176343/x/a460ba236d/pharmahy25.pdf",
+      "locator": "企业公告；日期 2025-07",
+      "summary": "投资者管线更新；TL1A是UC竞争基准",
+      "kind": "market",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "当前最新逐试验状态未全面审计",
+        "市场事件不能证明本研究假设的生物学有效性"
+      ]
+    },
+    {
+      "evidence_id": "OSM_OBS",
+      "family": "West2017",
+      "title": "OSM 与抗 TNF 疗效关联",
+      "url": "https://www.nature.com/articles/nm.4307",
+      "locator": "原始论文 Results；精确图表位置待人工审查",
+      "summary": "既往研究报告 OSM 与炎症及抗 TNF 治疗反应关联；本平台只将其用作待复核的观察性支持",
+      "kind": "observational",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "关联不能证明阻断 OSMR 的治疗效果",
+        "精确样本及图表定位尚待人工核对"
+      ]
+    },
+    {
+      "evidence_id": "OSMR_NEG",
+      "family": "NCT06137183",
+      "title": "Vixarelimab UC 二期阴性结果",
+      "url": "https://forpatients.roche.com/content/dam/patient-platform/lps/global/ga44839/LPS_GA44839_final-results_November2025_English.pdf",
+      "locator": "GA44839 lay summary，2025-11，页 1、5",
+      "summary": "试验因未达到预期疗效提前停止；报告中缓解人数为 3/27、1/26，与安慰剂 3/26 对照",
+      "kind": "clinical",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "特定人群、分子及方案的阴性结果不能外推到所有 OSMR 干预",
+        "本次软件构建未重新抓取原文；需要独立科学审查"
+      ]
+    },
+    {
+      "evidence_id": "LOCAL_UC_RERUN",
+      "family": "GSE92415",
+      "title": "GSE92415 OSM/OSMR 本地重跑",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE92415",
+      "locator": "平台 run 2026-09-25T155340-515722+0000-9d8ba457，work/results.json；行 GSE92415_golimumab:OSM 与 :OSMR",
+      "summary": "32响应、27无响应；OSMR中位数差0.28685，95%CI -0.10303至0.64053；OSM差0.31360，95%CI 0.01097至0.64359。与原运行一致。",
+      "kind": "observational",
+      "checked_on": "2026-09-25",
+      "limitations": [
+        "治疗为golimumab；不能外推OSMR阻断药物效果",
+        "标签仅GEO来源定义，尚待协议级核验",
+        "已知结局的回顾性案例，不能计入前瞻准确率"
+      ]
+    }
+  ],
+  "hypotheses": [
+    {
+      "hypothesis_id": "H_UC_OSMR",
+      "title": "UC OSMR：首轮反证研究已完成，过强推断终止",
+      "target": "OSMR",
+      "direction": "inhibit",
+      "modality": "阻断抗体；仅作为验证假设",
+      "indication": "溃疡性结肠炎",
+      "population": "按各队列原始定义区分基线与疗效人群",
+      "question": "OSM 基线关联能否跨队列复现，且是否只是炎症负荷的代理？",
+      "differentiation_to_test": "2026-09-25 系统研究综合决定：终止用表达关联单独预测 OSMR 临床成功；保留探索性生物标志物，待混杂调整与外部验证。不是独立人工签署。",
+      "alternatives": [
+        "炎症负荷混杂而非靶点因果效应",
+        "治疗后或重复患者样本造成信息泄漏"
+      ],
+      "competitor_asset_ids": [
+        "A16",
+        "A17"
+      ],
+      "links": [
+        {
+          "evidence_id": "OSM_OBS",
+          "stance": "support",
+          "interpretation": "支持检验观察性关联，不支持药物有效性结论"
+        },
+        {
+          "evidence_id": "OSMR_NEG",
+          "stance": "oppose",
+          "interpretation": "反对由表达关联直接推断 OSMR 阻断临床疗效"
+        },
+        {
+          "evidence_id": "M_A16",
+          "stance": "context",
+          "interpretation": "说明 IBD 竞品竞争及终点设计背景"
+        },
+        {
+          "evidence_id": "LOCAL_UC_RERUN",
+          "stance": "context",
+          "interpretation": "59名患者的观察性关联重跑一致，不是针对 OSMR 药物的预测验证。"
+        }
+      ],
+      "experiment": {
+        "question": "OSM 基线关联能否跨队列复现，且是否只是炎症负荷的代理？",
+        "system": "已验证 GEO 队列；离线预注册分析",
+        "biological_unit": "患者，不能将探针视为独立样本",
+        "comparison": "按原始队列响应定义比较基线表达并进行预设混杂调整",
+        "primary_endpoint": "队列内标准化效应及置信区间；不合并不同终点",
+        "alternatives_discriminated": [
+          "炎症负荷混杂而非靶点因果效应",
+          "治疗后或重复患者样本造成信息泄漏"
+        ],
+        "controls": [
+          "阴性对照与批次对照必须预先指定",
+          "预先指定阳性参照与测量质控"
+        ],
+        "qc_and_stop": [
+          "材料身份、标签或批次核查失败时停止",
+          "在预注册前不检验疗效阈值；缺失数据不自动填补结论"
+        ]
+      },
+      "counterevidence_search": "2026-09-25 核查 Roche GA44839 页1、5；特定 UC 二期疗效反证，不外推所有 OSMR 干预。检索范围有限。"
+    },
+    {
+      "hypothesis_id": "H_AUTOIMMUNE_BCMA",
+      "title": "自身免疫：浆细胞依赖人群的可检验分层",
+      "target": "BCMA",
+      "direction": "deplete",
+      "modality": "双特异性抗体；待检验形式",
+      "indication": "AIHA / ITP",
+      "population": "拟研究难治性患者；实际材料与准入尚未确定",
+      "question": "致病抗体产生是否依赖 BCMA 阳性细胞而非其他 B 细胞群？",
+      "differentiation_to_test": "寻找可验证的细胞依赖分层，不能仅复制 MNC 交易逻辑",
+      "alternatives": [
+        "抗体来源主要为不表达 BCMA 的细胞",
+        "细胞减少未改变功能性致病抗体"
+      ],
+      "competitor_asset_ids": [
+        "A10",
+        "A11",
+        "A12",
+        "A13"
+      ],
+      "links": [
+        {
+          "evidence_id": "M_A12",
+          "stance": "context",
+          "interpretation": "MNC 投入提供市场背景；不构成本项目科学支持"
+        },
+        {
+          "evidence_id": "M_A10",
+          "stance": "context",
+          "interpretation": "不同细胞清除形式作为对照背景"
+        }
+      ],
+      "experiment": {
+        "question": "致病抗体产生是否依赖 BCMA 阳性细胞而非其他 B 细胞群？",
+        "system": "拟议患者来源离体细胞体系；尚无材料",
+        "biological_unit": "独立供体；技术重复嵌套于供体",
+        "comparison": "预设 BCMA 干预、对照及替代 B 细胞干预",
+        "primary_endpoint": "功能性抗体变化与靶细胞减少的关联；阈值待论证",
+        "alternatives_discriminated": [
+          "抗体来源主要为不表达 BCMA 的细胞",
+          "细胞减少未改变功能性致病抗体"
+        ],
+        "controls": [
+          "阴性对照与批次对照必须预先指定",
+          "预先指定阳性参照与测量质控"
+        ],
+        "qc_and_stop": [
+          "材料身份、标签或批次核查失败时停止",
+          "在预注册前不检验疗效阈值；缺失数据不自动填补结论"
+        ]
+      }
+    },
+    {
+      "hypothesis_id": "H_ADC_NAPI2B",
+      "title": "卵巢癌 ADC：靶点异质性与治疗窗假设",
+      "target": "NaPi2b",
+      "direction": "deplete",
+      "modality": "ADC；载荷与连接子未选定",
+      "indication": "卵巢癌",
+      "population": "拟研究不同 NaPi2b 表达及内化水平的样本",
+      "question": "表达与内化异质性能否解释 ADC 敏感性，并保留正常组织安全窗？",
+      "differentiation_to_test": "区分表达、内化、载荷敏感性与正常组织毒性，不声称已拥有分子",
+      "alternatives": [
+        "疗效由非特异载荷敏感性驱动",
+        "正常组织靶表达导致不可接受毒性"
+      ],
+      "competitor_asset_ids": [
+        "A08"
+      ],
+      "links": [
+        {
+          "evidence_id": "M_A08",
+          "stance": "context",
+          "interpretation": "交易仅说明赛道关注；分子差异及安全性需另行验证"
+        }
+      ],
+      "experiment": {
+        "question": "表达与内化异质性能否解释 ADC 敏感性，并保留正常组织安全窗？",
+        "system": "拟议肿瘤及正常组织模型；授权未落实",
+        "biological_unit": "独立模型或供体；技术重复不增加样本量",
+        "comparison": "抗原高低及敲低对照、游离载荷和非结合 ADC 对照",
+        "primary_endpoint": "内化、选择性杀伤与正常模型毒性的联合评价",
+        "alternatives_discriminated": [
+          "疗效由非特异载荷敏感性驱动",
+          "正常组织靶表达导致不可接受毒性"
+        ],
+        "controls": [
+          "阴性对照与批次对照必须预先指定",
+          "预先指定阳性参照与测量质控"
+        ],
+        "qc_and_stop": [
+          "材料身份、标签或批次核查失败时停止",
+          "在预注册前不检验疗效阈值；缺失数据不自动填补结论"
+        ]
+      }
+    }
+  ],
+  "clinical_release": false
+}

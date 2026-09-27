@@ -1,0 +1,69 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "title": "Target",
+      "type": "string"
+    },
+    "intervention_direction": {
+      "enum": [
+        "agonism",
+        "antagonism",
+        "depletion",
+        "replacement",
+        "unknown"
+      ],
+      "title": "Intervention Direction",
+      "type": "string"
+    },
+    "modality": {
+      "title": "Modality",
+      "type": "string"
+    },
+    "first_indication": {
+      "title": "First Indication",
+      "type": "string"
+    },
+    "expansion_indications": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expansion Indications",
+      "type": "array"
+    },
+    "supporting_claims": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Supporting Claims",
+      "type": "array"
+    },
+    "opposing_claims": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Opposing Claims",
+      "type": "array"
+    },
+    "human_owner": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Human Owner"
+    }
+  },
+  "required": [
+    "target",
+    "intervention_direction",
+    "modality",
+    "first_indication"
+  ],
+  "title": "TargetIndicationHypothesis",
+  "type": "object"
+}

@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/cloud/Dockerfile
+    environment:
+      PUBLIC_ORIGIN: https://${DOMAIN:?Set DOMAIN}
+    volumes:
+      - research:/workspace
+      - state:/state
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [backend]
+  gateway:
+    image: caddy:2.10.2
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    secrets: [access_config]
+    depends_on: [app]
+    restart: unless-stopped
+    networks: [backend, edge]
+secrets:
+  access_config:
+    file: ./secrets/access.caddy
+volumes:
+  research:
+  state:
+  caddy_data:
+  caddy_config:
+networks:
+  backend:
+    internal: true
+  edge:

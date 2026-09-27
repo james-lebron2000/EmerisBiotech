@@ -1,0 +1,50 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "decision": {
+      "enum": [
+        "pass",
+        "revise",
+        "insufficient_evidence"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "reviewer": {
+      "title": "Reviewer",
+      "type": "string"
+    },
+    "reviewer_type": {
+      "enum": [
+        "automated",
+        "human"
+      ],
+      "title": "Reviewer Type",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "human_signature": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Human Signature"
+    }
+  },
+  "required": [
+    "decision",
+    "reviewer",
+    "reviewer_type",
+    "reason"
+  ],
+  "title": "DecisionRecord",
+  "type": "object"
+}

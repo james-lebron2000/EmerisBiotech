@@ -1,0 +1,23 @@
+{
+  "question": "Verify five registered UC GEO matrices and preserve raw sample annotations",
+  "workflow": "inventory",
+  "evidence_kind": "public_observational",
+  "genes": [
+    "OSMR",
+    "OSM"
+  ],
+  "cohorts": [],
+  "dataset_keys": [
+    "GSE12251@sha256-2c750c3504fa500a",
+    "GSE16879@sha256-8874d0d40217c3b9",
+    "GSE206285@sha256-a1d11a5234712e81",
+    "GSE73661@sha256-3e988a71e35c69bf",
+    "GSE92415@sha256-61cd218f97a47c94"
+  ],
+  "seed": 42,
+  "bootstrap_replicates": 10000,
+  "timeout_seconds": 300,
+  "memory_gb": 8,
+  "expected_direction": "unspecified",
+  "multiplicity_family": "all_planned_genes_by_cohorts"
+}

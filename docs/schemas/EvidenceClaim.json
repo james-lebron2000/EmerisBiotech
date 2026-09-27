@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "direction": {
+      "enum": [
+        "support",
+        "oppose",
+        "mixed",
+        "unknown"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "artifact": {
+      "title": "Artifact",
+      "type": "string"
+    },
+    "row_id": {
+      "title": "Row Id",
+      "type": "string"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "text",
+    "direction",
+    "artifact",
+    "row_id"
+  ],
+  "title": "EvidenceClaim",
+  "type": "object"
+}

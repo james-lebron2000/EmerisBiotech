@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "execution": {
+      "enum": [
+        "pending",
+        "running",
+        "succeeded",
+        "blocked",
+        "failed",
+        "interrupted"
+      ],
+      "title": "Execution",
+      "type": "string"
+    },
+    "record_integrity": {
+      "enum": [
+        "pending",
+        "complete",
+        "incomplete"
+      ],
+      "title": "Record Integrity",
+      "type": "string"
+    },
+    "scientific_review": {
+      "enum": [
+        "pending",
+        "pass",
+        "revise",
+        "insufficient_evidence"
+      ],
+      "title": "Scientific Review",
+      "type": "string"
+    },
+    "clinical_release": {
+      "const": false,
+      "default": false,
+      "title": "Clinical Release",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "run_id",
+    "execution",
+    "record_integrity",
+    "scientific_review"
+  ],
+  "title": "AnalysisRun",
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vbt-trust"
+version = "0.1.0"
+description = "Offline-first, evidence-tracked research execution for Virtual Biotech"
+requires-python = ">=3.11,<3.12"
+dependencies = ["pydantic>=2.10,<3", "duckdb>=1.2,<2", "pyarrow>=18,<24", "numpy>=2,<3", "scipy>=1.14,<2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+vbt = "vbt.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vbt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

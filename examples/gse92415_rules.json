@@ -1,0 +1,13 @@
+{
+  "cohort": "GSE92415_golimumab",
+  "patient_field": "subject",
+  "baseline_field": "visit",
+  "baseline_value": "Week 0",
+  "response_field": "wk6response",
+  "response_values": {"Yes": "responder", "No": "nonresponder"},
+  "include_equals": {"disease": ["Ulcerative Colitis (UC)"], "treatment": ["golimumab"]},
+  "endpoint_definition": "GEO wk6response: Yes versus No. Preserve the deposited week-6 response label; protocol-level response criterion has not been independently verified. Exploratory source-label analysis only.",
+  "endpoint_source": "GSE92415 !Sample_characteristics_ch1, fields wk6response/visit/subject/treatment/disease",
+  "expression_scale": "Deposited processed RMA expression, ArrayStudio 9 per !Sample_data_processing; use supplied scale unchanged. No cross-study normalization or pooling.",
+  "platform_id": "GPL13158"
+}

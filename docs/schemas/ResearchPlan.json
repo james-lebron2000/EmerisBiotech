@@ -1,0 +1,174 @@
+{
+  "$defs": {
+    "Cohort": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "matrix_key": {
+          "title": "Matrix Key",
+          "type": "string"
+        },
+        "sample_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sample Key"
+        },
+        "probe_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Probe Key"
+        },
+        "endpoint_definition": {
+          "default": "",
+          "title": "Endpoint Definition",
+          "type": "string"
+        },
+        "endpoint_source": {
+          "default": "",
+          "title": "Endpoint Source",
+          "type": "string"
+        },
+        "expression_scale": {
+          "default": "",
+          "title": "Expression Scale",
+          "type": "string"
+        },
+        "platform_id": {
+          "default": "",
+          "title": "Platform Id",
+          "type": "string"
+        },
+        "mapping_reviewed_by": {
+          "default": "",
+          "title": "Mapping Reviewed By",
+          "type": "string"
+        },
+        "mapping_reviewed_at": {
+          "default": "",
+          "title": "Mapping Reviewed At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "matrix_key"
+      ],
+      "title": "Cohort",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "minLength": 5,
+      "title": "Question",
+      "type": "string"
+    },
+    "workflow": {
+      "default": "geo_uc",
+      "enum": [
+        "geo_uc",
+        "inventory",
+        "custom"
+      ],
+      "title": "Workflow",
+      "type": "string"
+    },
+    "evidence_kind": {
+      "default": "public_observational",
+      "enum": [
+        "public_observational",
+        "synthetic",
+        "experimental"
+      ],
+      "title": "Evidence Kind",
+      "type": "string"
+    },
+    "genes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Genes",
+      "type": "array"
+    },
+    "cohorts": {
+      "items": {
+        "$ref": "#/$defs/Cohort"
+      },
+      "title": "Cohorts",
+      "type": "array"
+    },
+    "dataset_keys": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Dataset Keys",
+      "type": "array"
+    },
+    "seed": {
+      "default": 42,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "bootstrap_replicates": {
+      "default": 10000,
+      "maximum": 100000,
+      "minimum": 10000,
+      "title": "Bootstrap Replicates",
+      "type": "integer"
+    },
+    "timeout_seconds": {
+      "default": 180,
+      "maximum": 3600,
+      "minimum": 1,
+      "title": "Timeout Seconds",
+      "type": "integer"
+    },
+    "memory_gb": {
+      "default": 8,
+      "maximum": 64,
+      "minimum": 1,
+      "title": "Memory Gb",
+      "type": "integer"
+    },
+    "expected_direction": {
+      "default": "unspecified",
+      "enum": [
+        "higher_in_nonresponders",
+        "lower_in_nonresponders",
+        "unspecified"
+      ],
+      "title": "Expected Direction",
+      "type": "string"
+    },
+    "multiplicity_family": {
+      "const": "all_planned_genes_by_cohorts",
+      "default": "all_planned_genes_by_cohorts",
+      "title": "Multiplicity Family",
+      "type": "string"
+    }
+  },
+  "required": [
+    "question"
+  ],
+  "title": "ResearchPlan",
+  "type": "object"
+}
