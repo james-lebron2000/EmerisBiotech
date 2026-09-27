@@ -15,6 +15,7 @@ def parser():
     p.add_argument('--data-root',type=Path)
     p.add_argument('--state-dir',type=Path)
     sp=p.add_subparsers(dest='command',required=True)
+    a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
     a=sp.add_parser('workbench');a.add_argument('--port',type=int,default=18764)
     a=sp.add_parser('register');a.add_argument('manifest',type=Path)
     a=sp.add_parser('prepare-geo');a.add_argument('--matrix',required=True);a.add_argument('--platform',required=True);a.add_argument('--rules',type=Path,required=True);a.add_argument('--output',type=Path,required=True)
@@ -36,6 +37,27 @@ def parser():
 
 def main(argv=None):
     args=parser().parse_args(argv)
+    if args.command=='market':
+        import hashlib
+        from .market import Market
+        state=args.state_dir or Path.home()/'Library/Application Support/VirtualBiotech'/hashlib.sha256(str(args.workspace.resolve()).encode()).hexdigest()[:12]
+        m=Market(args.workspace,state)
+        try:
+            if args.action=='universe':
+                from .market_sources import URLS
+                targets=list(URLS) if args.reference=='all' else [args.reference]
+                ids=[m.refresh_universe(key) for key in targets]
+            elif args.action=='sync':
+                targets=[r['id'] for r in m.rows('companies')] if args.reference=='all' else [args.reference]
+                ids=[m.sync_company(key,max_pages=args.max_pages) for key in targets]
+            else:
+                rows=load(Path(args.reference));result=[m.add_company(r['market'],r['ticker'],r['name'],r['aliases'],r['provenance']) for r in rows]
+                print(json.dumps(result,ensure_ascii=False));return 0
+            result=[r for r in m.rows('runs') if r['id'] in ids]
+            print(json.dumps(result,ensure_ascii=False,indent=2))
+            return 0 if result and all(r['status']=='succeeded' for r in result) and None not in ids else 2
+        except Exception as ex:
+            print(json.dumps({'error':str(ex)},ensure_ascii=False),file=sys.stderr);return 2
     if args.command=='workbench':
         from .workbench import serve
         serve(args.workspace,args.state_dir,args.port);return 0

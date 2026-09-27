@@ -99,6 +99,9 @@ def page(app,path,q):
         body=home_intro()+'<h2>研究控制台 · 当前工作区</h2><div class="grid">'
         for label,value in [('分析运行',sum(r['kind']=='run' for r in records)),('研究循环',sum(r['kind']=='cycle' for r in records)),('冻结快照',sum(r['kind']=='portfolio' for r in records)),('运行中任务',sum(j['status']=='running' for j in app.rows('jobs')))]:body+=f'<div class="card"><span class="muted">{label}</span><strong class="metric">{value}</strong></div>'
         body+='</div><div class="card"><h2>我们的目标</h2><p>'+esc(MISSION)+'</p><a href="/mission">查看验收条件与下一步 →</a></div><div class="notice">执行成功不等于科学结论通过。当前尚未建立经过验证的二期／三期预测能力或投资收益优势。</div><div class="card"><h2>最近研究记录</h2>'+table(records[:8])+'</div><a class="button" href="/notes">提出研究问题</a> <a href="/records">查看全部历史 →</a>'
+    elif path=='/market':
+        from .market_view import render
+        body=render(app,q)
     elif path=='/case':
         body=case_page(app,q.get('id',''))
     elif path=='/guide':
@@ -123,9 +126,9 @@ def page(app,path,q):
         if not jobs:body+='<div class="card">暂无校验任务。打开一条分析运行或研究快照，点击“重新校验完整性”。</div>'
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))
     else:raise ValueError('页面不存在')
-    if q.get('saved')=='1':body='<div class="success" role="status">已保存。记录已追加，历史内容保持不变。</div>'+body
-    if (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
-    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>EmerisBiotech · 临床资产研究</title><style>'+STYLE+'</style></head><body><aside><b>EmerisBiotech</b><small>临床资产研究工作台</small><a href="/">研究首页</a><a href="/guide">演示路线</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
+    if q.get('saved')=='1':body='<div class="success" role="status">'+('请求已受理。请查看数据源状态或抓取任务；后台抓取期间可刷新页面。' if path=='/market' else '已保存。记录已追加，历史内容保持不变。')+'</div>'+body
+    if path!='/market' and (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
+    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>EmerisBiotech · 临床资产研究</title><style>'+STYLE+'</style></head><body><aside><b>EmerisBiotech</b><small>临床资产研究工作台</small><a href="/">研究首页</a><a href="/market">市场与管线</a><a href="/guide">演示路线</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
 def entries(rows):
     return ''.join('<div class="card"><b>'+('研究问题' if e['kind']=='question' else '研究笔记')+' · '+esc(e['author'])+'</b><p class="ref">'+esc(e['created'])+' · '+esc(e['reference'])+'</p><div class="body">'+esc(e['body'])+'</div></div>' for e in rows) or '<p class="muted">暂无记录。</p>'
 def noteform(app,reference=''):
@@ -155,13 +158,21 @@ def handler(app, public_origin=None):
                 if not 0<n<=65536:raise ValueError('Request too large or empty')
                 q={k:v[0] for k,v in parse_qs(self.rfile.read(n).decode()).items()}
                 if not secrets.compare_digest(q.get('token',''),app.token):self.send(403,'Token rejected');return
-                if self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
+                if self.path.startswith('/market/'):
+                    from .market import Market
+                    market=Market(app.workspace,app.state)
+                    if self.path=='/market/company':market.add_company(q.get('market',''),q.get('ticker',''),q.get('name',''),q.get('aliases','').splitlines(),q.get('provenance',''))
+                    elif self.path=='/market/refresh':market.enqueue(q.get('kind'),q.get('reference'))
+                    elif self.path=='/market/schedule':market.schedule(q.get('enabled')=='1')
+                    else:raise ValueError('Unknown market operation')
+                    dest='/market?saved=1'
+                elif self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
                 elif self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes?saved=1'
                 elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission?saved=1'
                 elif self.path=='/verify':app.start(q.get('kind'),q.get('id'));dest='/jobs'
                 else:raise ValueError('Unknown action')
                 self.send_response(303);self.send_header('Location',dest);self.send_header('Content-Length','0');self.end_headers()
-            except (ValueError,OSError) as e:self.send(400,'<h1>未能完成操作</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
+            except (ValueError,OSError,sqlite3.IntegrityError) as e:self.send(400,'<h1>未能完成操作</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
     return Handler
 
 def serve(workspace,state=None,port=18764):
@@ -169,8 +180,12 @@ def serve(workspace,state=None,port=18764):
         app=Workbench(workspace,state)
         server.RequestHandlerClass=handler(app)
         print(f'Workbench ready: http://127.0.0.1:{port}',flush=True)
+        from .market import Market
+        stop=threading.Event();market=Market(app.workspace,app.state)
+        threading.Thread(target=market.scheduler,args=(stop,),daemon=True).start()
         try:server.serve_forever()
         except KeyboardInterrupt:pass
+        finally:stop.set()
 
 def mission_page(app,records):
     updates=app.rows('milestones');latest={}

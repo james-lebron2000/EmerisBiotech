@@ -1,0 +1,5 @@
+[
+ {"market":"US","ticker":"PFE","name":"Pfizer","aliases":["Pfizer"],"provenance":"Company listing: https://www.pfizer.com/about/investors/why-invest/fact-sheet ; lead sponsor name observed in ClinicalTrials.gov. Mapping checked 2026-09-27; not asset ownership adjudication."},
+ {"market":"A","ticker":"600276","name":"恒瑞医药","aliases":["Jiangsu HengRui Medicine Co., Ltd."],"provenance":"Company listing: https://www.hengrui.com/en/investor.html ; proposed sponsor alias, exact matching only; subsidiaries not fully mapped. 2026-09-27."},
+ {"market":"HK","ticker":"01801","name":"信达生物","aliases":["Innovent Biologics (Suzhou) Co. Ltd."],"provenance":"Company listing: https://en.innoventbio.com/InvestorsAndMedia/PressReleaseDetail?key=577 ; proposed subsidiary sponsor alias, exact matching only. 2026-09-27."}
+]
