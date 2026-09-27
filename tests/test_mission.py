@@ -32,6 +32,6 @@ def test_web_update(app):
   conn=http.client.HTTPConnection('127.0.0.1',server.server_port)
   body=urlencode({'token':app.token,'milestone':'cloud','status':'blocked','author':'TEST','note':'Awaiting selected deployment destination'})
   conn.request('POST','/milestone',body,{'Origin':f'http://127.0.0.1:{server.server_port}','Content-Type':'application/x-www-form-urlencoded'})
-  response=conn.getresponse();assert response.status==303 and response.getheader('Location')=='/mission';response.read();conn.close()
+  response=conn.getresponse();assert response.status==303 and response.getheader('Location')=='/mission?saved=1';response.read();conn.close()
   assert app.rows('milestones')[0]['milestone']=='cloud'
  finally:server.shutdown();server.server_close()

@@ -5,6 +5,7 @@ from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from urllib.parse import urlsplit,parse_qs,quote
 from .io import ensure_storage,now,write,within
 from .mission import MISSION,MILESTONES,STATES,validate_update
+from .product_views import CASES,ACTIONS,home_intro,case_page,guide,record_summary
 
 def esc(x):return html.escape(str(x if x is not None else '未记录'),quote=True)
 def read(path):
@@ -19,6 +20,7 @@ class Workbench:
         if self.state.is_relative_to('/Volumes'):raise ValueError('State must be local')
         self.state.mkdir(parents=True,exist_ok=True);self.dbpath=self.state/'workbench.sqlite3';self.token=secrets.token_urlsafe(32);self.lock=threading.Lock()
         with self.db() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS decisions (id TEXT PRIMARY KEY, created TEXT, case_id TEXT, action TEXT, author TEXT, reason TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS entries (id TEXT PRIMARY KEY, created TEXT, author TEXT, kind TEXT, body TEXT, reference TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS milestones (id TEXT PRIMARY KEY, created TEXT, milestone TEXT, status TEXT, author TEXT, note TEXT, reference TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, created TEXT, kind TEXT, reference TEXT, status TEXT, output TEXT)')
@@ -38,14 +40,20 @@ class Workbench:
     def record(self,kind,rid):
         return next((r for r in self.records() if r['kind']==kind and r['id']==rid),None)
     def rows(self,table):
-        if table not in ['entries','jobs','milestones']:raise ValueError('Unknown table')
+        if table not in ['entries','jobs','milestones','decisions']:raise ValueError('Unknown table')
         with self.db() as db:return [dict(x) for x in db.execute(f'SELECT * FROM {table} ORDER BY created DESC')]
     def export(self):
-        write(self.workspace/'artifacts/workbench/history.json',{'exported_at':now(),'entries':self.rows('entries'),'jobs':self.rows('jobs'),'milestones':self.rows('milestones')})
+        write(self.workspace/'artifacts/workbench/history.json',{'exported_at':now(),'entries':self.rows('entries'),'jobs':self.rows('jobs'),'milestones':self.rows('milestones'),'demo_decisions':self.rows('decisions')})
     def add(self,author,kind,body,reference=''):
         if kind not in ['question','note'] or not 1<=len(author.strip())<=100 or not 3<=len(body.strip())<=10000 or len(reference)>300:raise ValueError('请填写作者与至少三个字符的内容，内容最多10000字符')
         with self.lock:
             with self.db() as db:db.execute('INSERT INTO entries VALUES (?,?,?,?,?,?)',(uuid.uuid4().hex,now(),author.strip(),kind,body.strip(),reference))
+            self.export()
+    def decide(self,case_id,action,author,reason):
+        if case_id not in CASES or action not in ACTIONS:raise ValueError('未知案例或操作')
+        if not 1<=len(author.strip())<=100 or not 10<=len(reason.strip())<=5000:raise ValueError('请填写记录人和10至5000字符的判断依据')
+        with self.lock:
+            with self.db() as db:db.execute('INSERT INTO decisions VALUES (?,?,?,?,?,?)',(uuid.uuid4().hex,now(),case_id,action,author.strip(),reason.strip()))
             self.export()
     def update_milestone(self,milestone,state,author,note,reference=''):
         validate_update(self,milestone,state,author,note,reference)
@@ -75,17 +83,26 @@ class Workbench:
             self.export()
 
 STYLE='''*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#182b36;font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}aside{position:fixed;width:224px;height:100vh;background:#102d35;color:#c7dcdf;padding:30px 22px}aside b{color:#fff;font-size:22px}aside small{display:block;margin:8px 0 35px;color:#80a8af}aside a{display:block;color:#c7dcdf;text-decoration:none;padding:12px;border-radius:8px;margin:5px 0}aside a:hover{background:#24464e;color:white}main{margin-left:224px;max-width:1450px;padding:35px 45px}h1{font-size:30px;line-height:1.3;margin:8px 0 12px}h2{font-size:20px}p.sub{color:#60747c}.kicker{color:#087970;letter-spacing:2px;font-size:12px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:white;border:1px solid #dee7e9;border-radius:12px;padding:22px;margin:18px 0}.metric{font-size:34px;font-weight:700;display:block}.muted{color:#617780}.badge{font-size:12px;background:#e8efef;padding:5px 9px;border-radius:6px;display:inline-block}.failed,.blocked,.interrupted{background:#fff0df;color:#985210}.succeeded,.completed{background:#e2f4ed;color:#196b54}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:15px 10px;border-bottom:1px solid #edf0f1;vertical-align:top}td a{font-weight:600}a{color:#08776f;text-decoration:none}a:hover{text-decoration:underline}input,textarea,select{font:inherit;border:1px solid #c8d7dc;border-radius:7px;padding:10px;background:white;max-width:100%}input[type=search]{width:55%}textarea{width:100%;min-height:130px}label{display:block;margin:10px 0 5px}button,.button{font:inherit;display:inline-block;border:0;border-radius:7px;background:#08796f;color:white;padding:10px 16px;cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f7;padding:16px;font-size:12px}details{margin:14px 0}summary{cursor:pointer;font-weight:600}.notice{border-left:4px solid #d39d45;padding:12px 18px;background:#fff7e9}.split{display:grid;grid-template-columns:2fr 1fr;gap:22px}.body{white-space:pre-wrap;overflow-wrap:anywhere}.ref{font-size:11px;overflow-wrap:anywhere;color:#67808a}.scroll{overflow:auto}@media(max-width:850px){aside{position:static;width:auto;height:auto;padding:15px}aside small{margin:0}aside a{display:inline-block}main{margin:0;padding:20px}.grid{grid-template-columns:repeat(2,1fr)}.split{display:block}}'''
+STYLE += """
+.hero{padding:36px;border-radius:18px;background:#102f3d;color:#fff;margin:4px 0 30px}.hero h1{font-size:40px;letter-spacing:-1px;line-height:1.25;margin:20px 0}.hero p{color:#b8d0d8;font-size:18px}.hero .button{background:#b9f0d7;color:#113c36;font-weight:650}.secondary{color:#deeeee;margin-left:16px}.hero-note{margin-top:22px;color:#a6c0c9;font-size:12px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:700;color:#52777b}.hero .eyebrow{color:#95c2c9}.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.case-card{display:block;background:#fff;border:1px solid #dce5e7;border-radius:12px;padding:22px;color:#203940;transition:transform .15s}.case-card:hover{transform:translateY(-3px);text-decoration:none;border-color:#73a49c}.case-card h3{font-size:18px;margin:16px 0}.case-card p{color:#60767f;font-size:14px}.text-link{font-size:13px;color:#08796f;font-weight:650}.section-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:25px}.section-head>span{font-size:12px;color:#677e85}.lead{font-size:20px;color:#536c76}.counter{border-top:3px solid #d59456}.conclusion{border-left:4px solid #08796f}.empty{padding:35px;text-align:center;background:#fff;border:1px dashed #c3d3d8;border-radius:12px;color:#637b84;margin:18px 0}.success{background:#e1f4e9;border:1px solid #a7d7bf;border-radius:8px;padding:15px;margin-bottom:18px;color:#17603f}.notice{font-size:13px;margin-bottom:18px}aside b{font-size:21px}.split{grid-template-columns:1fr 1fr}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #dea03a;outline-offset:3px}@media(max-width:950px){.case-grid{grid-template-columns:1fr}.hero h1{font-size:30px}.hero{padding:24px}.section-head{display:block}}
+"""
+
 LABEL={'run':'分析运行','portfolio':'研究快照','cycle':'研究循环','succeeded':'执行成功','failed':'执行失败','blocked':'执行受阻','completed':'循环已完成','snapshot':'已冻结','running':'正在校验','interrupted':'任务中断','pending':'待科学审查','revise':'需修订','insufficient_evidence':'证据不足','unknown':'未知'}
 def badge(s):return f'<span class="badge {esc(s)}">{esc(LABEL.get(s,s))}</span>'
 def link(r):return '/record?kind='+r['kind']+'&id='+quote(r['id'])
 def table(records):
+    if not records:return '<div class="empty"><h3>这里还没有匹配的研究记录</h3><p>可以先体验内置回顾案例，或调整筛选条件查看已有历史。</p><a href="/case?id=osmr-uc">体验研究流程 →</a></div>'
     return '<div class="scroll"><table><tr><th>研究与记录</th><th>类型</th><th>执行 / 记录状态</th><th>科学审查</th></tr>'+''.join(f'<tr><td><a href="{link(r)}">{esc(r["title"])}</a><div class="ref">{esc(r["id"])}</div></td><td>{LABEL[r["kind"]]}</td><td>{badge(r["status"])}</td><td>{badge(r["review"])}</td></tr>' for r in records)+'</table></div>'
 def page(app,path,q):
     records=app.records();body='';refresh=''
     if path=='/':
-        body='<div class="kicker">RESEARCH OPERATIONS</div><h1>研究控制台</h1><p class="sub">查看正在发生的事，追溯每一次分析与决定。</p><div class="grid">'
+        body=home_intro()+'<h2>研究控制台 · 当前工作区</h2><div class="grid">'
         for label,value in [('分析运行',sum(r['kind']=='run' for r in records)),('研究循环',sum(r['kind']=='cycle' for r in records)),('冻结快照',sum(r['kind']=='portfolio' for r in records)),('运行中任务',sum(j['status']=='running' for j in app.rows('jobs')))]:body+=f'<div class="card"><span class="muted">{label}</span><strong class="metric">{value}</strong></div>'
         body+='</div><div class="card"><h2>我们的目标</h2><p>'+esc(MISSION)+'</p><a href="/mission">查看验收条件与下一步 →</a></div><div class="notice">执行成功不等于科学结论通过。当前尚未建立经过验证的二期／三期预测能力或投资收益优势。</div><div class="card"><h2>最近研究记录</h2>'+table(records[:8])+'</div><a class="button" href="/notes">提出研究问题</a> <a href="/records">查看全部历史 →</a>'
+    elif path=='/case':
+        body=case_page(app,q.get('id',''))
+    elif path=='/guide':
+        body=guide()
     elif path=='/mission':
         body=mission_page(app,records)
     elif path=='/records':
@@ -98,7 +115,7 @@ def page(app,path,q):
         if r['kind'] in ['run','portfolio'] and not (r['kind']=='run' and (app.workspace/'cache-info.json').exists()):body+=f'<form method="post" action="/verify"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="kind" value="{r["kind"]}"><input type="hidden" name="id" value="{esc(r["id"])}"><p><button>重新校验完整性</button> <span class="muted">校验在后台执行，可在任务页观测。</span></p></form>'
         for name in (['audit.html','claims.json','review.json','work/results.json','work/sample_flow.json','stdout.log','stderr.log'] if r['kind']=='run' else ['index.html','plan.json','evaluation.json','provenance.json'] if r['kind']=='portfolio' else ['index.html','cycle.json','counterevidence.json','results.json']):
             if (r['path']/name).is_file():body+=f'<a class="button" style="margin:4px" href="/artifact?kind={r["kind"]}&id={quote(r["id"])}&file={quote(name)}" target="_blank" rel="noopener">{esc(name)}</a>'
-        body+='<div class="card"><h2>状态与结果</h2><pre>'+esc(json.dumps(r['data'],ensure_ascii=False,indent=2))+'</pre></div><h2>关联研究笔记</h2>'+entries([e for e in app.rows('entries') if e['reference']==r['id']])+noteform(app,r['id'])
+        body+=record_summary(r,read)+'<details class="card"><summary>查看完整技术记录</summary><pre>'+esc(json.dumps(r['data'],ensure_ascii=False,indent=2))+'</pre></details><h2>关联研究笔记</h2>'+entries([e for e in app.rows('entries') if e['reference']==r['id']])+noteform(app,r['id'])
     elif path=='/jobs':
         jobs=app.rows('jobs');refresh='<meta http-equiv="refresh" content="5">' if any(j['status']=='running' for j in jobs) else ''
         body='<h1>任务观测</h1><p class="sub">运行中每 5 秒刷新。校验检查文件与证据记录，不证明科学正确性。</p>'
@@ -106,8 +123,9 @@ def page(app,path,q):
         if not jobs:body+='<div class="card">暂无校验任务。打开一条分析运行或研究快照，点击“重新校验完整性”。</div>'
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))
     else:raise ValueError('页面不存在')
+    if q.get('saved')=='1':body='<div class="success" role="status">已保存。记录已追加，历史内容保持不变。</div>'+body
     if (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
-    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>Virtual Biotech · 研究控制台</title><style>'+STYLE+'</style></head><body><aside><b>Virtual Biotech</b><small>临床资产研究工作台</small><a href="/">概览</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
+    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>EmerisBiotech · 临床资产研究</title><style>'+STYLE+'</style></head><body><aside><b>EmerisBiotech</b><small>临床资产研究工作台</small><a href="/">研究首页</a><a href="/guide">演示路线</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
 def entries(rows):
     return ''.join('<div class="card"><b>'+('研究问题' if e['kind']=='question' else '研究笔记')+' · '+esc(e['author'])+'</b><p class="ref">'+esc(e['created'])+' · '+esc(e['reference'])+'</p><div class="body">'+esc(e['body'])+'</div></div>' for e in rows) or '<p class="muted">暂无记录。</p>'
 def noteform(app,reference=''):
@@ -137,8 +155,9 @@ def handler(app, public_origin=None):
                 if not 0<n<=65536:raise ValueError('Request too large or empty')
                 q={k:v[0] for k,v in parse_qs(self.rfile.read(n).decode()).items()}
                 if not secrets.compare_digest(q.get('token',''),app.token):self.send(403,'Token rejected');return
-                if self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes'
-                elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission'
+                if self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
+                elif self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes?saved=1'
+                elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission?saved=1'
                 elif self.path=='/verify':app.start(q.get('kind'),q.get('id'));dest='/jobs'
                 else:raise ValueError('Unknown action')
                 self.send_response(303);self.send_header('Location',dest);self.send_header('Content-Length','0');self.end_headers()
