@@ -4,6 +4,7 @@ from pathlib import Path
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from urllib.parse import urlsplit,parse_qs,quote
 from .io import ensure_storage,now,write,within
+from .mission import MISSION,MILESTONES,STATES,validate_update
 
 def esc(x):return html.escape(str(x if x is not None else '未记录'),quote=True)
 def read(path):
@@ -19,6 +20,7 @@ class Workbench:
         self.state.mkdir(parents=True,exist_ok=True);self.dbpath=self.state/'workbench.sqlite3';self.token=secrets.token_urlsafe(32);self.lock=threading.Lock()
         with self.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS entries (id TEXT PRIMARY KEY, created TEXT, author TEXT, kind TEXT, body TEXT, reference TEXT)')
+            db.execute('CREATE TABLE IF NOT EXISTS milestones (id TEXT PRIMARY KEY, created TEXT, milestone TEXT, status TEXT, author TEXT, note TEXT, reference TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, created TEXT, kind TEXT, reference TEXT, status TEXT, output TEXT)')
             db.execute("UPDATE jobs SET status='interrupted', output=output || '\n服务重启，任务中断；请重新发起校验。' WHERE status='running'")
     def db(self):
@@ -36,14 +38,19 @@ class Workbench:
     def record(self,kind,rid):
         return next((r for r in self.records() if r['kind']==kind and r['id']==rid),None)
     def rows(self,table):
-        if table not in ['entries','jobs']:raise ValueError('Unknown table')
+        if table not in ['entries','jobs','milestones']:raise ValueError('Unknown table')
         with self.db() as db:return [dict(x) for x in db.execute(f'SELECT * FROM {table} ORDER BY created DESC')]
     def export(self):
-        write(self.workspace/'artifacts/workbench/history.json',{'exported_at':now(),'entries':self.rows('entries'),'jobs':self.rows('jobs')})
+        write(self.workspace/'artifacts/workbench/history.json',{'exported_at':now(),'entries':self.rows('entries'),'jobs':self.rows('jobs'),'milestones':self.rows('milestones')})
     def add(self,author,kind,body,reference=''):
         if kind not in ['question','note'] or not 1<=len(author.strip())<=100 or not 3<=len(body.strip())<=10000 or len(reference)>300:raise ValueError('请填写作者与至少三个字符的内容，内容最多10000字符')
         with self.lock:
             with self.db() as db:db.execute('INSERT INTO entries VALUES (?,?,?,?,?,?)',(uuid.uuid4().hex,now(),author.strip(),kind,body.strip(),reference))
+            self.export()
+    def update_milestone(self,milestone,state,author,note,reference=''):
+        validate_update(self,milestone,state,author,note,reference)
+        with self.lock:
+            with self.db() as db:db.execute('INSERT INTO milestones VALUES (?,?,?,?,?,?,?)',(uuid.uuid4().hex,now(),milestone,state,author.strip(),note.strip(),reference))
             self.export()
     def start(self,kind,rid):
         if kind=='run' and (self.workspace/'cache-info.json').exists():raise ValueError('备份视图不能核验外置盘原始输入；请在源工作区执行')
@@ -78,7 +85,9 @@ def page(app,path,q):
     if path=='/':
         body='<div class="kicker">RESEARCH OPERATIONS</div><h1>研究控制台</h1><p class="sub">查看正在发生的事，追溯每一次分析与决定。</p><div class="grid">'
         for label,value in [('分析运行',sum(r['kind']=='run' for r in records)),('研究循环',sum(r['kind']=='cycle' for r in records)),('冻结快照',sum(r['kind']=='portfolio' for r in records)),('运行中任务',sum(j['status']=='running' for j in app.rows('jobs')))]:body+=f'<div class="card"><span class="muted">{label}</span><strong class="metric">{value}</strong></div>'
-        body+='</div><div class="notice">执行成功不等于科学结论通过。当前尚未建立经过验证的二期／三期预测能力或投资收益优势。</div><div class="card"><h2>最近研究记录</h2>'+table(records[:8])+'</div><a class="button" href="/notes">提出研究问题</a> <a href="/records">查看全部历史 →</a>'
+        body+='</div><div class="card"><h2>我们的目标</h2><p>'+esc(MISSION)+'</p><a href="/mission">查看验收条件与下一步 →</a></div><div class="notice">执行成功不等于科学结论通过。当前尚未建立经过验证的二期／三期预测能力或投资收益优势。</div><div class="card"><h2>最近研究记录</h2>'+table(records[:8])+'</div><a class="button" href="/notes">提出研究问题</a> <a href="/records">查看全部历史 →</a>'
+    elif path=='/mission':
+        body=mission_page(app,records)
     elif path=='/records':
         search=q.get('q','').lower();kind=q.get('kind','');filtered=[r for r in records if (not kind or r['kind']==kind) and search in (r['title']+' '+r['id']).lower()]
         body='<h1>历史记录</h1><p class="sub">包含成功、失败和受阻记录；旧版本不会被新版本覆盖。</p><form><input type="search" name="q" placeholder="搜索研究问题或运行编号" value="'+esc(q.get('q',''))+'"> <select name="kind"><option value="">所有类型</option>'+''.join(f'<option value="{k}" '+('selected' if k==kind else '')+f'>{LABEL[k]}</option>' for k in ['run','cycle','portfolio'])+'</select> <button>筛选</button></form><div class="card">'+f'<p>{len(filtered)} 条记录</p>'+table(filtered)+'</div>'
@@ -98,7 +107,7 @@ def page(app,path,q):
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))
     else:raise ValueError('页面不存在')
     if (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
-    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>Virtual Biotech · 研究控制台</title><style>'+STYLE+'</style></head><body><aside><b>Virtual Biotech</b><small>临床资产研究工作台</small><a href="/">概览</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
+    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>Virtual Biotech · 研究控制台</title><style>'+STYLE+'</style></head><body><aside><b>Virtual Biotech</b><small>临床资产研究工作台</small><a href="/">概览</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
 def entries(rows):
     return ''.join('<div class="card"><b>'+('研究问题' if e['kind']=='question' else '研究笔记')+' · '+esc(e['author'])+'</b><p class="ref">'+esc(e['created'])+' · '+esc(e['reference'])+'</p><div class="body">'+esc(e['body'])+'</div></div>' for e in rows) or '<p class="muted">暂无记录。</p>'
 def noteform(app,reference=''):
@@ -129,6 +138,7 @@ def handler(app, public_origin=None):
                 q={k:v[0] for k,v in parse_qs(self.rfile.read(n).decode()).items()}
                 if not secrets.compare_digest(q.get('token',''),app.token):self.send(403,'Token rejected');return
                 if self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes'
+                elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission'
                 elif self.path=='/verify':app.start(q.get('kind'),q.get('id'));dest='/jobs'
                 else:raise ValueError('Unknown action')
                 self.send_response(303);self.send_header('Location',dest);self.send_header('Content-Length','0');self.end_headers()
@@ -142,3 +152,20 @@ def serve(workspace,state=None,port=18764):
         print(f'Workbench ready: http://127.0.0.1:{port}',flush=True)
         try:server.serve_forever()
         except KeyboardInterrupt:pass
+
+def mission_page(app,records):
+    updates=app.rows('milestones');latest={}
+    for event in updates:latest.setdefault(event['milestone'],event)
+    body='<div class="kicker">MISSION & EVIDENCE</div><h1>目标与里程碑</h1><div class="card"><h2>'+esc(MISSION)+'</h2><p>产品定位：AI 驱动的临床资产研究与投资决策支持平台。当前优先验证预测能力；自研药物管线不是本阶段交付目标。</p></div><div class="notice">以下是人工录入的进展，不是科学审批。没有记录表示尚未记录，不能解释为已完成或没有问题。已提交证据也不等于临床预测或盈利能力成立。</div>'
+    for m in MILESTONES:
+        event=latest.get(m['id']);status=STATES[event['status']] if event else '尚无进展记录'
+        body+='<div class="card"><h2>'+esc(m['title'])+'</h2><span class="badge">'+esc(status)+'</span><p><b>验收要求：</b>'+esc(m['acceptance'])+'</p><p><b>下一步：</b>'+esc(m['next'])+'</p>'
+        if event:body+='<p class="body">'+esc(event['note'])+'</p><p class="ref">'+esc(event['author'])+' · '+esc(event['created'])+'</p>'
+        body+='</div>'
+    body+='<form class="card" method="post" action="/milestone"><h2>记录进展</h2><input type="hidden" name="token" value="'+app.token+'"><label>里程碑</label><select name="milestone">'+''.join('<option value="'+m['id']+'">'+esc(m['title'])+'</option>' for m in MILESTONES)+'</select><label>状态</label><select name="status">'+''.join('<option value="'+k+'">'+esc(v)+'</option>' for k,v in STATES.items())+'</select><label>记录人</label><input name="author" required maxlength="100"><label>说明／阻塞原因</label><textarea name="note" required minlength="10" maxlength="10000"></textarea><label>关联证据（提交证据时必选）</label><select name="reference"><option value="">暂不关联</option>'+''.join('<option value="'+esc(r['id'])+'">'+esc(r['kind']+' · '+r['id'])+'</option>' for r in records)+'</select><p><button>追加进展记录</button></p></form><h2>变更历史</h2>'
+    for event in updates:
+        body+='<div class="card"><b>'+esc(event['milestone'])+' · '+esc(STATES[event['status']])+'</b><p class="body">'+esc(event['note'])+'</p><p class="ref">'+esc(event['author'])+' · '+esc(event['created'])+'</p>'
+        for r in records:
+            if r['id']==event['reference']:body+='<a href="'+link(r)+'">查看关联证据</a>'
+        body+='</div>'
+    return body
