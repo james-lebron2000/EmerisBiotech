@@ -1,5 +1,6 @@
 """Synthetic UI/reconciliation checks; no assertions about real pipeline coverage."""
 import json
+from html.parser import HTMLParser
 from types import SimpleNamespace
 
 import pytest
@@ -142,3 +143,73 @@ def test_render_linked_comparator_never_labels_owned_pipeline(app):
     assert '2 条具有同公司登记名称关联' in body
     assert '分组角色不确认资产所有权' in body
     assert 'SHA-256' in body and 'script const dataII' in body
+
+
+class Structure(HTMLParser):
+    """Inspect usable markup without tying tests to presentation rules."""
+    def __init__(self, body):
+        super().__init__()
+        self.elements = []
+        self.detail_depth = 0
+        self.main_text = []
+        self.feed(body)
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'details':
+            self.detail_depth += 1
+        self.elements.append((tag, dict(attrs), self.detail_depth))
+
+    def handle_endtag(self, tag):
+        if tag == 'details':
+            self.detail_depth -= 1
+
+    def handle_data(self, data):
+        if not self.detail_depth:
+            self.main_text.append(data)
+
+
+def test_table_keyboard_region_labels_and_collapsible_technical_evidence(app):
+    result = disclosures.ingest(app.market, 'hengrui_pipeline', fetch=lambda _: chart())
+    parsed = Structure(render(app, {'company': 'A:600276'}))
+    regions = [attrs for tag, attrs, _ in parsed.elements if attrs.get('role') == 'region']
+    assert len(regions) == 1 and regions[0]['tabindex'] == '0'
+    assert regions[0]['aria-label'] and regions[0]['aria-describedby']
+    assert len([attrs for tag, attrs, _ in parsed.elements if tag == 'th' and attrs.get('scope') == 'col']) == 5
+    controls = {attrs['id'] for tag, attrs, _ in parsed.elements if tag in ('input', 'select') and 'id' in attrs}
+    labels = {attrs['for'] for tag, attrs, _ in parsed.elements if tag == 'label'}
+    assert controls == labels
+    visible = ''.join(parsed.main_text)
+    # Long reproducibility references remain available in closed details, while
+    # the drug, source dates, missing association and research boundary stay visible.
+    assert result['id'] not in visible and 'script const dataII' not in visible
+    assert 'HRS-0001' in visible and '内容截止' in visible and '精确名称关联待解决' in visible
+    assert '药物所有权' in visible
+
+
+def test_source_dates_preserve_precision_and_exact_timestamp_with_timezone(app):
+    result = disclosures.ingest(app.market, 'hengrui_pipeline', fetch=lambda _: chart())
+    with app.market.db() as db:
+        db.execute('UPDATE disclosure_captures SET finished=?,published_at=? WHERE id=?',
+                   ('2026-10-16T23:45:00+00:00', '2026-07-02', result['id']))
+    body = render(app, {'company': 'A:600276'})
+    assert '2026/10/17 07:45 台北' in body
+    assert 'datetime="2026-10-16T23:45:00+00:00"' in body
+    assert 'title="原始时间：2026-10-16T23:45:00+00:00"' in body
+    assert 'datetime="2026-07"' in body and '2026 年 07 月' in body
+    assert 'datetime="2026-07-02"' in body and '2026/07/02' in body
+    with app.market.db() as db:
+        db.execute('UPDATE disclosure_captures SET finished=? WHERE id=?',
+                   ('2026-10-16T23:45:00', result['id']))
+    assert '2026/10/16 23:45（时区未提供）' in render(app, {'company': 'A:600276'})
+
+
+def test_source_failed_attempt_remains_visible_without_discarding_success(app):
+    successful = disclosures.ingest(app.market, 'hengrui_pipeline', fetch=lambda _: chart())
+    failed = disclosures.ingest(app.market, 'hengrui_pipeline', fetch=lambda _: b'<html>Access challenge</html>')
+    parsed = Structure(render(app, {'company': 'A:600276'}))
+    visible = ''.join(parsed.main_text)
+    assert '结构化提取待完成' in visible
+    assert '存在来源缺口' in visible and '仍展示最近成功批次' in visible
+    assert '8 条结构化观察' in visible and 'HRS-0001' in visible
+    assert successful['id'] not in visible and failed['id'] not in visible
+    assert '此处为空不表示公司没有研发管线' not in visible

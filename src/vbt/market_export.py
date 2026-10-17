@@ -87,7 +87,26 @@ def export_file(market,export_id,filename):
 def export_page(app,q):
  """Read an existing export; creation is a CSRF-protected POST operation."""
  import html
+ from datetime import datetime,timedelta,timezone
+ from urllib.parse import urlencode
  from .market import Market
+ from .market_view import PHASES,TRIAL_STATES
  ident=q.get('id','')
- with export_file(Market(app.workspace,app.state),ident,'manifest.json')[0] as file:manifest=json.load(file)
- return '<a href="/market">← 返回临床检索</a><h1>导出已就绪</h1><div class="card"><h2>'+str(manifest['row_count'])+' 条临床登记关联</h2><p>包含来源链接、源更新日期、抓取时间及批次。导出结果固定为本次数据库读取快照，不随后续抓取变化。</p><p><a class="button" href="/market/export-file?id='+ident+'&file=observations.csv">下载 CSV</a> <a href="/market/export-file?id='+ident+'&file=manifest.json">下载校验清单</a></p><p class="ref">'+html.escape(manifest['created'])+' · '+ident+'</p></div>'
+ market=Market(app.workspace,app.state)
+ with export_file(market,ident,'manifest.json')[0] as file:manifest=json.load(file)
+ esc=lambda value:html.escape(str(value),quote=True)
+ filters=manifest.get('filters',{});back='/market?'+urlencode(filters)
+ names={r['id']:r['name'] for r in market.rows('companies')}
+ labels={'market':'市场','company':'公司','q':'关键词','phase':'登记阶段','status':'登记状态'}
+ display={'company':names,'phase':PHASES,'status':TRIAL_STATES,'market':{'US':'美股','A':'A股','HK':'港股'}}
+ chips=''.join('<span class="badge" title="'+esc(v)+'">'+esc(labels[k])+' · '+esc(display.get(k,{}).get(v,v))+'</span>' for k,v in filters.items() if k in labels) or '<span class="badge">全部已采集登记</span>'
+ created=manifest['created']
+ try:
+  stamp=datetime.fromisoformat(created.replace('Z','+00:00'))
+  if stamp.tzinfo:created=stamp.astimezone(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M')+' UTC+8'
+ except ValueError:pass
+ size=manifest['bytes']/1024
+ body='<header class="page-header"><div><span class="eyebrow">RESEARCH EXPORT</span><h1>导出已就绪</h1><p class="lead">已固定筛选结果，可下载并核验来源。</p></div><a class="button secondary" href="'+esc(back)+'">返回本次筛选</a></header>'
+ body+='<div class="export-layout"><section class="card export-summary"><span class="badge succeeded">快照已生成</span><h2>'+str(manifest['row_count'])+' 条临床登记关联</h2><div class="filter-chips">'+chips+'</div><p>包含来源链接、源更新日期、抓取时间及批次。导出结果固定为本次数据库读取快照，不随后续抓取变化。</p><div class="export-actions"><a class="button" href="/market/export-file?id='+ident+'&amp;file=observations.csv">下载 CSV</a><a class="button secondary" href="/market/export-file?id='+ident+'&amp;file=manifest.json">下载校验清单</a></div><p class="muted">CSV · '+format(size,'.1f')+' KiB · UTF-8 · 可在电子表格中查看</p></section>'
+ body+='<section class="card"><h2>快照与完整性</h2><dl class="snapshot-facts"><dt>生成时间</dt><dd><time title="'+esc(manifest['created'])+'" datetime="'+esc(manifest['created'])+'">'+esc(created)+'</time></dd><dt>快照编号</dt><dd class="ref">'+esc(ident)+'</dd><dt>CSV SHA-256</dt><dd class="ref">'+esc(manifest['sha256'])+'</dd></dl><p class="data-note">下载时校验已保存文件与清单；校验失败的附件会被拒绝提供。</p></section></div>'
+ return body+'<p class="notice">导出内容是公开临床登记关联，包含历史记录；不确认药物权益、完整管线或临床结局成功。</p>'
