@@ -67,7 +67,7 @@ def test_empty_state_has_labeled_compact_filters_and_no_invented_results(app):
     assert not cards(body)
     assert '全市场完整管线' in body and '权益与授权地域均待核对' in body
     assert doc.find('form', action='/assets', method='get')
-    assert {label['for'] for label in doc.find('label')} == {'asset-company', 'asset-query', 'asset-role', 'asset-company-search'}
+    assert {label['for'] for label in doc.find('label')} == {'asset-company', 'asset-query', 'asset-role', 'asset-company-search', 'asset-company-market'}
     assert doc.find('select', id='asset-company')[0]['required'] is None
     assert not doc.find('script') and not doc.find('table')
 
@@ -613,3 +613,40 @@ def test_unsupported_new_filters_fail_explicitly(app, params, message):
     cid = company(app)
     with pytest.raises(ValueError, match=message):
         render(app, {'company': cid, **params})
+
+
+def test_company_market_is_exact_bounded_and_preserved_through_directory_paging(app):
+    seed_company_directory(app, 20)
+    app.market.add_company('HK', '1234', 'Directory HK', ['HK sponsor'], 'Synthetic fixture')
+    app.market.add_company('A', '600001', 'Directory A', ['A sponsor'], 'Synthetic fixture')
+    body = render(app, {'company_market': 'US', 'company_q': 'Directory'})
+    assert len(company_cards(body)) == 18
+    assert all(row['data-company-id'].startswith('US:') for row in company_cards(body))
+    next_query = filters_from_link(Document(body).find('a', rel='next')[0])
+    assert next_query == {'company_market': 'US', 'company_q': 'Directory', 'company_offset': '18'}
+    last = render(app, next_query)
+    selected = next(link for link in Document(last).find('a') if link.get('href', '').startswith('/assets?company='))
+    selected_body = render(app, filters_from_link(selected))
+    assert Document(selected_body).find('input', name='company_market')[0]['value'] == 'US'
+    assert Document(selected_body).find('a', href='/assets?company_market=US&company_q=Directory&company_offset=18')
+    chips = Document(body).find('a', **{'class': 'asset-clear-chip'})
+    assert {link['href'] for link in chips} == {'/assets?company_market=US', '/assets?company_q=Directory'}
+    with pytest.raises(ValueError, match='未知的公司入口市场'):
+        render(app, {'company_market': '<script>'})
+
+
+def test_company_query_range_is_collapsed_and_asset_history_links_are_scoped(app):
+    cid = company(app)
+    put_attempt(app, cid, 'failed', 'failed', error='Retained synthetic reason')
+    directory = render(app, {})
+    folds = Document(directory).find('details', **{'class': 'source-details company-state-details'})
+    assert len(folds) == 1 and 'open' not in folds[0]
+    assert 'Retained synthetic reason' in directory and '失败或不完整结果不能解释为没有管线' in directory
+    put_trial(app)
+    selected = render(app, {'company': cid, 'q': 'Synthetic', 'company_market': 'US'})
+    doc = Document(selected)
+    assert doc.find('a', href='/market?company=US%3AONE&q=NCT00000001#market-changes')
+    card = cards(selected)[0]
+    permalink = next(a for a in doc.find('a') if urlsplit(a.get('href', '')).fragment == card['id'])
+    assert filters_from_link(permalink)['company_market'] == 'US'
+    assert doc.find('details', id='asset-evidence-' + card['id'].removeprefix('asset-'))

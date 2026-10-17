@@ -155,3 +155,144 @@ def test_visible_scroll_guidance_describes_result_region(synthetic_market):
     assert 'sr-only' not in cue['class']
     assert '横向滚动表格' in source
     assert '2026-10-17 09:02 UTC+8' in source
+
+
+def links(markup, **required):
+    return [attrs for tag, attrs in markup.tags if tag == 'a' and all(attrs.get(key) == value for key, value in required.items())]
+
+
+def params(link):
+    return {key: value[0] for key, value in parse_qs(urlsplit(link['href']).query).items()}
+
+
+def trial_cards(markup):
+    return [attrs for tag, attrs in markup.tags if tag == 'article' and attrs.get('class') == 'card market-trial-card']
+
+
+def test_cards_are_fifty_collapsed_records_with_filter_preserving_navigation(synthetic_market):
+    app, _ = synthetic_market
+    filters = {'market': 'US', 'company': 'US:TEST', 'q': 'Synthetic condition', 'phase': 'PHASE3',
+               'status': 'TERMINATED', 'view': 'cards'}
+    body = render(app, {**filters, 'ignored': 'untrusted'})
+    markup = Markup(body)
+    assert len(trial_cards(markup)) == 50 and '每页 50 条' in body
+    assert not any(tag == 'table' and attrs.get('class') == 'clinical-table' for tag, attrs in markup.tags)
+    assert all('open' not in attrs for tag, attrs in markup.tags if tag == 'details')
+    assert '来源更新时间' in body and '已记录 SHA-256' in body and '本页未重新验证原件' in body
+    assert params(links(markup, rel='next')[0]) == {**filters, 'offset': '50'}
+    second = Markup(render(app, {**filters, 'offset': '50'}))
+    assert not ({card['id'] for card in trial_cards(markup)} & {card['id'] for card in trial_cards(second)})
+    assert params(links(second, rel='prev')[0]) == {**filters, 'offset': '0'}
+    query = next(form for form in markup.forms if form['attrs'].get('action') == '/market')
+    assert query['inputs']['view'] == 'cards'
+    export = next(form for form in markup.forms if form['attrs'].get('action') == '/market/export')
+    assert export['inputs'] == {**{key: value for key, value in filters.items() if key != 'view'}, 'token': app.token}
+
+
+@pytest.mark.parametrize('view,offset,start,expected', [('table', '1', '1', 200), ('table', '201', '201', 5),
+                                                      ('cards', '49', '1', 50), ('cards', '51', '51', 50),
+                                                      ('cards', '999999', '201', 5)])
+def test_view_offsets_align_and_saved_links_clamp_to_available_page(synthetic_market, view, offset, start, expected):
+    app, _ = synthetic_market
+    body = render(app, {'company': 'US:TEST', 'view': view, 'offset': offset})
+    assert f'显示 {start}–' in body
+    if view == 'cards':
+        assert len(trial_cards(Markup(body))) == expected
+    else:
+        assert '每页 200 条' in body
+
+
+def test_view_switch_and_removable_chips_keep_only_supported_context(synthetic_market):
+    app, _ = synthetic_market
+    filters = {'market': 'US', 'company': 'US:TEST', 'q': 'Synthetic', 'phase': 'PHASE3',
+               'status': 'TERMINATED', 'view': 'cards'}
+    body = render(app, {**filters, 'offset': '50', 'return_to': 'https://evil.test'})
+    markup = Markup(body)
+    chips = links(markup, **{'class': 'asset-clear-chip'})
+    assert len(chips) == 5
+    for link in chips:
+        values = params(link)
+        assert len(set(filters) - set(values)) == 1 and values['view'] == 'cards'
+        assert 'offset' not in values and 'return_to' not in values
+    nav = body.split('aria-label="登记结果展示方式"', 1)[1].split('</nav>', 1)[0]
+    modes = links(Markup('<nav' + nav + '</nav>'))
+    table = next(link for link in modes if 'view' not in params(link))
+    assert params(table) == {key: value for key, value in {**filters, 'offset': '0'}.items() if key != 'view'}
+    clear = links(markup, **{'class': 'text-action'})[0]
+    assert params(clear) == {'company': 'US:TEST', 'view': 'cards'}
+    assert links(markup, href='#market-results') and links(markup, href='#market-changes')
+
+
+@pytest.mark.parametrize('view', ['table', 'cards'])
+def test_legacy_missing_json_keys_keep_local_trial_readable_without_fake_source(synthetic_market, view):
+    app, market = synthetic_market
+    with market.db() as db:
+        db.execute("DELETE FROM trials WHERE nct!='NCT00000000'")
+        db.execute('UPDATE trials SET data=?', (json.dumps({'interventions': [{'name': 'Legacy original', 'arm_roles': ['ACTIVE_COMPARATOR']}]}),))
+    body = render(app, {'company': 'US:TEST', 'view': view})
+    markup = Markup(body)
+    assert '试验标题未记载' in body and '未提供适应症' in body and '未知' in body
+    assert 'Legacy original' in body and 'ACTIVE_COMPARATOR' in body
+    assert not any(link.get('href', '').startswith('https://clinicaltrials.gov') for link in links(markup))
+    assert links(markup, href='/assets?company=US%3ATEST&q=NCT00000000')
+    assert links(markup, href='/market?company=US%3ATEST&q=NCT00000000#market-changes')
+
+
+@pytest.mark.parametrize('url,accepted', [('https://clinicaltrials.gov/study/NCT00000000', True),
+                                        ('https://clinicaltrials.gov/study/NCT00000001', False),
+                                        ('https://clinicaltrials.gov.evil.test/study/NCT00000000', False),
+                                        ('https://clinicaltrials.gov/study/NCT00000000?changed=1', False)])
+def test_trial_external_link_must_match_actual_row_nct(synthetic_market, url, accepted):
+    app, market = synthetic_market
+    with market.db() as db:
+        db.execute("DELETE FROM trials WHERE nct!='NCT00000000'")
+        data = json.loads(db.execute('SELECT data FROM trials').fetchone()[0])
+        data['source_url'] = url
+        db.execute('UPDATE trials SET data=?', (json.dumps(data),))
+    body = render(app, {'view': 'cards'})
+    assert bool(links(Markup(body), href=url)) is accepted
+    assert url in body
+
+
+def test_history_filters_company_and_exact_nct_before_limit_and_keeps_deleted_fields(synthetic_market):
+    app, market = synthetic_market
+    market.add_company('HK', '1234', 'Other issuer', ['Other sponsor'], 'Synthetic history fixture')
+    with market.db() as db:
+        for index in range(15):
+            db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',
+                       ('other-' + str(index), 'HK:01234', 'NCT99999999', '2099-01-01', None, json.dumps({'unrelated': index}), 'other-run'))
+        db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',
+                   ('wanted', 'US:TEST', 'NCT00000001', '2020-01-01', json.dumps({'removed_key': 'original'}), json.dumps({'added_key': 'revised'}), 'wanted-run'))
+        db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',
+                   ('different-nct', 'US:TEST', 'NCT00000002', '2021-01-01', None, json.dumps({'other_trial': 'retained'}), 'different-run'))
+    body = render(app, {'company': 'US:TEST', 'q': 'NCT00000001', 'phase': 'PHASE3'})
+    history = body.split('id="market-changes"', 1)[1].split('数据更新与来源', 1)[0]
+    assert '已存 1 条' in history and 'wanted-run' in history
+    assert 'other-run' not in history and 'different-run' not in history
+    assert 'removed_key' in history and 'added_key' in history
+    assert '普通关键词、阶段和登记状态未用于历史重建' in history
+    assert body.index('最近登记变化') < body.index('数据更新与来源')
+    ordinary = render(app, {'company': 'US:TEST', 'q': 'Synthetic', 'status': 'TERMINATED'})
+    ordinary_history = ordinary.split('id="market-changes"', 1)[1].split('数据更新与来源', 1)[0]
+    assert '已存 2 条' in ordinary_history and '首次观察' in ordinary_history
+
+
+def test_card_history_escape_and_render_stays_read_only(synthetic_market):
+    app, market = synthetic_market
+    attack = '\"><script>evil()</script><img src=x onerror=evil()>'
+    with market.db() as db:
+        db.execute("DELETE FROM trials WHERE nct!='NCT00000000'")
+        data = json.loads(db.execute('SELECT data FROM trials').fetchone()[0])
+        data.update(title=attack, interventions=[{'name': attack, 'arm_roles': [attack]}])
+        db.execute('UPDATE trials SET data=?', (json.dumps(data),))
+        db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)', ('unsafe', 'US:TEST', 'NCT00000000', '2020-01-01', 'malformed <script>', json.dumps({'value': attack}), attack))
+        before = list(db.iterdump())
+    body = render(app, {'company': 'US:TEST', 'view': 'cards', 'q': '<script>'})
+    markup = Markup(body)
+    assert '&lt;script&gt;' in body and '无法解析' in body
+    assert not any(tag in ('script', 'img') for tag, _ in markup.tags)
+    assert not any(key.startswith('on') for _, attributes in markup.tags for key in attributes)
+    with market.db() as db:
+        assert list(db.iterdump()) == before
+    with pytest.raises(ValueError, match='未知的登记展示方式'):
+        render(app, {'view': 'script'})

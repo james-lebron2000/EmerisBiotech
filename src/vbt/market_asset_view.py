@@ -11,6 +11,7 @@ from .market_assets import build_assets
 
 PAGE_SIZE = 50
 COMPANY_PAGE_SIZE = 18
+MARKETS = {'US': '美股', 'A': 'A 股', 'HK': '港股'}
 ROLES = {'experimental_arm': '在实验组中出现', 'comparator_only': '仅在比较组中出现',
          'unresolved': '用药角色待核对'}
 FRESH = {'seen_in_latest': '最新完整抓取中可见', 'not_seen_in_latest': '仅保留于历史观察',
@@ -86,7 +87,9 @@ def _source(source, company=None):
              '<section class="asset-source"><h4>', _source_link(source), '</h4>',
              '<p class="cell-meta">上方链接为外部当前页面，内容可能已更新；以下保留本地登记观察。</p>',
              ('<p><a class="text-link" href="/market?' + e(urlencode({'company': company, 'q': source.get('nct', '')}))
-              + '">查看本地已存观察 →</a></p>') if company else '',
+              + '">查看本地已存观察 →</a> · <a class="text-link" href="/market?'
+              + e(urlencode({'company': company, 'q': source.get('nct', '')}))
+              + '#market-changes">核对该试验登记变更 →</a></p>') if company else '',
              '<p class="trial-title">', e(source.get('title') or '试验标题未记载'), '</p>',
              '<dl class="source-meta">',
              _fact('登记申办方', e(source.get('sponsor'))),
@@ -111,13 +114,13 @@ def _source(source, company=None):
     return ''.join(parts)
 
 
-def _card(asset):
+def _card(asset, location=''):
     role = ROLES.get(asset.get('role_status'), ROLES['unresolved'])
     freshness = FRESH.get(asset.get('freshness'), FRESH['unknown'])
     retained = len(asset.get('retained_trials', []))
     history = ('<p class="data-note">其中 ' + str(retained)
                + ' 项试验仅保留于历史观察；未在最近完整批次中出现不代表试验终止。</p>') if retained else ''
-    return ('<article class="card asset-card" aria-labelledby="asset-name-' + e(asset['id']) + '"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3 id="asset-name-' + e(asset['id']) + '">'
+    return ('<article id="asset-' + e(asset['id']) + '" class="card asset-card" aria-labelledby="asset-name-' + e(asset['id']) + '"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3 id="asset-name-' + e(asset['id']) + '">'
             + e(asset['drug_name']) + '</h3></div><span class="status-badge caution">权益待核对</span></div>'
             + '<div class="asset-badges"><span class="status-badge">' + e(role)
             + '</span><span class="status-badge">' + str(len(asset['trials'])) + ' 项登记试验</span></div>'
@@ -126,13 +129,19 @@ def _card(asset):
             + _fact('适应症原文', _conditions(asset['conditions']))
             + _fact('来源更新时间', _timestamp(asset.get('source_updated')))
             + _fact('批次可见性', e(freshness)) + '</dl>' + history
-            + '<details class="asset-evidence"><summary>逐项核对 ' + str(len(asset['sources']))
+            + ('<p class="cell-meta"><a href="' + e(location + '#asset-' + asset['id']) + '">定位此名称卡</a></p>' if location else '')
+            + '<details class="asset-evidence" id="asset-evidence-' + e(asset['id']) + '"><summary>逐项核对 ' + str(len(asset['sources']))
             + ' 条试验依据 · ClinicalTrials.gov</summary>'
             + ''.join(_source(source, asset['company']) for source in asset['sources']) + '</details></article>')
 
 
 def _company_context(q):
     result = {}
+    market = q.get('company_market', '')
+    if market and market not in MARKETS:
+        raise ValueError('未知的公司入口市场')
+    if market:
+        result['company_market'] = market
     term = q.get('company_q', '').strip()
     if term:
         result['company_q'] = term
@@ -203,6 +212,7 @@ def _collection_note(count, attempt, uncertain=False):
 def _company_directory(market, companies, q):
     context = _company_context(q)
     term = context.get('company_q', '')
+    market_filter = context.get('company_market', '')
     def searchable(company):
         try:
             aliases = json.loads(company.get('aliases', '[]'))
@@ -210,21 +220,33 @@ def _company_directory(market, companies, q):
         except (TypeError, ValueError):
             aliases = []
         return ' '.join([company['name'], company['id']] + aliases).casefold()
-    selected = [company for company in companies if term.casefold() in searchable(company)]
+    selected = [company for company in companies if (not market_filter or company['market'] == market_filter)
+                and term.casefold() in searchable(company)]
     offset = min(context.get('company_offset', 0), max(0, (len(selected) - 1) // COMPANY_PAGE_SIZE * COMPANY_PAGE_SIZE))
-    context = {**({'company_q': term} if term else {}), **({'company_offset': offset} if offset else {})}
+    context = {**({'company_market': market_filter} if market_filter else {}),
+               **({'company_q': term} if term else {}), **({'company_offset': offset} if offset else {})}
     counts, latest, uncertain, active = _company_observations(market)
     body = ('<section aria-labelledby="company-directory-title"><div class="section-heading"><div>'
             '<h2 id="company-directory-title">先选择一家证券主体</h2><p class="cell-meta">'
             + str(len(companies)) + ' 家已配置证券主体 · 公司名称、代码及已存申办方均可搜索</p></div>'
             '<a class="text-link" href="/coverage">查看未关联候选与缺口 →</a></div>'
-            '<section class="card filter-toolbar"><form method="get" action="/assets" aria-label="搜索公司入口">'
+            '<section class="card filter-toolbar company-directory-filter"><form method="get" action="/assets" aria-label="搜索公司入口">'
             '<div class="form-grid"><div class="field field-search"><label for="asset-company-search">公司名称、证券代码或申办方</label>'
             '<input id="asset-company-search" type="search" name="company_q" value="' + e(term)
-            + '" placeholder="例如 恒瑞、US:PFE、Pfizer"></div></div><div class="filter-actions">'
+            + '" placeholder="例如 恒瑞、US:PFE、Pfizer"></div><div class="field"><label for="asset-company-market">上市市场</label>'
+            '<select id="asset-company-market" name="company_market"><option value="">全部市场</option>'
+            + ''.join('<option value="' + key + '"' + (' selected' if key == market_filter else '') + '>' + label + '</option>' for key, label in MARKETS.items())
+            + '</select></div></div><div class="filter-actions">'
             '<button type="submit">查找公司</button><a class="text-action" href="/assets">显示全部公司</a></div></form></section>'
             '<p class="data-note">公司入口只读取当前已存记录。已存登记试验数、最新查询尝试与排队状态分别展示，'
             '缺失批次保留未知；此处不代表全市场完整管线。<a href="/coverage#collection-queue">查看采集任务与错误 →</a></p>')
+    if term or market_filter:
+        body += '<nav class="filter-chips" aria-label="公司入口筛选">'
+        if term:
+            body += '<a class="asset-clear-chip" href="' + e(_filter_url({'company_market': market_filter})) + '">移除公司搜索：' + e(term) + ' ×</a>'
+        if market_filter:
+            body += '<a class="asset-clear-chip" href="' + e(_filter_url({'company_q': term})) + '">移除市场：' + e(MARKETS[market_filter]) + ' ×</a>'
+        body += '</nav>'
     if not selected:
         return body + ('<div class="empty"><h3>' + ('没有匹配的已配置公司' if companies else '尚未配置可浏览公司')
                        + '</h3><p>可调整搜索词，或到覆盖页面核对尚未建立申办方关联的主体。没有入口不表示公司没有管线。</p></div></section>')
@@ -249,9 +271,12 @@ def _company_directory(market, companies, q):
                           _timestamp(attempt.get('finished') or attempt.get('started')))
         else:
             body += _fact('最近查询时间', '未知')
-        body += '</dl><p class="data-note">' + e(_collection_note(count, attempt, unknown)) + '</p>'
+        body += ('</dl><details class="source-details company-state-details"><summary>'
+                 + ('查询失败或不完整 · 查看原因与范围' if attempt and attempt.get('status') in ('failed', 'partial', 'interrupted', 'cancelled') else '核对查询范围与记录边界')
+                 + '</summary><p class="data-note">' + e(_collection_note(count, attempt, unknown)) + '</p>')
         if attempt and attempt.get('error') and not unknown:
-            body += '<details class="source-details"><summary>查看最近查询原因</summary><p class="body">' + e(attempt['error']) + '</p></details>'
+            body += '<p class="body">最近查询原因：' + e(attempt['error']) + '</p>'
+        body += '</details>'
         body += ('<div class="primary-actions"><a class="button small" href="' + e(target)
                  + '">研究登记用药</a><a class="text-link" href="/market?' + e(urlencode({'company': cid}))
                  + '">登记记录 →</a></div></article>')
@@ -261,7 +286,8 @@ def _company_directory(market, companies, q):
         for present, step, label, rel in [(offset > 0, max(0, offset - COMPANY_PAGE_SIZE), '← 上一页公司', 'prev'),
                                            (offset + COMPANY_PAGE_SIZE < len(selected), offset + COMPANY_PAGE_SIZE, '下一页公司 →', 'next')]:
             if present:
-                params = {**({'company_q': term} if term else {}), 'company_offset': step}
+                params = {**({'company_market': market_filter} if market_filter else {}),
+                          **({'company_q': term} if term else {}), 'company_offset': step}
                 body += '<a class="button secondary small" rel="' + rel + '" href="/assets?' + e(urlencode(params)) + '">' + label + '</a>'
         body += '</nav>'
     return body + '</section>'
@@ -296,7 +322,8 @@ def _company_research_context(market, cid):
 def _filter_url(filters, **changes):
     """All links keep the current company/context; changed filters start at page one."""
     params = {**filters, **changes}
-    return '/assets?' + urlencode({key: value for key, value in params.items() if value != '' and value is not None})
+    encoded = urlencode({key: value for key, value in params.items() if value != '' and value is not None})
+    return '/assets' + ('?' + encoded if encoded else '')
 
 
 def render(app, q):
@@ -420,7 +447,7 @@ def render(app, q):
         body += ('<div class="asset-result-toolbar"><p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
                  + ' 个名称，共 ' + str(len(selected)) + ' 个。展开卡片查看每项试验的原文、日期与校验值。</p>'
                  '<span class="cell-meta">' + e(SORTS[sort]) + ' · 本地已存观察</span></div>'
-                 '<div class="asset-grid">' + ''.join(_card(asset) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
+                 '<div class="asset-grid">' + ''.join(_card(asset, _filter_url(filters, offset=offset)) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
     elif assets:
         body += ('<div class="empty"><h3>当前筛选无匹配</h3><p>该公司已有 ' + str(len(assets))
                  + ' 个登记名称，当前条件未命中。<a href="' + e(clear_url) + '">清除该公司筛选 →</a>'
