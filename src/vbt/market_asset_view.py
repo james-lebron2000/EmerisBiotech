@@ -1,28 +1,206 @@
-"""Company-level drug/trial candidate exploration; ownership always unresolved."""
+"""Read-only intervention leads with explicit registry and ownership boundaries."""
 import html
-from urllib.parse import urlencode
+import re
+from datetime import date, datetime, timedelta, timezone
+from urllib.parse import urlencode, urlsplit
+
 from .market import Market
 from .market_assets import build_assets
 
-def e(value):return html.escape(str(value if value is not None else '未知'),quote=True)
-ROLES={'experimental_arm':'在实验组中出现','comparator_only':'仅在比较组中出现','unresolved':'用药角色待核对'}
-FRESH={'seen_in_latest':'最新完整抓取中可见','not_seen_in_latest':'仅保留于历史观察','unknown':'批次关联尚未建立'}
 
-def render(app,q):
- m=Market(app.workspace,app.state);companies=sorted(m.rows('companies'),key=lambda c:c['id']);cid=q.get('company','');query=q.get('q','').strip().casefold();role=q.get('role','')
- body='<div class="eyebrow">DRUG · INDICATION · TRIAL</div><h1>候选药物与试验关联</h1><p class="lead">按公司查看药物名称、适应症和阶段，并展开原始试验依据。</p><p><a href="/coverage">覆盖进度与缺口 →</a> · <a href="/market">临床登记检索 →</a></p><div class="notice">药物名称按原文精确归并，尚未合并所有研发代号与通用名。实验组中出现的药物也可能是标准治疗或联合用药；药物所有权及授权地域均待核对。</div><form class="card"><label for="asset-company">公司</label><select id="asset-company" name="company" required><option value="">请选择公司</option>'+''.join('<option '+('selected ' if cid==c['id'] else '')+'value="'+e(c['id'])+'">'+e(c['name']+' · '+c['id'])+'</option>' for c in companies)+'</select><label for="asset-query">药物、试验或适应症</label><input id="asset-query" name="q" value="'+e(q.get('q',''))+'"><label for="asset-role">用药角色</label><select id="asset-role" name="role"><option value="">全部角色</option>'+''.join('<option '+('selected ' if role==key else '')+'value="'+key+'">'+label+'</option>' for key,label in ROLES.items())+'</select><p><button>查看药物关联</button></p></form>'
- if not cid:return body+'<div class="empty">选择一家已配置公司，查看候选药物及其对应的试验。尚未配置的公司可在覆盖页面查看缺口。</div>'
- if not any(c['id']==cid for c in companies):raise ValueError('公司尚未配置')
- assets=build_assets(m,cid);selected=[r for r in assets if (not role or r['role_status']==role) and (not query or query in (' '.join([r['drug_name']]+r['trials']+r['conditions'])).casefold())]
- try:offset=max(0,int(q.get('offset',0)))
- except ValueError:offset=0
- body+='<h2>'+e(next(c['name'] for c in companies if c['id']==cid))+' · '+str(len(selected))+' 个名称关联</h2><p>同一药物的不同剂量、剂型或研发代号可能仍分开列出，不能将名称数量当作独立资产数量。</p>'
- for r in selected[offset:offset+50]:
-  body+='<article class="card"><span class="badge">权益待核对</span> <span class="badge">'+e(ROLES[r['role_status']])+'</span><h2>'+e(r['drug_name'])+'</h2><p>'+str(len(r['trials']))+' 项登记试验 · 观察到的试验阶段：'+e(' / '.join(r['phases']) or '未分期')+'</p><p>适应症原文：'+e(' / '.join(r['conditions']))+'</p><p>'+e(FRESH[r['freshness']])+' · 来源最近更新 '+e(r['source_updated'])+'</p><details><summary>查看逐项试验与关联依据</summary><table><tr><th>试验</th><th>用药角色 / 状态</th><th>阶段 / 适应症</th><th>日期与批次</th></tr>'
-  for source in r['sources']:
-   body+='<tr><td><a href="'+e(source['url'])+'" target="_blank" rel="noopener">'+e(source['nct'])+' ↗</a><p>'+e(source.get('title',''))+'</p></td><td>'+e(' / '.join(source['arm_roles']) or '角色未记载')+'<p>'+e(source.get('status',''))+'</p></td><td>'+e(' / '.join(source.get('phases',[])))+'<p>'+e(' / '.join(source.get('conditions',[])))+'</p></td><td>'+e(source['source_updated'])+'<p>'+e(FRESH[source['freshness']])+'</p><span class="ref">'+e(source['last_run'])+'</span></td></tr>'
-  body+='</table></details></article>'
- if not selected:body+='<div class="empty">没有匹配的已验收药物名称关联。尚未采集、查询零条或分页未完成都可能导致此处为空；请查看覆盖页状态。</div>'
- if offset:body+='<a href="/assets?'+e(urlencode({**q,'offset':max(0,offset-50)}))+'">← 上一页</a> '
- if offset+50<len(selected):body+='<a href="/assets?'+e(urlencode({**q,'offset':offset+50}))+'">下一页 →</a>'
- return body
+PAGE_SIZE = 50
+ROLES = {'experimental_arm': '在实验组中出现', 'comparator_only': '仅在比较组中出现',
+         'unresolved': '用药角色待核对'}
+FRESH = {'seen_in_latest': '最新完整抓取中可见', 'not_seen_in_latest': '仅保留于历史观察',
+         'unknown': '批次关联尚未建立'}
+ATTEMPTS = {'succeeded': '查询完成', 'failed': '失败', 'partial': '分页未完成',
+            'interrupted': '中断', 'cancelled': '已取消', 'running': '进行中', 'queued': '已排队'}
+
+
+def e(value):
+    return html.escape(str(value if value is not None else '未记载'), quote=True)
+
+
+def _joined(values, empty='未记载'):
+    return e(' / '.join(str(value) for value in values) if values else empty)
+
+
+def _timestamp(value):
+    if not value:
+        return '<span class="cell-meta">未记载</span>'
+    raw = str(value)
+    try:
+        compact = date.fromisoformat(raw).strftime('%Y-%m-%d')
+    except ValueError:
+        try:
+            parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+        except ValueError:
+            return '<span class="cell-meta">' + e(raw) + '</span>'
+        if parsed.tzinfo is not None and parsed.utcoffset() is not None:
+            compact = parsed.astimezone(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M') + ' UTC+8'
+        else:
+            compact = parsed.strftime('%Y-%m-%d %H:%M') + ' · 时区未提供'
+    return '<time datetime="' + e(raw) + '" title="' + e(raw) + '">' + e(compact) + '</time>'
+
+
+def _source_link(source):
+    """Only link the expected public registry record; imports remain untrusted."""
+    raw, nct = source.get('url'), source.get('nct')
+    try:
+        parsed = urlsplit(str(raw))
+        valid = (parsed.scheme == 'https' and parsed.netloc == 'clinicaltrials.gov'
+                 and re.fullmatch(r'NCT[0-9]{8}', str(nct))
+                 and parsed.path == '/study/' + str(nct) and not parsed.query and not parsed.fragment)
+    except ValueError:
+        valid = False
+    if valid:
+        return ('<a class="source-link" href="' + e(raw)
+                + '" target="_blank" rel="noopener noreferrer">' + e(nct) + ' ↗</a>')
+    return '<span>' + e(nct) + '</span><span class="cell-meta"> · 来源链接待核对</span>'
+
+
+def _fact(label, value):
+    # Values are already rendered, escaped HTML from this module.
+    return '<dt>' + e(label) + '</dt><dd>' + value + '</dd>'
+
+
+def _conditions(values):
+    if len(values) <= 3:
+        return _joined(values)
+    return (_joined(values[:2]) + '<details class="asset-provenance"><summary>查看全部 '
+            + str(len(values)) + ' 个适应症原文</summary><p>' + _joined(values) + '</p></details>')
+
+
+def _source(source):
+    freshness = FRESH.get(source.get('freshness'), FRESH['unknown'])
+    role = ROLES.get(source.get('role_status'), ROLES['unresolved'])
+    parts = ['<section class="asset-source"><h4>', _source_link(source), '</h4>',
+             '<p class="trial-title">', e(source.get('title') or '试验标题未记载'), '</p>',
+             '<dl class="source-meta">',
+             _fact('登记申办方', e(source.get('sponsor'))),
+             _fact('用药角色', e(role) + '<div class="cell-meta">原文：' + _joined(source.get('arm_roles')) + '</div>'),
+             _fact('试验状态原文', e(source.get('status'))),
+             _fact('试验阶段原文', _joined(source.get('phases'), '未分期或未记载')),
+             _fact('适应症原文', _joined(source.get('conditions'))),
+             _fact('来源更新时间', _timestamp(source.get('source_updated'))),
+             _fact('本地观测时间', _timestamp(source.get('observed'))),
+             _fact('批次可见性', e(freshness)), '</dl>',
+             '<details class="asset-provenance"><summary>查看原文名称、批次与校验值</summary>',
+             '<dl class="source-meta">',
+             _fact('用药名称原文', _joined(source.get('intervention_names'))),
+             _fact('记录来源', e(source.get('url'))),
+             _fact('数据 SHA-256', '<code>' + e(source.get('data_sha256')) + '</code>'),
+             _fact('本条来源批次', '<code>' + e(source.get('last_run')) + '</code>'),
+             _fact('最近完整批次', '<code>' + e(source.get('latest_run')) + '</code>'),
+             _fact('最近查询尝试', e(ATTEMPTS.get(source.get('latest_attempt_status'), source.get('latest_attempt_status') or '未记载'))),
+             _fact('首次观测时间', _timestamp(source.get('first_seen'))),
+             _fact('最近观测时间', _timestamp(source.get('last_seen'))),
+             '</dl></details></section>']
+    return ''.join(parts)
+
+
+def _card(asset):
+    role = ROLES.get(asset.get('role_status'), ROLES['unresolved'])
+    freshness = FRESH.get(asset.get('freshness'), FRESH['unknown'])
+    retained = len(asset.get('retained_trials', []))
+    history = ('<p class="data-note">其中 ' + str(retained)
+               + ' 项试验仅保留于历史观察；未在最近完整批次中出现不代表试验终止。</p>') if retained else ''
+    return ('<article class="card asset-card"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3>'
+            + e(asset['drug_name']) + '</h3></div><span class="status-badge caution">权益待核对</span></div>'
+            + '<div class="asset-badges"><span class="status-badge">' + e(role)
+            + '</span><span class="status-badge">' + str(len(asset['trials'])) + ' 项登记试验</span></div>'
+            + '<dl class="asset-facts">'
+            + _fact('试验阶段原文', _joined(asset['phases'], '未分期或未记载'))
+            + _fact('适应症原文', _conditions(asset['conditions']))
+            + _fact('来源更新时间', _timestamp(asset.get('source_updated')))
+            + _fact('批次可见性', e(freshness)) + '</dl>' + history
+            + '<details class="asset-evidence"><summary>逐项核对 ' + str(len(asset['sources']))
+            + ' 条试验依据 · ClinicalTrials.gov</summary>'
+            + ''.join(_source(source) for source in asset['sources']) + '</details></article>')
+
+
+def render(app, q):
+    market = Market(app.workspace, app.state)
+    companies = sorted(market.rows('companies'), key=lambda company: company['id'])
+    cid, query, role = q.get('company', ''), q.get('q', '').strip(), q.get('role', '')
+    if role and role not in ROLES:
+        raise ValueError('未知的用药角色')
+    selected_company = next((company for company in companies if company['id'] == cid), None)
+    if cid and selected_company is None:
+        raise ValueError('公司尚未配置')
+
+    body = ('<header class="page-header"><div><div class="eyebrow">CLINICAL ASSET RESEARCH</div>'
+            '<h1>临床资产研究</h1><p class="lead">从登记用药名称进入试验，逐项核对用药角色、阶段与来源依据。</p></div>'
+            '<div class="primary-actions"><a class="button secondary" href="/coverage">覆盖进度与缺口</a>'
+            '<a class="button secondary" href="/market">临床登记检索</a></div></header>'
+            '<p class="notice">来源为 ClinicalTrials.gov 的已存登记观测。名称按原文精确归并，研发代号与通用名可能分开列出。'
+            '名称数量不能当作独立资产数量；实验组用药可能包含标准治疗及联合用药，药物权益与授权地域均待核对。试验阶段保留原文，不推断药物最高研发阶段。</p>')
+    body += ('<section class="card filter-toolbar asset-filter" aria-labelledby="asset-filter-title">'
+             '<div class="section-heading"><h2 id="asset-filter-title">查找候选药物关联</h2>'
+             '<span class="cell-meta">只读查询 · ' + str(len(companies)) + ' 家已配置证券主体</span></div>'
+             '<form method="get" action="/assets" aria-labelledby="asset-filter-title">'
+             '<div class="form-grid" role="group" aria-label="候选药物筛选条件">'
+             '<div class="field field-company"><label for="asset-company">公司 / 证券代码</label>'
+             '<select id="asset-company" name="company" required><option value="">请选择公司</option>')
+    for company in companies:
+        body += ('<option value="' + e(company['id']) + '"' + (' selected' if cid == company['id'] else '')
+                 + '>' + e(company['name'] + ' · ' + company['id']) + '</option>')
+    body += ('</select></div><div class="field field-search"><label for="asset-query">药物名称、试验编号或适应症</label>'
+             '<input id="asset-query" type="search" name="q" value="' + e(query)
+             + '" placeholder="研发代号、NCT 编号、indication"></div>'
+             '<div class="field"><label for="asset-role">用药角色</label><select id="asset-role" name="role">'
+             '<option value="">全部角色</option>'
+             + ''.join('<option value="' + key + '"' + (' selected' if role == key else '') + '>' + label + '</option>'
+                       for key, label in ROLES.items()) + '</select></div></div><div class="filter-actions">'
+             '<button type="submit">查看关联</button><a class="text-action" href="/assets">清除筛选</a>'
+             '</div></form></section>')
+    if not cid:
+        return body + ('<section class="empty"><h2>先选择一家证券主体</h2>'
+                       '<p>选择公司后查看已采集的用药名称及对应试验。尚未配置的公司可在覆盖页面查看缺口；此页不代表全市场完整管线。</p></section>')
+
+    assets = build_assets(market, cid)
+    folded = query.casefold()
+    selected = [asset for asset in assets if (not role or asset['role_status'] == role)
+                and (not folded or folded in ' '.join([asset['drug_name']] + asset['trials'] + asset['conditions']).casefold())]
+    try:
+        offset = max(0, int(q.get('offset', 0)))
+    except (ValueError, TypeError):
+        offset = 0
+    # A saved URL still produces a useful last page when the result set shrinks.
+    offset = min(offset, max(0, (len(selected) - 1) // PAGE_SIZE * PAGE_SIZE))
+    trial_count = len({nct for asset in selected for nct in asset['trials']})
+    body += ('<section aria-labelledby="asset-results-title"><div class="section-heading">'
+             '<div><h2 id="asset-results-title">' + e(selected_company['name']) + '</h2>'
+             '<p class="cell-meta">' + e(cid) + ' · ClinicalTrials.gov 登记观测</p></div>'
+             '<a class="text-link" href="/market?' + e(urlencode({'company': cid})) + '">查看该公司登记记录 →</a></div>'
+             '<div class="metric-row" aria-label="当前筛选范围">'
+             '<div class="metric-card"><span class="muted">匹配名称</span><div class="metric">' + f'{len(selected):,}'
+             + '</div><small>公司全部 ' + f'{len(assets):,}' + ' 个登记名称中的筛选结果</small></div>'
+             '<div class="metric-card"><span class="muted">关联登记试验</span><div class="metric">' + f'{trial_count:,}'
+             + '</div><small>当前筛选内按 NCT 编号去重</small></div>'
+             '<div class="metric-card"><span class="muted">药物权益</span><div class="metric">待核对</div>'
+             '<small>登记角色不构成所有权或授权证据</small></div></div>')
+    if query or role:
+        body += '<div class="filter-chips" aria-label="当前筛选">'
+        if query:
+            body += '<span>关键词：' + e(query) + '</span>'
+        if role:
+            body += '<span>用药角色：' + e(ROLES[role]) + '</span>'
+        body += '</div>'
+    if selected:
+        body += ('<p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
+                 + ' 个名称，共 ' + str(len(selected)) + ' 个。展开卡片查看每项试验的原文、日期与校验值。</p>'
+                 '<div class="asset-grid">' + ''.join(_card(asset) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
+    else:
+        body += ('<div class="empty"><h3>没有匹配的登记名称关联</h3><p>尚未采集、查询零条或分页未完成都可能导致此处为空，'
+                 '不能据此判定公司没有研发管线。<a href="/coverage">查看覆盖状态与缺口 →</a></p></div>')
+    filters = {'company': cid, 'q': query, 'role': role}
+    if offset or offset + PAGE_SIZE < len(selected):
+        body += '<nav class="pagination" aria-label="候选药物结果分页">'
+        if offset:
+            body += '<a class="button secondary small" rel="prev" href="/assets?' + e(urlencode({**filters, 'offset': max(0, offset - PAGE_SIZE)})) + '">← 上一页</a>'
+        body += '<span class="cell-meta">每页最多 ' + str(PAGE_SIZE) + ' 个名称</span>'
+        if offset + PAGE_SIZE < len(selected):
+            body += '<a class="button secondary small" rel="next" href="/assets?' + e(urlencode({**filters, 'offset': offset + PAGE_SIZE})) + '">下一页 →</a>'
+        body += '</nav>'
+    return body + '</section>'

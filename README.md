@@ -46,6 +46,7 @@ uv run vbt --workspace "$PWD" portfolio build examples/portfolio_mvp.json --cata
 - [客户试用流程](docs/CUSTOMER_PILOT.md)
 - [本轮真实采集与界面验收](docs/MARKET_DISCLOSURES_ACCEPTANCE_2026-10-17.md)
 - [工作台 UI 迭代验收](docs/UI_REFRESH_2026-10-17.md)
+- [临床资产与研究历史 UI 验收](docs/UI_RESEARCH_WORKFLOW_2026-10-17.md)
 - [云部署与记录迁移](deploy/cloud/README.md)
 - [工作台说明](docs/WORKBENCH.md)
 - [研究快照、审查和恢复](docs/PORTFOLIO_MVP.md)
@@ -66,7 +67,7 @@ uv run pytest -q
 uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 ```
 
-2026-10-17 验收：macOS 上完整测试 **395 项通过**，包含真实 Seatbelt 执行边界；当前源码的本地 Docker 镜像另通过 **22 项隔离运行检查**。远端 HTTPS、认证网关及客户生产部署仍待验收。
+2026-10-17 UI 版验收：macOS 上完整测试 **435 项通过**，包含真实 Seatbelt 执行边界。先前容器构建通过 **22 项隔离运行检查**；本轮 UI 源码尚未重建容器镜像。远端 HTTPS、认证网关及客户生产部署仍待验收。
 
 本仓库不包含原始研究数据、实际运行输出、SQLite 数据库、个人笔记、访问密码或本机备份。工程测试通过不代表科学有效性、临床成功预测或投资盈利。
 

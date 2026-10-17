@@ -88,8 +88,8 @@ LABEL={'run':'分析运行','portfolio':'研究快照','cycle':'研究循环','s
 def badge(s):return f'<span class="badge {esc(s)}">{esc(LABEL.get(s,s))}</span>'
 def link(r):return '/record?kind='+r['kind']+'&id='+quote(r['id'])
 def table(records):
-    if not records:return '<div class="empty"><h3>这里还没有匹配的研究记录</h3><p>可以先体验内置回顾案例，或调整筛选条件查看已有历史。</p><a href="/case?id=osmr-uc">体验研究流程 →</a></div>'
-    return '<div class="scroll"><table><tr><th>研究与记录</th><th>类型</th><th>执行 / 记录状态</th><th>科学审查</th></tr>'+''.join(f'<tr><td><a href="{link(r)}">{esc(r["title"])}</a><div class="ref">{esc(r["id"])}</div></td><td>{LABEL[r["kind"]]}</td><td>{badge(r["status"])}</td><td>{badge(r["review"])}</td></tr>' for r in records)+'</table></div>'
+    from .history_view import record_table
+    return record_table(records)
 def page(app,path,q):
     records=app.records();body='';refresh=''
     if path=='/':
@@ -120,8 +120,8 @@ def page(app,path,q):
     elif path=='/mission':
         body=mission_page(app,records)
     elif path=='/records':
-        search=q.get('q','').lower();kind=q.get('kind','');filtered=[r for r in records if (not kind or r['kind']==kind) and search in (r['title']+' '+r['id']).lower()]
-        body='<h1>历史记录</h1><p class="sub">包含成功、失败和受阻记录；旧版本不会被新版本覆盖。</p><form><input type="search" name="q" placeholder="搜索研究问题或运行编号" value="'+esc(q.get('q',''))+'"> <select name="kind"><option value="">所有类型</option>'+''.join(f'<option value="{k}" '+('selected' if k==kind else '')+f'>{LABEL[k]}</option>' for k in ['run','cycle','portfolio'])+'</select> <button>筛选</button></form><div class="card">'+f'<p>{len(filtered)} 条记录</p>'+table(filtered)+'</div>'
+        from .history_view import render
+        body=render(records,q)
     elif path=='/record':
         r=app.record(q.get('kind'),q.get('id'))
         if not r:raise ValueError('记录不存在')
@@ -138,7 +138,7 @@ def page(app,path,q):
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))
     else:raise ValueError('页面不存在')
     if q.get('saved')=='1':body='<div class="success" role="status">'+('请求已受理。请查看数据源状态或抓取任务；后台抓取期间可刷新页面。' if path in ('/market','/coverage','/mapping','/disclosures') else '已保存。记录已追加，历史内容保持不变。')+'</div>'+body
-    if path not in ('/market','/coverage','/market/progress','/assets','/mapping','/market/export','/disclosures') and (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
+    if path not in ('/','/market','/coverage','/market/progress','/assets','/mapping','/market/export','/disclosures') and (app.workspace/'cache-info.json').exists():body='<div class="notice"><strong>历史研究记录的备份范围</strong><p>'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</p></div>'+body
     return frame(body,path,refresh)
 
 def entries(rows):
