@@ -12,7 +12,7 @@ URLS={
 }
 URLS['STAR']=URLS['SH'].replace('STOCK_TYPE=1','STOCK_TYPE=8')
 ALLOWED={urlsplit(u).hostname for u in URLS.values()}|{'clinicaltrials.gov'}
-FIELDS='NCTId,BriefTitle,LeadSponsorName,Phase,OverallStatus,Condition,InterventionType,InterventionName,PrimaryCompletionDate,LastUpdatePostDate,StudyType'
+FIELDS='NCTId,BriefTitle,LeadSponsorName,Phase,OverallStatus,Condition,InterventionType,InterventionName,protocolSection.armsInterventionsModule,PrimaryCompletionDate,LastUpdatePostDate,StudyType'
 def validate_url(url):
  p=urlsplit(url)
  if p.scheme!='https' or p.hostname not in ALLOWED or p.username or p.password or p.port not in (None,443):raise ValueError('Source URL rejected')
@@ -98,6 +98,12 @@ def parse_trials(raw,aliases):
   if sponsor.casefold().strip() not in {s.casefold().strip() for s in aliases}:continue
   interventions=[{'name':x['name'],'type':x['type']} for x in p.get('armsInterventionsModule',{}).get('interventions',[]) if x.get('type') in ('DRUG','BIOLOGICAL') and x.get('name')]
   if not interventions:continue
+  arms=p.get('armsInterventionsModule',{})
+  by_label={a.get('label'):a.get('type') for a in arms.get('armGroups',[]) if a.get('label')}
+  for item in interventions:
+   original=next((x for x in arms.get('interventions',[]) if x.get('name')==item['name'] and x.get('type')==item['type']),{})
+   item['arm_roles']=sorted({by_label[label] for label in original.get('armGroupLabels',[]) if by_label.get(label)})
+   item['other_names']=original.get('otherNames',[])
   status=p.get('statusModule',{});ident=p['identificationModule']
   rows.append({'nct_id':ident['nctId'],'title':ident.get('briefTitle',''),'sponsor':sponsor,'interventions':interventions,'conditions':p.get('conditionsModule',{}).get('conditions',[]),'phases':p.get('designModule',{}).get('phases',[]),'status':status.get('overallStatus','UNKNOWN'),'primary_completion':status.get('primaryCompletionDateStruct',{}),'source_updated':status.get('lastUpdatePostDateStruct',{}).get('date'),'source_url':'https://clinicaltrials.gov/study/'+ident['nctId'],'attribution':'exact lead sponsor; drug ownership and arm role not established'})
  return rows,d.get('nextPageToken'),d.get('totalCount')

@@ -71,3 +71,7 @@ uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 ## 市场与管线雷达
 
 新增 `/market`：美股、A股、港股证券名录抓取，公司与申办方映射、临床登记分页采集、字段变更历史和定时更新。支持药物、适应症、市场、阶段和状态查询。当前没有达到全药企全管线覆盖。运行方式、来源与验收边界见 [市场雷达说明](docs/MARKET_RADAR.md)。
+
+## 扩展药企识别与覆盖进度
+
+`/coverage` 展示三地候选识别、申办方映射、采集进度和缺口；`/assets` 展示公司候选药物与逐项试验的角色及来源。持久采集队列支持有限并发、取消、重试、进程恢复及原子快照发布。参见 [客户试用流程](docs/CUSTOMER_PILOT.md) 与 [覆盖接口](docs/MARKET_COVERAGE_API.md)。

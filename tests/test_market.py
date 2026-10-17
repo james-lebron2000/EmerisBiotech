@@ -82,8 +82,7 @@ def test_nasdaq_excludes_fund_test_and_footer():
 
 def test_scheduler_disabled_and_due(market,monkeypatch):
  calls=[]
- monkeypatch.setattr(market,'refresh_universe',lambda s:calls.append(s))
- monkeypatch.setattr(market,'sync_company',lambda s:calls.append(s))
+ monkeypatch.setattr(market,'enqueue',lambda kind,ref:calls.append(ref))
  market.tick();assert calls==[]
  market.schedule(True);market.tick();assert 'US:TEST' in calls and 'HK' in calls
 

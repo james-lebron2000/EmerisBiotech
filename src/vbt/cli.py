@@ -15,7 +15,7 @@ def parser():
     p.add_argument('--data-root',type=Path)
     p.add_argument('--state-dir',type=Path)
     sp=p.add_subparsers(dest='command',required=True)
-    a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
+    a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies','discover','expand','coverage','enqueue']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
     a=sp.add_parser('workbench');a.add_argument('--port',type=int,default=18764)
     a=sp.add_parser('register');a.add_argument('manifest',type=Path)
     a=sp.add_parser('prepare-geo');a.add_argument('--matrix',required=True);a.add_argument('--platform',required=True);a.add_argument('--rules',type=Path,required=True);a.add_argument('--output',type=Path,required=True)
@@ -43,6 +43,21 @@ def main(argv=None):
         state=args.state_dir or Path.home()/'Library/Application Support/VirtualBiotech'/hashlib.sha256(str(args.workspace.resolve()).encode()).hexdigest()[:12]
         m=Market(args.workspace,state)
         try:
+            if args.action in ('discover','expand','coverage','enqueue'):
+                if args.action=='discover':
+                    from .issuer_discovery import discover
+                    from .market_coverage import refresh_candidates
+                    result=refresh_candidates(m,discover(m.rows('listings')))
+                elif args.action=='expand':
+                    from .market_expansion import expand
+                    result=expand(m)
+                elif args.action=='coverage':
+                    from .market_coverage import coverage_summary
+                    result=coverage_summary(m)
+                else:
+                    from .market_jobs import enqueue_all
+                    result=enqueue_all(m)
+                print(json.dumps(result,ensure_ascii=False,indent=2));return 0
             if args.action=='universe':
                 from .market_sources import URLS
                 targets=list(URLS) if args.reference=='all' else [args.reference]

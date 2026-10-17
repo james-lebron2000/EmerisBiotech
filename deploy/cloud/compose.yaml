@@ -15,6 +15,24 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     networks: [backend]
+  # Only this process can reach public collection sources. Source hostnames
+  # remain allowlisted by vbt.market_sources; the UI has no outbound route.
+  worker:
+    build:
+      context: ../..
+      dockerfile: deploy/cloud/Dockerfile
+    command: ["/app/.venv/bin/python", "-m", "vbt.market_worker"]
+    volumes:
+      - research:/workspace
+      - state:/state
+    restart: unless-stopped
+    stop_grace_period: 2m
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [collection_egress]
   gateway:
     image: caddy:2.10.2
     environment:
@@ -40,3 +58,4 @@ networks:
   backend:
     internal: true
   edge:
+  collection_egress:

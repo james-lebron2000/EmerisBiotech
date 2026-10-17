@@ -1,5 +1,5 @@
 """Observed market intelligence, separate from frozen research and forecasts."""
-import hashlib,json,re,sqlite3,threading,time,uuid
+import hashlib,json,re,sqlite3,threading,time,uuid,os
 from pathlib import Path
 from .io import now
 from . import market_sources as sources
@@ -9,7 +9,7 @@ class Market:
   self.root=Path(workspace)/'artifacts/market';self.root.mkdir(parents=True,exist_ok=True)
   self.state=Path(state);self.state.mkdir(parents=True,exist_ok=True)
   if self.state.resolve().is_relative_to('/Volumes'):raise ValueError('Market state must be local')
-  self.path=self.state/'market.sqlite3'
+  self.path=self.state/'market.sqlite3';self._lease_context=threading.local();self._job_context=threading.local()
   with self.db() as d:
    d.executescript('''
    CREATE TABLE IF NOT EXISTS listings (id TEXT PRIMARY KEY,market TEXT,exchange TEXT,ticker TEXT,name TEXT,industry TEXT,source TEXT,observed TEXT);
@@ -17,9 +17,13 @@ class Market:
    CREATE TABLE IF NOT EXISTS trials (company TEXT,nct TEXT,data TEXT,hash TEXT,observed TEXT,PRIMARY KEY(company,nct));
    CREATE TABLE IF NOT EXISTS changes (id TEXT PRIMARY KEY,company TEXT,nct TEXT,observed TEXT,before_json TEXT,after_json TEXT,run_id TEXT);
    CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY,source TEXT,company TEXT,started TEXT,finished TEXT,status TEXT,count INTEGER,error TEXT);
+   CREATE TABLE IF NOT EXISTS trial_staging (run_id TEXT,nct TEXT,data TEXT,hash TEXT,observed TEXT,PRIMARY KEY(run_id,nct));
+   CREATE TABLE IF NOT EXISTS trial_lineage (company TEXT,nct TEXT,first_seen TEXT,last_seen TEXT,last_run TEXT,PRIMARY KEY(company,nct));
    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT);
-   CREATE TABLE IF NOT EXISTS leases (key TEXT PRIMARY KEY,until REAL);
+   CREATE TABLE IF NOT EXISTS leases (key TEXT PRIMARY KEY,until REAL,owner TEXT);
+   CREATE TABLE IF NOT EXISTS run_leases (run_id TEXT PRIMARY KEY,key TEXT,owner TEXT);
    ''')
+   if 'owner' not in {r[1] for r in d.execute('PRAGMA table_info(leases)')}:d.execute('ALTER TABLE leases ADD COLUMN owner TEXT')
    d.execute("UPDATE runs SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE status='running' AND NOT EXISTS (SELECT 1 FROM leases WHERE leases.key=CASE WHEN runs.company='' THEN 'universe:' || runs.source ELSE 'trials:' || runs.company END AND leases.until>?)",(now(),time.time()))
  def db(self):
   d=sqlite3.connect(self.path,timeout=30);d.row_factory=sqlite3.Row;return d
@@ -35,8 +39,8 @@ class Market:
   conditions=[];params=[]
   if market:conditions.append('company LIKE ?');params.append(market+':%')
   if company:conditions.append('company=?');params.append(company)
-  if query:conditions.append('(company LIKE ? OR data LIKE ?)');params.extend(['%'+query+'%']*2)
-  if phase:conditions.append('data LIKE ?');params.append('%"'+phase+'"%')
+  if query:conditions.append('(company LIKE ? OR data LIKE ? OR EXISTS (SELECT 1 FROM companies c WHERE c.id=trials.company AND c.name LIKE ?))');params.extend(['%'+query+'%']*3)
+  if phase:conditions.append("EXISTS (SELECT 1 FROM json_each(trials.data,'$.phases') WHERE value=?)");params.append(phase)
   if status:conditions.append("json_extract(data,'$.status')=?");params.append(status)
   where=' WHERE '+' AND '.join(conditions) if conditions else ''
   with self.db() as d:
@@ -58,19 +62,35 @@ class Market:
   return r[0] if r else default
  def schedule(self,enabled):
   with self.db() as d:d.execute('INSERT OR REPLACE INTO settings VALUES (?,?)',('enabled','1' if enabled else '0'))
+ def lease_tokens(self):
+  if not hasattr(self._lease_context,'tokens'):self._lease_context.tokens={}
+  return self._lease_context.tokens
  def claim(self,key):
   with self.db() as d:
    d.execute('BEGIN IMMEDIATE');r=d.execute('SELECT until FROM leases WHERE key=?',(key,)).fetchone()
    if r and r[0]>time.time():return False
-   d.execute('INSERT OR REPLACE INTO leases VALUES (?,?)',(key,time.time()+7200))
+   token=uuid.uuid4().hex;d.execute('INSERT OR REPLACE INTO leases(key,until,owner) VALUES (?,?,?)',(key,time.time()+7200,token))
+   self.lease_tokens()[key]=token
   return True
- def touch(self,key):
-  with self.db() as d:d.execute('UPDATE leases SET until=? WHERE key=?',(time.time()+7200,key))
- def release(self,key):
-  with self.db() as d:d.execute('DELETE FROM leases WHERE key=?',(key,))
+ def touch(self,key,token=None):
+  token=token or self.lease_tokens().get(key)
+  with self.db() as d:
+   if not d.execute('UPDATE leases SET until=? WHERE key=? AND owner=?',(time.time()+7200,key,token)).rowcount:raise ValueError('Collection lease no longer owned')
+ def release(self,key,token=None):
+  token=token or self.lease_tokens().get(key)
+  with self.db() as d:d.execute('DELETE FROM leases WHERE key=? AND owner=?',(key,token))
+ def assert_run_lease(self,db,rid):
+  r=db.execute('SELECT key,owner FROM run_leases WHERE run_id=?',(rid,)).fetchone()
+  if not r or not db.execute('SELECT 1 FROM leases WHERE key=? AND owner=? AND until>?',(r['key'],r['owner'],time.time())).fetchone():raise ValueError('Collection lease lost; snapshot not published')
  def begin(self,source,company=''):
   rid=uuid.uuid4().hex
-  with self.db() as d:d.execute('INSERT INTO runs VALUES (?,?,?,?,?,?,?,?)',(rid,source,company,now(),None,'running',0,''))
+  with self.db() as d:
+   d.execute('INSERT INTO runs VALUES (?,?,?,?,?,?,?,?)',(rid,source,company,now(),None,'running',0,''))
+   key=('trials:'+company) if company else ('universe:'+source)
+   if self.lease_tokens().get(key):d.execute('INSERT INTO run_leases VALUES (?,?,?)',(rid,key,self.lease_tokens()[key]))
+   if d.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='collection_jobs'").fetchone():
+    job=getattr(self._job_context,'job',None)
+    if job:d.execute("UPDATE collection_jobs SET run_id=? WHERE id=? AND attempts=? AND status='running' AND owner_pid=?",(rid,job['id'],job['attempts'],os.getpid()))
   return rid
  def finish(self,rid,status,count,error=''):
   with self.db() as d:d.execute('UPDATE runs SET finished=?,status=?,count=?,error=? WHERE id=?',(now(),status,count,error[:1000],rid))
@@ -78,61 +98,79 @@ class Market:
   folder=self.root/'captures'/rid;folder.mkdir(parents=True,exist_ok=True)
   path=folder/f'{index}.bin';path.write_bytes(raw)
   (folder/f'{index}.json').write_text(json.dumps({'url':url,'retrieved_at':now(),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)},ensure_ascii=False))
- def refresh_universe(self,source,fetch=sources.fetch):
+ def refresh_universe(self,source,fetch=sources.fetch,cancelled=lambda:False):
   if source not in sources.URLS:raise ValueError('Unknown universe source')
   key='universe:'+source
   if not self.claim(key):return None
-  rid=self.begin(source);count=0
+  rid=self.begin(source);count=0;lease_token=self.lease_tokens()[key]
   try:
+   if cancelled():
+    self.finish(rid,'cancelled',0,'Cancelled before capture');return rid
    raw=fetch(sources.URLS[source]);self.archive(rid,0,sources.URLS[source],raw);rows,total=sources.parse_universe(source,raw);count=len(rows)
    # Entire replacement only after complete, nonempty parse. Incomplete response never deletes old listings.
    if total is not None and count<total:raise ValueError(f'Incomplete universe: {count}/{total}; prior snapshot retained')
+   if cancelled():
+    self.finish(rid,'cancelled',0,'Cancelled before publication; previous snapshot retained');return rid
    with self.db() as d:
+    d.execute('BEGIN IMMEDIATE');self.assert_run_lease(d,rid)
     d.execute('DELETE FROM listings WHERE source=?',(source,))
     for r in rows:
      ident=source+':'+r['exchange']+':'+r['ticker']
      d.execute('INSERT OR REPLACE INTO listings VALUES (?,?,?,?,?,?,?,?)',(ident,r['market'],r['exchange'],r['ticker'],r['name'],r['industry'],source,now()))
-   self.finish(rid,'succeeded',count)
+    d.execute("UPDATE runs SET status='succeeded',finished=?,count=?,error='' WHERE id=?",(now(),count,rid))
   except Exception as ex:self.finish(rid,'failed',0,f'{type(ex).__name__}: {ex}')
-  finally:self.release(key)
+  finally:self.release(key,lease_token)
   return rid
- def sync_company(self,cid,fetch=sources.fetch,max_pages=20):
+ def sync_company(self,cid,fetch=sources.fetch,max_pages=20,cancelled=lambda:False):
   company=next((c for c in self.rows('companies') if c['id']==cid),None)
   if not company:raise ValueError('Unknown company')
   if not 1<=max_pages<=100:raise ValueError('Invalid page limit')
   key='trials:'+cid
   if not self.claim(key):return None
-  rid=self.begin('ClinicalTrials.gov',cid);count=0;seen=set();partial=False;idx=0
+  rid=self.begin('ClinicalTrials.gov',cid);lease_token=self.lease_tokens()[key];count=0;seen=set();partial=False;idx=0
   try:
    aliases=json.loads(company['aliases'])
    for alias in aliases:
     token=None;tokens=set()
     for page in range(max_pages):
-     self.touch(key)
+     if cancelled():
+      self.finish(rid,'cancelled',len(seen),'Cancellation requested; incomplete snapshot not promoted');return rid
+     self.touch(key,lease_token)
      url=sources.trial_url(alias,token);raw=fetch(url);self.archive(rid,idx,url,raw);idx+=1
+     if cancelled():
+      self.finish(rid,'cancelled',len(seen),'Cancelled after capture; incomplete snapshot not promoted');return rid
      rows,token,total=sources.parse_trials(raw,aliases)
      with self.db() as d:
       for r in rows:
        if not re.fullmatch(r'NCT\d{8}',r['nct_id']):raise ValueError('Invalid NCT identifier')
        serial=json.dumps(r,ensure_ascii=False,sort_keys=True);digest=hashlib.sha256(serial.encode()).hexdigest()
-       old=d.execute('SELECT data,hash FROM trials WHERE company=? AND nct=?',(cid,r['nct_id'])).fetchone()
-       if not old or old['hash']!=digest:d.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',(uuid.uuid4().hex,cid,r['nct_id'],now(),old['data'] if old else None,serial,rid))
-       d.execute('INSERT OR REPLACE INTO trials VALUES (?,?,?,?,?)',(cid,r['nct_id'],serial,digest,now()))
+       d.execute('INSERT OR REPLACE INTO trial_staging VALUES (?,?,?,?,?)',(rid,r['nct_id'],serial,digest,now()))
        seen.add(r['nct_id'])
      count=len(seen)
      if not token:break
      if token in tokens:raise ValueError('Repeated pagination token')
      tokens.add(token);time.sleep(.4)
     if token:partial=True
-   self.finish(rid,'partial' if partial else 'succeeded',count,'Page cap reached; registry coverage incomplete' if partial else '')
+   if cancelled():self.finish(rid,'cancelled',count,'Cancelled before publication; previous snapshot retained')
+   elif partial:self.finish(rid,'partial',count,'Page cap reached; registry coverage incomplete')
+   else:self.promote_snapshot(rid,cid)
   except Exception as ex:self.finish(rid,'failed',len(seen),f'{type(ex).__name__}: {ex}; previous observations retained')
-  finally:self.release(key)
+  finally:self.release(key,lease_token)
   return rid
+ def promote_snapshot(self,rid,cid):
+  with self.db() as db:
+   db.execute('BEGIN IMMEDIATE');self.assert_run_lease(db,rid)
+   for r in db.execute('SELECT * FROM trial_staging WHERE run_id=?',(rid,)).fetchall():
+    old=db.execute('SELECT data,hash FROM trials WHERE company=? AND nct=?',(cid,r['nct'])).fetchone()
+    if not old or old['hash']!=r['hash']:db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',(uuid.uuid4().hex,cid,r['nct'],r['observed'],old['data'] if old else None,r['data'],rid))
+    db.execute('INSERT OR REPLACE INTO trials VALUES (?,?,?,?,?)',(cid,r['nct'],r['data'],r['hash'],r['observed']))
+    db.execute('INSERT INTO trial_lineage VALUES (?,?,?,?,?) ON CONFLICT(company,nct) DO UPDATE SET last_seen=excluded.last_seen,last_run=excluded.last_run',(cid,r['nct'],r['observed'],r['observed'],rid))
+   count=db.execute('SELECT count(*) FROM trial_staging WHERE run_id=?',(rid,)).fetchone()[0]
+   db.execute("UPDATE runs SET status='succeeded',finished=?,count=?,error='' WHERE id=?",(now(),count,rid))
+   db.execute('DELETE FROM trial_staging WHERE run_id=?',(rid,))
  def enqueue(self,kind,reference):
-  if kind=='universe' and reference in sources.URLS:target=self.refresh_universe
-  elif kind=='company' and any(c['id']==reference for c in self.rows('companies')):target=self.sync_company
-  else:raise ValueError('Unknown collection target')
-  threading.Thread(target=target,args=(reference,),daemon=True).start()
+  from .market_jobs import enqueue
+  return enqueue(self,kind,reference)
  def tick(self):
   if self.setting('enabled')!='1':return
   from datetime import datetime,timezone
@@ -143,8 +181,7 @@ class Market:
    last=max((r['started'] for r in relevant),default=None)
    if last and (datetime.now(timezone.utc)-datetime.fromisoformat(last)).total_seconds()<interval:continue
    # Sequential scheduler bounds requests. Manual requests share persistent leases.
-   if kind=='universe':self.refresh_universe(key)
-   else:self.sync_company(key)
+   self.enqueue(kind,key)
  def scheduler(self,stop):
   while not stop.is_set():
    try:self.tick()
