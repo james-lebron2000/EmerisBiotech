@@ -149,12 +149,19 @@ def noteform(app,reference=''):
 def handler(app, public_origin=None):
     class Handler(BaseHTTPRequestHandler):
         def send(self,status,body,ctype='text/html; charset=utf-8',sandbox=False):
-            self.send_response(status);self.send_header('Content-Type',ctype);self.send_header('Content-Length',str(len(body.encode())));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Security-Policy',("sandbox; " if sandbox else '')+"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body.encode())
+            self.send_bytes(status,body.encode(),ctype,sandbox)
+        def send_bytes(self,status,body,ctype,sandbox=False):
+            self.send_response(status);self.send_header('Content-Type',ctype);self.send_header('Content-Length',str(len(body)));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Security-Policy',("sandbox; " if sandbox else '')+"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body)
         def safehost(self):return self.headers.get('Host')==(urlsplit(public_origin).netloc if public_origin else f'127.0.0.1:{self.server.server_port}')
         def do_GET(self):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/market/identity-evidence':
+                    from .market import Market
+                    from .identity_view import evidence_file
+                    raw,mime=evidence_file(Market(app.workspace,app.state),q.get('id',''),q.get('file',''))
+                    self.send_bytes(200,raw,mime,True);return
                 if u.path=='/market/export-file':
                     from .market import Market
                     from .market_export import export_file
@@ -197,6 +204,16 @@ def handler(app, public_origin=None):
                     elif self.path=='/market/resolve-batch':
                         from .sponsor_view import enqueue_batch
                         enqueue_batch(market)
+                    elif self.path=='/market/resolve-all':
+                        from .market_traversal import enqueue_traversal
+                        enqueue_traversal(market,limit=1000,market_filter=q.get('market',''))
+                    elif self.path=='/market/identity-batch':
+                        from .market_jobs import enqueue_identity,enqueue_identity_repairs
+                        enqueue_identity_repairs(market,limit=1000)
+                        enqueue_identity(market,limit=1000)
+                    elif self.path=='/market/identity-schedule':
+                        if q.get('enabled') not in ('0','1'):raise ValueError('Invalid source identity schedule setting')
+                        with market.db() as db:db.execute('INSERT OR REPLACE INTO settings VALUES (?,?)',('identity.enabled',q['enabled']))
                     elif self.path=='/market/proposal-review':
                         from .sponsor_review import review
                         result=review(market,q.get('proposal_id',''),q.get('decision',''),q.get('reviewer',''),q.get('reason',''))
@@ -221,7 +238,7 @@ def handler(app, public_origin=None):
                     elif self.path=='/market/refresh':market.enqueue(q.get('kind'),q.get('reference'))
                     elif self.path=='/market/schedule':market.schedule(q.get('enabled')=='1')
                     else:raise ValueError('Unknown market operation')
-                    dest=('/disclosures' if self.path=='/market/disclosure/enqueue' else '/mapping' if self.path in ('/market/resolve','/market/resolve-batch','/market/proposal-review') else '/coverage' if self.path in ('/market/discover','/market/expand','/market/batch','/market/cancel','/market/review') else '/market')+'?saved=1'
+                    dest=('/disclosures' if self.path=='/market/disclosure/enqueue' else '/mapping' if self.path in ('/market/resolve','/market/resolve-batch','/market/resolve-all','/market/identity-batch','/market/identity-schedule','/market/proposal-review') else '/coverage' if self.path in ('/market/discover','/market/expand','/market/batch','/market/cancel','/market/review') else '/market')+'?saved=1'
                 elif self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
                 elif self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes?saved=1'
                 elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission?saved=1'

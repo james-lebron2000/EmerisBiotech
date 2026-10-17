@@ -121,3 +121,27 @@ def test_automated_review_matches_current_candidate_name(case):
  with m.db() as db:db.execute("UPDATE issuer_candidates SET name='Unrelated Sponsor Inc.' WHERE id='US:TEST'")
  with pytest.raises(ValueError):review(m,p['id'],'accepted','Source agent','Synthetic source reconciliation check',reviewer_type='automated_source_review',evidence=evidence)
  assert m.count('companies')==0
+
+
+def test_automated_review_parses_official_otherlisted_act_symbol(case):
+ import hashlib
+ m,raw=case;resolve(m,'US:TEST',fetch=lambda u:raw);p=proposals(m)[0]
+ evidence=archived_evidence(m,raw,p);root=m.root/'identity_review'/'synthetic'
+ body=b'ACT Symbol|Security Name|Exchange|CQS Symbol|ETF|Test Issue|NASDAQ Symbol\nTEST|Synthetic Therapeutics Inc. Common Stock|N|TEST|N|N|DIFFERENT\n'
+ (root/'exchange.txt').write_bytes(body)
+ record=json.loads((root/'exchange_manifest.json').read_text())
+ record.update(url='https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt',bytes=len(body),sha256=hashlib.sha256(body).hexdigest())
+ (root/'exchange_manifest.json').write_text(json.dumps(record))
+ evidence.update(official_source_url=record['url'],exchange_sha256=record['sha256'])
+ result=review(m,p['id'],'accepted','Source agent','Synthetic otherlisted name reconciliation',reviewer_type='automated_source_review',evidence=evidence)
+ assert result['company']=='US:TEST'
+
+
+def test_uncertain_classification_cannot_be_accepted_automatically(case):
+ m,raw=case;resolve(m,'US:TEST',fetch=lambda u:raw);p=proposals(m)[0]
+ evidence=archived_evidence(m,raw,p)
+ with m.db() as db:db.execute("UPDATE issuer_candidates SET classification='uncertain'")
+ with pytest.raises(ValueError):review(m,p['id'],'accepted','Source agent','Synthetic uncertain issuer must be reviewed',reviewer_type='automated_source_review',evidence=evidence)
+ assert m.count('companies')==0
+ # Human-declared decisions remain backward compatible and separately typed.
+ assert review(m,p['id'],'accepted','Declared human','Synthetic explicit classification-aware identity review')['company']=='US:TEST'

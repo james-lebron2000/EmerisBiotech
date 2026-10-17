@@ -105,7 +105,8 @@ def test_existing_post_actions_csrf_fields_and_constraints_survive_folding(app, 
                         ([dict(name='Synthetic Therapeutics Inc.', id='US:SYN', market='US')], 1))
     doc = Document(sponsor_view.render(app, {}))
     actions = {form['attrs'].get('action') for form in doc.forms if form['attrs'].get('method') == 'post'}
-    assert actions == {'/market/resolve-batch', '/market/resolve', '/market/proposal-review'}
+    assert actions == {'/market/resolve-batch', '/market/resolve', '/market/proposal-review',
+                       '/market/resolve-all', '/market/identity-batch', '/market/identity-schedule'}
     for form in doc.forms:
         if form['attrs'].get('method') == 'post':
             token = [attrs for _, attrs in form['fields'] if attrs.get('name') == 'token']
@@ -150,10 +151,21 @@ def test_legacy_review_and_date_precision_remain_distinct(app):
     review_tables(app, typed=False)
     put_review(app, 'legacy', created='2026-10-15')
     body = sponsor_view.render(app, {})
-    assert '记录人声明的主体核对' in body and '人工签署：未验证' in body
+    # Additive collector initialization creates the typed table; absent legacy
+    # evidence remains unknown rather than inferred to be a human attestation.
+    assert '核对类型未记录' in body and '人工签署：未验证' in body
     assert 'datetime="2026-10-15" title="2026-10-15">2026-10-15</time>' in body
     assert 'datetime="2026-10-16" title="2026-10-16">2026-10-16</time>' in body
     assert 'datetime="2026-10-17T01:00:00+00:00"' in body and '2026-10-17 09:00 UTC+8' in body
+
+
+def test_curated_source_review_is_explicitly_nonhuman_and_readable(app):
+    review_tables(app)
+    put_review(app, 'curated', 'curated_official_source_review')
+    body = sponsor_view.render(app, {})
+    assert '官方资料与登记名称核对，非人工签署' in body
+    assert '人工签署：无（自动来源核对）' in body
+    assert '查看已记录的来源依据与校验值' in body
 
 
 def test_empty_pending_and_empty_histories_are_explicit(app, monkeypatch):

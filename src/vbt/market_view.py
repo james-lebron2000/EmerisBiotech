@@ -7,7 +7,7 @@ from urllib.parse import urlencode, urlsplit
 from .market import Market
 from .market_sources import URLS
 
-SOURCES = {'US': 'SEC 美股名录', 'HK': 'HKEX 港股证券', 'SH': '上交所主板 A 股', 'STAR': '上交所科创板', 'SZ': '深交所 A 股', 'USNASDAQ': 'Nasdaq 上市证券', 'USOTHER': 'Nasdaq Trader 其他交易所证券'}
+SOURCES = {'US': 'SEC 美股名录', 'HK': 'HKEX 港股证券', 'SH': '上交所主板 A 股', 'STAR': '上交所科创板', 'SZ': '深交所 A 股', 'BSE': '北交所 A 股', 'USNASDAQ': 'Nasdaq 上市证券', 'USOTHER': 'Nasdaq Trader 其他交易所证券'}
 STATES = {'queued': '已排队', 'running': '采集中', 'succeeded': '查询完成', 'failed': '失败', 'partial': '分页未完成', 'interrupted': '中断', 'cancelled': '已取消'}
 PHASES = {'PHASE1': '一期', 'PHASE2': '二期', 'PHASE3': '三期', 'PHASE4': '四期', 'EARLY_PHASE1': '早期一期'}
 TRIAL_STATES = {'RECRUITING': '招募中', 'ACTIVE_NOT_RECRUITING': '进行中，停止招募', 'COMPLETED': '已完成', 'TERMINATED': '已终止', 'NOT_YET_RECRUITING': '尚未招募', 'WITHDRAWN': '已撤回', 'SUSPENDED': '暂停', 'UNKNOWN': '未知'}

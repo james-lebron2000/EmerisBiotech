@@ -151,7 +151,7 @@ def _parse(raw,query):
  for study in data['studies']:
   p=study.get('protocolSection',{});nct=p.get('identificationModule',{}).get('nctId','')
   alias=p.get('sponsorCollaboratorsModule',{}).get('leadSponsor',{}).get('name','')
-  if not isinstance(nct,str) or not re.fullmatch(r'NCT\d{8}',nct):raise ValueError('Invalid NCT evidence identifier')
+  if not isinstance(nct,str) or not re.fullmatch(r'NCT[0-9]{8}',nct):raise ValueError('Invalid NCT evidence identifier')
   if not isinstance(alias,str) or not 1<=len(alias.strip())<=300:raise ValueError('Missing or invalid lead-sponsor name')
   alias=alias.strip()
   result.append({'alias':alias,'nct_id':nct,'match_type':match_sponsor(query,alias),'source_url':'https://clinicaltrials.gov/study/'+nct})
@@ -194,7 +194,7 @@ def resolve(market,candidate_id,fetch=market_sources.fetch,*,max_pages=3,
   for index in range(max_pages):
    if cancelled():return _finish(market,rid,'cancelled',pages,0,len(observed),error='Cancelled before sponsor capture; no proposals published')
    market.touch(key,lease_token)
-   url=query_url(query,token);raw=fetch(url)
+   url=query_url(query,token);raw=market_sources.read(url,state_dir=market.state,cancelled=cancelled,fetch=fetch)
    # Archive even schema failures so the failed observation is recoverable.
    if not isinstance(raw,bytes) or len(raw)>2_000_000:raise ValueError('Sponsor response must be bytes within 2 MB')
    market.archive(rid,index,url,raw);pages+=1
@@ -234,7 +234,7 @@ def resolve(market,candidate_id,fetch=market_sources.fetch,*,max_pages=3,
   observation_count=len({(r['alias'],r['nct_id']) for r in observed})
   return _finish(market,rid,status,pages,len(proposed),observation_count,bool(token),
     'Page cap reached; sponsor search incomplete' if token else 'Registry matches lacked a qualifying exact/high-constraint lead sponsor' if observed and not proposed else '')
- except _Cancelled as ex:
+ except (_Cancelled,InterruptedError) as ex:
   return _finish(market,rid,'cancelled',pages,0,len({(r['alias'],r['nct_id']) for r in observed}),error=str(ex))
  except Exception as ex:
   return _finish(market,rid,'failed',pages,0,len({(r['alias'],r['nct_id']) for r in observed}),False,type(ex).__name__+': '+str(ex))

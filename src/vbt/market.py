@@ -4,11 +4,17 @@ from pathlib import Path
 from .io import now
 from . import market_sources as sources
 
+def universe_digest(rows):
+ fields=('market','exchange','ticker','name','industry')
+ payload=sorted(({k:r[k] for k in fields} for r in rows),key=lambda r:(r['market'],r['exchange'],r['ticker']))
+ return hashlib.sha256(json.dumps(payload,sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+
 class Market:
  def __init__(self,workspace,state):
   self.root=Path(workspace)/'artifacts/market';self.root.mkdir(parents=True,exist_ok=True)
-  self.state=Path(state);self.state.mkdir(parents=True,exist_ok=True)
+  self.state=Path(state)
   if self.state.resolve().is_relative_to('/Volumes'):raise ValueError('Market state must be local')
+  self.state.mkdir(parents=True,exist_ok=True)
   self.path=self.state/'market.sqlite3';self._lease_context=threading.local();self._job_context=threading.local()
   with self.db() as d:
    d.executescript('''
@@ -22,6 +28,7 @@ class Market:
    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT);
    CREATE TABLE IF NOT EXISTS leases (key TEXT PRIMARY KEY,until REAL,owner TEXT);
    CREATE TABLE IF NOT EXISTS run_leases (run_id TEXT PRIMARY KEY,key TEXT,owner TEXT);
+   CREATE TABLE IF NOT EXISTS universe_snapshots (source TEXT PRIMARY KEY,run_id TEXT NOT NULL,count INTEGER NOT NULL,rows_sha256 TEXT NOT NULL,published TEXT NOT NULL);
    ''')
    if 'owner' not in {r[1] for r in d.execute('PRAGMA table_info(leases)')}:d.execute('ALTER TABLE leases ADD COLUMN owner TEXT')
    d.execute("UPDATE runs SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE status='running' AND NOT EXISTS (SELECT 1 FROM leases WHERE leases.key=CASE WHEN runs.company='' THEN 'universe:' || runs.source ELSE 'trials:' || runs.company END AND leases.until>?)",(now(),time.time()))
@@ -99,11 +106,17 @@ class Market:
   return rid
  def finish(self,rid,status,count,error=''):
   with self.db() as d:d.execute('UPDATE runs SET finished=?,status=?,count=?,error=? WHERE id=?',(now(),status,count,error[:1000],rid))
- def archive(self,rid,index,url,raw):
+ def archive(self,rid,index,url,raw,metadata=None):
+  extra=dict(metadata or {})
+  if set(extra)-{'method','request_body','status','page'}:raise ValueError('Unexpected source capture metadata')
+  if 'method' in extra and extra['method'] not in ('GET','POST'):raise ValueError('Invalid capture method')
+  if 'request_body' in extra and (not isinstance(extra['request_body'],str) or len(extra['request_body'])>1000):raise ValueError('Invalid capture request body')
+  if 'status' in extra and (type(extra['status']) is not int or not 100<=extra['status']<=599):raise ValueError('Invalid capture HTTP status')
+  if 'page' in extra and (type(extra['page']) is not int or not 0<=extra['page']<100):raise ValueError('Invalid capture page')
   folder=self.root/'captures'/rid;folder.mkdir(parents=True,exist_ok=True)
   path=folder/f'{index}.bin';path.write_bytes(raw)
-  (folder/f'{index}.json').write_text(json.dumps({'url':url,'retrieved_at':now(),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)},ensure_ascii=False))
- def refresh_universe(self,source,fetch=sources.fetch,cancelled=lambda:False):
+  (folder/f'{index}.json').write_text(json.dumps({'url':url,'retrieved_at':now(),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),**extra},ensure_ascii=False))
+ def refresh_universe(self,source,fetch=sources.fetch,cancelled=lambda:False,*,bse_fetch=None):
   if source not in sources.URLS:raise ValueError('Unknown universe source')
   key='universe:'+source
   if not self.claim(key):return None
@@ -111,7 +124,17 @@ class Market:
   try:
    if cancelled():
     self.finish(rid,'cancelled',0,'Cancelled before capture');return rid
-   raw=fetch(sources.URLS[source]);self.archive(rid,0,sources.URLS[source],raw);rows,total=sources.parse_universe(source,raw);count=len(rows)
+   if source=='BSE':
+    from . import bse_sources
+    capture_index=0
+    def archive_bse(capture):
+     nonlocal capture_index
+     self.archive(rid,capture_index,capture['url'],capture['raw'],{k:capture[k] for k in ('method','request_body','status','page')});capture_index+=1
+    result=bse_sources.fetch_universe(fetch=bse_fetch or bse_sources.fetch_page,state_dir=self.state,cancelled=cancelled,on_capture=archive_bse)
+    rows,total=result['rows'],result['total']
+   else:
+    raw=sources.read(sources.URLS[source],state_dir=self.state,cancelled=cancelled,fetch=fetch);self.archive(rid,0,sources.URLS[source],raw);rows,total=sources.parse_universe(source,raw)
+   count=len(rows)
    # Entire replacement only after complete, nonempty parse. Incomplete response never deletes old listings.
    if total is not None and count<total:raise ValueError(f'Incomplete universe: {count}/{total}; prior snapshot retained')
    if cancelled():
@@ -122,7 +145,11 @@ class Market:
     for r in rows:
      ident=source+':'+r['exchange']+':'+r['ticker']
      d.execute('INSERT OR REPLACE INTO listings VALUES (?,?,?,?,?,?,?,?)',(ident,r['market'],r['exchange'],r['ticker'],r['name'],r['industry'],source,now()))
+    if cancelled():raise InterruptedError('Cancelled before snapshot commit; previous snapshot retained')
+    d.execute('INSERT OR REPLACE INTO universe_snapshots VALUES (?,?,?,?,?)',(source,rid,count,universe_digest(rows),now()))
     d.execute("UPDATE runs SET status='succeeded',finished=?,count=?,error='' WHERE id=?",(now(),count,rid))
+    if cancelled():raise InterruptedError('Cancelled before snapshot commit; previous snapshot retained')
+  except InterruptedError as ex:self.finish(rid,'cancelled',0,str(ex))
   except Exception as ex:self.finish(rid,'failed',0,f'{type(ex).__name__}: {ex}')
   finally:self.release(key,lease_token)
   return rid
@@ -141,30 +168,32 @@ class Market:
      if cancelled():
       self.finish(rid,'cancelled',len(seen),'Cancellation requested; incomplete snapshot not promoted');return rid
      self.touch(key,lease_token)
-     url=sources.trial_url(alias,token);raw=fetch(url);self.archive(rid,idx,url,raw);idx+=1
+     url=sources.trial_url(alias,token);raw=sources.read(url,state_dir=self.state,cancelled=cancelled,fetch=fetch);self.archive(rid,idx,url,raw);idx+=1
      if cancelled():
       self.finish(rid,'cancelled',len(seen),'Cancelled after capture; incomplete snapshot not promoted');return rid
      rows,token,total=sources.parse_trials(raw,aliases)
      with self.db() as d:
       for r in rows:
-       if not re.fullmatch(r'NCT\d{8}',r['nct_id']):raise ValueError('Invalid NCT identifier')
+       if not re.fullmatch(r'NCT[0-9]{8}',r['nct_id']):raise ValueError('Invalid NCT identifier')
        serial=json.dumps(r,ensure_ascii=False,sort_keys=True);digest=hashlib.sha256(serial.encode()).hexdigest()
        d.execute('INSERT OR REPLACE INTO trial_staging VALUES (?,?,?,?,?)',(rid,r['nct_id'],serial,digest,now()))
        seen.add(r['nct_id'])
      count=len(seen)
      if not token:break
      if token in tokens:raise ValueError('Repeated pagination token')
-     tokens.add(token);time.sleep(.4)
+     tokens.add(token)
     if token:partial=True
    if cancelled():self.finish(rid,'cancelled',count,'Cancelled before publication; previous snapshot retained')
    elif partial:self.finish(rid,'partial',count,'Page cap reached; registry coverage incomplete')
-   else:self.promote_snapshot(rid,cid)
+   else:self.promote_snapshot(rid,cid,cancelled=cancelled)
+  except InterruptedError as ex:self.finish(rid,'cancelled',len(seen),str(ex)+'; previous observations retained')
   except Exception as ex:self.finish(rid,'failed',len(seen),f'{type(ex).__name__}: {ex}; previous observations retained')
   finally:self.release(key,lease_token)
   return rid
- def promote_snapshot(self,rid,cid):
+ def promote_snapshot(self,rid,cid,*,cancelled=lambda:False):
   with self.db() as db:
    db.execute('BEGIN IMMEDIATE');self.assert_run_lease(db,rid)
+   if cancelled():raise InterruptedError('Cancelled before snapshot publication')
    for r in db.execute('SELECT * FROM trial_staging WHERE run_id=?',(rid,)).fetchall():
     old=db.execute('SELECT data,hash FROM trials WHERE company=? AND nct=?',(cid,r['nct'])).fetchone()
     if not old or old['hash']!=r['hash']:db.execute('INSERT INTO changes VALUES (?,?,?,?,?,?,?)',(uuid.uuid4().hex,cid,r['nct'],r['observed'],old['data'] if old else None,r['data'],rid))
@@ -173,6 +202,7 @@ class Market:
    count=db.execute('SELECT count(*) FROM trial_staging WHERE run_id=?',(rid,)).fetchone()[0]
    db.execute("UPDATE runs SET status='succeeded',finished=?,count=?,error='' WHERE id=?",(now(),count,rid))
    db.execute('DELETE FROM trial_staging WHERE run_id=?',(rid,))
+   if cancelled():raise InterruptedError('Cancelled during snapshot publication; previous observations retained')
  def enqueue(self,kind,reference):
   from .market_jobs import enqueue
   return enqueue(self,kind,reference)

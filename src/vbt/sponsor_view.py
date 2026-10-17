@@ -12,15 +12,8 @@ LABEL={'suggested':'规范名称相符，待核对','ambiguous':'主体有歧义
 
 def enqueue_batch(market,limit=20):
  if not 1<=limit<=20:raise ValueError('Batch size must be 1-20')
- init_schema(market)
- with market.db() as db:
-  rows=db.execute("SELECT c.id,c.name,c.market FROM issuer_candidates c LEFT JOIN companies m ON m.id=c.id LEFT JOIN (SELECT candidate_id,max(started) t FROM sponsor_resolution_runs GROUP BY candidate_id) r ON r.candidate_id=c.id WHERE m.id IS NULL AND c.review_status!='rejected' AND c.classification IN ('drug_developer','candidate','uncertain','drug_developer_candidate') ORDER BY r.t IS NOT NULL,r.t,c.id").fetchall()
- result=[]
- for row in rows:
-  if not query_name_from_listing(row['name'],row['market']):continue
-  result.append(enqueue(market,'resolve',row['id']))
-  if len(result)>=limit:break
- return result
+ from .market_traversal import enqueue_traversal
+ return enqueue_traversal(market,limit=limit)['new_jobs']
 
 def render(app, q):
  m = Market(app.workspace, app.state)
@@ -39,6 +32,11 @@ def render(app, q):
          '接受后才登记该申办方并排队抓取。此记录不确认药物权益，也不构成科学审批。</div>')
  body += ('<div class="card"><h2>推进下一批</h2><p>每批最多20家，优先未检索且有可用英文名称的候选。'
           '仅产生待核对建议，不自动接受。</p>' + form('/market/resolve-batch', {}, '检索下一批申办方') + '</div>')
+ from .market_traversal import readiness,LABELS as TRAVERSAL_LABELS
+ traversal=readiness(m,q.get('market',''))
+ body+='<section class="card"><h2>遍历当前候选范围</h2><p>尚未关联的候选 '+str(traversal['total_unmapped'])+' 家；可排队 '+str(traversal['counts']['ready'])+' 家，已有任务 '+str(traversal['counts']['active'])+' 家，需要准确英文主体 '+str(traversal['counts']['needs_name'])+' 家。</p>'+form('/market/resolve-all',{'market':q.get('market','')},'遍历全部可检索候选')+'<p class="ref">每次最多1000家，跳过活跃任务及尚在冷却期的记录；只生成待核对建议，不能将查询零条当作没有管线。</p><details><summary>查看遍历范围与缺口</summary>'+''.join('<p>'+e(label)+'：'+str(traversal['counts'][key])+'</p>' for key,label in TRAVERSAL_LABELS.items())+'</details></section>'
+ from .identity_view import render as identity_panel
+ body+=identity_panel(app,m,q)
  rows, total = candidate_rows(m, q=q.get('q', ''), market_filter=q.get('market', ''),
                              status='unmapped', limit=20, classification='active')
  body += ('<details class="card"><summary>选择未关联公司 · 匹配 ' + str(total) + ' 条，展示前20条</summary>'
@@ -59,7 +57,7 @@ def render(app, q):
  if not pending:
   body += '<div class="empty">暂时没有待核对建议。可先检索候选公司，再核对返回的申办方。</div>'
  for index, row in enumerate(pending):
-  body += ('<article class="card"><span class="badge">建议 · 待主体核对</span><h3>'
+  body += ('<article class="card" id="proposal-' + e(row['id']) + '"><span class="badge">建议 · 待主体核对</span><h3>'
            + e(row['candidate_name']) + ' → ' + e(row['alias']) + '</h3><dl class="source-meta">'
            '<dt>证券主体</dt><dd>' + e(row['candidate_id']) + '</dd><dt>匹配方式</dt><dd>'
            + e(row['match_type']) + '</dd><dt>检索状态</dt><dd>'
@@ -101,22 +99,26 @@ def render(app, q):
  with m.db() as db:
   if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sponsor_proposal_reviews'").fetchone():
    typed = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sponsor_review_evidence'").fetchone()
-   query = ('SELECT r.*,e.reviewer_type FROM sponsor_proposal_reviews r LEFT JOIN sponsor_review_evidence e '
+   query = ('SELECT r.*,e.reviewer_type,e.evidence_json,e.evidence_sha256 FROM sponsor_proposal_reviews r LEFT JOIN sponsor_review_evidence e '
             'ON e.review_id=r.id ORDER BY r.created DESC LIMIT 20') if typed else (
-            "SELECT r.*,'human_declared' AS reviewer_type FROM sponsor_proposal_reviews r ORDER BY r.created DESC LIMIT 20")
+            "SELECT r.*,'human_declared' AS reviewer_type,NULL AS evidence_json,NULL AS evidence_sha256 FROM sponsor_proposal_reviews r ORDER BY r.created DESC LIMIT 20")
    reviewed = db.execute(query).fetchall()
    body += '<details class="card"><summary>最近主体核对记录 · ' + str(len(reviewed)) + ' 条</summary>'
    if not reviewed:
     body += '<p class="data-note">尚未记录主体核对决定。</p>'
    for row in reviewed:
-    automated = row['reviewer_type'] == 'automated_source_review'
+    curated = row['reviewer_type'] == 'curated_official_source_review'
+    automated = row['reviewer_type'] == 'automated_source_review' or curated
     human_declared = row['reviewer_type'] == 'human_declared'
-    label = ('自动双源名称核对，非人工签署' if automated else
+    label = ('官方资料与登记名称核对，非人工签署' if curated else '自动双源名称核对，非人工签署' if automated else
              '记录人声明的主体核对' if human_declared else '核对类型未记录')
     signing = '人工签署：无（自动来源核对）' if automated else '人工签署：未验证'
     body += ('<div class="card"><span class="badge">' + label + '</span><b>' + e(row['reviewer'])
              + ' · ' + ('接受' if row['decision'] == 'accepted' else '排除') + '</b><p>' + e(row['reason'])
              + '</p><p class="cell-meta">' + signing + ' · 药物权益与科学审批分别核对</p><p class="ref">'
-             + _timestamp(row['created']) + ' · ' + e(row['proposal_id']) + '</p></div>')
+             + _timestamp(row['created']) + ' · ' + e(row['proposal_id']) + '</p>')
+    if row['evidence_json']:
+     body+='<details><summary>查看已记录的来源依据与校验值</summary><p class="ref">'+e(row['evidence_sha256'])+'</p><pre>'+e(row['evidence_json'])+'</pre></details>'
+    body+='</div>'
    body += '</details>'
  return body

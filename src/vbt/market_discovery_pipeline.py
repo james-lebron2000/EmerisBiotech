@@ -1,6 +1,5 @@
 """Incremental directory screening and bounded sponsor discovery, without approval."""
 import hashlib,json,time
-from datetime import datetime,timedelta,timezone
 from .io import now
 
 
@@ -11,17 +10,19 @@ def record(market,status,payload):
 
 
 def tick(market):
- """Called only by the enabled scheduler; one batch/hour, never auto-accept names."""
+ """Enabled scheduler: source suggestions hourly, opt-in strict identity checks per tick."""
  from .issuer_discovery import VERSION
  from .china_issuer_sources import VERSION as CN_VERSION
+ from .china_issuer_sources_v2 import VERSION as CN_V2_VERSION
  from .market_expansion import expand
- from .market_jobs import enqueue
- from .sponsor_resolution import init_schema,query_name_from_listing
+ from .market_jobs import enqueue,enqueue_identity,enqueue_identity_repairs
+ from .market_traversal import enqueue_traversal
+ from .sponsor_resolution import init_schema
  init_schema(market)
  with market.db() as db:
   snapshot=[tuple(r) for r in db.execute('SELECT source,count(*),max(observed) FROM listings GROUP BY source ORDER BY source')]
- signature=hashlib.sha256(json.dumps([VERSION,CN_VERSION,snapshot]).encode()).hexdigest()
- result={'expanded':False,'company_jobs':[],'resolution_jobs':[]}
+ signature=hashlib.sha256(json.dumps([VERSION,CN_VERSION,CN_V2_VERSION,snapshot]).encode()).hexdigest()
+ result={'expanded':False,'company_jobs':[],'resolution_jobs':[],'identity_jobs':[],'identity_repair_jobs':[]}
  try:
   directory_key='discovery:directory'
   if market.claim(directory_key):
@@ -37,18 +38,14 @@ def tick(market):
    try:
     last=float(market.setting('discovery.last_resolution_batch','0'))
     if time.time()-last>=3600:
-     current=datetime.now(timezone.utc)
-     failed_cutoff=(current-timedelta(hours=24)).isoformat()
-     zero_cutoff=(current-timedelta(days=30)).isoformat()
-     with market.db() as db:
-      rows=db.execute("SELECT c.id,c.name,c.market FROM issuer_candidates c LEFT JOIN companies m ON m.id=c.id WHERE m.id IS NULL AND c.review_status!='rejected' AND c.classification IN ('drug_developer','candidate','uncertain','drug_developer_candidate') AND NOT EXISTS (SELECT 1 FROM sponsor_resolution_runs r WHERE r.candidate_id=c.id AND r.candidate_hash=c.content_hash AND (r.status NOT IN ('failed','interrupted','cancelled','zero') OR (r.status IN ('failed','interrupted','cancelled') AND r.started>=?) OR (r.status='zero' AND r.started>=?))) ORDER BY EXISTS (SELECT 1 FROM sponsor_resolution_runs r WHERE r.candidate_id=c.id),c.id",(failed_cutoff,zero_cutoff)).fetchall()
-     for row in rows:
-      if not query_name_from_listing(row['name'],row['market']):continue
-      result['resolution_jobs'].append(enqueue(market,'resolve',row['id']))
-      if len(result['resolution_jobs'])>=20:break
+     batch=enqueue_traversal(market,limit=20)
+     result['resolution_jobs']=batch['new_jobs'];result['traversal_batch_id']=batch['batch_id']
      with market.db() as db:db.execute('INSERT OR REPLACE INTO settings VALUES (?,?)',('discovery.last_resolution_batch',str(time.time())))
    finally:market.release(key)
-  if result['expanded'] or result['resolution_jobs']:record(market,'succeeded',result)
+  if market.setting('identity.enabled','0')=='1':
+   result['identity_repair_jobs']=enqueue_identity_repairs(market,limit=20)
+   result['identity_jobs']=enqueue_identity(market,limit=20)
+  if result['expanded'] or result['resolution_jobs'] or result['identity_jobs'] or result['identity_repair_jobs']:record(market,'succeeded',result)
  except Exception as exc:
   record(market,'failed',{'error':type(exc).__name__+': '+str(exc)[:1000],**result});raise
  return result

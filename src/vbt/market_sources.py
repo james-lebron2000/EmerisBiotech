@@ -8,25 +8,45 @@ URLS={
  'SZ':'https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1',
  'USNASDAQ':'https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt',
  'USOTHER':'https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt',
+ 'BSE':'https://www.bse.cn/nqxxController/nqxxCnzq.do',
  'SH':'https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1',
 }
 URLS['STAR']=URLS['SH'].replace('STOCK_TYPE=1','STOCK_TYPE=8')
 ALLOWED={urlsplit(u).hostname for u in URLS.values()}|{'clinicaltrials.gov'}
 FIELDS='NCTId,BriefTitle,LeadSponsorName,Phase,OverallStatus,Condition,InterventionType,InterventionName,protocolSection.armsInterventionsModule,PrimaryCompletionDate,LastUpdatePostDate,StudyType'
 def validate_url(url):
+ if not isinstance(url,str) or len(url)>12000 or any(ord(ch)<=32 or ord(ch)==127 for ch in url):raise ValueError('Source URL rejected')
  p=urlsplit(url)
- if p.scheme!='https' or p.hostname not in ALLOWED or p.username or p.password or p.port not in (None,443):raise ValueError('Source URL rejected')
+ if p.scheme!='https' or p.hostname not in ALLOWED or p.username is not None or p.password is not None or p.port not in (None,443) or p.fragment:raise ValueError('Source URL rejected')
 def fetch(url):
  validate_url(url)
  # System curl uses the system trust store; TLS verification is never disabled.
  import subprocess
  env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','SSL_CERT_FILE','CURL_CA_BUNDLE','HTTPS_PROXY','HTTP_PROXY','NO_PROXY')}
- args=['curl','--disable','--silent','--show-error','--fail','--max-time','30','--max-filesize','20000000','--retry','2','--retry-max-time','65','--proto','=https','--user-agent',os.environ.get('VBT_SOURCE_USER_AGENT','EmerisBiotechResearch/0.2')]
+ args=['curl','--disable','--silent','--show-error','--fail','--max-time','30','--max-filesize','20000000','--retry','2','--retry-max-time','65','--proto','=https','--max-redirs','0','--write-out','\n%{http_code}','--user-agent',os.environ.get('VBT_SOURCE_USER_AGENT','EmerisBiotechResearch/0.2')]
  if urlsplit(url).hostname=='query.sse.com.cn':args+=['--referer','https://www.sse.com.cn/']
  result=subprocess.run(args+[url],capture_output=True,timeout=100,env=env)
  if result.returncode:raise OSError('Source request failed: '+result.stderr.decode(errors='replace')[-300:])
- if len(result.stdout)>20_000_000:raise ValueError('Response exceeds 20 MB limit')
- return result.stdout
+ raw,separator,status=result.stdout.rpartition(b'\n')
+ if not separator or status!=b'200':raise ValueError('Source response rejected; received HTTP '+status.decode(errors='replace')[:20]+'; exact HTTP 200 required, redirects are not followed')
+ if not raw or len(raw)>20_000_000:raise ValueError('Empty response or response exceeds 20 MB limit')
+ return raw
+
+_DEFAULT_FETCH=fetch
+
+def read(url,*,state_dir,cancelled=lambda:False,fetch=fetch):
+ """Schedule real GET traffic; injected test readers skip physical waiting.
+
+ The host interval is a platform policy, not a source quota or per-IP guarantee.
+ Low-level fetch retains source validation and system TLS independently.
+ """
+ validate_url(url)
+ if cancelled():raise InterruptedError('Source request cancelled before capture')
+ if fetch is _DEFAULT_FETCH:
+  from .source_rate import wait_slot
+  wait_slot(state_dir,url,cancelled=cancelled)
+ if cancelled():raise InterruptedError('Source request cancelled before capture')
+ return fetch(url)
 
 def xlsx_rows(raw):
  ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
@@ -79,6 +99,9 @@ def parse_universe(source,raw):
  elif source in ('SH','STAR'):
   d=json.loads(raw);rs=d.get('result',d.get('pageHelp',{}).get('data',[]));total=int(d.get('pageHelp',{}).get('total',len(rs)))
   for r in rs:rows.append({'market':'A','exchange':'SSE','ticker':str(r['A_STOCK_CODE']).zfill(6),'name':r.get('COMPANY_ABBR',r.get('SEC_NAME_CN','')),'industry':r.get('CSRC_CODE_DESC','')})
+ elif source=='BSE':
+  from .bse_sources import parse
+  page=parse(raw);rows,total=page['rows'],page['total']
  else:raise ValueError('Unknown source')
  if not rows or any(not r['name'] for r in rows):raise ValueError('Empty or changed universe schema; old snapshot retained')
  return rows, total

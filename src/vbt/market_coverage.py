@@ -360,8 +360,9 @@ def coverage_summary(market, stale_hours=24, as_of=None):
         raise ValueError("Stale threshold must be positive")
     rows = _all_rows(market, stale_hours=stale_hours, as_of=as_of, light=True)
     with market.db() as db:
-        listings = [dict(r) for r in db.execute("SELECT market,ticker,source,observed FROM listings")]
+        listings = [dict(r) for r in db.execute("SELECT market,exchange,ticker,name,industry,source,observed FROM listings")]
         universe_runs = [dict(r) for r in db.execute("SELECT * FROM runs WHERE company='' ORDER BY started,id")]
+        snapshots = {r['source']:dict(r) for r in db.execute('SELECT * FROM universe_snapshots')}
     summaries = {}
     from .market_sources import URLS
     expected_sources = {"US": {k for k in URLS if k in ("US", "USNASDAQ", "USOTHER")},
@@ -387,14 +388,35 @@ def coverage_summary(market, stale_hours=24, as_of=None):
         universe_status = []
         for source in sorted(expected_sources[market_code]):
             latest = next((r for r in reversed(universe_runs) if r["source"] == source), None)
-            universe_status.append({"source": source, "records": source_rows.get(source, 0), "last_observed": source_observed.get(source), "latest_run": latest})
+            source_runs = [r for r in universe_runs if r['source']==source]
+            last_success = next((r for r in reversed(source_runs) if r['status']=='succeeded'),None)
+            snapshot = snapshots.get(source)
+            from .market import universe_digest
+            published_rows = [r for r in listings if r['source']==source]
+            verified = bool(snapshot and last_success and published_rows and snapshot['run_id']==last_success['id'] and snapshot['count']==last_success['count']==len(published_rows) and snapshot['rows_sha256']==universe_digest(published_rows))
+            note = ''
+            if source=='BSE':
+                if not verified:
+                    note = '北交所目录尚无可核对的成功快照，覆盖缺口仍待补齐。'
+                elif latest and latest['status'] in ('failed','partial','interrupted','cancelled'):
+                    note = '北交所最近刷新未完成，保留上次已核对的目录；最新失败与日期需继续跟进。'
+                else:
+                    note = '北交所目录已完成全页采集；行业候选仍需业务、申办方与管线核对。'
+            universe_status.append({"source": source, "records": source_rows.get(source, 0), "last_observed": source_observed.get(source), "latest_run": latest,
+                                    "last_success_run": last_success, "current_snapshot_verified": verified, "status_note": note})
         gaps = [
             "Drug-company identification is a candidate screen; the total number of eligible issuers has not been independently established.",
             "ClinicalTrials.gov observations do not establish complete pipelines, preclinical programs, China-only registrations, drug ownership or licensing rights.",
             "Issuer IR/annual-report pipeline reconciliation and ownership review remain outstanding unless separately evidenced.",
         ]
-        if market_code == "A" and not any(k in URLS for k in ("BJ", "BSE")):
-            gaps.append("Beijing Stock Exchange directory is not connected.")
+        if market_code == "A":
+            bse = next((s for s in universe_status if s['source']=='BSE'),None)
+            if not bse:
+                gaps.append("Beijing Stock Exchange directory is not connected.")
+            elif not bse['current_snapshot_verified']:
+                gaps.append("Beijing Stock Exchange directory has no verified current snapshot; collection or snapshot reconciliation is still required.")
+            elif bse['latest_run'] and bse['latest_run']['status'] in ('failed','partial','interrupted','cancelled'):
+                gaps.append("Beijing Stock Exchange latest refresh did not complete; the previous verified directory is retained and its date must be considered.")
         missing = sorted(expected_sources[market_code] - set(source_rows))
         if unsupported:
             gaps.append(str(len(unsupported)) + " securities use unsupported identities and require identity review; they are preserved in the raw directory.")

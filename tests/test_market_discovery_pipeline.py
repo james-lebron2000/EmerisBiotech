@@ -35,6 +35,8 @@ def test_identity_change_requeues_but_timestamp_only_refresh_does_not(tmp_path):
  m=Market(tmp_path/'w',tmp_path/'s')
  with m.db() as db:db.execute('INSERT INTO listings VALUES (?,?,?,?,?,?,?,?)',('s','US','SYNTHETIC','SYN','Synthetic Therapeutics','','USOTHER','2026-10-17T00:00:00+00:00'))
  tick(m);resolve(m,'US:SYN',fetch=lambda u:json.dumps({'studies':[]}).encode())
+ # The injected direct resolver stands in for consuming the queued task.
+ with m.db() as db:db.execute("UPDATE collection_jobs SET status='succeeded' WHERE kind='resolve'")
  with m.db() as db:
   original=db.execute('SELECT content_hash FROM issuer_candidates').fetchone()[0]
   db.execute("UPDATE listings SET observed='2026-10-18T00:00:00+00:00'")
@@ -54,6 +56,8 @@ def test_old_zero_result_can_be_revisited_after_thirty_days(tmp_path):
  m=Market(tmp_path/'w',tmp_path/'s')
  with m.db() as db:db.execute('INSERT INTO listings VALUES (?,?,?,?,?,?,?,?)',('s','US','SYNTHETIC','SYN','Synthetic Therapeutics','','USOTHER','2026-10-17T00:00:00+00:00'))
  tick(m);resolve(m,'US:SYN',fetch=lambda u:json.dumps({'studies':[]}).encode())
+ # The injected direct resolver stands in for consuming the queued task.
+ with m.db() as db:db.execute("UPDATE collection_jobs SET status='succeeded' WHERE kind='resolve'")
  with m.db() as db:
   db.execute("UPDATE settings SET value='0' WHERE key='discovery.last_resolution_batch'")
  assert not tick(m)['resolution_jobs']
