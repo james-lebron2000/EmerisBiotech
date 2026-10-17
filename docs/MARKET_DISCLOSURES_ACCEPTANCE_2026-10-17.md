@@ -30,6 +30,8 @@ With collection enabled and a worker running, directories are checked every24 ho
 
 Search supports market/company/name/phase/status filters. CSV export is a CSRF-protected POST followed by read-only GET replay. A SQLite read transaction fixes the exported input snapshot. CSV and manifest hashes, source links, run IDs, record hashes and formula escaping are retained. Maximum300,000 rows/512MiB. Serving verifies a frozen spool rather than re-opening the checked source path, preventing a verify/serve race.
 
+Source implementation commit: `6286f05be885832ffa8f66b00fb7e9cd5f5e294a`. Later documentation-only commits do not alter the43-source-file image alignment gate.
+
 ## Engineering and restore evidence
 
 - Complete macOS suite: **362 passed**, including Seatbelt sandbox execution, raw-write/network/secret denial, interruption and restore. Tests ran in the project's Python3.11 environment. An initial base-interpreter bootstrap failed to expose sandbox dependencies; a second bootstrap had the wrong prefix. Correct venv executable/prefix restored the intended test environment. A standard-library collector subprocess now skips unrelated editable site hooks, avoiding dependence on a removable disk.
