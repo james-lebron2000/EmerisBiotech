@@ -1,6 +1,24 @@
 """Landing metrics are actual workspace records, separate from bundled demos."""
 from vbt.workbench import Workbench,page
 from vbt.market import Market
+from html.parser import HTMLParser
+
+
+def test_dashboard_asset_entry_uses_company_research_workbench(tmp_path):
+ class Links(HTMLParser):
+  def __init__(self, value):
+   super().__init__(); self.href=None; self.links=[]; self.feed(value)
+  def handle_starttag(self, tag, attrs):
+   if tag=='a': self.href=dict(attrs).get('href')
+  def handle_data(self, data):
+   if self.href: self.links.append((self.href,data))
+  def handle_endtag(self, tag):
+   if tag=='a': self.href=None
+ app=Workbench(tmp_path/'w',tmp_path/'s')
+ links=Links(page(app,'/',{})).links
+ assert ('/assets','检索临床资产') in links
+ assert ('/assets','选择公司与登记用药') in links
+ assert ('/market','唯一登记试验') in links
 
 
 def test_dashboard_uses_actual_registry_and_preserves_empty_history(tmp_path):

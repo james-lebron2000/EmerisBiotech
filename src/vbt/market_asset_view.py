@@ -15,6 +15,7 @@ ROLES = {'experimental_arm': '在实验组中出现', 'comparator_only': '仅在
          'unresolved': '用药角色待核对'}
 FRESH = {'seen_in_latest': '最新完整抓取中可见', 'not_seen_in_latest': '仅保留于历史观察',
          'unknown': '批次关联尚未建立'}
+SORTS = {'name': '名称 A–Z', 'trials': '关联登记试验数（多→少）'}
 ATTEMPTS = {'succeeded': '查询完成', 'failed': '失败', 'partial': '分页未完成',
             'interrupted': '中断', 'cancelled': '已取消', 'running': '进行中', 'queued': '已排队',
             'retry_wait': '等待重试'}
@@ -74,7 +75,7 @@ def _conditions(values):
             + str(len(values)) + ' 个适应症原文</summary><p>' + _joined(values) + '</p></details>')
 
 
-def _source(source):
+def _source(source, company=None):
     freshness = FRESH.get(source.get('freshness'), FRESH['unknown'])
     role = ROLES.get(source.get('role_status'), ROLES['unresolved'])
     preview = (str(source.get('status') or '状态未记载') + ' · '
@@ -83,6 +84,9 @@ def _source(source):
         preview = preview[:100] + '…'
     parts = ['<details class="asset-trial-details"><summary>', e(source.get('nct')), ' · ', e(preview), '</summary>',
              '<section class="asset-source"><h4>', _source_link(source), '</h4>',
+             '<p class="cell-meta">上方链接为外部当前页面，内容可能已更新；以下保留本地登记观察。</p>',
+             ('<p><a class="text-link" href="/market?' + e(urlencode({'company': company, 'q': source.get('nct', '')}))
+              + '">查看本地已存观察 →</a></p>') if company else '',
              '<p class="trial-title">', e(source.get('title') or '试验标题未记载'), '</p>',
              '<dl class="source-meta">',
              _fact('登记申办方', e(source.get('sponsor'))),
@@ -113,7 +117,7 @@ def _card(asset):
     retained = len(asset.get('retained_trials', []))
     history = ('<p class="data-note">其中 ' + str(retained)
                + ' 项试验仅保留于历史观察；未在最近完整批次中出现不代表试验终止。</p>') if retained else ''
-    return ('<article class="card asset-card"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3>'
+    return ('<article class="card asset-card" aria-labelledby="asset-name-' + e(asset['id']) + '"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3 id="asset-name-' + e(asset['id']) + '">'
             + e(asset['drug_name']) + '</h3></div><span class="status-badge caution">权益待核对</span></div>'
             + '<div class="asset-badges"><span class="status-badge">' + e(role)
             + '</span><span class="status-badge">' + str(len(asset['trials'])) + ' 项登记试验</span></div>'
@@ -124,7 +128,7 @@ def _card(asset):
             + _fact('批次可见性', e(freshness)) + '</dl>' + history
             + '<details class="asset-evidence"><summary>逐项核对 ' + str(len(asset['sources']))
             + ' 条试验依据 · ClinicalTrials.gov</summary>'
-            + ''.join(_source(source) for source in asset['sources']) + '</details></article>')
+            + ''.join(_source(source, asset['company']) for source in asset['sources']) + '</details></article>')
 
 
 def _company_context(q):
@@ -141,17 +145,21 @@ def _company_context(q):
     return result
 
 
-def _company_observations(market):
+def _company_observations(market, cid=None):
     """One read snapshot; stored observations and latest attempts stay separate."""
     with market.db() as db:
         db.execute('BEGIN')
+        parameters = (cid,) if cid is not None else ()
         counts = {row['company']: row['n'] for row in db.execute(
-            'SELECT company,count(DISTINCT nct) AS n FROM trials GROUP BY company')}
+            'SELECT company,count(DISTINCT nct) AS n FROM trials'
+            + (' WHERE company=?' if cid is not None else '') + ' GROUP BY company', parameters)}
         history = [dict(row) for row in db.execute(
-            "SELECT * FROM runs WHERE source='ClinicalTrials.gov' ORDER BY started DESC,id DESC")]
+            "SELECT * FROM runs WHERE source='ClinicalTrials.gov'"
+            + (' AND company=?' if cid is not None else '') + ' ORDER BY started DESC,id DESC', parameters)]
         has_jobs = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='collection_jobs'").fetchone()
         active = {row['reference']: row['status'] for row in db.execute(
-            "SELECT reference,status FROM collection_jobs WHERE kind='company' AND status IN ('queued','running','retry_wait')")} if has_jobs else {}
+            "SELECT reference,status FROM collection_jobs WHERE kind='company' AND status IN ('queued','running','retry_wait')"
+            + (' AND reference=?' if cid is not None else ''), parameters)} if has_jobs else {}
     latest, uncertain = {}, set()
     for row in history:
         cid = row['company']
@@ -259,16 +267,59 @@ def _company_directory(market, companies, q):
     return body + '</section>'
 
 
+def _company_research_context(market, cid):
+    counts, latest, uncertain, active = _company_observations(market, cid)
+    count, attempt, unknown = counts.get(cid, 0), latest.get(cid), cid in uncertain
+    status = '查询时间待核实' if unknown else ATTEMPTS.get(attempt['status'], '查询状态待核实') if attempt else '尚未记录查询'
+    when = (_timestamp(attempt.get('finished') or attempt.get('started')) if attempt and not unknown else '未知')
+    body = ('<section class="card asset-context-panel" aria-labelledby="asset-context-title">'
+            '<div class="section-heading"><h2 id="asset-context-title">采集状态与研究边界</h2>'
+            '<a class="text-link" href="/coverage#collection-queue">采集队列与错误 →</a></div>'
+            '<dl class="asset-context-grid"><div><dt>当前已存登记试验</dt><dd><strong>'
+            + f'{count:,}' + '</strong> 项 NCT · 按编号去重</dd></div>'
+            '<div><dt>最近查询尝试</dt><dd><span class="status-badge">' + e(status)
+            + '</span><p class="cell-meta">' + when + '</p></dd></div>'
+            '<div><dt>当前公司采集队列</dt><dd>'
+            + e(ATTEMPTS.get(active[cid], '队列状态未知') if cid in active else '未记录活跃任务')
+            + '<p><a class="text-link" href="#asset-results">进入名称与试验依据 ↓</a></p></dd></div></dl>'
+            '<p class="data-note">' + e(_collection_note(count, attempt, unknown)) + '</p>'
+            '<details class="source-details"><summary>查看完整性、科学审查与权益边界</summary>'
+            '<dl class="source-meta">' + _fact('记录完整性', '本页未重新校验来源原件与校验值；展开试验可追溯已记录的批次和 SHA-256。')
+            + _fact('科学审查', '尚未在此页判定；登记观察不能直接作为疗效结论。')
+            + _fact('人工签署与权益', '本页不确认人工签署、所有权或授权地域，均需另行核对。') + '</dl></details>')
+    if attempt and attempt.get('error') and not unknown:
+        body += ('<details class="source-details"><summary>查看最近查询原因</summary><p class="body">'
+                 + e(attempt['error']) + '</p></details>')
+    return body + '</section>'
+
+
+def _filter_url(filters, **changes):
+    """All links keep the current company/context; changed filters start at page one."""
+    params = {**filters, **changes}
+    return '/assets?' + urlencode({key: value for key, value in params.items() if value != '' and value is not None})
+
+
 def render(app, q):
     market = Market(app.workspace, app.state)
     companies = sorted(market.rows('companies'), key=lambda company: company['id'])
     cid, query, role = q.get('company', ''), q.get('q', '').strip(), q.get('role', '')
+    phase, freshness, sort = q.get('phase', ''), q.get('freshness', ''), q.get('sort', 'name')
     if role and role not in ROLES:
         raise ValueError('未知的用药角色')
+    if freshness and freshness not in FRESH:
+        raise ValueError('未知的批次可见性')
+    if sort not in SORTS:
+        raise ValueError('未知的排序方式')
     selected_company = next((company for company in companies if company['id'] == cid), None)
     if cid and selected_company is None:
         raise ValueError('公司尚未配置')
     context = _company_context(q)
+    assets = build_assets(market, cid) if cid else []
+    phases = sorted({value for asset in assets for value in asset['phases']})
+    filters = {'company': cid, 'q': query, 'role': role, **context,
+               **({'phase': phase} if phase else {}), **({'freshness': freshness} if freshness else {}),
+               **({'sort': sort} if sort != 'name' else {})}
+    clear_url = _filter_url({'company': cid, **context}) if cid else '/assets'
     if cid:
         actions = ('<a class="button secondary" href="/market?' + e(urlencode({'company': cid}))
                    + '">同公司登记记录</a><a class="button secondary" href="/disclosures?'
@@ -285,6 +336,8 @@ def render(app, q):
     if not cid:
         body += _company_directory(market, companies, q)
         body += '<details class="card secondary-panel"><summary>按公司代码直接选择并筛选登记名称</summary>'
+    else:
+        body += _company_research_context(market, cid)
     body += ('<section class="card filter-toolbar asset-filter" aria-labelledby="asset-filter-title">'
              '<div class="section-heading"><h2 id="asset-filter-title">查找候选药物关联</h2>'
              '<span class="cell-meta">只读查询 · ' + str(len(companies)) + ' 家已配置证券主体</span></div>'
@@ -303,16 +356,32 @@ def render(app, q):
              '<div class="field"><label for="asset-role">用药角色</label><select id="asset-role" name="role">'
              '<option value="">全部角色</option>'
              + ''.join('<option value="' + key + '"' + (' selected' if role == key else '') + '>' + label + '</option>'
-                       for key, label in ROLES.items()) + '</select></div></div><div class="filter-actions">'
-             '<button type="submit">查看关联</button><a class="text-action" href="/assets">清除筛选</a>'
-             '</div></form></section>')
+                       for key, label in ROLES.items()) + '</select></div></div>')
+    if cid:
+        body += ('<details class="asset-filter-advanced"' + (' open' if phase or freshness or sort != 'name' else '')
+                 + '><summary>原文阶段、批次与排序</summary><div class="form-grid">'
+                 '<div class="field"><label for="asset-phase">试验阶段原文（任一命中）</label><select id="asset-phase" name="phase">'
+                 '<option value="">全部原文阶段</option>'
+                 + ''.join('<option value="' + e(value) + '"' + (' selected' if phase == value else '') + '>' + e(value) + '</option>' for value in phases)
+                 + ('<option value="' + e(phase) + '" selected>' + e(phase) + ' · 当前来源未见</option>' if phase and phase not in phases else '')
+                 + '</select></div><div class="field"><label for="asset-freshness">名称的批次可见性</label>'
+                 '<select id="asset-freshness" name="freshness"><option value="">全部批次</option>'
+                 + ''.join('<option value="' + key + '"' + (' selected' if freshness == key else '') + '>' + label + '</option>' for key, label in FRESH.items())
+                 + '</select></div><div class="field"><label for="asset-sort">结果排序</label><select id="asset-sort" name="sort">'
+                 + ''.join('<option value="' + key + '"' + (' selected' if sort == key else '') + '>' + label + '</option>' for key, label in SORTS.items())
+                 + '</select></div></div><p class="data-note">筛选命中名称后，卡片仍保留该名称的全部试验依据；混合批次以至少一项在最新完整批次中可见为准。试验数排序仅帮助浏览。</p></details>')
+    body += ('<div class="filter-actions"><button type="submit">查看关联</button><a class="text-action" href="'
+             + e(clear_url) + '">清除筛选</a></div></form></section>')
     if not cid:
         return body + '</details>'
 
-    assets = build_assets(market, cid)
     folded = query.casefold()
-    selected = [asset for asset in assets if (not role or asset['role_status'] == role)
+    matching = [asset for asset in assets if (not phase or phase in asset['phases'])
+                and (not freshness or asset['freshness'] == freshness)
                 and (not folded or folded in ' '.join([asset['drug_name']] + asset['trials'] + asset['conditions']).casefold())]
+    selected = [asset for asset in matching if not role or asset['role_status'] == role]
+    if sort == 'trials':
+        selected.sort(key=lambda asset: (-len(asset['trials']), asset['normalized_name'], asset['id']))
     try:
         offset = max(0, int(q.get('offset', 0))) // PAGE_SIZE * PAGE_SIZE
     except (ValueError, TypeError):
@@ -320,7 +389,7 @@ def render(app, q):
     # A saved URL still produces a useful last page when the result set shrinks.
     offset = min(offset, max(0, (len(selected) - 1) // PAGE_SIZE * PAGE_SIZE))
     trial_count = len({nct for asset in selected for nct in asset['trials']})
-    body += ('<section aria-labelledby="asset-results-title"><div class="section-heading">'
+    body += ('<section id="asset-results" tabindex="-1" aria-labelledby="asset-results-title"><div class="section-heading">'
              '<div><h2 id="asset-results-title">' + e(selected_company['name']) + '</h2>'
              '<p class="cell-meta">' + e(cid) + ' · ClinicalTrials.gov 登记观测</p></div>'
              '<a class="text-link" href="/market?' + e(urlencode({'company': cid})) + '">查看该公司登记记录 →</a></div>'
@@ -331,21 +400,36 @@ def render(app, q):
              + '</div><small>当前筛选内按 NCT 编号去重</small></div>'
              '<div class="metric-card"><span class="muted">药物权益</span><div class="metric">待核对</div>'
              '<small>登记角色不构成所有权或授权证据</small></div></div>')
-    if query or role:
+    body += '<nav class="asset-role-tabs" aria-label="按用药角色切换">'
+    for key, label in [('', '全部角色'), *ROLES.items()]:
+        count = len(matching) if not key else sum(asset['role_status'] == key for asset in matching)
+        body += ('<a href="' + e(_filter_url(filters, role=key)) + '"' + (' aria-current="page"' if role == key else '')
+                 + '>' + e(label) + ' <span class="cell-meta">' + str(count) + '</span></a>')
+    body += '</nav>'
+    chips = [('q', query, '关键词：' + query), ('role', role, '用药角色：' + ROLES.get(role, '')),
+             ('phase', phase, '阶段原文：' + phase), ('freshness', freshness, '批次：' + FRESH.get(freshness, '')),
+             ('sort', sort if sort != 'name' else '', '排序：' + SORTS[sort])]
+    if any(value for _, value, _ in chips):
         body += '<div class="filter-chips" aria-label="当前筛选">'
-        if query:
-            body += '<span>关键词：' + e(query) + '</span>'
-        if role:
-            body += '<span>用药角色：' + e(ROLES[role]) + '</span>'
+        for key, value, label in chips:
+            if value:
+                body += ('<a class="asset-clear-chip" href="' + e(_filter_url(filters, **{key: ''}))
+                         + '" aria-label="' + e('移除' + label) + '">' + e(label) + ' ×</a>')
         body += '</div>'
     if selected:
-        body += ('<p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
+        body += ('<div class="asset-result-toolbar"><p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
                  + ' 个名称，共 ' + str(len(selected)) + ' 个。展开卡片查看每项试验的原文、日期与校验值。</p>'
+                 '<span class="cell-meta">' + e(SORTS[sort]) + ' · 本地已存观察</span></div>'
                  '<div class="asset-grid">' + ''.join(_card(asset) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
+    elif assets:
+        body += ('<div class="empty"><h3>当前筛选无匹配</h3><p>该公司已有 ' + str(len(assets))
+                 + ' 个登记名称，当前条件未命中。<a href="' + e(clear_url) + '">清除该公司筛选 →</a>'
+                 '</p><p class="cell-meta">筛选结果为空不能据此判定公司没有研发管线。</p></div>')
     else:
         body += ('<div class="empty"><h3>没有匹配的登记名称关联</h3><p>尚未采集、查询零条或分页未完成都可能导致此处为空，'
-                 '不能据此判定公司没有研发管线。<a href="/coverage">查看覆盖状态与缺口 →</a></p></div>')
-    filters = {'company': cid, 'q': query, 'role': role, **context}
+                 '也可能只有未纳入此视图的干预类型。不能据此判定公司没有研发管线。'
+                 '<a href="/coverage#collection-queue">查看采集状态与缺口 →</a></p>'
+                 '<a class="text-link" href="/market?' + e(urlencode({'company': cid})) + '">核对该公司全部已存登记记录 →</a></div>')
     if offset or offset + PAGE_SIZE < len(selected):
         body += '<nav class="pagination" aria-label="候选药物结果分页">'
         if offset:

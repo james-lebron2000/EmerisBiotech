@@ -1,5 +1,7 @@
 """History filters never conflate execution, integrity or scientific review."""
 from html.parser import HTMLParser
+import copy
+import json
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -143,3 +145,97 @@ def test_mobile_record_labels_do_not_change_state_semantics():
     assert any(t == 'table' and a.get('role') == 'table' for t, a in page.tags)
     assert {a['data-label'] for t, a in page.tags if t == 'td'} == {
         '研究问题与版本', '记录类型', '执行 / 记录状态', '科学审查'}
+
+
+def test_run_times_use_saved_start_and_end_fields_with_explicit_timezone():
+    row = dict(RECORDS[0], data={'started_at': '2026-10-17T17:20:00Z',
+                               'finished_at': '2026-10-18T02:25:00+09:00'})
+    body = record_table([row])
+    clocks = [a for t, a in Page(body).tags if t == 'time']
+    assert [a['datetime'] for a in clocks] == [row['data']['started_at'], row['data']['finished_at']]
+    assert '开始时间：<time' in body and '>2026-10-18 01:20 UTC+8</time>' in body
+    assert '结束时间：<time' in body and '>2026-10-18 01:25 UTC+8</time>' in body
+    assert '保存字段 started_at' in clocks[0]['title']
+    assert '保存字段 finished_at' in clocks[1]['title']
+
+
+def test_cycle_uses_created_at_and_a_portfolio_without_saved_time_stays_unknown():
+    cycle = dict(RECORDS[2], data={'created_at': '2026-10-17T20:00:00+08:00'})
+    assert '创建时间：<time' in record_table([cycle])
+    portfolio = dict(RECORDS[3], id='2026-10-17T120000+0000-fake-id', data={'items': []})
+    body = record_table([portfolio])
+    assert '记录时间未知' in body
+    assert not any(t == 'time' for t, _ in Page(body).tags)
+
+
+@pytest.mark.parametrize('value', [None, '', '2026-10-17', '2026-10-17T12:00:00',
+    '2026-02-30T12:00:00+08:00', '9999-12-31T23:59:59-12:00',
+    '20261017T12:00:00Z', '2026-10-17"12:00:00+08:00',
+    '<img src=x onerror=evil()>', '2026-10-17T12:00:00Z\n', 1792224000, True])
+def test_missing_invalid_naive_and_overflowing_timestamps_are_unknown(value):
+    body = record_table([dict(RECORDS[2], data={'created_at': value})])
+    assert '记录时间未知' in body
+    assert not any(t in ('time', 'img', 'script') for t, _ in Page(body).tags)
+
+
+@pytest.mark.parametrize('data', [None, [], 'untrusted record', {}])
+def test_record_time_never_infers_from_number_path_or_filesystem(data):
+    row = dict(RECORDS[0], id='2026-10-17T190000+0000-12345678', data=data,
+               started_at='2026-10-17T01:00:00Z', path='/unrelated/path')
+    body = record_table([row])
+    assert '记录时间未知' in body
+    assert not any(t == 'time' for t, _ in Page(body).tags)
+
+
+def test_end_time_does_not_invent_a_start_or_a_successful_review():
+    row = dict(RECORDS[1], data={'finished_at': '2026-10-17T03:04:00Z'})
+    body = record_table([row])
+    assert '开始时间未知' in body and '结束时间：<time' in body
+    assert '<span class="badge failed">执行失败</span>' in body
+    assert '<span class="badge pending">待科学审查</span>' in body
+    assert '执行成功' not in body and '创建时间' not in body
+
+
+def test_conflicting_start_and_end_times_are_flagged_without_changing_execution():
+    row = dict(RECORDS[0], data={'started_at': '2026-10-17T02:00:00Z',
+                               'finished_at': '2026-10-17T01:00:00Z'})
+    body = record_table([row])
+    assert '保存的开始与结束时间冲突' in body
+    assert not any(t == 'time' for t, _ in Page(body).tags)
+    assert '<span class="badge succeeded">执行成功</span>' in body
+    assert '<span class="badge revise">需修订</span>' in body
+
+
+def test_time_display_preserves_synthetic_state_boundaries_filters_and_return_context():
+    row = dict(RECORDS[0], title='SYNTHETIC ENGINEERING TEST: OSMR',
+               data={'started_at': '2026-10-17T01:00:00Z', 'record_integrity': 'failed',
+                     'scientific_review': 'revise', 'human_signoff': False})
+    before = copy.deepcopy(row)
+    body = render([row], {'scope': 'synthetic', 'review': 'revise', 'status': 'succeeded'})
+    assert row == before and links(body) == ['one']
+    assert '合成工程测试</span>' in body and '执行成功</span>' in body and '需修订</span>' in body
+    assert '完整性通过' not in body and '人工签署通过' not in body
+    target = next(a['href'] for t, a in Page(body).tags if t == 'a' and a.get('class') == 'record-title')
+    back = parse_qs(urlsplit(parse_qs(urlsplit(target).query)['return'][0]).query)
+    assert back['scope'] == ['synthetic'] and back['review'] == ['revise']
+    assert {a['data-label'] for t, a in Page(body).tags if t == 'td'} == {
+        '研究问题与版本', '记录类型', '执行 / 记录状态', '科学审查'}
+
+
+def test_actual_workbench_record_shape_renders_explicit_run_and_cycle_times(tmp_path):
+    from vbt.workbench import Workbench
+    app = Workbench(tmp_path / 'workspace', tmp_path / 'state')
+    for folder, filename, payload in [
+        ('runs/run-fixture', 'status.json', {'execution': 'succeeded', 'scientific_review': 'revise',
+                                          'started_at': '2026-10-17T01:00:00Z'}),
+        ('cycles/cycle-fixture', 'cycle.json', {'created_at': '2026-10-17T02:00:00Z',
+                                              'hypothesis': 'Synthetic fixture', 'complete_research_cycle': True}),
+        ('portfolio/snapshots/portfolio-fixture', 'evaluation.json', {'items': []}),
+    ]:
+        path = app.workspace / 'artifacts' / folder; path.mkdir(parents=True)
+        (path / filename).write_text(json.dumps(payload))
+    rows = app.records()
+    body = record_table(rows)
+    clocks = [a['datetime'] for t, a in Page(body).tags if t == 'time']
+    assert set(clocks) == {'2026-10-17T01:00:00Z', '2026-10-17T02:00:00Z'}
+    assert body.count('记录时间未知') == 1

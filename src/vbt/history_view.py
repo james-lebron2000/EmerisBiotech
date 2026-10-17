@@ -1,5 +1,7 @@
 """Read-only research history with independent execution and review filters."""
 import html
+import re
+from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
 KINDS = {'run': '分析运行', 'cycle': '研究循环', 'portfolio': '研究快照'}
@@ -43,12 +45,54 @@ def safe_return(value):
     return '/records' + ('?' + urlencode(pairs) if pairs else '')
 
 
+def _saved_time(value):
+    """Parse an explicit aware timestamp; an ID, mtime or naive date is no substitute."""
+    if (not isinstance(value, str) or not 1 <= len(value) <= 100
+            or not re.fullmatch(r'\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:\d{2})', value)):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            return None
+        local = parsed.astimezone(timezone(timedelta(hours=8)))
+        return parsed, local.strftime('%Y-%m-%d %H:%M') + ' UTC+8'
+    except (ValueError, OverflowError):
+        return None
+
+
+def _record_time(record):
+    """Render fields present in Workbench.records().data without reading artifacts.
+
+    Runs save started_at/finished_at in status.json; cycles save created_at.
+    Portfolio evaluation.json currently has no timestamp, so those rows remain
+    unknown unless an explicit created_at is supplied in their saved data. The
+    display is a transcription of stored fields, not an integrity attestation.
+    """
+    data = record.get('data')
+    if not isinstance(data, dict):
+        data = {}
+    fields = (('started_at', '开始时间'), ('finished_at', '结束时间')) if record['kind'] == 'run' else (('created_at', '创建时间'),)
+    parsed = [(key, label, _saved_time(data.get(key))) for key, label in fields]
+    if len(parsed) == 2 and all(row[2] for row in parsed) and parsed[1][2][0] < parsed[0][2][0]:
+        return '<div class="record-time cell-meta">记录时间未知 · 保存的开始与结束时间冲突</div>'
+    if not any(value for _, _, value in parsed):
+        return '<div class="record-time cell-meta">记录时间未知 · 未记录或时间字段尚未核实</div>'
+    lines = []
+    for key, label, value in parsed:
+        if value is None:
+            lines.append(e(label) + '未知')
+        else:
+            lines.append(e(label) + '：<time datetime="' + e(data[key]) + '" title="'
+                         + e('保存字段 ' + key + '：' + data[key]) + '">' + e(value[1]) + '</time>')
+    return '<div class="record-time cell-meta">' + '<br>'.join(lines) + '</div>'
+
+
 def record_table(records, return_to=None):
     if not records:
         return ('<div class="empty"><h3>这里还没有匹配的研究记录</h3>'
                 '<p>调整筛选条件，或先查看已知结局的回顾案例。</p>'
                 '<a href="/case?id=osmr-uc">体验研究流程 →</a></div>')
-    body = ('<p class="table-caption history-caption"><span>每条记录保留独立版本与原始状态</span>'
+    body = ('<p class="table-caption history-caption"><span>每条记录保留独立版本与原始状态 · 时间按保存字段显示</span>'
             '<span class="scroll-hint">窄屏可左右滚动，或聚焦表格后使用方向键</span></p>'
             '<div class="scroll history-scroll" role="region" aria-label="研究历史记录表" tabindex="0">'
             '<table class="history-table" role="table"><thead><tr><th scope="col">研究问题与版本</th>'
@@ -61,7 +105,7 @@ def record_table(records, return_to=None):
         url = '/record?' + urlencode(params)
         sample = '<span class="badge pending">合成工程测试</span> ' if is_synthetic(r) else ''
         body += ('<tr><td data-label="研究问题与版本">' + sample + '<a class="record-title" href="' + e(url) + '">' + e(r['title']) + '</a>'
-                 '<div class="ref record-id">' + e(r['id']) + '</div></td><td data-label="记录类型">'
+                 '<div class="ref record-id">' + e(r['id']) + '</div>' + _record_time(r) + '</td><td data-label="记录类型">'
                  + e(KINDS.get(r['kind'], r['kind'])) + '</td><td data-label="执行 / 记录状态">'
                  + _badge(r['status'], STATES) + '</td><td data-label="科学审查">'
                  + _badge(r['review'], REVIEWS) + '</td></tr>')

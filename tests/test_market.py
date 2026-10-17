@@ -1,4 +1,4 @@
-import json,threading,urllib.request,urllib.error
+import json,threading,urllib.request,urllib.error,sqlite3,time
 from http.server import ThreadingHTTPServer
 from urllib.parse import urlencode
 import pytest
@@ -106,8 +106,100 @@ def test_query_filters_and_invalid_phase_no_hits(market):
  assert market.search_trials(phase='PHASE3')[1]==0
  assert market.search_trials(offset=200)[0]==[]
 
+def test_nct_search_uses_registry_key_when_legacy_json_lacks_identifiers(market):
+ legacy={'title':'Synthetic legacy import without embedded registry identifiers','phases':['PHASE2'],'status':'RECRUITING'}
+ assert 'nct_id' not in legacy and 'source_url' not in legacy
+ market.add_company('US','OTHER','Other synthetic issuer',['Other Synthetic Sponsor'],'Isolated scope fixture')
+ with market.db() as db:
+  for company in ('US:TEST','US:OTHER'):
+   db.execute('INSERT INTO trials VALUES (?,?,?,?,?)',(company,'NCT00000001',json.dumps(legacy),'synthetic-hash','2026-10-18'))
+ rows,count=market.search_trials(company='US:TEST',query='NCT00000001')
+ assert count==1 and len(rows)==1 and rows[0]['nct']=='NCT00000001'
+ assert rows[0]['company']=='US:TEST' and json.loads(rows[0]['data'])==legacy
+ assert market.search_trials(company='US:TEST',query='NCT99999999')[1]==0
+ assert market.search_trials(company='US:EMPTY',query='NCT00000001')[1]==0
+
 def test_expired_lease_recovers_interrupted_run(market):
  market.claim('trials:US:TEST');rid=market.begin('ClinicalTrials.gov','US:TEST')
  with market.db() as db:db.execute('UPDATE leases SET until=0')
  restored=Market(market.root.parent.parent,market.state)
  assert next(r for r in restored.rows('runs') if r['id']==rid)['status']=='interrupted'
+
+@pytest.mark.parametrize('existing',['empty','completed','active_lease'])
+def test_constructor_without_expired_runs_does_not_compete_with_a_writer(market,monkeypatch,existing):
+ if existing=='completed':
+  rid=market.begin('ClinicalTrials.gov','US:TEST');market.finish(rid,'succeeded',0)
+ elif existing=='active_lease':
+  assert market.claim('trials:US:TEST');market.begin('ClinicalTrials.gov','US:TEST')
+ opened=[];statements=[]
+ def bounded_db(self):
+  db=sqlite3.connect(self.path,timeout=.05);db.row_factory=sqlite3.Row
+  db.set_trace_callback(statements.append);opened.append(db);return db
+ monkeypatch.setattr(Market,'db',bounded_db)
+ writer=sqlite3.connect(market.path)
+ writer.execute('BEGIN IMMEDIATE')
+ try:
+  restored=Market(market.root.parent.parent,market.state)
+  assert restored.path==market.path
+  assert all(db.total_changes==0 for db in opened)
+  assert not any(sql.lstrip().upper().startswith(('UPDATE ','INSERT ','DELETE ','REPLACE ')) for sql in statements)
+ finally:
+  writer.rollback();writer.close()
+  for db in opened:db.close()
+
+@pytest.mark.parametrize('company,source,key',[
+ ('US:TEST','ClinicalTrials.gov','trials:US:TEST'),('','US','universe:US')])
+def test_constructor_keeps_active_company_and_universe_leases(market,company,source,key):
+ assert market.claim(key)
+ rid=market.begin(source,company)
+ with market.db() as db:before=dict(db.execute('SELECT * FROM leases WHERE key=?',(key,)).fetchone())
+ restored=Market(market.root.parent.parent,market.state)
+ run=next(row for row in restored.rows('runs') if row['id']==rid)
+ assert run['status']=='running' and run['finished'] is None and run['error']==''
+ with restored.db() as db:assert dict(db.execute('SELECT * FROM leases WHERE key=?',(key,)).fetchone())==before
+
+@pytest.mark.parametrize('lease',['missing','expired'])
+@pytest.mark.parametrize('company,source,key',[
+ ('US:TEST','ClinicalTrials.gov','trials:US:TEST'),('','US','universe:US')])
+def test_constructor_recovers_only_genuinely_expired_runs(market,lease,company,source,key):
+ if lease=='expired':assert market.claim(key)
+ rid=market.begin(source,company)
+ completed=market.begin('Synthetic completed source','US:COMPLETED');market.finish(completed,'succeeded',3)
+ if lease=='expired':
+  with market.db() as db:db.execute('UPDATE leases SET until=0 WHERE key=?',(key,))
+ restored=Market(market.root.parent.parent,market.state)
+ rows={row['id']:row for row in restored.rows('runs')}
+ assert rows[rid]['status']=='interrupted' and rows[rid]['finished']
+ assert rows[rid]['error']=='Collection lease expired; retry required'
+ assert rows[completed]['status']=='succeeded' and rows[completed]['count']==3
+
+def test_recovery_rechecks_lease_renewed_after_the_read_probe(market,monkeypatch):
+ assert market.claim('trials:US:TEST')
+ rid=market.begin('ClinicalTrials.gov','US:TEST')
+ with market.db() as db:db.execute('UPDATE leases SET until=0')
+ renewed=[];opened=[]
+ class RenewingConnection(sqlite3.Connection):
+  def execute(self,sql,parameters=()):
+   if sql.lstrip().upper().startswith('UPDATE RUNS') and not renewed:
+    with sqlite3.connect(market.path) as other:
+     other.execute('UPDATE leases SET until=? WHERE key=?',(time.time()+3600,'trials:US:TEST'))
+    renewed.append(True)
+   return super().execute(sql,parameters)
+ def connection(self):
+  db=sqlite3.connect(self.path,timeout=.1,factory=RenewingConnection);db.row_factory=sqlite3.Row;opened.append(db);return db
+ monkeypatch.setattr(Market,'db',connection)
+ try:
+  restored=Market(market.root.parent.parent,market.state)
+  assert renewed==[True]
+  assert next(row for row in restored.rows('runs') if row['id']==rid)['status']=='running'
+ finally:
+  for db in opened:db.close()
+
+def test_each_new_constructor_still_checks_expiry_without_schema_cache(market):
+ assert market.claim('trials:US:TEST')
+ rid=market.begin('ClinicalTrials.gov','US:TEST')
+ first=Market(market.root.parent.parent,market.state)
+ assert next(row for row in first.rows('runs') if row['id']==rid)['status']=='running'
+ with market.db() as db:db.execute('UPDATE leases SET until=0')
+ second=Market(market.root.parent.parent,market.state)
+ assert next(row for row in second.rows('runs') if row['id']==rid)['status']=='interrupted'

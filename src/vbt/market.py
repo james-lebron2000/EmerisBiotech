@@ -31,7 +31,12 @@ class Market:
    CREATE TABLE IF NOT EXISTS universe_snapshots (source TEXT PRIMARY KEY,run_id TEXT NOT NULL,count INTEGER NOT NULL,rows_sha256 TEXT NOT NULL,published TEXT NOT NULL);
    ''')
    if 'owner' not in {r[1] for r in d.execute('PRAGMA table_info(leases)')}:d.execute('ALTER TABLE leases ADD COLUMN owner TEXT')
-   d.execute("UPDATE runs SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE status='running' AND NOT EXISTS (SELECT 1 FROM leases WHERE leases.key=CASE WHEN runs.company='' THEN 'universe:' || runs.source ELSE 'trials:' || runs.company END AND leases.until>?)",(now(),time.time()))
+   # Page reads normally have nothing to recover; even a zero-row UPDATE
+   # takes a writer lock. Recheck the original lease predicate when writing.
+   expired="status='running' AND NOT EXISTS (SELECT 1 FROM leases WHERE leases.key=CASE WHEN runs.company='' THEN 'universe:' || runs.source ELSE 'trials:' || runs.company END AND leases.until>?)"
+   clock=time.time()
+   if d.execute('SELECT 1 FROM runs WHERE '+expired+' LIMIT 1',(clock,)).fetchone():
+    d.execute("UPDATE runs SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE "+expired,(now(),clock))
  def db(self):
   d=sqlite3.connect(self.path,timeout=30);d.row_factory=sqlite3.Row;return d
  def rows(self,table):
@@ -48,7 +53,7 @@ class Market:
   conditions=[];params=[]
   if market:conditions.append('company LIKE ?');params.append(market+':%')
   if company:conditions.append('company=?');params.append(company)
-  if query:conditions.append('(company LIKE ? OR data LIKE ? OR EXISTS (SELECT 1 FROM companies c WHERE c.id=trials.company AND c.name LIKE ?))');params.extend(['%'+query+'%']*3)
+  if query:conditions.append('(company LIKE ? OR nct LIKE ? OR data LIKE ? OR EXISTS (SELECT 1 FROM companies c WHERE c.id=trials.company AND c.name LIKE ?))');params.extend(['%'+query+'%']*4)
   if phase:conditions.append("EXISTS (SELECT 1 FROM json_each(trials.data,'$.phases') WHERE value=?)");params.append(phase)
   if status:conditions.append("json_extract(data,'$.status')=?");params.append(status)
   where=' WHERE '+' AND '.join(conditions) if conditions else ''

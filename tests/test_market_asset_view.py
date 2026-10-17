@@ -88,6 +88,23 @@ def test_company_results_have_correct_distinct_trial_denominators_and_unknown_ri
     assert not any('open' in attrs for attrs in Document(body).find('details'))
 
 
+def test_local_evidence_link_opens_registry_observation_without_json_nct(app):
+    from vbt.market_view import render as registry_render
+    cid = company(app)
+    company(app, symbol='TWO')
+    put_trial(app, source_url=None)
+    put_trial(app, company_id='US:TWO', source_url=None, title='Other company only')
+    app.token = 'synthetic-csrf-token'
+    links = Document(render(app, {'company': cid})).find('a')
+    link = next(row['href'] for row in links if row.get('href', '').startswith('/market?')
+                and parse_qs(urlsplit(row['href']).query).get('q') == ['NCT00000001'])
+    query = {key: values[0] for key, values in parse_qs(urlsplit(link).query).items()}
+    assert query == {'company': cid, 'q': 'NCT00000001'}
+    body = registry_render(app, query)
+    assert '<span class="result-count">1</span>' in body
+    assert 'Synthetic title' in body and 'Other company only' not in body
+
+
 def test_literal_casefold_search_and_role_filter_do_not_leak_other_company(app):
     cid = company(app)
     company(app, symbol='TWO')
@@ -382,3 +399,217 @@ def test_each_trial_is_individually_collapsed_with_complete_evidence_retained(ap
     assert body.count('数据 SHA-256') == 2
     assert 'Full synthetic title remains available' in body
     assert '逐项核对 2 条试验依据' in body
+
+
+def filters_from_link(link):
+    return {key: value[0] for key, value in parse_qs(urlsplit(link['href']).query).items()}
+
+
+def role_links(body):
+    section = body.split('<nav class="asset-role-tabs"', 1)[1].split('</nav>', 1)[0]
+    return Document('<nav' + section + '</nav>').find('a')
+
+
+def test_selected_company_has_actual_attempt_queue_and_separate_review_boundaries(app):
+    from vbt.market_jobs import enqueue
+    cid = company(app)
+    other = company(app, symbol='TWO')
+    put_trial(app)
+    put_trial(app, 'NCT00000002')
+    put_trial(app, 'NCT00000003', company_id=other)
+    put_attempt(app, cid, 'failed', 'failed', error='<img src=x onerror=evil()>', count=0)
+    put_attempt(app, other, 'unrelated-success', 'succeeded', count=999)
+    enqueue(app.market, 'company', cid)
+    body = render(app, {'company': cid})
+    panel = body.split('id="asset-context-title"', 1)[1].split('id="asset-filter-title"', 1)[0]
+    assert '<strong>2</strong> 项 NCT' in panel and '999' not in panel
+    assert '最近查询失败' in panel and '失败或不完整结果不能解释为没有管线' in panel
+    assert '当前公司采集队列</dt><dd>已排队' in panel
+    assert '2020-10-16 10:00 UTC+8' in panel
+    assert '记录完整性' in panel and '本页未重新校验来源原件与校验值' in panel
+    assert '科学审查' in panel and '尚未在此页判定' in panel
+    assert '本页不确认人工签署、所有权或授权地域' in panel
+    assert not Document(body).find('img') and '&lt;img' in body
+    assert Document(body).find('a', href='/coverage#collection-queue')
+    assert Document(body).find('a', href='#asset-results')
+    assert Document(body).find('section', id='asset-results')[0]['tabindex'] == '-1'
+
+
+def test_selected_company_missing_or_unknown_attempt_is_not_a_completed_zero(app):
+    cid = company(app)
+    missing = render(app, {'company': cid})
+    assert '尚未记录查询' in missing and '结果数量未知' in missing
+    assert '未记录活跃任务' in missing and '最近完整查询返回零条' not in missing
+    put_attempt(app, cid, 'bad-time', 'succeeded', started='unresolved', count=0)
+    unknown = render(app, {'company': cid})
+    assert '查询时间待核实' in unknown and '最近结果数量未知' in unknown
+    assert '最近完整查询返回零条' not in unknown
+
+
+def test_raw_phase_filter_is_exact_preserves_all_trial_evidence_and_dynamic_options(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug('Mixed candidate')], phases=['Phase II/III'])
+    put_trial(app, 'NCT00000002', [drug('Mixed candidate')], phases=['Clinical POC'])
+    put_trial(app, 'NCT00000003', [drug('Other candidate')], phases=['Pre-clinical'])
+    body = render(app, {'company': cid, 'phase': 'Phase II/III'})
+    doc = Document(body)
+    assert len(cards(body)) == 1 and 'Mixed candidate</h3>' in body
+    assert 'Other candidate</h3>' not in body
+    assert all(doc.find('option', value=value) for value in ['Phase II/III', 'Clinical POC', 'Pre-clinical'])
+    assert 'selected' in doc.find('option', value='Phase II/III')[0]
+    assert 'Phase II/III' in body and 'Clinical POC' in body
+    assert 'NCT00000001' in body and 'NCT00000002' in body and 'NCT00000003' not in body
+    assert body.count('class="asset-source"') == 2
+    assert '卡片仍保留该名称的全部试验依据' in body
+    assert not cards(render(app, {'company': cid, 'phase': 'PHASE2'}))
+
+
+def test_raw_phase_whitespace_is_not_silently_recoded(app):
+    cid = company(app)
+    put_trial(app, phases=[' Phase II/III '])
+    assert len(cards(render(app, {'company': cid, 'phase': ' Phase II/III '}))) == 1
+    assert not cards(render(app, {'company': cid, 'phase': 'Phase II/III'}))
+
+
+def seed_freshness(app, cid):
+    put_attempt(app, cid, 'old', 'succeeded', count=2)
+    put_attempt(app, cid, 'new', 'succeeded', started='2020-10-17T01:00:00+00:00',
+                finished='2020-10-17T02:00:00+00:00', count=1)
+    put_trial(app, drugs=[drug('History candidate'), drug('Mixed candidate')])
+    put_trial(app, 'NCT00000002', [drug('Current candidate'), drug('Mixed candidate')])
+    put_trial(app, 'NCT00000003', [drug('Unknown candidate')])
+    with app.market.db() as db:
+        for nct, run in [('NCT00000001', 'old'), ('NCT00000002', 'new')]:
+            db.execute('INSERT INTO trial_lineage VALUES (?,?,?,?,?)', (cid, nct, '2020-10-16', '2020-10-17', run))
+
+
+@pytest.mark.parametrize('freshness,names', [
+    ('seen_in_latest', ['Current candidate', 'Mixed candidate']),
+    ('not_seen_in_latest', ['History candidate']),
+    ('unknown', ['Unknown candidate']),
+])
+def test_freshness_filters_keep_unknown_and_mixed_history_semantics(app, freshness, names):
+    cid = company(app)
+    seed_freshness(app, cid)
+    body = render(app, {'company': cid, 'freshness': freshness})
+    assert len(cards(body)) == len(names)
+    for name in ['Current candidate', 'Mixed candidate', 'History candidate', 'Unknown candidate']:
+        assert (name + '</h3>' in body) == (name in names)
+    if freshness == 'seen_in_latest':
+        assert '1 项试验仅保留于历史观察' in body
+        assert 'NCT00000001' in body and 'NCT00000002' in body
+    assert 'selected' in Document(body).find('option', value=freshness)[0]
+
+
+def test_trial_count_sort_has_stable_name_ties_and_no_priority_inference(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug('Alpha'), drug('Beta'), drug('Gamma')])
+    put_trial(app, 'NCT00000002', [drug('Beta'), drug('Gamma')])
+    body = render(app, {'company': cid, 'sort': 'trials'})
+    assert body.index('>Beta</h3>') < body.index('>Gamma</h3>') < body.index('>Alpha</h3>')
+    assert '试验数排序仅帮助浏览' in body
+    assert 'selected' in Document(body).find('option', value='trials')[0]
+    default = render(app, {'company': cid})
+    assert default.index('>Alpha</h3>') < default.index('>Beta</h3>')
+
+
+def test_role_shortcuts_count_other_roles_within_other_filters_and_keep_context(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug('Candidate active'), drug('Candidate control', 'ACTIVE_COMPARATOR'),
+                          drug('Candidate unknown', None), drug('Unrelated')])
+    body = render(app, {'company': cid, 'q': 'Candidate', 'role': 'experimental_arm', 'phase': 'PHASE2',
+                        'freshness': 'unknown', 'sort': 'trials', 'offset': '50',
+                        'company_q': 'Synthetic', 'company_offset': '18'})
+    links = role_links(body)
+    assert len(links) == 4 and len(cards(body)) == 1
+    assert sum('aria-current' in link for link in links) == 1
+    assert '全部角色 <span class="cell-meta">3</span>' in body
+    assert '仅在比较组中出现 <span class="cell-meta">1</span>' in body
+    for link in links:
+        params = filters_from_link(link)
+        assert params['company'] == cid and params['q'] == 'Candidate'
+        assert params['phase'] == 'PHASE2' and params['freshness'] == 'unknown' and params['sort'] == 'trials'
+        assert params['company_q'] == 'Synthetic' and params['company_offset'] == '18'
+        assert 'offset' not in params
+
+
+def test_each_filter_can_be_removed_without_losing_company_or_other_filters(app):
+    cid = company(app)
+    put_trial(app)
+    filters = {'company': cid, 'q': 'Synthetic', 'role': 'experimental_arm', 'phase': 'PHASE2',
+               'freshness': 'unknown', 'sort': 'trials', 'offset': '50',
+               'company_q': 'Directory', 'company_offset': '18'}
+    body = render(app, filters)
+    links = Document(body).find('a', **{'class': 'asset-clear-chip'})
+    assert len(links) == 5
+    missing = []
+    for link in links:
+        params = filters_from_link(link)
+        removed = set(filters) - {'offset'} - set(params)
+        assert len(removed) == 1
+        missing.extend(removed)
+        assert params == {key: value for key, value in filters.items() if key not in removed | {'offset'}}
+        assert '移除' in link['aria-label']
+    assert set(missing) == {'q', 'role', 'phase', 'freshness', 'sort'}
+    clear = Document(body).find('a', **{'class': 'text-action'})[0]
+    assert filters_from_link(clear) == {'company': cid, 'company_q': 'Directory', 'company_offset': '18'}
+
+
+def test_advanced_filters_and_context_survive_result_pagination(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug(f'Candidate {number:02}') for number in range(52)])
+    filters = {'company': cid, 'q': 'Candidate', 'role': 'experimental_arm', 'phase': 'PHASE2',
+               'freshness': 'unknown', 'sort': 'trials', 'company_q': 'Synthetic', 'company_offset': '18'}
+    first = render(app, filters)
+    next_params = filters_from_link(Document(first).find('a', rel='next')[0])
+    assert next_params == {**filters, 'offset': '50'}
+    second = render(app, next_params)
+    assert len(cards(second)) == 2
+    assert filters_from_link(Document(second).find('a', rel='prev')[0]) == {**filters, 'offset': '0'}
+
+
+def test_filtered_empty_state_is_distinct_from_uncollected_company_and_clear_is_scoped(app):
+    cid = company(app)
+    put_trial(app)
+    body = render(app, {'company': cid, 'q': 'missing', 'company_q': 'Synthetic', 'company_offset': '18'})
+    assert '当前筛选无匹配' in body and '该公司已有 1 个登记名称' in body
+    assert '尚未采集、查询零条' not in body
+    assert Document(body).find('a', href='/assets?company=US%3AONE&company_q=Synthetic&company_offset=18')
+    assert '不能据此判定公司没有研发管线' in body
+    empty_cid = company(app, symbol='EMPTY')
+    empty = render(app, {'company': empty_cid})
+    assert '没有匹配的登记名称关联' in empty and '当前筛选无匹配' not in empty
+    assert '未纳入此视图的干预类型' in empty
+
+
+def test_trial_links_distinguish_local_company_observation_from_external_current_page(app):
+    cid = company(app)
+    put_trial(app)
+    body = render(app, {'company': cid})
+    local = Document(body).find('a', href='/market?company=US%3AONE&q=NCT00000001')
+    assert len(local) == 1 and 'target' not in local[0]
+    assert '外部当前页面，内容可能已更新' in body
+    assert Document(body).find('a', href='https://clinicaltrials.gov/study/NCT00000001')[0]['target'] == '_blank'
+
+
+def test_advanced_filter_values_and_removal_labels_escape_untrusted_text(app):
+    payload = '\"><script>evil()</script><img src=x onerror=evil()>'
+    cid = company(app)
+    put_trial(app, phases=[payload], conditions=[payload])
+    body = render(app, {'company': cid, 'q': payload, 'phase': payload, 'company_q': payload})
+    doc = Document(body)
+    assert len(cards(body)) == 1 and '&lt;script&gt;' in body
+    assert not doc.find('script') and not doc.find('img')
+    assert not any(key.startswith('on') for _, attrs in doc.elements for key in attrs)
+    assert 'selected' in doc.find('option', value=payload)[0]
+    assert any(payload in link['aria-label'] for link in doc.find('a', **{'class': 'asset-clear-chip'}))
+    unseen = render(app, {'company': cid, 'phase': '<unknown>'})
+    assert '当前来源未见' in unseen and 'selected' in Document(unseen).find('option', value='<unknown>')[0]
+
+
+@pytest.mark.parametrize('params,message', [({'freshness': 'invented'}, '未知的批次可见性'),
+                                           ({'sort': 'probability'}, '未知的排序方式')])
+def test_unsupported_new_filters_fail_explicitly(app, params, message):
+    cid = company(app)
+    with pytest.raises(ValueError, match=message):
+        render(app, {'company': cid, **params})
