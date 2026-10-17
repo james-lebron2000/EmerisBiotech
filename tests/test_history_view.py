@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from vbt.history_view import record_table, render
+from vbt.history_view import PAGE_SIZE, record_table, render, safe_return
 
 
 RECORDS = [
@@ -97,3 +97,49 @@ def test_explicit_synthetic_marker_is_visible_and_not_a_real_outcome():
     assert '<span class="badge pending">合成工程测试</span>' in body
     assert '不能计为真实临床研究或预测成绩' in body
     assert links(body) == ['one', 'two']
+
+
+def test_sample_scope_does_not_call_unmarked_records_validated():
+    rows = [dict(RECORDS[0], title='SYNTHETIC ENGINEERING TEST: baseline OSM'), RECORDS[1]]
+    assert links(render(rows, {'scope': 'synthetic'})) == ['one']
+    body = render(rows, {'scope': 'unmarked'})
+    assert links(body) == ['two']
+    assert '不代表真实临床验证或预测准确性已获确认' in body
+    with pytest.raises(ValueError):
+        render(rows, {'scope': '<script>'})
+
+
+@pytest.mark.parametrize('offset,first,count', [('1', 0, 20), ('19', 0, 20), ('21', 20, 20),
+                                            ('99999', 40, 3), ('-1', 0, 20), ('bad', 0, 20)])
+def test_history_paging_aligns_clamps_and_keeps_filters(offset, first, count):
+    rows = [dict(RECORDS[0], id=str(i)) for i in range(2 * PAGE_SIZE + 3)]
+    body = render(rows, {'q': 'OSMR', 'status': 'succeeded', 'scope': 'unmarked', 'offset': offset})
+    assert links(body) == [str(i) for i in range(first, first + count)]
+    for tag, attrs in Page(body).tags:
+        if tag == 'a' and attrs.get('rel') in ('prev', 'next'):
+            query = parse_qs(urlsplit(attrs['href']).query)
+            assert query['q'] == ['OSMR'] and query['status'] == ['succeeded']
+            assert query['scope'] == ['unmarked'] and int(query['offset'][0]) % PAGE_SIZE == 0
+
+
+def test_record_link_remembers_exact_history_context():
+    body = render(RECORDS, {'q': 'OSMR', 'kind': 'run', 'status': 'succeeded', 'review': 'revise', 'scope': 'unmarked'})
+    target = next(a['href'] for t, a in Page(body).tags if t == 'a' and a.get('class') == 'record-title')
+    back = parse_qs(urlsplit(target).query)['return'][0]
+    assert safe_return(back) == back
+    assert parse_qs(urlsplit(back).query) == dict(q=['OSMR'], kind=['run'], status=['succeeded'],
+                                               review=['revise'], scope=['unmarked'], offset=['0'])
+
+
+@pytest.mark.parametrize('value', [None, 'https://evil.test/records', '//evil.test/records',
+                                  '/notes', '/records#bad', '/records?bad=1', '/records?q=1&q=2',
+                                  '/records?return=//evil.test', '/records\n', 'x' * 2501])
+def test_back_link_rejects_external_or_unexpected_context(value):
+    assert safe_return(value) == '/records'
+
+
+def test_mobile_record_labels_do_not_change_state_semantics():
+    page = Page(record_table(RECORDS))
+    assert any(t == 'table' and a.get('role') == 'table' for t, a in page.tags)
+    assert {a['data-label'] for t, a in page.tags if t == 'td'} == {
+        '研究问题与版本', '记录类型', '执行 / 记录状态', '科学审查'}

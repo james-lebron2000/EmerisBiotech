@@ -35,7 +35,7 @@ class Workbench:
                 data=read(path/name)
                 status=data.get('execution') if kind=='run' else ('completed' if data.get('complete_research_cycle') else 'recorded') if kind=='cycle' else 'snapshot'
                 title=read(path/'inputs/plan.json').get('question',path.name) if kind=='run' else read(path/'plan.json').get('title',path.name) if kind=='portfolio' else data.get('hypothesis',path.name)
-                result.append(dict(id=path.name,kind=kind,title=title,status=status or 'unknown',review=data.get('scientific_review','pending'),path=path,data=data))
+                result.append(dict(id=path.name,kind=kind,title=title,status=status or 'unknown',review=data.get('scientific_review') or 'unknown',path=path,data=data))
         return sorted(result,key=lambda r:r['id'],reverse=True)
     def record(self,kind,rid):
         return next((r for r in self.records() if r['kind']==kind and r['id']==rid),None)
@@ -123,16 +123,20 @@ def page(app,path,q):
         from .history_view import render
         body=render(records,q)
     elif path=='/record':
+        from .history_view import safe_return
         r=app.record(q.get('kind'),q.get('id'))
         if not r:raise ValueError('记录不存在')
-        body=f'<a href="/records">← 返回历史</a><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p>'+badge(r['status'])+' '+badge(r['review'])
+        body=f'<a href="{esc(safe_return(q.get("return")))}">← 返回历史</a><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p>'+badge(r['status'])+' '+badge(r['review'])
         if r['kind'] in ['run','portfolio'] and not (r['kind']=='run' and (app.workspace/'cache-info.json').exists()):body+=f'<form method="post" action="/verify"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="kind" value="{r["kind"]}"><input type="hidden" name="id" value="{esc(r["id"])}"><p><button>重新校验完整性</button> <span class="muted">校验在后台执行，可在任务页观测。</span></p></form>'
         for name in (['audit.html','claims.json','review.json','work/results.json','work/sample_flow.json','stdout.log','stderr.log'] if r['kind']=='run' else ['index.html','plan.json','evaluation.json','provenance.json'] if r['kind']=='portfolio' else ['index.html','cycle.json','counterevidence.json','results.json']):
             if (r['path']/name).is_file():body+=f'<a class="button" style="margin:4px" href="/artifact?kind={r["kind"]}&id={quote(r["id"])}&file={quote(name)}" target="_blank" rel="noopener">{esc(name)}</a>'
         body+=record_summary(r,read)+'<details class="card"><summary>查看完整技术记录</summary><pre>'+esc(json.dumps(r['data'],ensure_ascii=False,indent=2))+'</pre></details><h2>关联研究笔记</h2>'+entries([e for e in app.rows('entries') if e['reference']==r['id']])+noteform(app,r['id'])
     elif path=='/jobs':
         jobs=app.rows('jobs');refresh='<meta http-equiv="refresh" content="5">' if any(j['status']=='running' for j in jobs) else ''
-        body='<h1>任务观测</h1><p class="sub">运行中每 5 秒刷新。校验检查文件与证据记录，不证明科学正确性。</p>'
+        body=('<header class="page-header"><div><span class="eyebrow">RECORD INTEGRITY</span><h1>完整性校验</h1>'
+              '<p class="lead">查看研究记录的文件与证据校验。运行中每 5 秒刷新；校验结果不证明科学正确性。</p></div>'
+              '<div class="page-actions"><a class="button secondary" href="/coverage#collection-queue">查看市场采集任务 →</a>'
+              '<a class="button secondary" href="/records">研究历史</a></div></header>')
         for j in jobs:body+=f'<div class="card">{badge(j["status"])} <a href="/record?kind={j["kind"]}&id={quote(j["reference"])}">{esc(j["reference"])}</a><p class="ref">{esc(j["created"])} · {esc(j["id"])}</p><pre>{esc(j["output"])}</pre></div>'
         if not jobs:body+='<div class="card">暂无校验任务。打开一条分析运行或研究快照，点击“重新校验完整性”。</div>'
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))

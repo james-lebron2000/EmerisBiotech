@@ -13,7 +13,7 @@ uv sync --extra dev --frozen
 uv run vbt --workspace "$PWD" workbench --port 18764
 ```
 
-访问 http://127.0.0.1:18764/ 。这是本地单用户入口，提供研究首页、案例证据卡、演示判断时间线、历史记录、任务观测和问题笔记。全新仓库可直接体验固定回顾案例，无需模型密钥；私人历史记录不随仓库发布。详见 [六分钟演示指南](docs/DEMO_GUIDE.md)。
+访问 http://127.0.0.1:18764/ 。这是本地单用户入口，提供研究首页、可搜索的公司与资产入口、案例证据卡、演示判断时间线、历史记录、完整性校验和问题笔记。市场采集任务位于覆盖进度页。全新仓库可直接体验固定回顾案例，无需模型密钥；私人历史记录不随仓库发布。详见 [六分钟演示指南](docs/DEMO_GUIDE.md)。
 
 创建公开资料研究快照：
 
@@ -47,6 +47,7 @@ uv run vbt --workspace "$PWD" portfolio build examples/portfolio_mvp.json --cata
 - [本轮真实采集与界面验收](docs/MARKET_DISCLOSURES_ACCEPTANCE_2026-10-17.md)
 - [工作台 UI 迭代验收](docs/UI_REFRESH_2026-10-17.md)
 - [临床资产与研究历史 UI 验收](docs/UI_RESEARCH_WORKFLOW_2026-10-17.md)
+- [公司搜索、逐试验证据与历史可用性验收](docs/UI_WORKBENCH_USABILITY_2026-10-17.md)
 - [云部署与记录迁移](deploy/cloud/README.md)
 - [工作台说明](docs/WORKBENCH.md)
 - [研究快照、审查和恢复](docs/PORTFOLIO_MVP.md)
@@ -67,7 +68,7 @@ uv run pytest -q
 uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 ```
 
-2026-10-17 UI 版验收：macOS 上完整测试 **435 项通过**，包含真实 Seatbelt 执行边界。先前容器构建通过 **22 项隔离运行检查**；本轮 UI 源码尚未重建容器镜像。远端 HTTPS、认证网关及客户生产部署仍待验收。
+2026-10-17：历史 UI 发布候选完整测试 **435 项通过**；后续市场接入后端完整测试 **831 项通过**。本轮公司搜索、逐试验证据与历史 UI 的聚焦回归 **269 项通过**，独立 UI 复审回归 **101 项通过**；没有将聚焦回归报告为重跑完整套件。先前容器构建通过 **22 项隔离运行检查**，后续源码尚未重建容器镜像。远端 HTTPS、认证网关及客户生产部署仍待验收。
 
 本仓库不包含原始研究数据、实际运行输出、SQLite 数据库、个人笔记、访问密码或本机备份。工程测试通过不代表科学有效性、临床成功预测或投资盈利。
 

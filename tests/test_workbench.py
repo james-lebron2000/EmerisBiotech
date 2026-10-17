@@ -39,3 +39,24 @@ def test_background_status(app,monkeypatch):
  monkeypatch.setattr(module.subprocess,'run',lambda *a,**kw:Result())
  with app.db() as db:db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)',('j','2026','run','test-run','running','test'))
  app.execute('j','run','test-run');assert app.rows('jobs')[0]['status']=='succeeded'
+
+@pytest.mark.parametrize('review',[None,''])
+def test_missing_scientific_review_remains_unknown(app,review):
+ path=app.workspace/'artifacts/runs/test-run/status.json'
+ path.write_text(json.dumps({'execution':'succeeded','scientific_review':review}))
+ assert app.records()[0]['review']=='unknown'
+ path.write_text(json.dumps({'execution':'succeeded'}))
+ assert app.records()[0]['review']=='unknown'
+
+def test_record_back_link_retains_only_safe_history_context(app):
+ back='/records?q=OSMR&status=failed&scope=unmarked&offset=20'
+ body=page(app,'/record',{'kind':'run','id':'test-run','return':back})
+ assert 'href="/records?q=OSMR&amp;status=failed&amp;scope=unmarked&amp;offset=20"' in body
+ body=page(app,'/record',{'kind':'run','id':'test-run','return':'https://evil.test/records'})
+ assert 'href="/records">← 返回历史' in body and 'evil.test' not in body
+
+def test_integrity_jobs_separates_market_collection(app):
+ body=page(app,'/jobs',{})
+ assert '<h1>完整性校验</h1>' in body
+ assert 'href="/coverage#collection-queue"' in body
+ assert '暂无校验任务' in body

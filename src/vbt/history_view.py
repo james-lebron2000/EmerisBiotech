@@ -1,6 +1,6 @@
 """Read-only research history with independent execution and review filters."""
 import html
-from urllib.parse import urlencode
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 KINDS = {'run': '分析运行', 'cycle': '研究循环', 'portfolio': '研究快照'}
 STATES = {'succeeded': '执行成功', 'failed': '执行失败', 'blocked': '执行受阻',
@@ -8,6 +8,9 @@ STATES = {'succeeded': '执行成功', 'failed': '执行失败', 'blocked': '执
           'recorded': '已记录', 'unknown': '未知'}
 REVIEWS = {'pending': '待科学审查', 'pass': '通过', 'passed': '通过', 'revise': '需修订',
            'insufficient_evidence': '证据不足', 'unknown': '未知'}
+SCOPES = {'unmarked': '未标记为合成测试', 'synthetic': '仅合成工程测试'}
+PAGE_SIZE = 20
+FILTER_KEYS = ('q', 'kind', 'status', 'review', 'scope', 'offset')
 
 
 def e(value):
@@ -24,24 +27,43 @@ def is_synthetic(record):
     return record['title'].lstrip().upper().startswith('SYNTHETIC ENGINEERING TEST:')
 
 
-def record_table(records):
+def safe_return(value):
+    """Retain local history filters without accepting a redirect destination."""
+    if not isinstance(value, str) or len(value) > 2500 or any(ord(c) < 32 for c in value):
+        return '/records'
+    try:
+        parsed = urlsplit(value)
+        pairs = parse_qsl(parsed.query, keep_blank_values=True, max_num_fields=len(FILTER_KEYS))
+    except ValueError:
+        return '/records'
+    if (parsed.scheme or parsed.netloc or parsed.path != '/records' or parsed.fragment
+            or len({key for key, _ in pairs}) != len(pairs)
+            or any(key not in FILTER_KEYS for key, _ in pairs)):
+        return '/records'
+    return '/records' + ('?' + urlencode(pairs) if pairs else '')
+
+
+def record_table(records, return_to=None):
     if not records:
         return ('<div class="empty"><h3>这里还没有匹配的研究记录</h3>'
                 '<p>调整筛选条件，或先查看已知结局的回顾案例。</p>'
                 '<a href="/case?id=osmr-uc">体验研究流程 →</a></div>')
-    body = ('<p class="table-caption"><span>每条记录保留独立版本与原始状态</span>'
+    body = ('<p class="table-caption history-caption"><span>每条记录保留独立版本与原始状态</span>'
             '<span class="scroll-hint">窄屏可左右滚动，或聚焦表格后使用方向键</span></p>'
-            '<div class="scroll" role="region" aria-label="研究历史记录表" tabindex="0">'
-            '<table class="history-table"><thead><tr><th scope="col">研究问题与版本</th>'
+            '<div class="scroll history-scroll" role="region" aria-label="研究历史记录表" tabindex="0">'
+            '<table class="history-table" role="table"><thead><tr><th scope="col">研究问题与版本</th>'
             '<th scope="col">记录类型</th><th scope="col">执行 / 记录状态</th>'
             '<th scope="col">科学审查</th></tr></thead><tbody>')
     for r in records:
-        url = '/record?' + urlencode({'kind': r['kind'], 'id': r['id']})
+        params = {'kind': r['kind'], 'id': r['id']}
+        if return_to:
+            params['return'] = safe_return(return_to)
+        url = '/record?' + urlencode(params)
         sample = '<span class="badge pending">合成工程测试</span> ' if is_synthetic(r) else ''
-        body += ('<tr><td>' + sample + '<a class="record-title" href="' + e(url) + '">' + e(r['title']) + '</a>'
-                 '<div class="ref record-id">' + e(r['id']) + '</div></td><td>'
-                 + e(KINDS.get(r['kind'], r['kind'])) + '</td><td>'
-                 + _badge(r['status'], STATES) + '</td><td>'
+        body += ('<tr><td data-label="研究问题与版本">' + sample + '<a class="record-title" href="' + e(url) + '">' + e(r['title']) + '</a>'
+                 '<div class="ref record-id">' + e(r['id']) + '</div></td><td data-label="记录类型">'
+                 + e(KINDS.get(r['kind'], r['kind'])) + '</td><td data-label="执行 / 记录状态">'
+                 + _badge(r['status'], STATES) + '</td><td data-label="科学审查">'
                  + _badge(r['review'], REVIEWS) + '</td></tr>')
     return body + '</tbody></table></div>'
 
@@ -49,12 +71,22 @@ def record_table(records):
 def render(records, q):
     query = q.get('q', '').strip()
     kind, state, review = (q.get(key, '') for key in ('kind', 'status', 'review'))
+    scope = q.get('scope', '')
+    if scope and scope not in SCOPES:
+        raise ValueError('未知的研究记录范围')
     review = 'passed' if review == 'pass' else review
     selected = [r for r in records if
                 (not kind or r['kind'] == kind) and
                 (not state or r['status'] == state) and
                 (not review or ('passed' if r['review'] == 'pass' else r['review']) == review) and
+                (not scope or (is_synthetic(r) if scope == 'synthetic' else not is_synthetic(r))) and
                 query.casefold() in (r['title'] + ' ' + r['id']).casefold()]
+    try:
+        offset = max(0, int(q.get('offset', 0)))
+    except (ValueError, TypeError):
+        offset = 0
+    offset = min(offset // PAGE_SIZE * PAGE_SIZE,
+                 max(0, (len(selected) - 1) // PAGE_SIZE * PAGE_SIZE))
     body = ('<header class="page-header"><div><span class="eyebrow">RESEARCH HISTORY</span>'
             '<h1>历史记录</h1><p class="lead">找回研究问题、查看失败原因，沿用已有证据继续研究。</p>'
             '</div><div class="page-actions"><a class="button secondary" href="/jobs">查看校验任务</a>'
@@ -84,16 +116,40 @@ def render(records, q):
         for option, text in actual_options.items():
             body += '<option value="' + e(option) + '"' + (' selected' if option == value else '') + '>' + e(text) + '</option>'
         body += '</select></div>'
+    body += ('<div class="field"><label for="history-scope">记录范围</label>'
+             '<select id="history-scope" name="scope"><option value="">全部记录</option>'
+             + ''.join('<option value="' + key + '"' + (' selected' if scope == key else '')
+                       + '>' + label + '</option>' for key, label in SCOPES.items())
+             + '</select></div>')
     body += ('</div><div class="form-actions"><button type="submit">筛选记录</button>'
              '<a class="text-action" href="/records">清除筛选</a></div></form></section>')
     chips = [label + '：' + value for label, value in [('关键词', query), ('类型', KINDS.get(kind, kind)),
-              ('执行 / 记录', STATES.get(state, state)), ('科学审查', REVIEWS.get(review, review))] if value]
+              ('执行 / 记录', STATES.get(state, state)), ('科学审查', REVIEWS.get(review, review)),
+              ('记录范围', SCOPES.get(scope, scope))] if value]
     if chips:
         body += '<div class="filter-chips" aria-label="当前筛选">' + ''.join('<span>' + e(c) + '</span>' for c in chips) + '</div>'
     if synthetic_count:
         body += '<p class="data-note">本页统计包含明确标记的合成工程测试；其结果用于工程验收，不能计为真实临床研究或预测成绩。</p>'
+    body += '<p class="data-note">“未标记为合成测试”仅按原始标题筛选，不代表真实临床验证或预测准确性已获确认。</p>'
     body += ('<section class="card"><div class="panel-title"><h2>研究记录</h2><span class="muted">'
-             + str(len(selected)) + ' / ' + str(len(records)) + ' 条</span></div>' + record_table(selected) + '</section>'
+             + str(len(selected)) + ' / ' + str(len(records)) + ' 条</span></div>')
+    if selected:
+        body += ('<p class="data-note">显示第 ' + str(offset + 1) + '–'
+                 + str(min(offset + PAGE_SIZE, len(selected))) + ' 条匹配记录</p>')
+    filters = {'q': query, 'kind': kind, 'status': state, 'review': review, 'scope': scope}
+    return_to = '/records?' + urlencode({**filters, 'offset': offset})
+    body += record_table(selected[offset:offset + PAGE_SIZE], return_to)
+    if offset or offset + PAGE_SIZE < len(selected):
+        body += '<nav class="pagination" aria-label="研究历史分页">'
+        if offset:
+            body += ('<a class="button secondary small" rel="prev" href="/records?'
+                     + e(urlencode({**filters, 'offset': offset - PAGE_SIZE})) + '">← 上一页</a>')
+        body += '<span class="cell-meta">每页最多 ' + str(PAGE_SIZE) + ' 条</span>'
+        if offset + PAGE_SIZE < len(selected):
+            body += ('<a class="button secondary small" rel="next" href="/records?'
+                     + e(urlencode({**filters, 'offset': offset + PAGE_SIZE})) + '">下一页 →</a>')
+        body += '</nav>'
+    body += ('</section>'
              '<p class="data-note">历史版本保持不变。执行成功、完整性校验、科学审查及人工签署分别记录；'
              '没有记录的状态保留未知，不能由执行结果推定。</p>')
     return body

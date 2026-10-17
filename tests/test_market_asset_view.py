@@ -67,7 +67,7 @@ def test_empty_state_has_labeled_compact_filters_and_no_invented_results(app):
     assert not cards(body)
     assert '全市场完整管线' in body and '权益与授权地域均待核对' in body
     assert doc.find('form', action='/assets', method='get')
-    assert {label['for'] for label in doc.find('label')} == {'asset-company', 'asset-query', 'asset-role'}
+    assert {label['for'] for label in doc.find('label')} == {'asset-company', 'asset-query', 'asset-role', 'asset-company-search'}
     assert doc.find('select', id='asset-company')[0]['required'] is None
     assert not doc.find('script') and not doc.find('table')
 
@@ -216,3 +216,169 @@ def test_date_precision_unknown_timezone_and_missing_evidence_are_not_filled():
     assert '时区未提供' in _timestamp('2026-10-17T01:00:00')
     assert '未记载' in _timestamp(None)
     assert '&lt;script&gt;' in _timestamp('<script>')
+
+
+def company_cards(body):
+    return [attrs for attrs in Document(body).find('article') if 'data-company-id' in attrs]
+
+
+def put_attempt(app, cid, rid, status, *, started='2020-10-16T01:00:00+00:00',
+                finished='2020-10-16T02:00:00+00:00', count=0, error=''):
+    with app.market.db() as db:
+        db.execute('INSERT INTO runs VALUES (?,?,?,?,?,?,?,?)',
+                   (rid, 'ClinicalTrials.gov', cid, started, finished, status, count, error))
+
+
+def test_default_company_directory_is_clickable_and_missing_attempt_is_unknown(app):
+    cid = company(app)
+    body = render(app, {})
+    assert [row['data-company-id'] for row in company_cards(body)] == [cid]
+    assert Document(body).find('a', href='/assets?company=US%3AONE')
+    assert '尚未记录查询' in body and '最近查询时间</dt><dd>未知' in body
+    assert '结果数量未知' in body and '每页最多 18 家' in body
+    assert '/coverage#collection-queue' in body
+    assert not cards(body)
+
+
+@pytest.mark.parametrize('query', ['us:one', 'synthetic COMPANY', 'specific sponsor_%'])
+def test_company_directory_searches_literal_names_codes_and_stored_aliases(app, query):
+    cid = company(app)
+    company(app, name='Other business', symbol='TWO')
+    with app.market.db() as db:
+        db.execute('UPDATE companies SET aliases=? WHERE id=?', (json.dumps(['Specific Sponsor_%']), cid))
+    body = render(app, {'company_q': query})
+    assert [row['data-company-id'] for row in company_cards(body)] == [cid]
+    assert Document(body).find('input', name='company_q')[0]['value'] == query
+    assert '匹配 1 家' in body
+
+
+def test_company_directory_no_match_is_explicit_and_not_a_no_pipeline_claim(app):
+    company(app)
+    body = render(app, {'company_q': 'unmatched'})
+    assert not company_cards(body)
+    assert '没有匹配的已配置公司' in body and '没有入口不表示公司没有管线' in body
+
+
+def seed_company_directory(app, count=24):
+    for number in range(count):
+        company(app, name=f'Directory company {number:02}', symbol=f'S{number:02}')
+
+
+def test_company_directory_pagination_is_bounded_keeps_search_and_returns_context(app):
+    seed_company_directory(app)
+    first = render(app, {'company_q': 'Directory'})
+    assert len(company_cards(first)) == 18
+    next_url = Document(first).find('a', rel='next')[0]['href']
+    filters = {key: values[0] for key, values in parse_qs(urlsplit(next_url).query).items()}
+    assert filters == {'company_q': 'Directory', 'company_offset': '18'}
+    second = render(app, filters)
+    assert len(company_cards(second)) == 6 and '显示第 19–24 家' in second
+    assert not ({r['data-company-id'] for r in company_cards(first)} & {r['data-company-id'] for r in company_cards(second)})
+    link = next(a for a in Document(second).find('a') if a.get('href', '').startswith('/assets?company='))
+    selected_q = {key: values[0] for key, values in parse_qs(urlsplit(link['href']).query).items()}
+    selected_body = render(app, selected_q)
+    back = next(a for a in Document(selected_body).find('a') if a.get('href') == '/assets?company_q=Directory&company_offset=18')
+    assert back
+    assert Document(selected_body).find('input', name='company_q')[0]['value'] == 'Directory'
+    assert Document(selected_body).find('input', name='company_offset')[0]['value'] == '18'
+
+
+@pytest.mark.parametrize('value,expected', [('1', 0), ('17', 0), ('19', 18), ('999999', 18), ('bad', 0), ('-3', 0)])
+def test_company_directory_offsets_align_clamp_and_do_not_overlap(app, value, expected):
+    seed_company_directory(app)
+    body = render(app, {'company_offset': value})
+    ids = [row['data-company-id'] for row in company_cards(body)]
+    assert ids[0] == f'US:S{expected:02}'
+    assert len(ids) == (18 if expected == 0 else 6)
+
+
+def test_selected_company_header_uses_same_company_registry_and_disclosure_routes(app):
+    cid = company(app)
+    body = render(app, {'company': cid, 'q': 'Synthetic'})
+    doc = Document(body)
+    assert doc.find('a', href='/market?company=US%3AONE')
+    assert doc.find('a', href='/disclosures?company=US%3AONE')
+    assert '同公司官方披露与缺口' in body and '当前证券：Synthetic company · US:ONE' in body
+
+
+def test_failed_latest_attempt_preserves_actual_stored_count_and_does_not_become_zero_result(app):
+    cid = company(app)
+    put_trial(app)
+    put_trial(app, 'NCT00000002')
+    put_attempt(app, cid, 'old-success', 'succeeded', count=9)
+    put_attempt(app, cid, 'new-failure', 'failed', started='2020-10-17T01:00:00+00:00',
+                finished='2020-10-17T02:00:00+00:00', error='Synthetic source failure')
+    body = render(app, {})
+    assert '<strong>2</strong> 项已存登记试验' in body
+    assert '最近查询失败' in body and '失败或不完整结果不能解释为没有管线' in body
+    assert '最近完整查询返回零条' not in body and '返回 9 条' not in body
+    assert '2020-10-17 10:00 UTC+8' in body and 'Synthetic source failure' in body
+
+
+def test_successful_zero_is_scoped_and_retained_history_is_not_termination(app):
+    cid = company(app)
+    put_attempt(app, cid, 'zero', 'succeeded', count=0)
+    empty = render(app, {})
+    assert '<strong>0</strong> 项已存登记试验' in empty
+    assert '最近完整查询返回零条' in empty and '此来源范围的零结果不代表公司没有研发管线' in empty
+    put_trial(app)
+    retained = render(app, {})
+    assert '<strong>1</strong> 项已存登记试验' in retained
+    assert '仍保留历史观察' in retained and '不表示项目终止' in retained
+
+
+def test_unknown_query_time_and_missing_count_stay_unverified(app):
+    cid = company(app)
+    put_attempt(app, cid, 'missing-time', 'succeeded', started='unknown-time', count=0)
+    body = render(app, {})
+    assert '查询时间待核实' in body and '最近结果数量未知' in body
+    assert '最近完整查询返回零条' not in body
+
+
+def test_active_queue_and_latest_query_failure_are_separate(app):
+    from vbt.market_jobs import enqueue
+    cid = company(app)
+    put_attempt(app, cid, 'failed', 'failed')
+    enqueue(app.market, 'company', cid)
+    body = render(app, {})
+    assert '当前队列</dt><dd>已排队' in body and '最近查询失败' in body
+
+
+def test_company_directory_escapes_search_company_and_error_text(app):
+    attack = '\"><img src=x onerror=evil()><script>evil()</script>'
+    cid = company(app, name=attack)
+    put_attempt(app, cid, 'failure', 'failed', error=attack)
+    body = render(app, {'company_q': '<img'})
+    parsed = Document(body)
+    assert len(company_cards(body)) == 1 and '&lt;img' in body
+    assert not parsed.find('img') and not parsed.find('script')
+    assert not any(key.startswith('on') for _, attrs in parsed.elements for key in attrs)
+    assert parsed.find('input', name='company_q')[0]['value'] == '<img'
+    assert 'company_q=%3Cimg' in body
+
+
+@pytest.mark.parametrize('value,expected_start,expected_count', [('1', 1, 50), ('49', 1, 50), ('51', 51, 2)])
+def test_asset_offsets_align_to_existing_fifty_name_pages(app, value, expected_start, expected_count):
+    cid = company(app)
+    put_trial(app, drugs=[drug(f'Candidate {number:02}') for number in range(52)])
+    body = render(app, {'company': cid, 'offset': value})
+    assert len(cards(body)) == expected_count
+    assert f'显示第 {expected_start}–' in body
+    assert ('Candidate 00</h3>' in body) == (expected_start == 1)
+    assert ('Candidate 50</h3>' in body) == (expected_start == 51)
+
+
+def test_each_trial_is_individually_collapsed_with_complete_evidence_retained(app):
+    cid = company(app)
+    put_trial(app)
+    put_trial(app, 'NCT00000002', phases=['PHASE3'], title='Full synthetic title remains available')
+    body = render(app, {'company': cid})
+    doc = Document(body)
+    trials = doc.find('details', **{'class': 'asset-trial-details'})
+    assert len(trials) == 2 and all('open' not in trial for trial in trials)
+    assert '<summary>NCT00000001 · COMPLETED · PHASE2</summary>' in body
+    assert '<summary>NCT00000002 · COMPLETED · PHASE3</summary>' in body
+    assert body.count('class="asset-source"') == 2
+    assert body.count('数据 SHA-256') == 2
+    assert 'Full synthetic title remains available' in body
+    assert '逐项核对 2 条试验依据' in body
