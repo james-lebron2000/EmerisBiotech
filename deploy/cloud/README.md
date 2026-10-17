@@ -2,7 +2,7 @@
 
 状态：准备完成，尚未部署。需要已有 Linux Docker 主机、域名 DNS、访问账号。默认所有页面与附件都经 HTTPS 和网关账号密码保护。使用浏览器原生认证框，尚无多用户角色管理、SSO 或邀请流程。
 
-服务边界：研究历史浏览、问题/笔记、任务状态和本地快照校验。云端禁止分析运行校验和任意分析执行；macOS Seatbelt 执行器不能直接当成 Linux 沙箱。没有股票账户连接或自动交易。
+服务边界：研究历史浏览、问题/笔记、市场临床登记与官方披露查询、持久采集队列、可校验CSV导出、任务状态和本地快照校验。云端禁止分析运行校验和任意分析执行；macOS Seatbelt 执行器不能直接当成 Linux 沙箱。没有股票账户连接或自动交易。
 
 ## 部署
 
@@ -29,6 +29,6 @@ basic_auth {
 
 research/state 命名卷为持久数据；caddy_data 保存证书状态。单实例部署，不支持水平扩容。停止 app 后备份 research 和 state 卷到服务器之外的受控存储，然后启动 app；恢复到新卷并比较笔记数、记录哈希和快照校验。删除容器不会删除命名卷，但 `docker compose down -v` 会删除持久卷，不应用于升级。
 
-尚未验证：Docker 镜像构建、远端 HTTPS/认证、持久卷权限与恢复。当前机器 Docker daemon 不可用，Docker Compose 子命令也不可用，不能把配置文件检查或 Python 测试当成上线验收。源页面与操作路由已有本地测试，新增 HTTPS origin 和云端禁执行测试。
+本地 Docker 镜像构建、UID10001卷写入、SIGTERM与队列恢复、HTTP来源／CSRF和导出已通过隔离运行验收，详见 `docs/CONTAINER_ACCEPTANCE_2026-10-17.md`。本机使用 standalone docker-compose 命令。远端 HTTPS／认证网关、证书、真实客户账号、备份恢复和生产可达性仍未验收；本地容器通过不代表已上线。
 
 认证参考：https://caddyserver.com/docs/caddyfile/directives/basic_auth 。Caddy 要求配置密码哈希；Basic Auth 必须搭配 HTTPS。

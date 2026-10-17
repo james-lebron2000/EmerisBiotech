@@ -2,6 +2,7 @@
 import json
 from .issuer_discovery import discover,initial_mappings,seed_matches_listing,unsupported_listings
 from .market_coverage import refresh_candidates
+from .china_issuer_sources import source_mappings, matches_listing
 from .io import now
 
 def expand(market):
@@ -9,8 +10,8 @@ def expand(market):
  result={'classification':refresh_candidates(market,candidates),'unsupported_identity_count':len(unsupported_listings(listings)),'added':[],'unchanged':[],'conflicts':[],'missing_listing':[]}
  existing={r['id']:r for r in market.rows('companies')}
  with market.db() as db:db.execute('CREATE TABLE IF NOT EXISTS mapping_evidence (company TEXT PRIMARY KEY,created TEXT,payload TEXT)')
- for row in initial_mappings():
-  if not any(seed_matches_listing(row,l) for l in listings if l['market']==row['market'] and l['ticker']==row['ticker']):
+ for row,matcher in [(r,seed_matches_listing) for r in initial_mappings()]+[(r,matches_listing) for r in source_mappings()]:
+  if not any(matcher(row,l) for l in listings if l['market']==row['market'] and l['ticker']==row['ticker']):
    result['missing_listing'].append(row['id']);continue
   old=existing.get(row['id'])
   if old:

@@ -18,10 +18,11 @@ def init_schema(market):
 
 def enqueue(market,kind,reference):
  from .market_sources import URLS
+ from .disclosures import SOURCES as DISCLOSURE_SOURCES
  with market.db() as db:
   table=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='issuer_candidates'").fetchone()
   candidate=bool(table and db.execute('SELECT 1 FROM issuer_candidates WHERE id=?',(reference,)).fetchone())
- if not ((kind=='resolve' and candidate) or (kind=='universe' and reference in URLS) or (kind=='company' and any(c['id']==reference for c in market.rows('companies')))):
+ if not ((kind=='disclosure' and reference in DISCLOSURE_SOURCES) or (kind=='resolve' and candidate) or (kind=='universe' and reference in URLS) or (kind=='company' and any(c['id']==reference for c in market.rows('companies')))):
   raise ValueError('Unknown collection target')
  init_schema(market)
  with market.db() as db:
@@ -39,6 +40,20 @@ def enqueue_all(market,only_due=False):
   latest=max((r['started'] for r in runs if r['company']==c['id']),default=None)
   if only_due and latest and (datetime.now(timezone.utc)-datetime.fromisoformat(latest)).total_seconds()<21600:continue
   result.append(enqueue(market,'company',c['id']))
+ return result
+
+def enqueue_disclosures(market,only_due=False):
+ """Queue configured official sources; six-hour freshness is independent of CTG."""
+ from datetime import datetime,timezone
+ from .disclosures import sources
+ result=[]
+ for source in sources(market):
+  latest=source.get('latest');started=latest.get('started') if latest else None
+  if only_due and started:
+   try:
+    if (datetime.now(timezone.utc)-datetime.fromisoformat(started)).total_seconds()<21600:continue
+   except (TypeError,ValueError):pass # Unknown timestamps require a new observation.
+  result.append(enqueue(market,'disclosure',source['id']))
  return result
 
 def jobs(market,limit=100):
@@ -62,21 +77,35 @@ def recover(market):
   except (OSError,ValueError):alive=False
   if alive and row['heartbeat'] and time.time()-row['heartbeat']<300:continue
   with market.db() as db:
-   changed=db.execute("UPDATE collection_jobs SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'queued' END,owner_pid=NULL,heartbeat=NULL,updated=?,error='Interrupted worker recovered' WHERE id=? AND status='running' AND COALESCE(heartbeat,0)=?",(now(),row['id'],row['heartbeat'] or 0)).rowcount
+   changed=db.execute("UPDATE collection_jobs SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'queued' END,owner_pid=NULL,heartbeat=NULL,updated=?,error='Interrupted worker recovered' WHERE id=? AND status='running' AND COALESCE(heartbeat,0)=? AND attempts=? AND owner_pid IS ?",(now(),row['id'],row['heartbeat'] or 0,row['attempts'],row['owner_pid'])).rowcount
    if changed:
-    if row.get('run_id') and row['kind']=='resolve':
+    if row['kind']=='disclosure':
+     # Captures live in their own namespace; never update generic registry runs.
+     table=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='disclosure_captures'").fetchone()
+     if row.get('run_id') and table:
+      columns={r[1] for r in db.execute('PRAGMA table_info(disclosure_captures)')}
+      if 'lease_owner' in columns:
+       capture=db.execute('SELECT lease_owner FROM disclosure_captures WHERE id=? AND source_id=?',(row['run_id'],row['reference'])).fetchone()
+       db.execute("UPDATE disclosure_captures SET status='interrupted',finished=?,error='Worker interrupted before completion' WHERE id=? AND source_id=? AND status='running'",(now(),row['run_id'],row['reference']))
+       if capture and capture['lease_owner']:
+        db.execute('DELETE FROM leases WHERE key=? AND owner=?',('disclosure:'+row['reference'],capture['lease_owner']))
+      else:
+       # Legacy records lack ownership proof: retain the lease until expiry.
+       db.execute("UPDATE disclosure_captures SET status='interrupted',finished=?,error='Worker interrupted; legacy lease owner unknown' WHERE id=? AND source_id=? AND status='running'",(now(),row['run_id'],row['reference']))
+    elif row.get('run_id') and row['kind']=='resolve':
      db.execute("UPDATE sponsor_resolution_runs SET status='interrupted',finished=?,error='Worker interrupted before completion' WHERE id=? AND status='running'",(now(),row['run_id']))
      db.execute('DELETE FROM leases WHERE key=? AND owner=(SELECT lease_owner FROM sponsor_resolution_runs WHERE id=?)',('sponsor-resolution:'+row['reference'],row['run_id']))
-    elif row.get('run_id'):db.execute("UPDATE runs SET status='interrupted',finished=?,error='Worker stopped before complete publication' WHERE id=? AND status='running'",(now(),row['run_id']))
-    key=('universe:' if row['kind']=='universe' else 'trials:')+row['reference']
-    db.execute('DELETE FROM leases WHERE key=? AND (owner=(SELECT owner FROM run_leases WHERE run_id=?) OR (owner IS NULL AND until<=?))',(key,row.get('run_id'),time.time()))
+    else:
+     if row.get('run_id'):db.execute("UPDATE runs SET status='interrupted',finished=?,error='Worker stopped before complete publication' WHERE id=? AND status='running'",(now(),row['run_id']))
+     key=('universe:' if row['kind']=='universe' else 'trials:')+row['reference']
+     db.execute('DELETE FROM leases WHERE key=? AND (owner=(SELECT owner FROM run_leases WHERE run_id=?) OR (owner IS NULL AND until<=?))',(key,row.get('run_id'),time.time()))
 
 def claim(market):
  with market.db() as db:
   db.execute('BEGIN IMMEDIATE')
   row=db.execute("SELECT * FROM collection_jobs WHERE status IN ('queued','retry_wait') AND next_at<=? AND cancel_requested=0 ORDER BY created,id LIMIT 1",(time.time(),)).fetchone()
   if not row:return None
-  db.execute("UPDATE collection_jobs SET status='running',attempts=attempts+1,owner_pid=?,heartbeat=?,updated=? WHERE id=?",(os.getpid(),time.time(),now(),row['id']))
+  db.execute("UPDATE collection_jobs SET status='running',attempts=attempts+1,owner_pid=?,heartbeat=?,updated=?,run_id=NULL WHERE id=?",(os.getpid(),time.time(),now(),row['id']))
   return {**dict(row),'attempts':row['attempts']+1}
 
 def execute(market,job):
@@ -93,22 +122,26 @@ def execute(market,job):
  try:
   if cancelled():status='cancelled';rid=None;error='Cancelled before collection'
   else:
+   def on_start(value):
+    with market.db() as db:db.execute("UPDATE collection_jobs SET run_id=? WHERE id=? AND attempts=? AND owner_pid=? AND status='running'",(value,job['id'],job['attempts'],owner))
    if job['kind']=='resolve':
     from .sponsor_resolution import resolve
-    def on_start(value):
-     with market.db() as db:db.execute("UPDATE collection_jobs SET run_id=? WHERE id=? AND attempts=? AND owner_pid=? AND status='running'",(value,job['id'],job['attempts'],owner))
     result=resolve(market,job['reference'],cancelled=cancelled,on_start=on_start);rid=result['run_id'];status=result['status'];error=result['error']
     if status in ('suggested','ambiguous','zero'):status='succeeded'
     elif status=='busy':status='retry_wait'
+   elif job['kind']=='disclosure':
+    from .disclosures import ingest
+    result=ingest(market,job['reference'],cancelled=cancelled,on_start=on_start)
+    if result is None:rid=None;status='retry_wait';error='Disclosure collection already leased; waiting'
+    else:rid=result['run_id'];status=result['status'];error=result['error']
    else:
     rid=market.refresh_universe(job['reference'],cancelled=cancelled) if job['kind']=='universe' else market.sync_company(job['reference'],cancelled=cancelled)
-   if job['kind']=='resolve':pass
-   elif rid is None:status='retry_wait';error='Collection already leased; waiting'
-   else:
-    with market.db() as db:r=db.execute('SELECT * FROM runs WHERE id=?',(rid,)).fetchone()
-    status=r['status'];error=r['error']
+    if rid is None:status='retry_wait';error='Collection already leased; waiting'
+    else:
+     with market.db() as db:r=db.execute('SELECT * FROM runs WHERE id=?',(rid,)).fetchone()
+     status=r['status'];error=r['error']
   transient=any(x in error.lower() for x in ('timed out','timeout','429','503','502','connection','already leased','lease is active'))
-  if status in ('failed','retry_wait') and transient and job['attempts']<3:status='retry_wait'
+  if status in ('failed','fetch_failed','retry_wait') and transient and job['attempts']<3:status='retry_wait'
   elif status=='retry_wait':status='failed'
   with market.db() as db:db.execute("UPDATE collection_jobs SET status=?,updated=?,heartbeat=NULL,run_id=?,error=?,next_at=? WHERE id=? AND attempts=? AND owner_pid=? AND status='running'",(status,now(),rid,error[:1000],time.time()+60*2**job['attempts'] if status=='retry_wait' else 0,job['id'],job['attempts'],owner))
  except Exception as ex:

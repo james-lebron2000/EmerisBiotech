@@ -1,0 +1,1546 @@
+{
+  "schema_version": "china-issuer-expansion-1",
+  "observed": "2026-10-17",
+  "scope": "Observed A/HK issuer mappings only; not a complete issuer census or pipeline inventory. No raw research datasets downloaded.",
+  "mappings": [
+    {
+      "id": "A:600196",
+      "market": "A",
+      "ticker": "600196",
+      "name": "复星医药",
+      "legal_name": "Shanghai Fosun Pharmaceutical (Group) Co., Ltd.",
+      "group": "fosun",
+      "issuer_group": "fosun",
+      "listing_names": [
+        "复星医药"
+      ],
+      "aliases": [
+        "Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:31.614750+00:00 identifies A:600196 复星医药. Primary issuer identity/entity reference read 2026-10-17: https://www.fosunpharma.com/en/content/details37_17020.html. Exact registry lead sponsor observed 2026-10-17: Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd. https://clinicaltrials.gov/study/NCT04954001. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.fosunpharma.com/en/content/details37_17020.html",
+      "official_url": "https://www.fosunpharma.com/en/content/details37_17020.html",
+      "nct": "NCT04954001",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1",
+          "market": "A",
+          "ticker": "600196",
+          "listing_name": "复星医药",
+          "observed": "2026-10-16T17:03:31.614750+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.fosunpharma.com/en/content/details37_17020.html",
+          "observed": "2026-10-17",
+          "summary": "Company release identifies both listed tickers and Pharmaceutical Industrial Development as a subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.fosunpharma.com/en/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT04954001",
+          "nct_id": "NCT04954001",
+          "sponsor": "Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd.",
+          "observed": "2026-10-17T05:56:02.531470+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT04954001?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "201381bc4a1edf9db1ab074bfc7aa633bfe9a60b92ff2e3b7a2d4a362d9c52f9",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Shanghai+Fosun+Pharmaceutical+Industrial+Development+Co.+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "c02fd7d8f4820b6b8177e2648ce48c6628dcc85a464a32b03ec13c6d66c0c773",
+          "query_total": 41,
+          "query_exact_lead_examples": [
+            "NCT04954001",
+            "NCT07558200",
+            "NCT03944499",
+            "NCT05755048",
+            "NCT07024394"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:02196",
+      "market": "HK",
+      "ticker": "02196",
+      "name": "FOSUN PHARMA",
+      "legal_name": "Shanghai Fosun Pharmaceutical (Group) Co., Ltd.",
+      "group": "fosun",
+      "issuer_group": "fosun",
+      "listing_names": [
+        "FOSUN PHARMA"
+      ],
+      "aliases": [
+        "Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.435805+00:00 identifies HK:02196 FOSUN PHARMA. Primary issuer identity/entity reference read 2026-10-17: https://www.fosunpharma.com/en/content/details37_17020.html. Exact registry lead sponsor observed 2026-10-17: Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd. https://clinicaltrials.gov/study/NCT04954001. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.fosunpharma.com/en/content/details37_17020.html",
+      "official_url": "https://www.fosunpharma.com/en/content/details37_17020.html",
+      "nct": "NCT04954001",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "02196",
+          "listing_name": "FOSUN PHARMA",
+          "observed": "2026-10-16T17:04:42.435805+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.fosunpharma.com/en/content/details37_17020.html",
+          "observed": "2026-10-17",
+          "summary": "Company release identifies both listed tickers and Pharmaceutical Industrial Development as a subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.fosunpharma.com/en/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT04954001",
+          "nct_id": "NCT04954001",
+          "sponsor": "Shanghai Fosun Pharmaceutical Industrial Development Co. Ltd.",
+          "observed": "2026-10-17T05:56:02.531470+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT04954001?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "201381bc4a1edf9db1ab074bfc7aa633bfe9a60b92ff2e3b7a2d4a362d9c52f9",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Shanghai+Fosun+Pharmaceutical+Industrial+Development+Co.+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "c02fd7d8f4820b6b8177e2648ce48c6628dcc85a464a32b03ec13c6d66c0c773",
+          "query_total": 41,
+          "query_exact_lead_examples": [
+            "NCT04954001",
+            "NCT07558200",
+            "NCT03944499",
+            "NCT05755048",
+            "NCT07024394"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:000513",
+      "market": "A",
+      "ticker": "000513",
+      "name": "丽珠集团",
+      "legal_name": "Livzon Pharmaceutical Group Inc.",
+      "group": "livzon",
+      "issuer_group": "livzon",
+      "listing_names": [
+        "丽珠集团"
+      ],
+      "aliases": [
+        "Livzon Pharmaceutical Group Inc."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.541340+00:00 identifies A:000513 丽珠集团. Primary issuer identity/entity reference read 2026-10-17: https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf. Exact registry lead sponsor observed 2026-10-17: Livzon Pharmaceutical Group Inc. https://clinicaltrials.gov/study/NCT02847455. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+      "official_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+      "nct": "NCT02847455",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "000513",
+          "listing_name": "丽珠集团",
+          "observed": "2026-10-16T17:03:30.541340+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer ESG report identifies A-share 000513 and H-share 01513.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.livzon.com.cn/Investor/3.html",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT02847455",
+          "nct_id": "NCT02847455",
+          "sponsor": "Livzon Pharmaceutical Group Inc.",
+          "observed": "2026-10-17T05:56:05.942260+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT02847455?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "b5271950a20dd0e7997cf9f8a00fba39d2a7baed5898e8814869ebac37768182",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Livzon+Pharmaceutical+Group+Inc.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "81bbcff2a1386465b2ba75e14ae59e578044e63b529721baf795864947cca249",
+          "query_total": 33,
+          "query_exact_lead_examples": [
+            "NCT02847455",
+            "NCT03286296",
+            "NCT04026321",
+            "NCT05239832",
+            "NCT06850480",
+            "NCT00952978",
+            "NCT07746479",
+            "NCT05585567"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01513",
+      "market": "HK",
+      "ticker": "01513",
+      "name": "LIVZON PHARMA",
+      "legal_name": "Livzon Pharmaceutical Group Inc.",
+      "group": "livzon",
+      "issuer_group": "livzon",
+      "listing_names": [
+        "LIVZON PHARMA"
+      ],
+      "aliases": [
+        "Livzon Pharmaceutical Group Inc."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.434604+00:00 identifies HK:01513 LIVZON PHARMA. Primary issuer identity/entity reference read 2026-10-17: https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf. Exact registry lead sponsor observed 2026-10-17: Livzon Pharmaceutical Group Inc. https://clinicaltrials.gov/study/NCT02847455. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+      "official_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+      "nct": "NCT02847455",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01513",
+          "listing_name": "LIVZON PHARMA",
+          "observed": "2026-10-16T17:04:42.434604+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032401336.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer ESG report identifies A-share 000513 and H-share 01513.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.livzon.com.cn/Investor/3.html",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT02847455",
+          "nct_id": "NCT02847455",
+          "sponsor": "Livzon Pharmaceutical Group Inc.",
+          "observed": "2026-10-17T05:56:05.942260+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT02847455?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "b5271950a20dd0e7997cf9f8a00fba39d2a7baed5898e8814869ebac37768182",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Livzon+Pharmaceutical+Group+Inc.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "81bbcff2a1386465b2ba75e14ae59e578044e63b529721baf795864947cca249",
+          "query_total": 33,
+          "query_exact_lead_examples": [
+            "NCT02847455",
+            "NCT03286296",
+            "NCT04026321",
+            "NCT05239832",
+            "NCT06850480",
+            "NCT00952978",
+            "NCT07746479",
+            "NCT05585567"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:03692",
+      "market": "HK",
+      "ticker": "03692",
+      "name": "HANSOH PHARMA",
+      "legal_name": "Hansoh Pharmaceutical Group Company Limited",
+      "group": "hansoh",
+      "issuer_group": "hansoh",
+      "listing_names": [
+        "HANSOH PHARMA"
+      ],
+      "aliases": [
+        "Jiangsu Hansoh Pharmaceutical Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.437357+00:00 identifies HK:03692 HANSOH PHARMA. Primary issuer identity/entity reference read 2026-10-17: https://www.hansoh.cn/en/. Exact registry lead sponsor observed 2026-10-17: Jiangsu Hansoh Pharmaceutical Co., Ltd. https://clinicaltrials.gov/study/NCT06926413. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.hansoh.cn/en/",
+      "official_url": "https://www.hansoh.cn/en/",
+      "nct": "NCT06926413",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "03692",
+          "listing_name": "HANSOH PHARMA",
+          "observed": "2026-10-16T17:04:42.437357+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.hansoh.cn/en/",
+          "observed": "2026-10-17",
+          "summary": "Official page identifies 03692.HK and Jiangsu Hansoh as its principal operating subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.hansoh.cn/en/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT06926413",
+          "nct_id": "NCT06926413",
+          "sponsor": "Jiangsu Hansoh Pharmaceutical Co., Ltd.",
+          "observed": "2026-10-17T05:56:04.100507+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT06926413?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "6ea09f793d1a1f59398e41086d11c90952544108f4645a176225c69fbbc0f860",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Jiangsu+Hansoh+Pharmaceutical+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "c20b97eccef74b634eb854cad897bd1ba396e47bbccfba034ce748360270f0a1",
+          "query_total": 150,
+          "query_exact_lead_examples": [
+            "NCT06926413",
+            "NCT01985152",
+            "NCT02477865",
+            "NCT07550387",
+            "NCT05116410",
+            "NCT05353205",
+            "NCT06743438",
+            "NCT04477057",
+            "NCT06110663",
+            "NCT07844967"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01093",
+      "market": "HK",
+      "ticker": "01093",
+      "name": "CSPC PHARMA",
+      "legal_name": "CSPC Pharmaceutical Group Limited",
+      "group": "cspc",
+      "issuer_group": "cspc",
+      "listing_names": [
+        "CSPC PHARMA"
+      ],
+      "aliases": [
+        "CSPC ZhongQi Pharmaceutical Technology Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.433864+00:00 identifies HK:01093 CSPC PHARMA. Primary issuer identity/entity reference read 2026-10-17: https://www.cspc.com.hk/en/ir/presentations/20243Q.pdf. Exact registry lead sponsor observed 2026-10-17: CSPC ZhongQi Pharmaceutical Technology Co., Ltd. https://clinicaltrials.gov/study/NCT05325229. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.cspc.com.hk/en/ir/presentations/20243Q.pdf",
+      "official_url": "https://www.cspc.com.hk/en/ir/presentations/20243Q.pdf",
+      "nct": "NCT05325229",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01093",
+          "listing_name": "CSPC PHARMA",
+          "observed": "2026-10-16T17:04:42.433864+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.cspc.com.hk/en/ir/presentations/20243Q.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer presentation identifies stock 1093; registry sponsor is an observed CSPC Zhongqi spelling.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.cspc.cn/upload/%E7%8E%AF%E5%A2%83%E3%80%81%E7%A4%BE%E4%BC%9A%E5%8F%8A%E7%AE%A1%E6%B2%BB%E6%8A%A5%E5%91%8A/files/esr.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05325229",
+          "nct_id": "NCT05325229",
+          "sponsor": "CSPC ZhongQi Pharmaceutical Technology Co., Ltd.",
+          "observed": "2026-10-17T05:56:03.607916+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05325229?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "56babce992c361b61124b01c9a38975e9c7aecba2db608cad593f9085b6ae035",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22CSPC+ZhongQi+Pharmaceutical+Technology+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "a63e2318f455f885ae7b8cf2fd89a80227425fb920823cefc6bcad602c4c0f10",
+          "query_total": 177,
+          "query_exact_lead_examples": [
+            "NCT05325229",
+            "NCT06379165",
+            "NCT02597387",
+            "NCT07508501",
+            "NCT05761028",
+            "NCT04787328",
+            "NCT05616494",
+            "NCT06632574"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01177",
+      "market": "HK",
+      "ticker": "01177",
+      "name": "SBP GROUP",
+      "legal_name": "Sino Biopharmaceutical Limited",
+      "group": "sinobiopharm",
+      "issuer_group": "sinobiopharm",
+      "listing_names": [
+        "SBP GROUP"
+      ],
+      "aliases": [
+        "Chia Tai Tianqing Pharmaceutical Group Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.434036+00:00 identifies HK:01177 SBP GROUP. Primary issuer identity/entity reference read 2026-10-17: https://www.en.sinobiopharm.com/userfiles/files/E24100413-Sino%20Bio-PA.pdf. Exact registry lead sponsor observed 2026-10-17: Chia Tai Tianqing Pharmaceutical Group Co., Ltd. https://clinicaltrials.gov/study/NCT05198531. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.en.sinobiopharm.com/userfiles/files/E24100413-Sino%20Bio-PA.pdf",
+      "official_url": "https://www.en.sinobiopharm.com/userfiles/files/E24100413-Sino%20Bio-PA.pdf",
+      "nct": "NCT05198531",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01177",
+          "listing_name": "SBP GROUP",
+          "observed": "2026-10-16T17:04:42.434036+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.en.sinobiopharm.com/userfiles/files/E24100413-Sino%20Bio-PA.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer announcement identifies stock 1177 and Chia Tai Tianqing Pharmaceutical Group as a subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.en.sbpgroup.com/news-center/p4/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05198531",
+          "nct_id": "NCT05198531",
+          "sponsor": "Chia Tai Tianqing Pharmaceutical Group Co., Ltd.",
+          "observed": "2026-10-17T05:56:04.744692+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05198531?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "2a51732cfb62c844d302d84c52b8626438f1589e1cd34961f8f2954bf2abd0ec",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Chia+Tai+Tianqing+Pharmaceutical+Group+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "61f41ebab15d91148691ff65d6b0bfa0cbe54f8a3fbec7ed418c8cfd6b9bf180",
+          "query_total": 465,
+          "query_exact_lead_examples": [
+            "NCT05198531",
+            "NCT02108756",
+            "NCT07564505",
+            "NCT05020639",
+            "NCT05353179",
+            "NCT07708272"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01530",
+      "market": "HK",
+      "ticker": "01530",
+      "name": "3SBIO",
+      "legal_name": "3SBio Inc.",
+      "group": "3sbio",
+      "issuer_group": "3sbio",
+      "listing_names": [
+        "3SBIO"
+      ],
+      "aliases": [
+        "Shenyang Sunshine Pharmaceutical Co., LTD."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.434638+00:00 identifies HK:01530 3SBIO. Primary issuer identity/entity reference read 2026-10-17: https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0113/2025011300469.pdf. Exact registry lead sponsor observed 2026-10-17: Shenyang Sunshine Pharmaceutical Co., LTD. https://clinicaltrials.gov/study/NCT07008703. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0113/2025011300469.pdf",
+      "official_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0113/2025011300469.pdf",
+      "nct": "NCT07008703",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01530",
+          "listing_name": "3SBIO",
+          "observed": "2026-10-16T17:04:42.434638+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0113/2025011300469.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer announcement identifies stock 1530 and Shenyang Sunshine Pharmaceutical as a subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0930/2025093001480.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07008703",
+          "nct_id": "NCT07008703",
+          "sponsor": "Shenyang Sunshine Pharmaceutical Co., LTD.",
+          "observed": "2026-10-17T05:56:05.953030+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07008703?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "13b901f2486d04c7b5d1fd430a0e49b48f83840c7df3c44e25de6fa888cf86df",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Shenyang+Sunshine+Pharmaceutical+Co.%2C+LTD.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "fae09ae1a42997bbab2557442aef15c1b0b38dab3bbbc407fd687ef95fe00633",
+          "query_total": 43,
+          "query_exact_lead_examples": [
+            "NCT07008703",
+            "NCT06629376",
+            "NCT07007936",
+            "NCT07445308",
+            "NCT07016490",
+            "NCT07057726",
+            "NCT04089267",
+            "NCT02460393",
+            "NCT07171606"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:000963",
+      "market": "A",
+      "ticker": "000963",
+      "name": "华东医药",
+      "legal_name": "Huadong Medicine Co., Ltd.",
+      "group": "huadong",
+      "issuer_group": "huadong",
+      "listing_names": [
+        "华东医药"
+      ],
+      "aliases": [
+        "Hangzhou Zhongmei Huadong Pharmaceutical Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.542519+00:00 identifies A:000963 华东医药. Primary issuer identity/entity reference read 2026-10-17: https://en.huadongmedicine.com/about/. Exact registry lead sponsor observed 2026-10-17: Hangzhou Zhongmei Huadong Pharmaceutical Co., Ltd. https://clinicaltrials.gov/study/NCT05943977. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://en.huadongmedicine.com/about/",
+      "official_url": "https://en.huadongmedicine.com/about/",
+      "nct": "NCT05943977",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "000963",
+          "listing_name": "华东医药",
+          "observed": "2026-10-16T17:03:30.542519+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://en.huadongmedicine.com/about/",
+          "observed": "2026-10-17",
+          "summary": "Company history identifies Hangzhou Zhongmei Huadong as a subsidiary; current exchange row establishes ticker.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1203/2025120302908.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05943977",
+          "nct_id": "NCT05943977",
+          "sponsor": "Hangzhou Zhongmei Huadong Pharmaceutical Co., Ltd.",
+          "observed": "2026-10-17T05:56:06.351703+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05943977?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "cd408ad6e445df642c773c42baacecd8a81086d4839e02f83a87de61cef71599",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Hangzhou+Zhongmei+Huadong+Pharmaceutical+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "314bf92b3b166b6be3d1331f8fa4319c0c0b8bd598ca45ef421e8f4cd71698a9",
+          "query_total": 55,
+          "query_exact_lead_examples": [
+            "NCT05943977",
+            "NCT06601517",
+            "NCT07502001",
+            "NCT07787260",
+            "NCT05622890",
+            "NCT06634927",
+            "NCT07279194",
+            "NCT06481085",
+            "NCT06562088"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:002422",
+      "market": "A",
+      "ticker": "002422",
+      "name": "科伦药业",
+      "legal_name": "Sichuan Kelun Pharmaceutical Co., Ltd.",
+      "group": "kelun",
+      "issuer_group": "kelun",
+      "listing_names": [
+        "科伦药业"
+      ],
+      "aliases": [
+        "Sichuan Kelun Pharmaceutical Co.,Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.544276+00:00 identifies A:002422 科伦药业. Primary issuer identity/entity reference read 2026-10-17: https://static.cninfo.com.cn/finalpage/enpage/002422_2.pdf. Exact registry lead sponsor observed 2026-10-17: Sichuan Kelun Pharmaceutical Co.,Ltd. https://clinicaltrials.gov/study/NCT06674694. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://static.cninfo.com.cn/finalpage/enpage/002422_2.pdf",
+      "official_url": "https://static.cninfo.com.cn/finalpage/enpage/002422_2.pdf",
+      "nct": "NCT06674694",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "002422",
+          "listing_name": "科伦药业",
+          "observed": "2026-10-16T17:03:30.544276+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://static.cninfo.com.cn/finalpage/enpage/002422_2.pdf",
+          "observed": "2026-10-17",
+          "summary": "Exchange issuer snapshot identifies legal name and 002422; this mapping adds only the observed parent sponsor.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://static.cninfo.com.cn/finalpage/enpage/002422_2.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT06674694",
+          "nct_id": "NCT06674694",
+          "sponsor": "Sichuan Kelun Pharmaceutical Co.,Ltd.",
+          "observed": "2026-10-17T05:56:07.354461+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT06674694?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "377045c1a164b87e0b11899ad95d71bb77948172efab7fd21d990d5ea3bec15e",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Sichuan+Kelun+Pharmaceutical+Co.%2CLtd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "5687606a41e3c8db6157bd2518093709cec16aec8063a6c335b6ef5d5fb14871",
+          "query_total": 2,
+          "query_exact_lead_examples": [
+            "NCT06674694"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:002653",
+      "market": "A",
+      "ticker": "002653",
+      "name": "海思科",
+      "legal_name": "Haisco Pharmaceutical Group Co., Ltd.",
+      "group": "haisco",
+      "issuer_group": "haisco",
+      "listing_names": [
+        "海思科"
+      ],
+      "aliases": [
+        "Haisco Pharmaceutical Group Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.545214+00:00 identifies A:002653 海思科. Primary issuer identity/entity reference read 2026-10-17: https://en.haisco.com/. Exact registry lead sponsor observed 2026-10-17: Haisco Pharmaceutical Group Co., Ltd. https://clinicaltrials.gov/study/NCT05390905. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://en.haisco.com/",
+      "official_url": "https://en.haisco.com/",
+      "nct": "NCT05390905",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "002653",
+          "listing_name": "海思科",
+          "observed": "2026-10-16T17:03:30.545214+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://en.haisco.com/",
+          "observed": "2026-10-17",
+          "summary": "Company site identifies Haisco drug development; current exchange row establishes 002653.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://static.cninfo.com.cn/finalpage/2025-08-23/1224554980.PDF",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05390905",
+          "nct_id": "NCT05390905",
+          "sponsor": "Haisco Pharmaceutical Group Co., Ltd.",
+          "observed": "2026-10-17T05:56:07.977268+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05390905?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "756f94cc28479238a410225f111381ab175659f52d6db54e58ae7dd55885f5dd",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Haisco+Pharmaceutical+Group+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "029ce429d639e1ceddcaba183e0bfb2897fba889c6df545d0b2c59047b3b395f",
+          "query_total": 153,
+          "query_exact_lead_examples": [
+            "NCT05390905",
+            "NCT05947097",
+            "NCT07186426",
+            "NCT07442877",
+            "NCT06122012",
+            "NCT05663593"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:002294",
+      "market": "A",
+      "ticker": "002294",
+      "name": "信立泰",
+      "legal_name": "Shenzhen Salubris Pharmaceuticals Co., Ltd.",
+      "group": "salubris",
+      "issuer_group": "salubris",
+      "listing_names": [
+        "信立泰"
+      ],
+      "aliases": [
+        "Shenzhen Salubris Pharmaceuticals Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.543906+00:00 identifies A:002294 信立泰. Primary issuer identity/entity reference read 2026-10-17: https://www.salubris.com/en/. Exact registry lead sponsor observed 2026-10-17: Shenzhen Salubris Pharmaceuticals Co., Ltd. https://clinicaltrials.gov/study/NCT07174830. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.salubris.com/en/",
+      "official_url": "https://www.salubris.com/en/",
+      "nct": "NCT07174830",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "002294",
+          "listing_name": "信立泰",
+          "observed": "2026-10-16T17:03:30.543906+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.salubris.com/en/",
+          "observed": "2026-10-17",
+          "summary": "Official company homepage identifies its legal name and stock code 002294.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.salubris.com/en/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07174830",
+          "nct_id": "NCT07174830",
+          "sponsor": "Shenzhen Salubris Pharmaceuticals Co., Ltd.",
+          "observed": "2026-10-17T05:56:08.715765+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07174830?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "f88a05a167696fd333c588f1153ac48fcf05926e13794cd0d6c859a0cef59498",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Shenzhen+Salubris+Pharmaceuticals+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "98155cbc20057bc999c77247f4b23c6401533acd5900892c8f09a31422ce4bd1",
+          "query_total": 42,
+          "query_exact_lead_examples": [
+            "NCT07174830",
+            "NCT05782192",
+            "NCT07579936",
+            "NCT06016036",
+            "NCT07722299",
+            "NCT06737081",
+            "NCT07704684",
+            "NCT06465264",
+            "NCT07654140",
+            "NCT07646535"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:002773",
+      "market": "A",
+      "ticker": "002773",
+      "name": "康弘药业",
+      "legal_name": "Chengdu Kanghong Pharmaceutical Group Co., Ltd.",
+      "group": "kanghong",
+      "issuer_group": "kanghong",
+      "listing_names": [
+        "康弘药业"
+      ],
+      "aliases": [
+        "Chengdu Kanghong Pharmaceutical Group Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:30.545516+00:00 identifies A:002773 康弘药业. Primary issuer identity/entity reference read 2026-10-17: https://en.cnkh.com/index.html. Exact registry lead sponsor observed 2026-10-17: Chengdu Kanghong Pharmaceutical Group Co., Ltd. https://clinicaltrials.gov/study/NCT07277933. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://en.cnkh.com/index.html",
+      "official_url": "https://en.cnkh.com/index.html",
+      "nct": "NCT07277933",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1",
+          "market": "A",
+          "ticker": "002773",
+          "listing_name": "康弘药业",
+          "observed": "2026-10-16T17:03:30.545516+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://en.cnkh.com/index.html",
+          "observed": "2026-10-17",
+          "summary": "Official English homepage identifies listed Chengdu Kanghong and stock symbol 002773.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://en.cnkh.com/products_information/04-Investor/Annual%20report2020.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07277933",
+          "nct_id": "NCT07277933",
+          "sponsor": "Chengdu Kanghong Pharmaceutical Group Co., Ltd.",
+          "observed": "2026-10-17T05:56:09.008138+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07277933?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "5c497a6c1b6426db81723155ed11588adbb8729b34270671950eb1983369c181",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Chengdu+Kanghong+Pharmaceutical+Group+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "665d3264b80e68469cf9a9c90a79b7bd2c0e2633031472095c6f0a1ebf885586",
+          "query_total": 23,
+          "query_exact_lead_examples": [
+            "NCT07277933",
+            "NCT07741331",
+            "NCT06589817"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:600557",
+      "market": "A",
+      "ticker": "600557",
+      "name": "康缘药业",
+      "legal_name": "Jiangsu Kanion Pharmaceutical Co., Ltd.",
+      "group": "kanion",
+      "issuer_group": "kanion",
+      "listing_names": [
+        "康缘药业"
+      ],
+      "aliases": [
+        "Jiangsu Kanion Pharmaceutical Co., Ltd"
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:31.615517+00:00 identifies A:600557 康缘药业. Primary issuer identity/entity reference read 2026-10-17: https://www.kanion.com/. Exact registry lead sponsor observed 2026-10-17: Jiangsu Kanion Pharmaceutical Co., Ltd https://clinicaltrials.gov/study/NCT05192304. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.kanion.com/",
+      "official_url": "https://www.kanion.com/",
+      "nct": "NCT05192304",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1",
+          "market": "A",
+          "ticker": "600557",
+          "listing_name": "康缘药业",
+          "observed": "2026-10-16T17:03:31.615517+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.kanion.com/",
+          "observed": "2026-10-17",
+          "summary": "Official Chinese homepage identifies issuer and stock code 600557.SH; English page supplies legal name.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.kanion.com/en/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05192304",
+          "nct_id": "NCT05192304",
+          "sponsor": "Jiangsu Kanion Pharmaceutical Co., Ltd",
+          "observed": "2026-10-17T05:56:09.793966+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05192304?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "17d09e68fd94fe006343e7cb3ca39003297abd44797edb845f25bd652bf99c03",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Jiangsu+Kanion+Pharmaceutical+Co.%2C+Ltd%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "e6aea3390b69e21fe97393b904fffbfed7c0a2f4aee3d17851b2d82cf16a99ca",
+          "query_total": 14,
+          "query_exact_lead_examples": [
+            "NCT05192304",
+            "NCT02046031",
+            "NCT02233972",
+            "NCT07200362",
+            "NCT01958957",
+            "NCT02035111",
+            "NCT06679998",
+            "NCT02264535",
+            "NCT01588236"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:600867",
+      "market": "A",
+      "ticker": "600867",
+      "name": "通化东宝",
+      "legal_name": "Tonghua Dongbao Pharmaceutical Co., Ltd.",
+      "group": "dongbao",
+      "issuer_group": "dongbao",
+      "listing_names": [
+        "通化东宝"
+      ],
+      "aliases": [
+        "Tonghua Dongbao Pharmaceutical Co.,Ltd"
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:31.616136+00:00 identifies A:600867 通化东宝. Primary issuer identity/entity reference read 2026-10-17: https://www.thdb.com/en. Exact registry lead sponsor observed 2026-10-17: Tonghua Dongbao Pharmaceutical Co.,Ltd https://clinicaltrials.gov/study/NCT07257627. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.thdb.com/en",
+      "official_url": "https://www.thdb.com/en",
+      "nct": "NCT07257627",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1",
+          "market": "A",
+          "ticker": "600867",
+          "listing_name": "通化东宝",
+          "observed": "2026-10-16T17:03:31.616136+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.thdb.com/en",
+          "observed": "2026-10-17",
+          "summary": "Official English site identifies Tonghua Dongbao Pharmaceutical; current exchange row establishes ticker.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.thdb.com/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07257627",
+          "nct_id": "NCT07257627",
+          "sponsor": "Tonghua Dongbao Pharmaceutical Co.,Ltd",
+          "observed": "2026-10-17T05:56:09.840405+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07257627?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "f5c332f3d5caf3461acd52152d2c2505f5dc9c229e5cf2ef159657798f325fc1",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Tonghua+Dongbao+Pharmaceutical+Co.%2CLtd%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "55fbce8e5080c8401772237a06b63211f5782df2aed4418828638e6827b2db43",
+          "query_total": 14,
+          "query_exact_lead_examples": [
+            "NCT07257627",
+            "NCT06559722",
+            "NCT06744868",
+            "NCT06153329",
+            "NCT06449703",
+            "NCT07036601",
+            "NCT06951945",
+            "NCT05834868"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:600521",
+      "market": "A",
+      "ticker": "600521",
+      "name": "华海药业",
+      "legal_name": "Zhejiang Huahai Pharmaceutical Co., Ltd.",
+      "group": "huahai",
+      "issuer_group": "huahai",
+      "listing_names": [
+        "华海药业"
+      ],
+      "aliases": [
+        "Zhejiang Huahai Pharmaceutical Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:31.615451+00:00 identifies A:600521 华海药业. Primary issuer identity/entity reference read 2026-10-17: https://en.huahaipharm.com/qyjj.html. Exact registry lead sponsor observed 2026-10-17: Zhejiang Huahai Pharmaceutical Co., Ltd. https://clinicaltrials.gov/study/NCT07253207. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://en.huahaipharm.com/qyjj.html",
+      "official_url": "https://en.huahaipharm.com/qyjj.html",
+      "nct": "NCT07253207",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1",
+          "market": "A",
+          "ticker": "600521",
+          "listing_name": "华海药业",
+          "observed": "2026-10-16T17:03:31.615451+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://en.huahaipharm.com/qyjj.html",
+          "observed": "2026-10-17",
+          "summary": "Official English profile identifies Zhejiang Huahai pharmaceutical business; current exchange row establishes ticker.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.huahaipharm.com/",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07253207",
+          "nct_id": "NCT07253207",
+          "sponsor": "Zhejiang Huahai Pharmaceutical Co., Ltd.",
+          "observed": "2026-10-17T05:56:10.867288+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07253207?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "c10c78c41e82409afc647f0d8478929ffcb6c09db56f94c49b192e158ce2fd1d",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Zhejiang+Huahai+Pharmaceutical+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "7a565405f8382040b5fe68db57180624e3b2c54216fcb28318e91d6b61b8d392",
+          "query_total": 7,
+          "query_exact_lead_examples": [
+            "NCT03404466",
+            "NCT07253207",
+            "NCT04598607",
+            "NCT03739632"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "A:600535",
+      "market": "A",
+      "ticker": "600535",
+      "name": "XD天士力",
+      "legal_name": "Tasly Pharmaceutical Group Co., Ltd.",
+      "group": "tasly",
+      "issuer_group": "tasly",
+      "listing_names": [
+        "XD天士力",
+        "天士力"
+      ],
+      "aliases": [
+        "Tasly Pharmaceutical Group Co., Ltd"
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:03:31.615478+00:00 identifies A:600535 XD天士力. Primary issuer identity/entity reference read 2026-10-17: https://en.taslypharma.com/gywm.jhtml?page=introduce. Exact registry lead sponsor observed 2026-10-17: Tasly Pharmaceutical Group Co., Ltd https://clinicaltrials.gov/study/NCT06000956. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://en.taslypharma.com/gywm.jhtml?page=introduce",
+      "official_url": "https://en.taslypharma.com/gywm.jhtml?page=introduce",
+      "nct": "NCT06000956",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://query.sse.com.cn/sseQuery/commonQuery.do?sqlId=COMMON_SSE_CP_GPJCTPZ_GPLB_GP_L&STOCK_TYPE=1&REG_PROVINCE=&CSRC_CODE=&STOCK_CODE=&COMPANY_STATUS=2%2C4%2C5%2C7%2C8&type=inParams&isPagination=true&pageHelp.pageSize=10000&pageHelp.pageNo=1",
+          "market": "A",
+          "ticker": "600535",
+          "listing_name": "XD天士力",
+          "observed": "2026-10-16T17:03:31.615478+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://en.taslypharma.com/gywm.jhtml?page=introduce",
+          "observed": "2026-10-17",
+          "summary": "Official listed-company profile supplies legal name and stock code 600535; holding-company identity is separate.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2025/0926/2025092600549.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT06000956",
+          "nct_id": "NCT06000956",
+          "sponsor": "Tasly Pharmaceutical Group Co., Ltd",
+          "observed": "2026-10-17T05:56:10.914597+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT06000956?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "ae51f7925a54298603872780d2bbd70a884e1071b5c2030f2ef236d695db25fb",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Tasly+Pharmaceutical+Group+Co.%2C+Ltd%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "6ab4d7a2ea6ac50660cecc467be5cdf7aa27c6f55bf836153975ff078db7572f",
+          "query_total": 38,
+          "query_exact_lead_examples": [
+            "NCT06000956",
+            "NCT04457011",
+            "NCT07485595",
+            "NCT04486963",
+            "NCT06068465",
+            "NCT04492787",
+            "NCT04229706"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01672",
+      "market": "HK",
+      "ticker": "01672",
+      "name": "ASCLETIS-B",
+      "legal_name": "Ascletis Pharma Inc.",
+      "group": "ascletis",
+      "issuer_group": "ascletis",
+      "listing_names": [
+        "ASCLETIS-B"
+      ],
+      "aliases": [
+        "Ascletis Pharmaceuticals Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.434887+00:00 identifies HK:01672 ASCLETIS-B. Primary issuer identity/entity reference read 2026-10-17: https://www.ascletis.com/Index/index/index/l/en-us.html. Exact registry lead sponsor observed 2026-10-17: Ascletis Pharmaceuticals Co., Ltd. https://clinicaltrials.gov/study/NCT03020082. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.ascletis.com/Index/index/index/l/en-us.html",
+      "official_url": "https://www.ascletis.com/Index/index/index/l/en-us.html",
+      "nct": "NCT03020082",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01672",
+          "listing_name": "ASCLETIS-B",
+          "observed": "2026-10-16T17:04:42.434887+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.ascletis.com/Index/index/index/l/en-us.html",
+          "observed": "2026-10-17",
+          "summary": "Official page identifies Ascletis and stock 1672; issuer definitions identify Ascletis Pharmaceuticals as an indirectly wholly-owned subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2025/0815/2025081500656.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT03020082",
+          "nct_id": "NCT03020082",
+          "sponsor": "Ascletis Pharmaceuticals Co., Ltd.",
+          "observed": "2026-10-17T05:56:11.885339+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT03020082?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "ca86406536f37cf379b2a3c69cb20d9f96a79a68098749fb6d93589e4af519f5",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Ascletis+Pharmaceuticals+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "d703f2288159a0be5dd7a33bca4d0fb40ee9c1d4fb293c02597a034896c80807",
+          "query_total": 29,
+          "query_exact_lead_examples": [
+            "NCT03020082",
+            "NCT03288636",
+            "NCT05107778",
+            "NCT06192264",
+            "NCT05330143",
+            "NCT04465890",
+            "NCT04352361",
+            "NCT04547894",
+            "NCT04358523"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:02186",
+      "market": "HK",
+      "ticker": "02186",
+      "name": "LUYE PHARMA",
+      "legal_name": "Luye Pharma Group Ltd.",
+      "group": "luye",
+      "issuer_group": "luye",
+      "listing_names": [
+        "LUYE PHARMA"
+      ],
+      "aliases": [
+        "Luye Pharma Group Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.435787+00:00 identifies HK:02186 LUYE PHARMA. Primary issuer identity/entity reference read 2026-10-17: https://www.luye.cn/lvye_en/index.php. Exact registry lead sponsor observed 2026-10-17: Luye Pharma Group Ltd. https://clinicaltrials.gov/study/NCT05856630. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.luye.cn/lvye_en/index.php",
+      "official_url": "https://www.luye.cn/lvye_en/index.php",
+      "nct": "NCT05856630",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "02186",
+          "listing_name": "LUYE PHARMA",
+          "observed": "2026-10-16T17:04:42.435787+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.luye.cn/lvye_en/index.php",
+          "observed": "2026-10-17",
+          "summary": "Official page identifies Luye Pharma Group and stock 02186.HK.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.luye.cn/lvye_en/index.php",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT05856630",
+          "nct_id": "NCT05856630",
+          "sponsor": "Luye Pharma Group Ltd.",
+          "observed": "2026-10-17T05:56:12.585393+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT05856630?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "6daf45781ad9735ed7fd8df9d2cf3b1af0359cda4871d630e4c7c6d283c47c4b",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Luye+Pharma+Group+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "9e4c6ad65bca27ecc40fb2e17783405fe69355c1649802645335ddbaa040ddc8",
+          "query_total": 76,
+          "query_exact_lead_examples": [
+            "NCT05856630",
+            "NCT04973722",
+            "NCT06388551",
+            "NCT07396870",
+            "NCT05862974",
+            "NCT04044547",
+            "NCT04973735",
+            "NCT06128837",
+            "NCT04922593"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:03933",
+      "market": "HK",
+      "ticker": "03933",
+      "name": "UNITED LAB",
+      "legal_name": "The United Laboratories International Holdings Limited",
+      "group": "united-laboratories",
+      "issuer_group": "united-laboratories",
+      "listing_names": [
+        "UNITED LAB"
+      ],
+      "aliases": [
+        "Zhuhai United Laboratories Co., Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.437508+00:00 identifies HK:03933 UNITED LAB. Primary issuer identity/entity reference read 2026-10-17: https://www.tul.com.cn/en-us/list/96.html. Exact registry lead sponsor observed 2026-10-17: Zhuhai United Laboratories Co., Ltd. https://clinicaltrials.gov/study/NCT07719257. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.tul.com.cn/en-us/list/96.html",
+      "official_url": "https://www.tul.com.cn/en-us/list/96.html",
+      "nct": "NCT07719257",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "03933",
+          "listing_name": "UNITED LAB",
+          "observed": "2026-10-16T17:04:42.437508+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.tul.com.cn/en-us/list/96.html",
+          "observed": "2026-10-17",
+          "summary": "Official group page identifies 3933.HK; issuer report describes Zhuhai United Laboratories within group operations.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2024/0429/2024042904991.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07719257",
+          "nct_id": "NCT07719257",
+          "sponsor": "Zhuhai United Laboratories Co., Ltd.",
+          "observed": "2026-10-17T05:56:12.083752+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07719257?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "7b316704dc6c2d5cb77be07993b71e3e9e62b012eec7d4dc1bf65f4ed6c49855",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Zhuhai+United+Laboratories+Co.%2C+Ltd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "8ecf904d32bda937df162529f4310cc2240fe34a8562ca9de5888ead6f4f8d64",
+          "query_total": 5,
+          "query_exact_lead_examples": [
+            "NCT07719257",
+            "NCT07760467",
+            "NCT07600944",
+            "NCT07608692",
+            "NCT07875803"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:01952",
+      "market": "HK",
+      "ticker": "01952",
+      "name": "EVEREST MED",
+      "legal_name": "Everest Medicines Limited",
+      "group": "everest",
+      "issuer_group": "everest",
+      "listing_names": [
+        "EVEREST MED"
+      ],
+      "aliases": [
+        "Everest Medicines (China) Co.,Ltd."
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.435442+00:00 identifies HK:01952 EVEREST MED. Primary issuer identity/entity reference read 2026-10-17: https://www.everestmedicines.com/news/everest-medicines-announces-commercialization-service/7586acbe-8194-41fa-b9dd-0c0a2cdec66c. Exact registry lead sponsor observed 2026-10-17: Everest Medicines (China) Co.,Ltd. https://clinicaltrials.gov/study/NCT07614477. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www.everestmedicines.com/news/everest-medicines-announces-commercialization-service/7586acbe-8194-41fa-b9dd-0c0a2cdec66c",
+      "official_url": "https://www.everestmedicines.com/news/everest-medicines-announces-commercialization-service/7586acbe-8194-41fa-b9dd-0c0a2cdec66c",
+      "nct": "NCT07614477",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "01952",
+          "listing_name": "EVEREST MED",
+          "observed": "2026-10-16T17:04:42.435442+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www.everestmedicines.com/news/everest-medicines-announces-commercialization-service/7586acbe-8194-41fa-b9dd-0c0a2cdec66c",
+          "observed": "2026-10-17",
+          "summary": "Official release identifies 1952.HK and Everest Medicines (China) as its wholly-owned subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.everestmedicines.com/news/2025/a0ce1ed4-5fd8-48b8-a94a-648bca5a2625",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT07614477",
+          "nct_id": "NCT07614477",
+          "sponsor": "Everest Medicines (China) Co.,Ltd.",
+          "observed": "2026-10-17T05:56:14.230448+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT07614477?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "3e76024fdb11d18688772f5c86693939a3747260f4efb0ec680ab19ad11bd076",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22Everest+Medicines+%28China%29+Co.%2CLtd.%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "f17da36c540f79503083037ba21db0e567596bd917ae4c9f3eb2975e939da569",
+          "query_total": 7,
+          "query_exact_lead_examples": [
+            "NCT07614477",
+            "NCT05800873",
+            "NCT07798375"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:02616",
+      "market": "HK",
+      "ticker": "02616",
+      "name": "CSTONE PHARMA-B",
+      "legal_name": "CStone Pharmaceuticals",
+      "group": "cstone",
+      "issuer_group": "cstone",
+      "listing_names": [
+        "CSTONE PHARMA-B"
+      ],
+      "aliases": [
+        "CStone Pharmaceuticals"
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.436798+00:00 identifies HK:02616 CSTONE PHARMA-B. Primary issuer identity/entity reference read 2026-10-17: https://webmgr.cstonepharma.com/en/. Exact registry lead sponsor observed 2026-10-17: CStone Pharmaceuticals https://clinicaltrials.gov/study/NCT03505996. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://webmgr.cstonepharma.com/en/",
+      "official_url": "https://webmgr.cstonepharma.com/en/",
+      "nct": "NCT03505996",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "02616",
+          "listing_name": "CSTONE PHARMA-B",
+          "observed": "2026-10-16T17:04:42.436798+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://webmgr.cstonepharma.com/en/",
+          "observed": "2026-10-17",
+          "summary": "Official company page identifies CStone and HKEX stock 2616.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www.cstonepharma.com/en/news/company_news4.html",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT03505996",
+          "nct_id": "NCT03505996",
+          "sponsor": "CStone Pharmaceuticals",
+          "observed": "2026-10-17T05:56:13.420508+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT03505996?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "2747ec4948e5c9597f5e2500bfcf10221abf59fdfd6dc1d88c55818fd5a330a9",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22CStone+Pharmaceuticals%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "e1e06464d0fafc559e3821fc9acabd213c12bae9b96bdf4b1c2bc30464c5aa4b",
+          "query_total": 29,
+          "query_exact_lead_examples": [
+            "NCT03505996",
+            "NCT04194775",
+            "NCT03595657",
+            "NCT03516123",
+            "NCT03475251",
+            "NCT03736850",
+            "NCT04338724",
+            "NCT03802591",
+            "NCT04254939",
+            "NCT04421352"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    },
+    {
+      "id": "HK:02511",
+      "market": "HK",
+      "ticker": "02511",
+      "name": "HIGHTIDE-B",
+      "legal_name": "HighTide Therapeutics, Inc.",
+      "group": "hightide",
+      "issuer_group": "hightide",
+      "listing_names": [
+        "HIGHTIDE-B"
+      ],
+      "aliases": [
+        "HighTide Therapeutics (Hong Kong) Limited"
+      ],
+      "provenance": "Current exchange snapshot 2026-10-16T17:04:42.436329+00:00 identifies HK:02511 HIGHTIDE-B. Primary issuer identity/entity reference read 2026-10-17: https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0602/2026060202746.pdf. Exact registry lead sponsor observed 2026-10-17: HighTide Therapeutics (Hong Kong) Limited https://clinicaltrials.gov/study/NCT02538848. Pending independent mapping review. Sponsor association does not establish intervention ownership, licensing rights or complete pipeline coverage.",
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0602/2026060202746.pdf",
+      "official_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0602/2026060202746.pdf",
+      "nct": "NCT02538848",
+      "observed": "2026-10-17",
+      "evidence": [
+        {
+          "kind": "exchange_listing_observation",
+          "url": "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx",
+          "market": "HK",
+          "ticker": "02511",
+          "listing_name": "HIGHTIDE-B",
+          "observed": "2026-10-16T17:04:42.436329+00:00",
+          "verification": "read_only_current_platform_snapshot"
+        },
+        {
+          "kind": "official_identity_source",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0602/2026060202746.pdf",
+          "observed": "2026-10-17",
+          "summary": "Issuer filing identifies stock 2511; annual report identifies HighTide Therapeutics (Hong Kong) as a subsidiary.",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "official_entity_reference",
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0429/2026042904040.pdf",
+          "observed": "2026-10-17",
+          "verification": "read_primary_source_during_expansion"
+        },
+        {
+          "kind": "registry_lead_sponsor",
+          "url": "https://clinicaltrials.gov/study/NCT02538848",
+          "nct_id": "NCT02538848",
+          "sponsor": "HighTide Therapeutics (Hong Kong) Limited",
+          "observed": "2026-10-17T05:56:14.147747+00:00",
+          "api_url": "https://clinicaltrials.gov/api/v2/studies/NCT02538848?fields=NCTId,LeadSponsorName,BriefTitle,LastUpdatePostDate",
+          "sha256": "358779633e5855cee681a0859cd3bb829ae66ab31753f29ef7169aba95ccb307",
+          "query_url": "https://clinicaltrials.gov/api/v2/studies?query.spons=%22HighTide+Therapeutics+%28Hong+Kong%29+Limited%22&pageSize=10&fields=NCTId%2CLeadSponsorName&countTotal=true",
+          "query_sha256": "ce67264fddeeee3185f3860f78daac5d9750d62051d33705b8f156ac57ac063e",
+          "query_total": 8,
+          "query_exact_lead_examples": [
+            "NCT02538848",
+            "NCT03656744",
+            "NCT05623189",
+            "NCT03381287",
+            "NCT03678480",
+            "NCT03333928",
+            "NCT03099603",
+            "NCT04604652"
+          ]
+        }
+      ],
+      "review_status": "pending"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "HK:00867",
+      "name": "CMS",
+      "reason": "Exact narrow queries for China Medical System and China Medical System Holdings returned zero registry studies. Subsidiary/partner identity and official pipeline reconciliation still needed. Zero query results do not establish zero pipeline.",
+      "queries": [
+        "China Medical System",
+        "China Medical System Holdings"
+      ],
+      "observed": "2026-10-17"
+    },
+    {
+      "id": "A:002019",
+      "name": "亿帆医药",
+      "reason": "Broad Yifan query returned personal names, hospitals and unrelated lead sponsors. Do not install those as issuer aliases; exact subsidiary legal identity remains unresolved.",
+      "queries": [
+        "Yifan"
+      ],
+      "observed": "2026-10-17"
+    }
+  ]
+}

@@ -173,7 +173,9 @@ def discover(listings,*,strict=False):
  skipped here. They must be reported as gaps; punctuation is never removed to
  make an unsupported preferred/warrant symbol match an ordinary-share seed.
  """
- seeds={r['id']:r for r in initial_mappings()};groups={}
+ from .china_issuer_sources import source_mappings, matches_listing
+ china={r['id']:r for r in source_mappings()}
+ seeds={r['id']:r for r in initial_mappings()};seeds.update(china);groups={}
  for raw in listings:
   try:
    market,ticker=_key(raw)
@@ -189,6 +191,7 @@ def discover(listings,*,strict=False):
   rows.sort(key=lambda r:(str(r.get('observed','')),str(r.get('source','')),r['name']))
   row=rows[-1];name=row['name'].strip();industry=str(row.get('industry','') or '')
   text=name+' '+industry;seed=seeds.get(ident)
+  matched=bool(seed and (matches_listing(seed,row) if ident in china else seed_matches_listing(seed,row)))
   evidence=[{'kind':'listing_metadata','source':r.get('source',''),'name':r['name'],'industry':r.get('industry',''),'observed':r.get('observed','')} for r in rows]
   if _INSTRUMENT.search(text):
    classification='excluded';reason='证券名称提示基金、权证、优先股或收购载体；不纳入药物开发公司候选。'
@@ -196,7 +199,7 @@ def discover(listings,*,strict=False):
    classification='excluded';reason='名称或行业提示 CRO/CDMO 服务业务；独立药物资产需另外提供证据。'
   elif _DEVICE.search(text):
    classification='excluded';reason='名称或行业明确提示器械、设备、零售药房或流通业务；独立药物资产需另核。'
-  elif seed and seed_matches_listing(seed,row):
+  elif matched:
    classification='drug_developer';reason='证券键命中有公司主来源和登记申办方观察的种子；主体映射仍待独立审查。'
    evidence.extend(deepcopy(seed['evidence']))
   elif seed:
@@ -209,7 +212,7 @@ def discover(listings,*,strict=False):
   else:
    classification='unclassified';reason='证券名称及行业信息不足；尚未核对年报、公司业务和申办方。'
   item={'id':ident,'market':row['market'],'ticker':row['ticker'],'name':name,'industry':industry,'classification':classification,'reason':reason,'rationale':reason,'evidence':evidence,'source':str(row.get('source','')),'observed':str(row.get('observed','')),'review_status':'pending','discovery_version':VERSION}
-  if seed and seed_matches_listing(seed,row):
+  if matched:
    item['issuer_group']=seed['issuer_group']
    item['suggested_aliases']=deepcopy(seed['aliases'])
   result.append(item)

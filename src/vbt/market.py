@@ -35,7 +35,9 @@ class Market:
   with self.db() as d:return d.execute('SELECT count(*) FROM '+table).fetchone()[0]
  def recent_changes(self,limit=20):
   with self.db() as d:return [dict(r) for r in d.execute('SELECT * FROM changes ORDER BY observed DESC LIMIT ?', (limit,))]
- def search_trials(self,market='',company='',query='',phase='',status='',offset=0):
+ def trial_filters(self,market='',company='',query='',phase='',status=''):
+  if market and market not in ('US','A','HK'):raise ValueError('Unknown market')
+  if len(query)>1000:raise ValueError('Search query too long')
   conditions=[];params=[]
   if market:conditions.append('company LIKE ?');params.append(market+':%')
   if company:conditions.append('company=?');params.append(company)
@@ -43,6 +45,9 @@ class Market:
   if phase:conditions.append("EXISTS (SELECT 1 FROM json_each(trials.data,'$.phases') WHERE value=?)");params.append(phase)
   if status:conditions.append("json_extract(data,'$.status')=?");params.append(status)
   where=' WHERE '+' AND '.join(conditions) if conditions else ''
+  return where,params
+ def search_trials(self,market='',company='',query='',phase='',status='',offset=0):
+  where,params=self.trial_filters(market,company,query,phase,status)
   with self.db() as d:
    count=d.execute('SELECT count(*) FROM trials'+where,params).fetchone()[0]
    rows=[dict(r) for r in d.execute('SELECT * FROM trials'+where+" ORDER BY json_extract(data,'$.source_updated') DESC,observed DESC,company,nct LIMIT 200 OFFSET ?",params+[offset])]
@@ -182,6 +187,10 @@ class Market:
    if last and (datetime.now(timezone.utc)-datetime.fromisoformat(last)).total_seconds()<interval:continue
    # Sequential scheduler bounds requests. Manual requests share persistent leases.
    self.enqueue(kind,key)
+  from .market_jobs import enqueue_disclosures
+  enqueue_disclosures(self,only_due=True)
+  from .market_discovery_pipeline import tick as discovery_tick
+  discovery_tick(self)
  def scheduler(self,stop):
   while not stop.is_set():
    try:self.tick()

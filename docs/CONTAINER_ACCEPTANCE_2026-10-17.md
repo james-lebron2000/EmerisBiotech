@@ -2,6 +2,10 @@
 
 This record covers local engineering behavior on Docker Engine 29.2.1 / Linux arm64 under Colima. It is not a public deployment, authenticated-proxy acceptance, complete market coverage, scientific validation, or customer production release.
 
+## Later market/disclosure source checkpoint
+
+The subsequent market/disclosure image `emeris-biotech:qa-market-20261017` passed **22 isolated runtime checks**. Image ID: `sha256:71952620f3855559fb7fa4766713a93108e40bc55f5043f9fb79816bdde52dd5`. All43 Python source files matched the source tree by SHA-256. It adds disclosure routes/queue and CSRF-protected, integrity-checked CSV exports. Fresh synthetic-only volumes and temporary loopback18865 were used; all dedicated runtime resources were cleaned, unrelated containers untouched. This is a later source tree than the38-file image below. Evidence: `/tmp/emeris-market-container-qa-412a377156/acceptance.json`; full checkpoint details are in `MARKET_DISCLOSURES_ACCEPTANCE_2026-10-17.md`. Remote authenticated-gateway and customer deployment remain unverified.
+
 ## Final committed-source image acceptance
 
 The final local image **passed all 12 runtime checks plus the committed-source alignment gate**.

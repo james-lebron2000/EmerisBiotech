@@ -70,6 +70,22 @@ def _serial(value):
     return json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False)
 
 
+def _identity_payload(value):
+    """A fresh directory retrieval alone does not change reviewed identity.
+
+    Keep observation times in the actual payload and source archives. Only the
+    volatile directory retrieval timestamp is excluded from semantic comparison.
+    Names, classifications, source URLs and every other evidence field remain.
+    """
+    row=json.loads(_serial(value))
+    evidence=row.get('evidence')
+    if isinstance(evidence,list):
+        for item in evidence:
+            if isinstance(item,dict) and item.get('kind')=='listing_metadata':
+                item.pop('observed',None)
+    return _serial(row)
+
+
 def refresh_candidates(market, candidates):
     """Upsert observed classification candidates, preserving all manual decisions.
 
@@ -109,7 +125,7 @@ def refresh_candidates(market, candidates):
         payload = _serial(row)
         if len(payload.encode()) > 100_000:
             raise ValueError("Candidate observation too large")
-        digest = hashlib.sha256(payload.encode()).hexdigest()
+        digest = hashlib.sha256(_identity_payload(row).encode()).hexdigest()
         # One canonical candidate per batch avoids ambiguous source precedence.
         if cid in seen:
             raise ValueError("Duplicate candidate in refresh batch: " + cid)
@@ -119,7 +135,11 @@ def refresh_candidates(market, candidates):
     inserted = updated = unchanged = 0
     with market.db() as db:
         for cid, market_code, ticker, name, classification, reason, source, evidence, payload, observed, digest in prepared:
-            previous = db.execute("SELECT content_hash,last_seen FROM issuer_candidates WHERE id=?", (cid,)).fetchone()
+            previous = db.execute("SELECT content_hash,last_seen,payload_json FROM issuer_candidates WHERE id=?", (cid,)).fetchone()
+            # Preserve existing review bindings when introducing this stable
+            # comparison to an older database with timestamp-bearing hashes.
+            if previous and _identity_payload(json.loads(previous['payload_json']))==_identity_payload(json.loads(payload)):
+                digest=previous['content_hash']
             db.execute("""INSERT OR IGNORE INTO issuer_candidate_observations
                 VALUES (?,?,?,?,?,?)""", (uuid.uuid4().hex, cid, observed, source, digest, payload))
             # Historical observations remain inspectable but do not replace a

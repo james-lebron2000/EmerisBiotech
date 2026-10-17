@@ -17,7 +17,7 @@ STATE_LABELS = {
     "unmapped": "尚未关联申办方", "uncollected": "等待首次采集", "running": "正在采集",
     "failed": "采集失败", "partial": "采集未完成", "interrupted": "采集中断",
     "succeeded_with_trials": "已取得临床登记", "succeeded_zero": "本次查询返回零条",
-    "queued": "已排队", "retry_wait": "等待重试", "cancelled": "已取消", "succeeded": "已完成",
+    "queued": "已排队", "retry_wait": "等待重试", "cancelled": "已取消", "succeeded": "已完成", "fetch_failed": "来源抓取失败", "parse_blocked": "来源解析待完成", "blocked": "主体待补充",
 }
 REVIEW_LABELS = {"pending": "待人工核对", "accepted": "分类已接受", "rejected": "分类已排除", "not_a_candidate": "尚无分类记录"}
 GAPS = (
@@ -76,7 +76,7 @@ def render(app, q):
     except (ValueError, TypeError):
         offset = 0
     rows, total = candidate_rows(market, q=query, market_filter=market_filter, status=status, offset=offset, limit=50, classification=classification)
-    body = '<div class="eyebrow">ISSUER DISCOVERY & COLLECTION</div><h1>全市场覆盖进度</h1><p class="lead">发现药企，关联申办方，逐家补齐可追溯的管线线索。</p><p><a href="/market">查看临床登记与来源观察 →</a></p>'
+    body = '<div class="eyebrow">ISSUER DISCOVERY & COLLECTION</div><h1>全市场覆盖进度</h1><p class="lead">发现药企，关联申办方，逐家补齐可追溯的管线线索。</p><p><a href="/market">查看临床登记与来源观察 →</a> · <a href="/disclosures">公司披露与登记核对 →</a></p>'
     body += '<div class="notice">目录中的证券按市场与代码去重。药企候选需要核对；申办方映射用于检索登记，药物所有权另需证据。目前完整药企分母未知，暂不报告全市场覆盖率。</div>'
     body += '<div class="case-grid">'
     for code, data in summary["markets"].items():
@@ -124,6 +124,12 @@ def render(app, q):
         if offset + 50 < total:
             body += '<a href="/market/progress?' + e(urlencode({**q, "offset": offset + 50})) + '">下一页 →</a>'
         body += '</p>'
+    body += '<details class="card"><summary>持续发现与来源更新</summary><p>自动更新开启时，证券目录每24小时检查，已配置公司的临床登记与官方披露每6小时检查。目录变更后重新识别候选，并每小时最多排队20个尚未检索且具有可用名称的主体。名称建议仍需有来源依据的核对后才能建立关联。抓取服务须保持运行，源站发布时间和访问限制影响时效。</p>'
+    with market.db() as db:
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_discovery_events'").fetchone():
+            for event in db.execute('SELECT * FROM market_discovery_events ORDER BY created DESC LIMIT 5'):
+                body += '<details><summary>'+e(event['created'])+' · '+e(event['status'])+'</summary><pre>'+e(event['payload'])+'</pre></details>'
+    body += '</details>'
     queue = market_jobs.jobs(market, 30)
     with market.db() as db:
         queue_counts = {r["status"]: r["n"] for r in db.execute("SELECT status,count(*) AS n FROM collection_jobs GROUP BY status")}

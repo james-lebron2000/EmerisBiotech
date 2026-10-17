@@ -24,7 +24,7 @@ def render(app,q):
  try:offset=max(0,int(q.get('offset','0')))
  except ValueError:offset=0
  rows,total=m.search_trials(market,cid,query,q.get('phase',''),q.get('status',''),offset=offset)
- body+='<h2>药物／生物制品试验线索 · '+str(total)+' 条</h2><p>每页 200 条，按来源更新日期排序。多地上市会产生重复证券关联；顶部另列去重后的 NCT 数量。</p>'
+ body+='<h2>药物／生物制品试验线索 · '+str(total)+' 条</h2>'+form('/market/export',{k:q[k] for k in ('market','company','q','phase','status') if q.get(k)},'导出筛选结果 CSV')+'<p>每页 200 条，按来源更新日期排序。多地上市会产生重复证券关联；顶部另列去重后的 NCT 数量。</p>'
  if rows:
   body+='<div class="scroll"><table class="clinical-table"><tr><th>公司 / 试验</th><th>干预与适应症</th><th>阶段 / 状态</th><th>来源更新 / 抓取时间</th></tr>'
   for r in rows:

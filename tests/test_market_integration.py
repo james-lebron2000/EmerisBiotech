@@ -47,3 +47,19 @@ def test_company_display_name_is_searchable(tmp_path):
  m=Market(tmp_path/'w',tmp_path/'s');m.add_company('A','600276','恒瑞医药',['Synthetic'],'Synthetic fixture')
  with m.db() as db:db.execute('INSERT INTO trials VALUES (?,?,?,?,?)',('A:600276','NCT00000001',json.dumps({'interventions':[],'phases':['PHASE3'],'status':'RECRUITING','source_updated':'2026-10-17'}),'hash','2026-10-17'))
  assert m.search_trials(query='恒瑞',phase='PHASE3',status='RECRUITING')[1]==1
+
+
+def test_china_expansion_current_identity_and_grouping(tmp_path):
+ from vbt.china_issuer_sources import source_mappings
+ from vbt.issuer_discovery import discover
+ m=Market(tmp_path/'w',tmp_path/'s');seeds=source_mappings()[:2]
+ with m.db() as db:
+  for r in seeds:db.execute('INSERT INTO listings VALUES (?,?,?,?,?,?,?,?)',(r['id'],r['market'],'SYNTHETIC',r['ticker'],r['listing_names'][0],'','SYNTHETIC','2026-10-17T00:00:00+00:00'))
+  db.execute('INSERT INTO listings VALUES (?,?,?,?,?,?,?,?)',('invalid','US','SYNTHETIC','TEST$A','Synthetic Preferred','','SYNTHETIC','2026-10-17T00:00:00+00:00'))
+ rows=discover(m.rows('listings'));assert len(rows)==2
+ assert len({r['issuer_group'] for r in rows})==1
+ assert all(r['classification']=='drug_developer' for r in rows)
+ assert set(expand(m)['added'])=={r['id'] for r in seeds}
+ assert len(expand(m)['unchanged'])==2
+ with m.db() as db:db.execute("UPDATE listings SET name='Unrelated Issuer' WHERE id=?",(seeds[0]['id'],))
+ assert seeds[0]['id'] in expand(m)['missing_listing']

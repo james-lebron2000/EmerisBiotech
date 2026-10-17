@@ -163,7 +163,9 @@ def test_real_worker_process_stops_on_sigterm_without_collecting(tmp_path):
         f'main(Path({str(workspace)!r}), Path({str(state)!r}))'
     )
     process = subprocess.Popen(
-        [sys.executable, '-c', script], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        # The collector uses the standard library only. Skip unrelated editable
+        # site hooks, which may point at an unavailable removable research disk.
+        [sys.executable, '-S', '-c', script], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, env={**os.environ, 'PYTHONPATH': str(ROOT/'src')},
     )
     try:

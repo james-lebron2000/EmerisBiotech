@@ -46,5 +46,7 @@ def render(app,q):
  with m.db() as db:
   if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sponsor_proposal_reviews'").fetchone():
    body+='<h2>最近主体核对记录</h2>'
-   for r in db.execute('SELECT * FROM sponsor_proposal_reviews ORDER BY created DESC LIMIT 20'):body+='<div class="card"><b>'+e(r['reviewer'])+' · '+('接受' if r['decision']=='accepted' else '排除')+'</b><p>'+e(r['reason'])+'</p><span class="ref">'+e(r['created'])+' · '+e(r['proposal_id'])+'</span></div>'
+   typed=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sponsor_review_evidence'").fetchone()
+   query='SELECT r.*,e.reviewer_type FROM sponsor_proposal_reviews r LEFT JOIN sponsor_review_evidence e ON e.review_id=r.id ORDER BY r.created DESC LIMIT 20' if typed else "SELECT r.*,'human_declared' AS reviewer_type FROM sponsor_proposal_reviews r ORDER BY r.created DESC LIMIT 20"
+   for r in db.execute(query):body+='<div class="card"><span class="badge">'+('自动双源名称核对，非人工签署' if r['reviewer_type']=='automated_source_review' else '记录人声明的主体核对')+'</span><b>'+e(r['reviewer'])+' · '+('接受' if r['decision']=='accepted' else '排除')+'</b><p>'+e(r['reason'])+'</p><span class="ref">'+e(r['created'])+' · '+e(r['proposal_id'])+'</span></div>'
  return body

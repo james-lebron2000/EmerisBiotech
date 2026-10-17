@@ -88,6 +88,7 @@ STYLE += """
 """
 
 STYLE += ".clinical-table{min-width:1050px;table-layout:fixed}.clinical-table th:nth-child(1){width:32%}.clinical-table th:nth-child(2){width:36%}.clinical-table th:nth-child(3){width:14%}.clinical-table th:nth-child(4){width:18%}.clinical-table td{overflow-wrap:anywhere}"
+STYLE += ".disclosure-table{min-width:1050px;table-layout:fixed;width:100%}.disclosure-table th:nth-child(1){width:18%}.disclosure-table th:nth-child(2){width:12%}.disclosure-table th:nth-child(3){width:22%}.disclosure-table th:nth-child(4){width:26%}.disclosure-table th:nth-child(5){width:22%}.disclosure-table td,.disclosure-table th{overflow-wrap:anywhere;vertical-align:top}"
 
 LABEL={'run':'分析运行','portfolio':'研究快照','cycle':'研究循环','succeeded':'执行成功','failed':'执行失败','blocked':'执行受阻','completed':'循环已完成','snapshot':'已冻结','running':'正在校验','interrupted':'任务中断','pending':'待科学审查','revise':'需修订','insufficient_evidence':'证据不足','unknown':'未知'}
 def badge(s):return f'<span class="badge {esc(s)}">{esc(LABEL.get(s,s))}</span>'
@@ -101,6 +102,12 @@ def page(app,path,q):
         body=home_intro()+'<h2>研究控制台 · 当前工作区</h2><div class="grid">'
         for label,value in [('分析运行',sum(r['kind']=='run' for r in records)),('研究循环',sum(r['kind']=='cycle' for r in records)),('冻结快照',sum(r['kind']=='portfolio' for r in records)),('运行中任务',sum(j['status']=='running' for j in app.rows('jobs')))]:body+=f'<div class="card"><span class="muted">{label}</span><strong class="metric">{value}</strong></div>'
         body+='</div><div class="card"><h2>我们的目标</h2><p>'+esc(MISSION)+'</p><a href="/mission">查看验收条件与下一步 →</a></div><div class="notice">执行成功不等于科学结论通过。当前尚未建立经过验证的二期／三期预测能力或投资收益优势。</div><div class="card"><h2>最近研究记录</h2>'+table(records[:8])+'</div><a class="button" href="/notes">提出研究问题</a> <a href="/records">查看全部历史 →</a>'
+    elif path=='/market/export':
+        from .market_export import export_page
+        body=export_page(app,q)
+    elif path=='/disclosures':
+        from .disclosure_view import render
+        body=render(app,q)
     elif path=='/mapping':
         from .sponsor_view import render
         body=render(app,q)
@@ -137,9 +144,9 @@ def page(app,path,q):
         if not jobs:body+='<div class="card">暂无校验任务。打开一条分析运行或研究快照，点击“重新校验完整性”。</div>'
     elif path=='/notes':body='<h1>研究问题与笔记</h1><p class="sub">保存问题、判断和待办，形成可追溯的人工记录。保存不会自动启动分析或构成人工审批。</p>'+noteform(app)+entries(app.rows('entries'))
     else:raise ValueError('页面不存在')
-    if q.get('saved')=='1':body='<div class="success" role="status">'+('请求已受理。请查看数据源状态或抓取任务；后台抓取期间可刷新页面。' if path in ('/market','/coverage','/mapping') else '已保存。记录已追加，历史内容保持不变。')+'</div>'+body
-    if path not in ('/market','/coverage','/market/progress','/assets','/mapping') and (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
-    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>EmerisBiotech · 临床资产研究</title><style>'+STYLE+'</style></head><body><aside><b>EmerisBiotech</b><small>临床资产研究工作台</small><a href="/">研究首页</a><a href="/market">市场与管线</a><a href="/coverage">覆盖进度与缺口</a><a href="/mapping">申办方关联</a><a href="/guide">演示路线</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
+    if q.get('saved')=='1':body='<div class="success" role="status">'+('请求已受理。请查看数据源状态或抓取任务；后台抓取期间可刷新页面。' if path in ('/market','/coverage','/mapping','/disclosures') else '已保存。记录已追加，历史内容保持不变。')+'</div>'+body
+    if path not in ('/market','/coverage','/market/progress','/assets','/mapping','/market/export','/disclosures') and (app.workspace/'cache-info.json').exists():body='<div class="notice">'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</div>'+body
+    return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+refresh+'<title>EmerisBiotech · 临床资产研究</title><style>'+STYLE+'</style></head><body><aside><b>EmerisBiotech</b><small>临床资产研究工作台</small><a href="/">研究首页</a><a href="/market">市场与管线</a><a href="/coverage">覆盖进度与缺口</a><a href="/mapping">申办方关联</a><a href="/disclosures">公司披露与登记核对</a><a href="/guide">演示路线</a><a href="/mission">目标与里程碑</a><a href="/records">历史记录</a><a href="/jobs">任务观测</a><a href="/notes">问题与笔记</a><p style="margin-top:50px;font-size:12px">本地单用户 · 研究用途<br>无自动交易</p></aside><main>'+body+'</main></body></html>'
 def entries(rows):
     return ''.join('<div class="card"><b>'+('研究问题' if e['kind']=='question' else '研究笔记')+' · '+esc(e['author'])+'</b><p class="ref">'+esc(e['created'])+' · '+esc(e['reference'])+'</p><div class="body">'+esc(e['body'])+'</div></div>' for e in rows) or '<p class="muted">暂无记录。</p>'
 def noteform(app,reference=''):
@@ -154,6 +161,18 @@ def handler(app, public_origin=None):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/market/export-file':
+                    from .market import Market
+                    from .market_export import export_file
+                    snapshot,manifest=export_file(Market(app.workspace,app.state),q.get('id',''),q.get('file',''))
+                    try:
+                        with snapshot as file:
+                            file.seek(0,2);size=file.tell();file.seek(0)
+                            suffix='.csv' if q['file']=='observations.csv' else '.json'
+                            self.send_response(200);self.send_header('Content-Type','text/csv; charset=utf-8' if suffix=='.csv' else 'application/json; charset=utf-8');self.send_header('Content-Disposition','attachment; filename=emeris-'+manifest['export_id']+suffix);self.send_header('Content-Length',str(size));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.end_headers()
+                            for chunk in iter(lambda:file.read(1024*1024),b''):self.wfile.write(chunk)
+                    except (BrokenPipeError,ConnectionResetError):pass
+                    return
                 if u.path=='/artifact':
                     r=app.record(q.get('kind'),q.get('id'));name=q.get('file','')
                     allowed={'audit.html','index.html','claims.json','review.json','work/results.json','work/sample_flow.json','stdout.log','stderr.log','plan.json','evaluation.json','provenance.json','cycle.json','counterevidence.json','results.json'}
@@ -172,7 +191,13 @@ def handler(app, public_origin=None):
                 if self.path.startswith('/market/'):
                     from .market import Market
                     market=Market(app.workspace,app.state)
-                    if self.path=='/market/resolve':
+                    if self.path=='/market/export':
+                        from .market_export import create_export
+                        manifest=create_export(market,q)
+                        self.send_response(303);self.send_header('Location','/market/export?id='+manifest['export_id']);self.send_header('Content-Length','0');self.end_headers();return
+                    elif self.path=='/market/disclosure/enqueue':
+                        market.enqueue('disclosure',q.get('source_id',''))
+                    elif self.path=='/market/resolve':
                         from .market_jobs import enqueue
                         enqueue(market,'resolve',q.get('candidate_id',''))
                     elif self.path=='/market/resolve-batch':
@@ -202,7 +227,7 @@ def handler(app, public_origin=None):
                     elif self.path=='/market/refresh':market.enqueue(q.get('kind'),q.get('reference'))
                     elif self.path=='/market/schedule':market.schedule(q.get('enabled')=='1')
                     else:raise ValueError('Unknown market operation')
-                    dest=('/mapping' if self.path in ('/market/resolve','/market/resolve-batch','/market/proposal-review') else '/coverage' if self.path in ('/market/discover','/market/expand','/market/batch','/market/cancel','/market/review') else '/market')+'?saved=1'
+                    dest=('/disclosures' if self.path=='/market/disclosure/enqueue' else '/mapping' if self.path in ('/market/resolve','/market/resolve-batch','/market/proposal-review') else '/coverage' if self.path in ('/market/discover','/market/expand','/market/batch','/market/cancel','/market/review') else '/market')+'?saved=1'
                 elif self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
                 elif self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes?saved=1'
                 elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission?saved=1'
