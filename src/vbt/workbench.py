@@ -135,7 +135,9 @@ def page(app,path,q):
         from .history_view import safe_return
         r=app.record(q.get('kind'),q.get('id'))
         if not r:raise ValueError('记录不存在')
-        body=f'<a href="{esc(safe_return(q.get("return")))}">← 返回历史</a><header class="page-header"><div><span class="eyebrow">RESEARCH RECORD</span><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p></div></header>'+record_gates(r,read)+record_summary(r,read)
+        heading='研究循环 · 原始研究假设' if r['kind']=='cycle' else '保存的研究问题' if r['kind']=='run' else '保存的研究计划'
+        title_note='<p class="data-note">起始假设保留原文；本轮保存的决策见下方研究摘要。</p>' if r['kind']=='cycle' else ''
+        body=f'<a href="{esc(safe_return(q.get("return")))}">← 返回历史</a><header class="page-header"><div><span class="eyebrow">{heading}</span><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p>{title_note}</div></header>'+record_gates(r,read)+record_summary(r,read)
         if r['kind'] in ['run','portfolio'] and not (r['kind']=='run' and (app.workspace/'cache-info.json').exists()):body+=f'<form method="post" action="/verify"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="kind" value="{r["kind"]}"><input type="hidden" name="id" value="{esc(r["id"])}"><p><button>重新校验完整性</button> <span class="muted">校验在后台执行，可在任务页观测。</span></p></form>'
         labels={'audit.html':'审计报告','claims.json':'证据主张','review.json':'科学审查记录','work/results.json':'统计结果','work/sample_flow.json':'样本流转','stdout.log':'执行日志','stderr.log':'错误日志','index.html':'研究报告','plan.json':'研究计划','evaluation.json':'评估记录','provenance.json':'来源与版本','cycle.json':'研究循环记录','counterevidence.json':'反证记录','results.json':'分析结果'}
         body+='<section class="card record-attachments"><h2>证据与研究附件</h2><p class="data-note">附件保留原始版本，在新标签页打开。查看附件不会重新执行分析或完成审批。</p><div class="primary-actions">'

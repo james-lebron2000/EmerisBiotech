@@ -101,6 +101,15 @@ def test_note_fields_have_accessible_names(app):
  fields={a['id'] for t,a in tags if t in ('select','input','textarea') and a.get('id')}
  assert labels==fields=={'note-kind','note-author','note-body'}
 
+def test_cycle_labels_starting_hypothesis_separately_from_saved_decision(app):
+ path=app.workspace/'artifacts/cycles/question';path.mkdir(parents=True)
+ saved={'hypothesis':'The association predicts success.','complete_research_cycle':True,'decision':{'scope':'Terminate this inference.'}}
+ (path/'cycle.json').write_text(json.dumps(saved))
+ body=page(app,'/record',{'kind':'cycle','id':'question'})
+ assert '研究循环 · 原始研究假设' in body and '起始假设保留原文' in body
+ assert body.index('The association predicts success.') < body.index('研究摘要') < body.index('Terminate this inference.')
+ assert json.loads((path/'cycle.json').read_text())==saved
+
 @pytest.mark.parametrize('kind,folder,name',[('run','runs','status.json'),('cycle','cycles','cycle.json'),('portfolio','portfolio/snapshots','evaluation.json')])
 @pytest.mark.parametrize('saved',[None,[],42])
 def test_malformed_history_keeps_visible_unknown_record_and_other_routes(app,kind,folder,name,saved):
