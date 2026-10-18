@@ -184,7 +184,9 @@ def render(app, q):
         unique_trials = db.execute('SELECT count(DISTINCT nct) FROM trials').fetchone()[0]
         source_counts = {r['source']: r['n'] for r in db.execute('SELECT source,count(*) n FROM listings GROUP BY source')}
 
-    body = '<header class="page-header"><div><div class="eyebrow">CLINICAL ASSET RESEARCH</div><h1>市场与管线雷达</h1><p class="lead">从证券主体追踪临床项目，核对药物、阶段及公开证据。</p></div><div class="primary-actions"><a class="button" href="/coverage">覆盖进度与缺口</a><a class="button secondary" href="/assets">候选药物关联</a></div></header>'
+    cid = q.get('company', '')
+    asset_url = '/assets' + ('?' + urlencode({'company': cid}) if cid else '')
+    body = '<header class="page-header"><div><div class="eyebrow">CLINICAL ASSET RESEARCH</div><h1>市场与管线雷达</h1><p class="lead">从证券主体追踪临床项目，核对药物、阶段及公开证据。</p></div><div class="primary-actions"><a class="button" href="/coverage">覆盖进度与缺口</a><a class="button secondary" href="' + e(asset_url) + '">候选药物关联</a></div></header>'
     metrics = [
         ('已配置证券', len(companies), '可检索的证券主体'),
         ('去重临床试验', unique_trials, '按 NCT 编号去重'),
@@ -196,7 +198,6 @@ def render(app, q):
 
     market = q.get('market', '')
     query = q.get('q', '').strip()
-    cid = q.get('company', '')
     view = q.get('view', 'table')
     if view not in ('table', 'cards'):
         raise ValueError('未知的登记展示方式')

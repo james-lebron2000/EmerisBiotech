@@ -82,6 +82,30 @@ def test_filter_labels_selections_and_post_exports_remain_intact(synthetic_marke
     assert '已终止' in source and '完成状态不表示临床成功' in source
 
 
+@pytest.mark.parametrize('company',['','US:TEST'])
+def test_header_asset_link_preserves_only_the_current_company(synthetic_market,company):
+    app,_=synthetic_market
+    source=render(app,{'company':company,'q':'NCT00000001','phase':'PHASE3','view':'cards'})
+    header=Markup(source.split('</header>',1)[0])
+    target=next(attrs['href'] for tag,attrs in header.tags if tag=='a' and attrs.get('href','').startswith('/assets'))
+    assert urlsplit(target).path=='/assets'
+    assert parse_qs(urlsplit(target).query)==({'company':[company]} if company else {})
+    # The target is the actual asset renderer, not a separate inferred identity.
+    from vbt.market_asset_view import render as assets
+    target_body=assets(app,{key:value[0] for key,value in parse_qs(urlsplit(target).query).items()})
+    assert '临床资产研究' in target_body
+
+
+def test_header_company_context_is_url_encoded_and_cannot_add_markup(synthetic_market):
+    app,_=synthetic_market
+    payload='US:TEST\"><img src=x onerror=evil()>&q=OTHER'
+    source=render(app,{'company':payload})
+    header=Markup(source.split('</header>',1)[0])
+    target=next(attrs['href'] for tag,attrs in header.tags if tag=='a' and attrs.get('href','').startswith('/assets'))
+    assert parse_qs(urlsplit(target).query)=={'company':[payload]}
+    assert not any(tag in ('img','script') or any(key.startswith('on') for key in attrs) for tag,attrs in header.tags)
+
+
 def test_pagination_retains_every_filter_and_exact_source_times(synthetic_market):
     app, _ = synthetic_market
     filters = {'market': 'US', 'company': 'US:TEST', 'q': 'Synthetic condition', 'phase': 'PHASE3', 'status': 'TERMINATED'}

@@ -2,6 +2,7 @@
 import json
 from html.parser import HTMLParser
 from types import SimpleNamespace
+from urllib.parse import parse_qs,urlsplit
 
 import pytest
 
@@ -166,6 +167,49 @@ class Structure(HTMLParser):
     def handle_data(self, data):
         if not self.detail_depth:
             self.main_text.append(data)
+
+
+@pytest.mark.parametrize('company',['','A:600276'])
+def test_disclosure_header_retains_company_in_actual_registry_and_asset_routes(app,company):
+    app.market.add_company('A','600276','Synthetic issuer',['Synthetic sponsor'],'Synthetic fixture')
+    body=render(app,{'company':company,'q':'HRS-0001','phase':'Phase II'})
+    header=Structure(body.split('</header>',1)[0])
+    targets=[attrs['href'] for tag,attrs,_ in header.elements if tag=='a' and urlsplit(attrs.get('href','')).path in ('/market','/assets')]
+    assert len(targets)==2
+    from vbt import market_view,market_asset_view
+    for target in targets:
+        params={key:value[0] for key,value in parse_qs(urlsplit(target).query).items()}
+        assert params==({'company':company} if company else {})
+        page=market_view.render(app,params) if urlsplit(target).path=='/market' else market_asset_view.render(app,params)
+        assert 'Synthetic issuer' in page
+
+
+def test_disclosure_nct_link_opens_only_same_company_local_observation(app):
+    disclosures.ingest(app.market,'hengrui_pipeline',fetch=lambda _:chart())
+    app.market.add_company('A','600276','Synthetic current issuer',['Synthetic sponsor'],'Synthetic fixture')
+    app.market.add_company('US','OTHER','Other unrelated issuer',['Other sponsor'],'Synthetic fixture')
+    for company in ('A:600276','US:OTHER'):
+        put_trial(app.market,company,'NCT00000007',[{'type':'DRUG','name':'HRS-0001','arm_roles':['ACTIVE_COMPARATOR']}])
+    body=render(app,{'company':'A:600276','phase':'Phase II'})
+    targets={attrs['href'] for tag,attrs,_ in Structure(body).elements if tag=='a' and urlsplit(attrs.get('href','')).path=='/market' and 'q=' in attrs.get('href','')}
+    assert len(targets)==1
+    target=targets.pop()
+    assert parse_qs(urlsplit(target).query)=={'company':['A:600276'],'q':['NCT00000007']}
+    assert '&amp;' in body and '分组角色不确认资产所有权' in body
+    from vbt.market_view import render as registry
+    params={key:value[0] for key,value in parse_qs(urlsplit(target).query).items()}
+    local=registry(app,params)
+    assert '共 1 条证券—试验关联' in local
+    assert 'Other unrelated issuer' not in local.split('<tbody>',1)[1].split('</tbody>',1)[0]
+
+
+@pytest.mark.parametrize('invalid',['NCT0000007','nct00000007','NCT00000007\"><script>evil()</script>'])
+def test_invalid_registry_nct_cannot_become_a_local_context_link(app,invalid):
+    disclosures.ingest(app.market,'hengrui_pipeline',fetch=lambda _:chart())
+    put_trial(app.market,'A:600276',invalid,[{'type':'DRUG','name':'HRS-0001'}])
+    body=render(app,{'company':'A:600276'})
+    assert '查看同公司本地登记记录' not in body
+    assert not any(tag in ('img','script') for tag,_,_ in Structure(body).elements)
 
 
 def test_table_keyboard_region_labels_and_collapsible_technical_evidence(app):

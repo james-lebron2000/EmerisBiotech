@@ -327,8 +327,9 @@ def render(app, q):
                                                      query=query, phase=phase, offset=offset)
     observations, malformed = link_registry(market, observations)
     linked = sum(bool(row['registry_links']) for row in observations)
+    company_query = '?' + urlencode({'company': company}) if company else ''
     body = '<header class="page-header"><div><div class="eyebrow">OFFICIAL DISCLOSURES</div><h1>官方管线披露与登记核对</h1><p class="lead">从公司披露出发，逐项核对药物、适应症、研发阶段与临床登记。</p></div>'
-    body += '<nav class="page-actions" aria-label="相关研究视图"><a class="button button-secondary" href="/coverage">覆盖与缺口</a><a class="button button-secondary" href="/market">临床登记检索</a><a class="button button-secondary" href="/assets">药物与试验关联</a></nav></header>'
+    body += '<nav class="page-actions" aria-label="相关研究视图"><a class="button button-secondary" href="/coverage">覆盖与缺口</a><a class="button button-secondary" href="' + e('/market' + company_query) + '">临床登记检索</a><a class="button button-secondary" href="' + e('/assets' + company_query) + '">药物与试验关联</a></nav></header>'
     body += '<p class="notice">观察行按药物—适应症—阶段计数，同一药物可出现多行。公司披露和登记关联均未独立确认完整管线、药物所有权或授权地域。登记阶段与适应症原文另列，尚未判定与公司披露是否一致。</p>'
     body += '<form class="card filter-toolbar" action="/disclosures" method="get" aria-label="筛选官方披露观察"><div class="form-grid"><div class="field"><label for="disclosure-company">公司</label><select id="disclosure-company" name="company"><option value="">全部已配置披露来源</option>'
     body += ''.join('<option ' + ('selected ' if company == ident else '') + 'value="' + e(ident) + '">' + e(names.get(ident, ident) + ' · ' + ident) + '</option>' for ident in sorted(known_ids))
@@ -374,7 +375,12 @@ def render(app, q):
                 body += '<details><summary>' + str(len(row['registry_links'])) + ' 项证券—试验关联</summary>'
                 for link in row['registry_links']:
                     role = ' / '.join(ROLES.get(value, value) for value in link['arm_roles']) or '用药角色未提供'
-                    body += '<div class="registry-link"><p><a href="' + e(link['url']) + '" target="_blank" rel="noopener">' + e(link['nct']) + ' ↗</a> · ' + e(link['company']) + '<br>干预名称：' + e(' / '.join(link['intervention_names'])) + '<br>用药角色：' + e(role) + '<br>登记阶段：' + e(' / '.join(str(value) for value in link['phases'])) + '<br>登记适应症：' + e(' / '.join(str(value) for value in link['conditions'])) + '<br>登记更新：' + _date(link['source_updated']) + '</p></div>'
+                    body += '<div class="registry-link"><p><a href="' + e(link['url']) + '" target="_blank" rel="noopener">' + e(link['nct']) + ' ↗</a> · ' + e(link['company']) + '<br>干预名称：' + e(' / '.join(link['intervention_names'])) + '<br>用药角色：' + e(role) + '<br>登记阶段：' + e(' / '.join(str(value) for value in link['phases'])) + '<br>登记适应症：' + e(' / '.join(str(value) for value in link['conditions'])) + '<br>登记更新：' + _date(link['source_updated']) + '</p>'
+                    if (isinstance(link.get('nct'), str) and re.fullmatch(r'NCT[0-9]{8}', link['nct'])
+                            and link.get('company') in row['companies']):
+                        local_url = '/market?' + urlencode({'company': link['company'], 'q': link['nct']})
+                        body += '<p><a class="text-link" href="' + e(local_url) + '">查看同公司本地登记记录 →</a></p>'
+                    body += '</div>'
                 body += '<p class="ref">比较组与实验组均可出现名称关联；分组角色不确认资产所有权。</p></details>'
             body += '</td></tr>'
         body += '</tbody></table></div>'

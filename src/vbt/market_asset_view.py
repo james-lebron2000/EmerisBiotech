@@ -298,7 +298,7 @@ def _company_research_context(market, cid):
     count, attempt, unknown = counts.get(cid, 0), latest.get(cid), cid in uncertain
     status = '查询时间待核实' if unknown else ATTEMPTS.get(attempt['status'], '查询状态待核实') if attempt else '尚未记录查询'
     when = (_timestamp(attempt.get('finished') or attempt.get('started')) if attempt and not unknown else '未知')
-    body = ('<section class="card asset-context-panel" aria-labelledby="asset-context-title">'
+    body = ('<section id="asset-collection" tabindex="-1" class="card asset-context-panel" aria-labelledby="asset-context-title">'
             '<div class="section-heading"><h2 id="asset-context-title">采集状态与研究边界</h2>'
             '<a class="text-link" href="/coverage#collection-queue">采集队列与错误 →</a></div>'
             '<dl class="asset-context-grid"><div><dt>当前已存登记试验</dt><dd><strong>'
@@ -324,6 +324,28 @@ def _filter_url(filters, **changes):
     params = {**filters, **changes}
     encoded = urlencode({key: value for key, value in params.items() if value != '' and value is not None})
     return '/assets' + ('?' + encoded if encoded else '')
+
+
+def _pagination(filters, offset, total, position):
+    """Render identical filtered destinations at either end of the name list."""
+    if not total:
+        return ''
+    page, pages = offset // PAGE_SIZE + 1, (total + PAGE_SIZE - 1) // PAGE_SIZE
+    body = ('<nav class="pagination asset-pagination" id="asset-pagination-' + position
+            + '" aria-label="登记名称分页（' + ('顶部' if position == 'top' else '底部') + '）">')
+    if offset:
+        body += ('<a class="button secondary small" rel="prev" href="/assets?'
+                 + e(urlencode({**filters, 'offset': max(0, offset - PAGE_SIZE)}))
+                 + '#asset-results">← 上一页</a>')
+    body += ('<span class="cell-meta" aria-current="page">第 ' + str(page) + ' / ' + str(pages)
+             + ' 页</span><span class="cell-meta">每页最多 ' + str(PAGE_SIZE) + ' 个名称</span>')
+    if offset + PAGE_SIZE < total:
+        body += ('<a class="button secondary small" rel="next" href="/assets?'
+                 + e(urlencode({**filters, 'offset': offset + PAGE_SIZE}))
+                 + '#asset-results">下一页 →</a>')
+    if position == 'bottom':
+        body += '<a class="text-link" href="#asset-filters">返回筛选 ↑</a>'
+    return body + '</nav>'
 
 
 def render(app, q):
@@ -364,8 +386,11 @@ def render(app, q):
         body += _company_directory(market, companies, q)
         body += '<details class="card secondary-panel"><summary>按公司代码直接选择并筛选登记名称</summary>'
     else:
+        body += ('<nav class="asset-page-nav" aria-label="资产研究页内导航">'
+                 '<a href="#asset-filters">筛选登记名称</a><a href="#asset-results">名称与试验依据</a>'
+                 '<a href="#asset-collection">采集状态</a></nav>')
         body += _company_research_context(market, cid)
-    body += ('<section class="card filter-toolbar asset-filter" aria-labelledby="asset-filter-title">'
+    body += ('<section id="asset-filters" tabindex="-1" class="card filter-toolbar asset-filter" aria-labelledby="asset-filter-title">'
              '<div class="section-heading"><h2 id="asset-filter-title">查找候选药物关联</h2>'
              '<span class="cell-meta">只读查询 · ' + str(len(companies)) + ' 家已配置证券主体</span></div>'
              '<form method="get" action="/assets" aria-labelledby="asset-filter-title">'
@@ -447,7 +472,8 @@ def render(app, q):
         body += ('<div class="asset-result-toolbar"><p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
                  + ' 个名称，共 ' + str(len(selected)) + ' 个。展开卡片查看每项试验的原文、日期与校验值。</p>'
                  '<span class="cell-meta">' + e(SORTS[sort]) + ' · 本地已存观察</span></div>'
-                 '<div class="asset-grid">' + ''.join(_card(asset, _filter_url(filters, offset=offset)) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
+                 + _pagination(filters, offset, len(selected), 'top')
+                 + '<div class="asset-grid">' + ''.join(_card(asset, _filter_url(filters, offset=offset)) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
     elif assets:
         body += ('<div class="empty"><h3>当前筛选无匹配</h3><p>该公司已有 ' + str(len(assets))
                  + ' 个登记名称，当前条件未命中。<a href="' + e(clear_url) + '">清除该公司筛选 →</a>'
@@ -457,12 +483,5 @@ def render(app, q):
                  '也可能只有未纳入此视图的干预类型。不能据此判定公司没有研发管线。'
                  '<a href="/coverage#collection-queue">查看采集状态与缺口 →</a></p>'
                  '<a class="text-link" href="/market?' + e(urlencode({'company': cid})) + '">核对该公司全部已存登记记录 →</a></div>')
-    if offset or offset + PAGE_SIZE < len(selected):
-        body += '<nav class="pagination" aria-label="候选药物结果分页">'
-        if offset:
-            body += '<a class="button secondary small" rel="prev" href="/assets?' + e(urlencode({**filters, 'offset': max(0, offset - PAGE_SIZE)})) + '">← 上一页</a>'
-        body += '<span class="cell-meta">每页最多 ' + str(PAGE_SIZE) + ' 个名称</span>'
-        if offset + PAGE_SIZE < len(selected):
-            body += '<a class="button secondary small" rel="next" href="/assets?' + e(urlencode({**filters, 'offset': offset + PAGE_SIZE})) + '">下一页 →</a>'
-        body += '</nav>'
+    body += _pagination(filters, offset, len(selected), 'bottom')
     return body + '</section>'

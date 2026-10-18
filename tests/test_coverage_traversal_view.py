@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from types import SimpleNamespace
+from urllib.parse import parse_qs,urlsplit
 
 import pytest
 
@@ -131,6 +132,19 @@ def test_mapping_provenance_is_retained_but_default_collapsed(app):
     assert '查看申办方映射依据' in body and 'MAPPING_PROVENANCE_FULL_TEXT' in body
     assert 'MAPPING_PROVENANCE_FULL_TEXT' not in ''.join(Document(body).visible)
     assert all('open' not in attrs for tag, attrs in Document(body).tags if tag == 'details')
+
+
+def test_unmapped_company_links_to_matching_market_and_ticker_in_mapping_workflow(app):
+    candidates(app)
+    body=render(app,{'market':'A'})
+    targets=[attrs['href'] for tag,attrs in Document(body).tags if tag=='a' and urlsplit(attrs.get('href','')).path=='/mapping' and urlsplit(attrs['href']).query]
+    assert len(targets)==1
+    params={key:value[0] for key,value in parse_qs(urlsplit(targets[0]).query).items()}
+    assert params=={'market':'A','q':'920000'}
+    from vbt.sponsor_view import render as mapping
+    mapped_page=mapping(app,params)
+    assert '选择未关联公司 · 匹配 1 条' in mapped_page and '合成药业 · A:920000' in mapped_page
+    assert '待核对建议' in mapped_page and app.market.count('companies')==1
 
 
 def test_missing_audit_is_unverified_with_unknown_trial_count(app):

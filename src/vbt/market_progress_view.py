@@ -230,7 +230,7 @@ def render(app, q):
         if row["company_id"]:
             body += '申办方别名：' + e(' / '.join(row["aliases"])) + '。</p><a href="/market?' + e(urlencode({"company": row["company_id"]})) + '">查看该公司临床登记 →</a><details><summary>查看申办方映射依据</summary><p class="body">映射依据：' + e(row["mapping_provenance"]) + '</p></details>'
         else:
-            body += '尚需核对准确英文申办方和母子公司关系。</p><a href="/market">登记申办方映射 →</a>'
+            body += '尚需核对准确英文申办方和母子公司关系。</p><a href="/mapping?' + e(urlencode({'market': row['market'], 'q': row['ticker']})) + '">登记申办方映射 →</a>'
         body += '<p class="ref">最近成功采集：' + (_timestamp(row["last_success_at"]) if row["last_success_at"] else "尚未成功采集") + '</p>'
         if row["latest_error"]:
             body += '<p class="notice">' + e(row["latest_error"]) + '</p>'

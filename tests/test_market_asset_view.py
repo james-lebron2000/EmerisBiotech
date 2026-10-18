@@ -650,3 +650,59 @@ def test_company_query_range_is_collapsed_and_asset_history_links_are_scoped(app
     permalink = next(a for a in doc.find('a') if urlsplit(a.get('href', '')).fragment == card['id'])
     assert filters_from_link(permalink)['company_market'] == 'US'
     assert doc.find('details', id='asset-evidence-' + card['id'].removeprefix('asset-'))
+
+
+def navigation_markup(body, identifier):
+    return Document('<nav ' + body.split('id="' + identifier + '"', 1)[1].split('</nav>', 1)[0] + '</nav>')
+
+
+def test_top_and_bottom_pagination_match_all_filters_context_and_visible_page_numbers(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug(f'Candidate {number:03}') for number in range(103)])
+    filters = {'company': cid, 'q': 'Candidate', 'role': 'experimental_arm', 'phase': 'PHASE2',
+               'freshness': 'unknown', 'sort': 'trials', 'company_market': 'US',
+               'company_q': 'Synthetic & Company', 'company_offset': '18', 'offset': '50'}
+    body = render(app, filters)
+    assert body.count('第 2 / 3 页') == 2
+    assert len(Document(body).find('nav', **{'class': 'pagination asset-pagination'})) == 2
+    top, bottom = [navigation_markup(body, 'asset-pagination-' + location) for location in ('top', 'bottom')]
+    for direction, expected_offset in [('prev', '0'), ('next', '100')]:
+        top_link, bottom_link = top.find('a', rel=direction)[0], bottom.find('a', rel=direction)[0]
+        assert top_link['href'] == bottom_link['href']
+        assert filters_from_link(top_link) == {**filters, 'offset': expected_offset}
+        assert urlsplit(top_link['href']).fragment == 'asset-results'
+    assert body.index('id="asset-pagination-top"') < body.index('class="asset-grid"') < body.index('id="asset-pagination-bottom"')
+    assert bottom.find('a', href='#asset-filters')
+
+
+@pytest.mark.parametrize('total,offset,page,has_previous,has_next', [
+    (1, '0', '第 1 / 1 页', False, False),
+    (52, '1', '第 1 / 2 页', False, True),
+    (52, '99999', '第 2 / 2 页', True, False),
+])
+def test_both_pagers_respect_first_last_single_and_clamped_pages(app, total, offset, page, has_previous, has_next):
+    cid = company(app)
+    put_trial(app, drugs=[drug(f'Candidate {number:03}') for number in range(total)])
+    body = render(app, {'company': cid, 'offset': offset})
+    assert body.count(page) == 2
+    for location in ('top', 'bottom'):
+        nav = navigation_markup(body, 'asset-pagination-' + location)
+        assert bool(nav.find('a', rel='prev')) is has_previous
+        assert bool(nav.find('a', rel='next')) is has_next
+
+
+def test_page_navigation_targets_are_unique_focusable_and_return_keeps_company_directory(app):
+    cid = company(app)
+    body = render(app, {'company': cid, 'company_market': 'US', 'company_q': '<Synthetic>', 'company_offset': '18'})
+    doc = Document(body)
+    assert doc.find('nav', **{'class': 'asset-page-nav'})
+    for target in ('asset-filters', 'asset-results', 'asset-collection'):
+        assert len(doc.find('section', id=target)) == 1
+        assert doc.find('section', id=target)[0]['tabindex'] == '-1'
+        assert doc.find('a', href='#' + target)
+    assert '筛选登记名称' in body and '名称与试验依据' in body and '采集状态' in body
+    assert doc.find('a', href='/assets?company_market=US&company_q=%3CSynthetic%3E&company_offset=18')
+    assert not doc.find('script') and not any(key.startswith('on') for _, attributes in doc.elements for key in attributes)
+    assert not doc.find('nav', **{'class': 'pagination asset-pagination'})  # zero matches have no invented page
+    default = Document(render(app, {}))
+    assert not default.find('nav', **{'class': 'asset-page-nav'})  # no links to absent company-only sections
