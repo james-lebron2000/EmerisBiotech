@@ -29,23 +29,61 @@ def case_page(app,key):
 def guide():
  return '<span class="eyebrow">PRODUCT WALKTHROUGH</span><h1>六分钟，走完一轮研究。</h1><p class="lead">适合首次使用和现场产品演示。无需模型密钥。</p><div class="card"><h2>01 · 明确问题</h2><p>从 OSMR 回顾案例开始，先说明这是已知结局的流程演示。</p><a href="/case?id=osmr-uc">打开案例 →</a></div><div class="card"><h2>02 · 对照证据与反证</h2><p>同时查看观察性关联、临床反证、来源定位与尚未解决的限制。</p></div><div class="card"><h2>03 · 记录判断</h2><p>填写演示昵称与至少十个字符的依据，选择继续、修订或停止；保存后查看时间线。</p></div><div class="card"><h2>04 · 查看历史和任务</h2><p>有历史快照时，可进入详情并发起完整性校验；新安装的空环境会明确提示没有记录。</p><a href="/records">历史记录 →</a> · <a href="/jobs">任务观测 →</a></div><div class="card"><h2>05 · 说明下一阶段</h2><p>展示临床预测、投资验证与云端交付的验收条件。不要把工程测试或演示案例当成预测业绩。</p><a href="/mission">目标与里程碑 →</a></div>'
 
+def record_gates(record,read):
+ data=record.get('data') if isinstance(record.get('data'),dict) else {}
+ integrity=data.get('record_integrity')
+ if not isinstance(integrity,str):integrity=None
+ integrity_labels={'complete':'保存状态：记录完整','incomplete':'保存状态：记录不完整','pending':'保存状态：待核对'}
+ review={}
+ if record['kind']=='run' and (record['path']/'review.json').is_file():
+  saved=read(record['path']/'review.json')
+  if isinstance(saved,dict):review=saved
+ signature=review.get('human_signature')
+ if 'human_signature' not in review:human='签署状态未知'
+ elif signature is None or signature=='':human='未记录人工签署'
+ elif isinstance(signature,str) and signature.strip() and review.get('reviewer_type')=='human':human='签署字段已记录 · 尚未核验'
+ else:human='签署字段待核对'
+ executions={'succeeded':'执行成功','failed':'执行失败','blocked':'执行受阻','interrupted':'任务中断','running':'执行中','pending':'待执行','completed':'循环已完成','snapshot':'已冻结','recorded':'已记录'}
+ reviews={'pass':'保存状态：通过','passed':'保存状态：通过','revise':'保存状态：需修订','insufficient_evidence':'保存状态：证据不足','pending':'保存状态：待审查'}
+ status=record.get('status') if isinstance(record.get('status'),str) else None
+ scientific=record.get('review') if isinstance(record.get('review'),str) else None
+ values=[('执行 / 记录',executions.get(status,'执行状态未知')),
+         ('记录完整性',integrity_labels.get(integrity,'完整性状态未知')),
+         ('科学审查',reviews.get(scientific,'科学审查状态未知')),
+         ('人工签署',human)]
+ return '<section class="record-gates" aria-label="研究记录的四项独立状态">'+''.join('<div><span>'+e(label)+'</span><strong>'+e(value)+'</strong></div>' for label,value in values)+'</section><p class="data-note">以上转录该版本保存字段，尚未在此页面重新核验；四项状态分别记录。签署字段存在不代表签名有效或研究已获批准。</p>'
+
+
 def record_summary(record,read):
  data=record['data'];path=record['path'];kind=record['kind'];body='<div class="card"><h2>研究摘要</h2>'
  if kind=='run':
   errors=data.get('errors',[])
+  if not isinstance(errors,list):
+   body+='<p class="notice">错误记录格式待核实；不能视为没有执行问题。</p>';errors=[]
   body+='<p>'+('本次分析有需要处理的问题。' if errors else '查看下方结果与科学审查；执行完成不代表结论通过。')+'</p>'
   for error in errors:body+='<p class="notice">'+e(error)+'</p>'
   results=read(path/'work/results.json')
   if isinstance(results,list) and results:
+   unreadable=sum(not isinstance(row,dict) for row in results)
+   if unreadable:body+='<p class="notice">结果中有 '+str(unreadable)+' 条记录格式待核实；以下仅转录可读行，不代表完整结果。</p>'
    body+='<div class="scroll"><table><tr><th>基因</th><th>队列</th><th>无响应 / 响应</th><th>中位数差</th><th>95% CI</th></tr>'
    for r in results:
+    if not isinstance(r,dict):continue
     def fmt(k):
      value=r.get(k);return f'{value:.3f}' if isinstance(value,(int,float)) else '未估计'
     body+='<tr><td>'+e(r.get('gene'))+'</td><td>'+e(r.get('cohort'))+'</td><td>'+e(r.get('n_nonresponder'))+' / '+e(r.get('n_responder'))+'</td><td>'+fmt('median_difference')+'</td><td>'+fmt('ci_low')+' ～ '+fmt('ci_high')+'</td></tr>'
    body+='</table></div>'
+  else:body+='<p class="data-note">统计结果为空、尚未提供或格式待核实，不能据此推定阴性结果。</p>'
  elif kind=='cycle':
-  d=data.get('decision',{});body+='<h3>'+e(d.get('scope','查看完整决策记录'))+'</h3><p>'+e(d.get('retained_work',''))+'</p><p class="muted">回顾性研究；不计为前瞻预测业绩。</p>'
+  d=data.get('decision',{})
+  if not isinstance(d,dict):body+='<p class="notice">决策记录格式待核实。</p>';d={}
+  body+='<h3>'+e(d.get('scope','查看完整决策记录'))+'</h3><p>'+e(d.get('retained_work',''))+'</p><p class="muted">回顾性研究；不计为前瞻预测业绩。</p>'
  else:
   plan=read(path/'plan.json')
-  for h in plan.get('hypotheses',[]):body+='<h3>'+e(h.get('title'))+'</h3><p>'+e(h.get('question'))+'</p>'
+  if not isinstance(plan,dict):body+='<p class="notice">研究计划格式待核实。</p>';plan={}
+  hypotheses=plan.get('hypotheses',[])
+  if not isinstance(hypotheses,list):body+='<p class="notice">研究假设列表格式待核实。</p>';hypotheses=[]
+  for h in hypotheses:
+   if isinstance(h,dict):body+='<h3>'+e(h.get('title'))+'</h3><p>'+e(h.get('question'))+'</p>'
+   else:body+='<p class="notice">研究假设记录格式待核实。</p>'
  return body+'</div>'

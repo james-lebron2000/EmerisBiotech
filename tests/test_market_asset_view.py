@@ -1,6 +1,7 @@
 """Synthetic UI checks, independent of real drug ownership or clinical validity."""
 import hashlib
 import json
+import re
 from html.parser import HTMLParser
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
@@ -224,6 +225,7 @@ def test_render_is_read_only(app):
     with app.market.db() as db:
         before = list(db.iterdump())
     render(app, {'company': cid})
+    render(app, {'company': cid, 'q': 'NCT00000001'})
     with app.market.db() as db:
         assert list(db.iterdump()) == before
 
@@ -393,8 +395,12 @@ def test_each_trial_is_individually_collapsed_with_complete_evidence_retained(ap
     doc = Document(body)
     trials = doc.find('details', **{'class': 'asset-trial-details'})
     assert len(trials) == 2 and all('open' not in trial for trial in trials)
-    assert '<summary>NCT00000001 · COMPLETED · PHASE2</summary>' in body
-    assert '<summary>NCT00000002 · COMPLETED · PHASE3</summary>' in body
+    for nct, phase, title in [('NCT00000001', 'PHASE2', 'Synthetic title'),
+                              ('NCT00000002', 'PHASE3', 'Full synthetic title remains available')]:
+        summary = body.split('data-nct="' + nct + '"', 1)[1].split('</summary>', 1)[0]
+        assert '<strong>' + nct + '</strong>' in summary
+        assert 'class="asset-trial-summary-title">' + title in summary
+        assert 'COMPLETED · ' + phase in summary
     assert body.count('class="asset-source"') == 2
     assert body.count('数据 SHA-256') == 2
     assert 'Full synthetic title remains available' in body
@@ -706,3 +712,96 @@ def test_page_navigation_targets_are_unique_focusable_and_return_keeps_company_d
     assert not doc.find('nav', **{'class': 'pagination asset-pagination'})  # zero matches have no invented page
     default = Document(render(app, {}))
     assert not default.find('nav', **{'class': 'asset-page-nav'})  # no links to absent company-only sections
+
+
+def test_exact_nct_context_prioritizes_only_the_matching_evidence_and_keeps_all_sources(app):
+    from vbt.market_view import render as registry_render
+    cid = company(app)
+    company(app, symbol='TWO')
+    put_trial(app, title='Earlier observation')
+    put_trial(app, 'NCT00000002', title='Other trial for the same name')
+    put_trial(app, 'NCT00000003', phases=['PHASE3'], title='The queried trial')
+    put_trial(app, 'NCT00000003', company_id='US:TWO', title='Other company observation')
+    filters = {'company': cid, 'q': 'nct00000003', 'phase': 'PHASE3', 'role': 'experimental_arm',
+               'company_market': 'US', 'company_q': 'Synthetic', 'company_offset': '18'}
+    body = render(app, filters)
+    doc = Document(body)
+    assert len(cards(body)) == 1
+    assert [source['data-nct'] for source in doc.find('details', **{'class': 'asset-trial-details'})] == [
+        'NCT00000003', 'NCT00000001', 'NCT00000002']
+    marked = doc.find('details', **{'data-current-query': 'true'})
+    assert len(marked) == 1 and marked[0]['data-nct'] == 'NCT00000003'
+    assert body.count('class="asset-source"') == 3
+    assert '逐项核对 3 条试验依据' in body and '仍保留此名称的全部 3 条试验依据' in body
+    assert '关联登记试验</span><div class="metric">3</div>' in body
+    assert '阶段、角色与批次也按名称汇总' in body
+    assert 'Other company observation' not in body
+    for source in doc.find('details', **{'class': 'asset-trial-details'}):
+        assert 'open' not in source
+    context = re.search(r'<section class="card asset-nct-context".*?</section>', body, re.S).group()
+    links = Document(context).find('a')
+    assert [filters_from_link(link) for link in links] == [{'company': cid, 'q': 'NCT00000003'}] * 2
+    assert urlsplit(links[1]['href']).fragment == 'market-changes'
+    app.token = 'synthetic-token'
+    registry = registry_render(app, filters_from_link(links[1]))
+    assert '<span class="result-count">1</span>' in registry
+    assert 'The queried trial' in registry and 'Other company observation' not in registry
+    assert 'id="market-changes"' in registry
+    permalink = next(link for link in doc.find('a') if urlsplit(link.get('href', '')).fragment == cards(body)[0]['id'])
+    assert filters_from_link(permalink) == {**filters, 'offset': '0'}
+
+
+@pytest.mark.parametrize('query', ['NCT0000000', 'NCT000000001', 'prefix NCT00000001',
+                                  'NCT00000001<script>bad()</script>', 'https://example.invalid/NCT00000001'])
+def test_only_exact_valid_nct_queries_create_the_trial_context_panel(app, query):
+    cid = company(app)
+    put_trial(app)
+    body = render(app, {'company': cid, 'q': query})
+    assert 'asset-nct-context-title' not in body
+    assert not Document(body).find('details', **{'data-current-query': 'true'})
+    assert not Document(body).find('script')
+
+
+def test_nct_absent_from_drug_name_view_does_not_claim_no_local_registry_record(app):
+    from vbt.market_view import render as registry_render
+    cid = company(app)
+    put_trial(app, interventions=[{'type': 'PROCEDURE', 'name': 'Synthetic procedure'}])
+    body = render(app, {'company': cid, 'q': 'NCT00000001'})
+    assert not cards(body)
+    assert '此 NCT 尚未出现在该公司已存名称依据中' in body
+    assert '其他干预类型或空结果' in body
+    assert '此 NCT 已出现在该公司已存名称依据中' not in body
+    app.token = 'synthetic-token'
+    target = Document(body).find('a', href='/market?company=US%3AONE&q=NCT00000001')[0]
+    registry = registry_render(app, filters_from_link(target))
+    assert '<span class="result-count">1</span>' in registry
+    assert 'Synthetic procedure' in registry
+
+
+def test_exact_nct_context_survives_pagination_without_changing_filter_parameters(app):
+    cid = company(app)
+    put_trial(app, drugs=[drug(f'Candidate {number:02}') for number in range(52)])
+    filters = {'company': cid, 'q': 'nct00000001', 'company_market': 'US', 'company_q': 'Directory',
+               'company_offset': '18', 'role': 'experimental_arm'}
+    first = render(app, filters)
+    next_params = filters_from_link(Document(first).find('a', rel='next')[0])
+    assert next_params == {**filters, 'offset': '50'}
+    second = render(app, next_params)
+    assert len(cards(first)) == 50 and len(cards(second)) == 2
+    assert '当前试验检索 · NCT00000001' in first and '当前试验检索 · NCT00000001' in second
+    assert len(Document(second).find('details', **{'data-current-query': 'true'})) == 2
+    assert filters_from_link(Document(second).find('a', rel='prev')[0]) == {**filters, 'offset': '0'}
+
+
+def test_collapsed_trial_titles_are_complete_escaped_and_have_missing_title_fallback(app):
+    payload = '<img src=x onerror=evil()> ' + 'Long synthetic title ' * 30
+    cid = company(app)
+    put_trial(app, title=payload)
+    put_trial(app, 'NCT00000002', title=None)
+    body = render(app, {'company': cid})
+    doc = Document(body)
+    assert not doc.find('img') and not doc.find('script')
+    assert not any(key.startswith('on') for _, attrs in doc.elements for key in attrs)
+    assert ''.join(doc.text).count(payload) == 2  # Summary and expanded retained original.
+    assert 'class="asset-trial-summary-title">试验标题未记载</span>' in body
+    assert all('open' not in detail for detail in doc.find('details', **{'class': 'asset-trial-details'}))

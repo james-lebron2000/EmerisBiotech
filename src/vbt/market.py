@@ -2,6 +2,7 @@
 import hashlib,json,re,sqlite3,threading,time,uuid,os
 from pathlib import Path
 from .io import now
+from .sqlite_connections import ClosingConnection
 from . import market_sources as sources
 
 def universe_digest(rows):
@@ -38,7 +39,7 @@ class Market:
    if d.execute('SELECT 1 FROM runs WHERE '+expired+' LIMIT 1',(clock,)).fetchone():
     d.execute("UPDATE runs SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE "+expired,(now(),clock))
  def db(self):
-  d=sqlite3.connect(self.path,timeout=30);d.row_factory=sqlite3.Row;return d
+  d=sqlite3.connect(self.path,timeout=30,factory=ClosingConnection);d.row_factory=sqlite3.Row;return d
  def rows(self,table):
   if table not in ('listings','companies','trials','changes','runs'):raise ValueError('Unknown table')
   with self.db() as d:return [dict(x) for x in d.execute('SELECT * FROM '+table)]

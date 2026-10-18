@@ -40,7 +40,8 @@ def test_backup_scope_is_local_to_historical_research(tmp_path):
  (app.workspace/'cache-info.json').write_text(json.dumps({'scope':'备份截至 2026-09-25 <script>bad</script>'}))
  body=page(app,'/',{})
  assert body.index('市场与登记 · 当前本机采集') < body.index('历史分析与研究快照 · 备份记录')
- assert body.index('最近研究记录') < body.index('备份截至')
+ assert body.index('工作区研究记录') < body.index('备份截至')
+ assert '按保存编号展示部分记录' in body and '最近研究记录' not in body
  assert '<script>bad</script>' not in body and '&lt;script&gt;' in body
  assert '提出研究问题' not in body and '记录研究问题' in body
  history=page(app,'/records',{})

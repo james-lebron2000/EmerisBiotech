@@ -5,7 +5,8 @@ from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from urllib.parse import urlsplit,parse_qs,quote
 from .io import ensure_storage,now,write,within
 from .mission import MISSION,MILESTONES,STATES,validate_update
-from .product_views import CASES,ACTIONS,home_intro,case_page,guide,record_summary
+from .product_views import CASES,ACTIONS,home_intro,case_page,guide,record_summary,record_gates
+from .sqlite_connections import ClosingConnection
 
 def esc(x):return html.escape(str(x if x is not None else '未记录'),quote=True)
 def read(path):
@@ -26,16 +27,24 @@ class Workbench:
             db.execute('CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, created TEXT, kind TEXT, reference TEXT, status TEXT, output TEXT)')
             db.execute("UPDATE jobs SET status='interrupted', output=output || '\n服务重启，任务中断；请重新发起校验。' WHERE status='running'")
     def db(self):
-        db=sqlite3.connect(self.dbpath,timeout=30);db.row_factory=sqlite3.Row;return db
+        db=sqlite3.connect(self.dbpath,timeout=30,factory=ClosingConnection);db.row_factory=sqlite3.Row;return db
     def records(self):
         result=[]
         for kind,folder,name in [('run','runs','status.json'),('portfolio','portfolio/snapshots','evaluation.json'),('cycle','cycles','cycle.json')]:
             for path in (self.workspace/'artifacts'/folder).glob('*'):
                 if not path.is_dir():continue
                 data=read(path/name)
-                status=data.get('execution') if kind=='run' else ('completed' if data.get('complete_research_cycle') else 'recorded') if kind=='cycle' else 'snapshot'
-                title=read(path/'inputs/plan.json').get('question',path.name) if kind=='run' else read(path/'plan.json').get('title',path.name) if kind=='portfolio' else data.get('hypothesis',path.name)
-                result.append(dict(id=path.name,kind=kind,title=title,status=status or 'unknown',review=data.get('scientific_review') or 'unknown',path=path,data=data))
+                malformed=not isinstance(data,dict) or 'record_error' in data
+                if not isinstance(data,dict):data={'record_error':'记录格式待核实：预期 JSON 对象','saved_value':data}
+                status=data.get('execution') if kind=='run' else ('completed' if data.get('complete_research_cycle') is True else 'recorded') if kind=='cycle' else 'snapshot'
+                plan=read(path/'inputs/plan.json') if kind=='run' else read(path/'plan.json') if kind=='portfolio' else data
+                if not isinstance(plan,dict):
+                    malformed=True;plan={}
+                title=plan.get('question' if kind=='run' else 'title' if kind=='portfolio' else 'hypothesis',path.name)
+                if not isinstance(title,str):malformed=True
+                if malformed:title='记录格式待核实 · '+path.name
+                review=data.get('scientific_review')
+                result.append(dict(id=path.name,kind=kind,title=title,status=status if not malformed and isinstance(status,str) and status else 'unknown',review=review if not malformed and isinstance(review,str) and review else 'unknown',path=path,data=data))
         return sorted(result,key=lambda r:r['id'],reverse=True)
     def record(self,kind,rid):
         return next((r for r in self.records() if r['kind']==kind and r['id']==rid),None)
@@ -126,11 +135,19 @@ def page(app,path,q):
         from .history_view import safe_return
         r=app.record(q.get('kind'),q.get('id'))
         if not r:raise ValueError('记录不存在')
-        body=f'<a href="{esc(safe_return(q.get("return")))}">← 返回历史</a><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p>'+badge(r['status'])+' '+badge(r['review'])
+        body=f'<a href="{esc(safe_return(q.get("return")))}">← 返回历史</a><header class="page-header"><div><span class="eyebrow">RESEARCH RECORD</span><h1>{esc(r["title"])}</h1><p class="ref">{esc(r["id"])}</p></div></header>'+record_gates(r,read)+record_summary(r,read)
         if r['kind'] in ['run','portfolio'] and not (r['kind']=='run' and (app.workspace/'cache-info.json').exists()):body+=f'<form method="post" action="/verify"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="kind" value="{r["kind"]}"><input type="hidden" name="id" value="{esc(r["id"])}"><p><button>重新校验完整性</button> <span class="muted">校验在后台执行，可在任务页观测。</span></p></form>'
-        for name in (['audit.html','claims.json','review.json','work/results.json','work/sample_flow.json','stdout.log','stderr.log'] if r['kind']=='run' else ['index.html','plan.json','evaluation.json','provenance.json'] if r['kind']=='portfolio' else ['index.html','cycle.json','counterevidence.json','results.json']):
-            if (r['path']/name).is_file():body+=f'<a class="button" style="margin:4px" href="/artifact?kind={r["kind"]}&id={quote(r["id"])}&file={quote(name)}" target="_blank" rel="noopener">{esc(name)}</a>'
-        body+=record_summary(r,read)+'<details class="card"><summary>查看完整技术记录</summary><pre>'+esc(json.dumps(r['data'],ensure_ascii=False,indent=2))+'</pre></details><h2>关联研究笔记</h2>'+entries([e for e in app.rows('entries') if e['reference']==r['id']])+noteform(app,r['id'])
+        labels={'audit.html':'审计报告','claims.json':'证据主张','review.json':'科学审查记录','work/results.json':'统计结果','work/sample_flow.json':'样本流转','stdout.log':'执行日志','stderr.log':'错误日志','index.html':'研究报告','plan.json':'研究计划','evaluation.json':'评估记录','provenance.json':'来源与版本','cycle.json':'研究循环记录','counterevidence.json':'反证记录','results.json':'分析结果'}
+        body+='<section class="card record-attachments"><h2>证据与研究附件</h2><p class="data-note">附件保留原始版本，在新标签页打开。查看附件不会重新执行分析或完成审批。</p><div class="primary-actions">'
+        names=(['audit.html','claims.json','review.json','work/results.json','work/sample_flow.json','stdout.log','stderr.log'] if r['kind']=='run' else ['index.html','plan.json','evaluation.json','provenance.json'] if r['kind']=='portfolio' else ['index.html','cycle.json','counterevidence.json','results.json'])
+        available=[name for name in names if (r['path']/name).is_file()]
+        for name in available:
+            if name.endswith('.log'):continue
+            body+=f'<a class="button secondary" href="/artifact?kind={r["kind"]}&id={quote(r["id"])}&file={quote(name)}" target="_blank" rel="noopener">{esc(labels[name])}</a>'
+        if not available:body+='<p class="muted">尚无可查看的研究附件。</p>'
+        body+='</div><details><summary>技术文件与执行日志</summary><ul>'
+        for name in available:body+=f'<li><a href="/artifact?kind={r["kind"]}&id={quote(r["id"])}&file={quote(name)}" target="_blank" rel="noopener">{esc(labels[name])} · <code>{esc(name)}</code></a></li>'
+        body+='</ul></details></section><details class="card"><summary>查看完整技术记录</summary><pre>'+esc(json.dumps(r['data'],ensure_ascii=False,indent=2))+'</pre></details><h2>关联研究笔记</h2>'+entries([e for e in app.rows('entries') if e['reference']==r['id']])+noteform(app,r['id'])
     elif path=='/jobs':
         jobs=app.rows('jobs');refresh='<meta http-equiv="refresh" content="5">' if any(j['status']=='running' for j in jobs) else ''
         body=('<header class="page-header"><div><span class="eyebrow">RECORD INTEGRITY</span><h1>完整性校验</h1>'
@@ -148,7 +165,7 @@ def page(app,path,q):
 def entries(rows):
     return ''.join('<div class="card"><b>'+('研究问题' if e['kind']=='question' else '研究笔记')+' · '+esc(e['author'])+'</b><p class="ref">'+esc(e['created'])+' · '+esc(e['reference'])+'</p><div class="body">'+esc(e['body'])+'</div></div>' for e in rows) or '<p class="muted">暂无记录。</p>'
 def noteform(app,reference=''):
-    return f'<form class="card" method="post" action="/note"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="reference" value="{esc(reference)}"><label>记录类型</label><select name="kind"><option value="question">研究问题</option><option value="note">研究笔记</option></select><label>记录人</label><input name="author" maxlength="100" required><label>内容</label><textarea name="body" minlength="3" maxlength="10000" required placeholder="希望验证什么？已有证据是什么？还缺少什么？"></textarea><p><button>保存记录</button></p></form>'
+    return f'<form class="card" method="post" action="/note" aria-label="保存研究问题与笔记"><input type="hidden" name="token" value="{app.token}"><input type="hidden" name="reference" value="{esc(reference)}"><label for="note-kind">记录类型</label><select id="note-kind" name="kind"><option value="question">研究问题</option><option value="note">研究笔记</option></select><label for="note-author">记录人</label><input id="note-author" name="author" maxlength="100" required><label for="note-body">内容</label><textarea id="note-body" name="body" minlength="3" maxlength="10000" required placeholder="希望验证什么？已有证据是什么？还缺少什么？"></textarea><p><button>保存记录</button></p></form>'
 
 def handler(app, public_origin=None):
     class Handler(BaseHTTPRequestHandler):

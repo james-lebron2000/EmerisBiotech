@@ -76,14 +76,20 @@ def _conditions(values):
             + str(len(values)) + ' 个适应症原文</summary><p>' + _joined(values) + '</p></details>')
 
 
-def _source(source, company=None):
+def _source(source, company=None, focus_nct=''):
     freshness = FRESH.get(source.get('freshness'), FRESH['unknown'])
     role = ROLES.get(source.get('role_status'), ROLES['unresolved'])
     preview = (str(source.get('status') or '状态未记载') + ' · '
                + (' / '.join(str(value) for value in source.get('phases', [])) or '阶段未记载'))
     if len(preview) > 100:
         preview = preview[:100] + '…'
-    parts = ['<details class="asset-trial-details"><summary>', e(source.get('nct')), ' · ', e(preview), '</summary>',
+    matched = bool(focus_nct and source.get('nct') == focus_nct)
+    parts = ['<details class="asset-trial-details" data-nct="', e(source.get('nct')), '"',
+             ' data-current-query="true"' if matched else '', '><summary>',
+             '<span class="asset-trial-summary-head"><strong>', e(source.get('nct')), '</strong>',
+             '<span class="status-badge">当前检索试验</span>' if matched else '', '</span>',
+             '<span class="asset-trial-summary-title">', e(source.get('title') or '试验标题未记载'), '</span>',
+             '<span class="cell-meta">', e(preview), '</span></summary>',
              '<section class="asset-source"><h4>', _source_link(source), '</h4>',
              '<p class="cell-meta">上方链接为外部当前页面，内容可能已更新；以下保留本地登记观察。</p>',
              ('<p><a class="text-link" href="/market?' + e(urlencode({'company': company, 'q': source.get('nct', '')}))
@@ -114,12 +120,16 @@ def _source(source, company=None):
     return ''.join(parts)
 
 
-def _card(asset, location=''):
+def _card(asset, location='', focus_nct=''):
     role = ROLES.get(asset.get('role_status'), ROLES['unresolved'])
     freshness = FRESH.get(asset.get('freshness'), FRESH['unknown'])
     retained = len(asset.get('retained_trials', []))
     history = ('<p class="data-note">其中 ' + str(retained)
                + ' 项试验仅保留于历史观察；未在最近完整批次中出现不代表试验终止。</p>') if retained else ''
+    # Reorder only the presentation, retaining every source and its denominator.
+    sources = sorted(asset['sources'], key=lambda source: source.get('nct') != focus_nct) if focus_nct else asset['sources']
+    evidence_context = ('<p class="cell-meta asset-evidence-context">当前检索 ' + e(focus_nct)
+                        + ' 的依据列在最前；以下仍保留此名称的全部 ' + str(len(sources)) + ' 条试验依据。</p>') if any(source.get('nct') == focus_nct for source in sources) else ''
     return ('<article id="asset-' + e(asset['id']) + '" class="card asset-card" aria-labelledby="asset-name-' + e(asset['id']) + '"><div class="asset-card-head"><div><div class="eyebrow">登记用药名称</div><h3 id="asset-name-' + e(asset['id']) + '">'
             + e(asset['drug_name']) + '</h3></div><span class="status-badge caution">权益待核对</span></div>'
             + '<div class="asset-badges"><span class="status-badge">' + e(role)
@@ -132,7 +142,22 @@ def _card(asset, location=''):
             + ('<p class="cell-meta"><a href="' + e(location + '#asset-' + asset['id']) + '">定位此名称卡</a></p>' if location else '')
             + '<details class="asset-evidence" id="asset-evidence-' + e(asset['id']) + '"><summary>逐项核对 ' + str(len(asset['sources']))
             + ' 条试验依据 · ClinicalTrials.gov</summary>'
-            + ''.join(_source(source, asset['company']) for source in asset['sources']) + '</details></article>')
+            + evidence_context + ''.join(_source(source, asset['company'], focus_nct) for source in sources) + '</details></article>')
+
+
+def _nct_context(cid, focus_nct, observed):
+    """Existing local pages for an exact NCT, never an arbitrary URL or query."""
+    if not re.fullmatch(r'NCT[0-9]{8}', focus_nct):
+        return ''
+    target = '/market?' + urlencode({'company': cid, 'q': focus_nct})
+    return ('<section class="card asset-nct-context" aria-labelledby="asset-nct-context-title">'
+            '<div class="section-heading"><div><h3 id="asset-nct-context-title">当前试验检索 · ' + e(focus_nct)
+            + '</h3><p class="cell-meta">' + ('此 NCT 已出现在该公司已存名称依据中。' if observed else '此 NCT 尚未出现在该公司已存名称依据中，登记页可核对其他干预类型或空结果。')
+            + '</p></div></div><p class="data-note">当前条件筛选登记名称，命中名称后仍保留其全部试验依据，可能包含其他 NCT；'
+            '阶段、角色与批次也按名称汇总，不构成该试验的独立筛选结果。</p>'
+            '<div class="primary-actions"><a class="button secondary small" href="' + e(target)
+            + '">查看此试验本地登记</a><a class="text-link" href="' + e(target + '#market-changes')
+            + '">核对该试验登记变更 →</a></div></section>')
 
 
 def _company_context(q):
@@ -364,6 +389,7 @@ def render(app, q):
         raise ValueError('公司尚未配置')
     context = _company_context(q)
     assets = build_assets(market, cid) if cid else []
+    focus_nct = query.upper() if re.fullmatch(r'NCT[0-9]{8}', query, flags=re.IGNORECASE) else ''
     phases = sorted({value for asset in assets for value in asset['phases']})
     filters = {'company': cid, 'q': query, 'role': role, **context,
                **({'phase': phase} if phase else {}), **({'freshness': freshness} if freshness else {}),
@@ -468,12 +494,14 @@ def render(app, q):
                 body += ('<a class="asset-clear-chip" href="' + e(_filter_url(filters, **{key: ''}))
                          + '" aria-label="' + e('移除' + label) + '">' + e(label) + ' ×</a>')
         body += '</div>'
+    if focus_nct:
+        body += _nct_context(cid, focus_nct, any(focus_nct in asset['trials'] for asset in assets))
     if selected:
         body += ('<div class="asset-result-toolbar"><p class="data-note">显示第 ' + str(offset + 1) + '–' + str(min(offset + PAGE_SIZE, len(selected)))
                  + ' 个名称，共 ' + str(len(selected)) + ' 个。展开卡片查看每项试验的原文、日期与校验值。</p>'
                  '<span class="cell-meta">' + e(SORTS[sort]) + ' · 本地已存观察</span></div>'
                  + _pagination(filters, offset, len(selected), 'top')
-                 + '<div class="asset-grid">' + ''.join(_card(asset, _filter_url(filters, offset=offset)) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
+                 + '<div class="asset-grid">' + ''.join(_card(asset, _filter_url(filters, offset=offset), focus_nct) for asset in selected[offset:offset + PAGE_SIZE]) + '</div>')
     elif assets:
         body += ('<div class="empty"><h3>当前筛选无匹配</h3><p>该公司已有 ' + str(len(assets))
                  + ' 个登记名称，当前条件未命中。<a href="' + e(clear_url) + '">清除该公司筛选 →</a>'

@@ -112,6 +112,34 @@ def record_table(records, return_to=None):
     return body + '</tbody></table></div>'
 
 
+def _filter_chips(filters):
+    labels = {'q': '搜索', 'kind': '类型', 'status': '执行状态', 'review': '科学审查', 'scope': '记录范围'}
+    options = {'kind': KINDS, 'status': STATES, 'review': REVIEWS, 'scope': SCOPES}
+    chips = []
+    for key, value in filters.items():
+        if not value:
+            continue
+        label = labels[key] + '：' + options.get(key, {}).get(value, value)
+        remaining = {name: item for name, item in filters.items() if name != key and item}
+        target = '/records' + ('?' + urlencode(remaining) if remaining else '') + '#history-results'
+        chips.append('<a class="asset-clear-chip" href="' + e(target) + '" aria-label="'
+                     + e('移除筛选 ' + label) + '">' + e(label) + '<span aria-hidden="true">×</span></a>')
+    if not chips:
+        return ''
+    return '<nav class="history-active-filters" aria-label="已应用的研究历史筛选">' + ''.join(chips) + '</nav>'
+
+
+def _pagination(filters, offset, count, position):
+    if not count:
+        return ''
+    body = '<nav class="asset-pagination history-pagination" aria-label="研究历史分页 · ' + position + '">'
+    body += '<span class="cell-meta">第 ' + str(offset // PAGE_SIZE + 1) + ' / ' + str((count - 1) // PAGE_SIZE + 1) + ' 页 · 每页最多 ' + str(PAGE_SIZE) + ' 条</span><div class="page-actions">'
+    for rel, target, text in [('prev', offset - PAGE_SIZE, '← 上一页'), ('next', offset + PAGE_SIZE, '下一页 →')]:
+        if 0 <= target < count:
+            body += '<a class="button secondary small" rel="' + rel + '" href="/records?' + e(urlencode({**filters, 'offset': target})) + '#history-results">' + text + '</a>'
+    return body + '</div></nav>'
+
+
 def render(records, q):
     query = q.get('q', '').strip()
     kind, state, review = (q.get(key, '') for key in ('kind', 'status', 'review'))
@@ -167,32 +195,20 @@ def render(records, q):
              + '</select></div>')
     body += ('</div><div class="form-actions"><button type="submit">筛选记录</button>'
              '<a class="text-action" href="/records">清除筛选</a></div></form></section>')
-    chips = [label + '：' + value for label, value in [('关键词', query), ('类型', KINDS.get(kind, kind)),
-              ('执行 / 记录', STATES.get(state, state)), ('科学审查', REVIEWS.get(review, review)),
-              ('记录范围', SCOPES.get(scope, scope))] if value]
-    if chips:
-        body += '<div class="filter-chips" aria-label="当前筛选">' + ''.join('<span>' + e(c) + '</span>' for c in chips) + '</div>'
     if synthetic_count:
         body += '<p class="data-note">本页统计包含明确标记的合成工程测试；其结果用于工程验收，不能计为真实临床研究或预测成绩。</p>'
     body += '<p class="data-note">“未标记为合成测试”仅按原始标题筛选，不代表真实临床验证或预测准确性已获确认。</p>'
-    body += ('<section class="card"><div class="panel-title"><h2>研究记录</h2><span class="muted">'
+    body += ('<section class="card" id="history-results" tabindex="-1" aria-labelledby="history-results-title"><div class="panel-title"><h2 id="history-results-title">研究记录</h2><span class="muted">'
              + str(len(selected)) + ' / ' + str(len(records)) + ' 条</span></div>')
     if selected:
         body += ('<p class="data-note">显示第 ' + str(offset + 1) + '–'
                  + str(min(offset + PAGE_SIZE, len(selected))) + ' 条匹配记录</p>')
     filters = {'q': query, 'kind': kind, 'status': state, 'review': review, 'scope': scope}
+    body += _filter_chips(filters)
+    body += _pagination(filters, offset, len(selected), '顶部')
     return_to = '/records?' + urlencode({**filters, 'offset': offset})
     body += record_table(selected[offset:offset + PAGE_SIZE], return_to)
-    if offset or offset + PAGE_SIZE < len(selected):
-        body += '<nav class="pagination" aria-label="研究历史分页">'
-        if offset:
-            body += ('<a class="button secondary small" rel="prev" href="/records?'
-                     + e(urlencode({**filters, 'offset': offset - PAGE_SIZE})) + '">← 上一页</a>')
-        body += '<span class="cell-meta">每页最多 ' + str(PAGE_SIZE) + ' 条</span>'
-        if offset + PAGE_SIZE < len(selected):
-            body += ('<a class="button secondary small" rel="next" href="/records?'
-                     + e(urlencode({**filters, 'offset': offset + PAGE_SIZE})) + '">下一页 →</a>')
-        body += '</nav>'
+    body += _pagination(filters, offset, len(selected), '底部')
     body += ('</section>'
              '<p class="data-note">历史版本保持不变。执行成功、完整性校验、科学审查及人工签署分别记录；'
              '没有记录的状态保留未知，不能由执行结果推定。</p>')

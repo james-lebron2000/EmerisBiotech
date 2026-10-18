@@ -32,7 +32,7 @@ def render(app,records,record_table):
     flows=[('01','选择公司与登记用药','搜索公司，筛选用药名称、适应症与阶段，逐项展开试验依据。','/assets','进入资产工作台'),('02','核对官方披露','对照公司披露与登记名称，查看日期、缺失信息和反证线索。','/disclosures','查看披露与缺口'),('03','复查过往研究','打开分析、研究循环与冻结快照，核对依据和历史判断。','/records','浏览研究历史')]
     for step,title,description,url,action in flows:
         body+='<a class="case-card" href="'+url+'"><span class="eyebrow">'+step+'</span><h3>'+title+'</h3><p>'+description+'</p><span class="text-link">'+action+' →</span></a>'
-    body+='</div><div class="section-head"><h2>最近研究记录</h2><a href="/records">查看全部历史 →</a></div>'
+    body+='</div><div class="section-head"><h2>工作区研究记录</h2><a href="/records">查看全部历史 →</a></div><p class="data-note">按保存编号展示部分记录；未提供可靠时间的记录保留未知。</p>'
     if (app.workspace/'cache-info.json').exists():
         try:scope=json.loads((app.workspace/'cache-info.json').read_text()).get('scope','备份范围未记录')
         except (OSError,ValueError,AttributeError):scope='备份说明无法读取，范围尚未核实。'

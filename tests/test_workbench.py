@@ -60,3 +60,56 @@ def test_integrity_jobs_separates_market_collection(app):
  assert '<h1>完整性校验</h1>' in body
  assert 'href="/coverage#collection-queue"' in body
  assert '暂无校验任务' in body
+
+def test_record_explains_saved_gates_before_summary_and_technical_attachments(app):
+ path=app.workspace/'artifacts/runs/test-run'
+ saved={'execution':'succeeded','record_integrity':'complete','scientific_review':'revise'}
+ (path/'status.json').write_text(json.dumps(saved))
+ (path/'review.json').write_text(json.dumps({'reviewer_type':'automated','human_signature':None}))
+ (path/'audit.html').write_text('<h1>Audit</h1>')
+ body=page(app,'/record',{'kind':'run','id':'test-run'})
+ assert body.index('研究记录的四项独立状态') < body.index('研究摘要') < body.index('证据与研究附件')
+ assert '保存状态：记录完整' in body and '保存状态：需修订' in body
+ assert '未记录人工签署' in body and '尚未在此页面重新核验' in body
+ assert '>审计报告</a>' in body
+ assert body.index('技术文件与执行日志') < body.index('stderr.log')
+ assert json.loads((path/'status.json').read_text())==saved
+
+def test_record_signature_field_cannot_become_approval(app):
+ path=app.workspace/'artifacts/runs/test-run'
+ (path/'review.json').write_text(json.dumps({'reviewer_type':'human','human_signature':'<img src=x>'}))
+ body=page(app,'/record',{'kind':'run','id':'test-run'})
+ assert '签署字段已记录 · 尚未核验' in body and '不代表签名有效或研究已获批准' in body
+ assert '<img src=x>' not in body and '已通过人工审批' not in body
+ (path/'review.json').write_text(json.dumps({'reviewer_type':'automated','human_signature':'someone'}))
+ assert '签署字段待核对' in page(app,'/record',{'kind':'run','id':'test-run'})
+
+def test_missing_gates_stay_unknown_despite_successful_execution(app):
+ path=app.workspace/'artifacts/runs/test-run'
+ (path/'status.json').write_text(json.dumps({'execution':'succeeded','scientific_review':'pass'}))
+ body=page(app,'/record',{'kind':'run','id':'test-run'})
+ assert '完整性状态未知' in body and '签署状态未知' in body
+ assert '执行成功' in body and '保存状态：通过' in body
+
+def test_note_fields_have_accessible_names(app):
+ from html.parser import HTMLParser
+ class Fields(HTMLParser):
+  def __init__(self,body):super().__init__();self.tags=[];self.feed(body)
+  def handle_starttag(self,tag,attrs):self.tags.append((tag,dict(attrs)))
+ tags=Fields(page(app,'/notes',{})).tags
+ labels={a['for'] for t,a in tags if t=='label'}
+ fields={a['id'] for t,a in tags if t in ('select','input','textarea') and a.get('id')}
+ assert labels==fields=={'note-kind','note-author','note-body'}
+
+@pytest.mark.parametrize('kind,folder,name',[('run','runs','status.json'),('cycle','cycles','cycle.json'),('portfolio','portfolio/snapshots','evaluation.json')])
+@pytest.mark.parametrize('saved',[None,[],42])
+def test_malformed_history_keeps_visible_unknown_record_and_other_routes(app,kind,folder,name,saved):
+ path=app.workspace/'artifacts'/folder/'malformed-version';path.mkdir(parents=True)
+ raw=json.dumps(saved);(path/name).write_text(raw)
+ record=app.record(kind,'malformed-version')
+ assert record is not None and record['status']=='unknown' and record['review']=='unknown'
+ assert '记录格式待核实' in record['title'] and record['data']['saved_value']==saved
+ assert '临床资产研究控制台' in page(app,'/',{})
+ assert '记录格式待核实' in page(app,'/records',{})
+ assert '记录格式待核实' in page(app,'/record',{'kind':kind,'id':'malformed-version'})
+ assert (path/name).read_text()==raw

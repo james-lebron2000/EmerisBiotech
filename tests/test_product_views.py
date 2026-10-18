@@ -55,3 +55,22 @@ def test_http_decision_roundtrip(app):
         assert len(app.rows('decisions'))==1
     finally:
         server.shutdown();server.server_close()
+
+
+@pytest.mark.parametrize('kind,folder,name,data,extra',[
+ ('portfolio','portfolio/snapshots','evaluation.json',{},('plan.json',None)),
+ ('portfolio','portfolio/snapshots','evaluation.json',{},('plan.json',{'hypotheses':None})),
+ ('portfolio','portfolio/snapshots','evaluation.json',{},('plan.json',{'hypotheses':[None]})),
+ ('cycle','cycles','cycle.json',{'decision':None},None),
+ ('run','runs','status.json',{'execution':'failed'},('work/results.json',[None])),
+ ('run','runs','status.json',{'execution':'failed','errors':None},None),
+])
+def test_detail_reports_malformed_sections_without_replacing_originals(app,kind,folder,name,data,extra):
+ path=app.workspace/'artifacts'/folder/'malformed-detail';path.mkdir(parents=True)
+ (path/name).write_text(json.dumps(data))
+ if extra:
+  target=path/extra[0];target.parent.mkdir(parents=True,exist_ok=True);target.write_text(json.dumps(extra[1]))
+ before={str(p):p.read_bytes() for p in path.rglob('*') if p.is_file()}
+ body=page(app,'/record',{'kind':kind,'id':'malformed-detail'})
+ assert '格式待核实' in body and '研究摘要' in body
+ assert {str(p):p.read_bytes() for p in path.rglob('*') if p.is_file()}==before

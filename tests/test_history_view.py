@@ -133,6 +133,46 @@ def test_record_link_remembers_exact_history_context():
                                                review=['revise'], scope=['unmarked'], offset=['0'])
 
 
+def test_removing_one_filter_keeps_other_filters_and_resets_page():
+    query = {'q': 'OSMR', 'kind': 'run', 'status': 'succeeded', 'review': 'revise',
+             'scope': 'unmarked', 'offset': '20'}
+    rows = [dict(RECORDS[0], id=str(i)) for i in range(43)]
+    page = Page(render(rows, query))
+    chips = [a for t, a in page.tags if t == 'a' and a.get('class') == 'asset-clear-chip']
+    assert len(chips) == 5
+    target = next(a['href'] for a in chips if a['aria-label'].startswith('移除筛选 科学审查：'))
+    parsed = urlsplit(target)
+    assert parsed.path == '/records' and parsed.fragment == 'history-results'
+    remaining = {key: values[0] for key, values in parse_qs(parsed.query).items()}
+    assert remaining == {'q': 'OSMR', 'kind': 'run', 'status': 'succeeded', 'scope': 'unmarked'}
+    assert links(render(rows, remaining)) == [str(i) for i in range(20)]
+    assert query['offset'] == '20' and query['review'] == 'revise'
+
+
+def test_history_top_and_bottom_pagination_follow_same_filtered_records():
+    rows = [dict(RECORDS[0], id=str(i)) for i in range(43)]
+    page = Page(render(rows, {'q': 'OSMR', 'review': 'revise', 'offset': '20'}))
+    navs = [a for t, a in page.tags if t == 'nav' and 'history-pagination' in a.get('class', '')]
+    assert [a['aria-label'] for a in navs] == ['研究历史分页 · 顶部', '研究历史分页 · 底部']
+    targets = [a['href'] for t, a in page.tags if t == 'a' and a.get('rel') == 'next']
+    assert len(targets) == 2 and targets[0] == targets[1]
+    parsed = urlsplit(targets[0])
+    assert parsed.fragment == 'history-results'
+    assert links(render(rows, {k: v[0] for k, v in parse_qs(parsed.query).items()})) == ['40', '41', '42']
+    assert '第 2 / 3 页' in render(rows, {'offset': '20'})
+    assert any(t == 'section' and a.get('id') == 'history-results' and a.get('tabindex') == '-1'
+               for t, a in page.tags)
+
+
+def test_empty_history_can_remove_query_without_inventing_pages():
+    body = render(RECORDS, {'q': '<script>'})
+    page = Page(body)
+    chip = next(a for t, a in page.tags if t == 'a' and a.get('class') == 'asset-clear-chip')
+    assert chip['href'] == '/records#history-results'
+    assert '<script>' not in body and '&lt;script&gt;' in body
+    assert 'history-pagination' not in body
+
+
 @pytest.mark.parametrize('value', [None, 'https://evil.test/records', '//evil.test/records',
                                   '/notes', '/records#bad', '/records?bad=1', '/records?q=1&q=2',
                                   '/records?return=//evil.test', '/records\n', 'x' * 2501])
