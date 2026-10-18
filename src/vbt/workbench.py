@@ -1,5 +1,5 @@
 """Local single-user research workbench. Historical artifacts remain immutable."""
-import html,json,secrets,sqlite3,threading,subprocess,sys,os,hashlib,uuid
+import html,json,secrets,sqlite3,threading,subprocess,sys,os,hashlib,uuid,re
 from pathlib import Path
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from urllib.parse import urlsplit,parse_qs,quote
@@ -173,8 +173,11 @@ def handler(app, public_origin=None):
     class Handler(BaseHTTPRequestHandler):
         def send(self,status,body,ctype='text/html; charset=utf-8',sandbox=False):
             self.send_bytes(status,body.encode(),ctype,sandbox)
-        def send_bytes(self,status,body,ctype,sandbox=False):
-            self.send_response(status);self.send_header('Content-Type',ctype);self.send_header('Content-Length',str(len(body)));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Security-Policy',("sandbox; " if sandbox else '')+"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body)
+        def send_bytes(self,status,body,ctype,sandbox=False,download_name=None):
+            if download_name is not None and not re.fullmatch(r'disclosure-[a-f0-9]{32}\.pdf',download_name):raise ValueError('Invalid evidence attachment name')
+            self.send_response(status);self.send_header('Content-Type',ctype);self.send_header('Content-Length',str(len(body)));self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Security-Policy',("sandbox; " if sandbox else '')+"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+            if download_name is not None:self.send_header('Content-Disposition','attachment; filename="'+download_name+'"')
+            self.end_headers();self.wfile.write(body)
         def safehost(self):return self.headers.get('Host')==(urlsplit(public_origin).netloc if public_origin else f'127.0.0.1:{self.server.server_port}')
         def do_GET(self):
             if not self.safehost():self.send(403,'Host rejected');return
@@ -184,7 +187,8 @@ def handler(app, public_origin=None):
                     from .market import Market
                     from .disclosures import evidence_file
                     raw,mime=evidence_file(Market(app.workspace,app.state),q.get('id',''),q.get('file',''))
-                    self.send_bytes(200,raw,mime,True);return
+                    name='disclosure-'+q['id']+'.pdf' if mime=='application/pdf' else None
+                    self.send_bytes(200,raw,mime,True,download_name=name);return
                 if u.path=='/market/identity-evidence':
                     from .market import Market
                     from .identity_view import evidence_file

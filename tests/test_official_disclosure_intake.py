@@ -74,6 +74,35 @@ def counts(market):
                      ('disclosure_captures', 'disclosure_observations', 'official_disclosure_versions'))
 
 
+def test_verified_pdf_download_preserves_source_bytes_and_browser_protections(prepared):
+    market, source_id, _, _, raw_path, *_ = prepared
+    result = intake.ingest_offline(market, source_id)
+    from vbt.disclosure_view import render
+    app = Workbench(market.root.parent.parent, market.state)
+    body = render(app, {'company': 'HK:09999'})
+    assert '下载封存 PDF' in body and 'PDF 作为原文附件下载' in body
+    server = ThreadingHTTPServer(('127.0.0.1', 0), handler(app))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    base = f'http://127.0.0.1:{server.server_port}/market/disclosure-evidence?id={result["id"]}&file='
+    try:
+        with urlopen(base + 'source') as response:
+            assert response.status == 200 and response.read() == raw_path.read_bytes()
+            assert response.headers['Content-Type'] == 'application/pdf'
+            assert response.headers['Content-Disposition'] == f'attachment; filename="disclosure-{result["id"]}.pdf"'
+            assert response.headers['Content-Security-Policy'].startswith('sandbox; ')
+            assert response.headers['X-Content-Type-Options'] == 'nosniff'
+        with urlopen(base + 'record') as response:
+            assert response.headers['Content-Disposition'] is None
+            assert json.loads(response.read())['capture']['id'] == result['id']
+        (market.root / result['archive_path']).write_bytes(b'%PDF-tampered')
+        from urllib.error import HTTPError
+        with pytest.raises(HTTPError) as error:
+            urlopen(base + 'source')
+        assert error.value.code == 404
+    finally:
+        server.shutdown();server.server_close()
+
+
 def test_publishes_shared_contract_atomically_with_conservative_dates(prepared):
     market, source_id, contract, _, _, _, _ = prepared
     result = intake.ingest_offline(market, source_id)

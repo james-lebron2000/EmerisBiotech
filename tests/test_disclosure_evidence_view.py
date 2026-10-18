@@ -57,7 +57,7 @@ def test_verified_evidence_controls_are_visible_and_fixed_to_one_capture(app):
     assert len(links) == 2 and all(depth == 0 for _, depth in links)
     targets = [parse_qs(urlsplit(link['href']).query) for link, _ in links]
     assert targets == [{'id': [capture['id']], 'file': ['source']}, {'id': [capture['id']], 'file': ['record']}]
-    assert all(link['target'] == '_blank' and link['rel'] == 'noopener noreferrer' for link, _ in links)
+    assert all('target' not in link for link, _ in links)
     assert '顶部官方来源为站点当前页；这里固定于该来源批次' in body
     assert '网页原件按源文本只读打开' in body and '打开时再次核对完整性' in body
     assert '观察行按药物—适应症—阶段计数' in body

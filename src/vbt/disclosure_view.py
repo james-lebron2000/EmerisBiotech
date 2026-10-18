@@ -243,11 +243,12 @@ def _evidence_actions(source, capture, integrity):
         return '<p class="source-error">封存附件入口暂不可用：原件完整性或版本绑定尚未核实。</p>'
     root = '/market/disclosure-evidence?'
     body = '<div class="primary-actions" aria-label="该版本封存证据">'
-    for kind, label in [('source', '打开封存原件'), ('record', '结构化记录（JSON）')]:
-        body += ('<a class="button secondary small" target="_blank" rel="noopener noreferrer" href="'
+    source_label = '下载封存 PDF' if source.get('intake_mode') == 'offline_reviewed_bundle' else '打开封存原件'
+    for kind, label in [('source', source_label), ('record', '结构化记录（JSON）')]:
+        body += ('<a class="button secondary small" href="'
                  + e(root + urlencode({'id': capture_id, 'file': kind})) + '">' + label + '</a>')
     return body + ('</div><p class="cell-meta">顶部官方来源为站点当前页；这里固定于该来源批次。'
-                   '网页原件按源文本只读打开，历史 PDF 保留原文；打开时再次核对完整性，变化或受阻时拒绝读取。</p>')
+                   '网页原件按源文本只读打开，PDF 作为原文附件下载；返回可继续原筛选。打开时再次核对完整性，变化或受阻时拒绝读取。</p>')
 
 
 def _source_card(source, token, names, success=None, integrity=None):
