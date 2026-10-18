@@ -123,6 +123,24 @@ def test_automated_review_matches_current_candidate_name(case):
  assert m.count('companies')==0
 
 
+@pytest.mark.parametrize('frozen',['not-json','[]','{"query":"different"}'])
+def test_invalid_frozen_query_context_blocks_acceptance_without_mutating_history(case,frozen):
+ m,raw=case;result=resolve(m,'US:TEST',fetch=lambda u:raw);p=proposals(m)[0]
+ with m.db() as db:db.execute('UPDATE sponsor_resolution_runs SET query_evidence_json=? WHERE id=?',(frozen,result['run_id']))
+ assert proposals(m)[0]['query_input_stale']
+ with pytest.raises(ValueError,match='Frozen query evidence'):
+  review(m,p['id'],'accepted','Synthetic reviewer','Synthetic acceptance must retain bound lookup input')
+ assert m.count('companies')==0
+
+
+def test_legacy_empty_query_context_remains_unrecorded_and_requires_current_matching_query(case):
+ m,raw=case;result=resolve(m,'US:TEST',fetch=lambda u:raw);p=proposals(m)[0]
+ with m.db() as db:db.execute("UPDATE sponsor_resolution_runs SET query_evidence_json='{}' WHERE id=?",(result['run_id'],))
+ assert not proposals(m)[0]['query_input_stale']
+ review(m,p['id'],'accepted','Synthetic reviewer','Synthetic explicit legacy input identity review')
+ assert m.count('companies')==1
+
+
 def test_automated_review_parses_official_otherlisted_act_symbol(case):
  import hashlib
  m,raw=case;resolve(m,'US:TEST',fetch=lambda u:raw);p=proposals(m)[0]

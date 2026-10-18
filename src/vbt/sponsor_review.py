@@ -2,7 +2,7 @@
 import csv,datetime,hashlib,io,json,re,uuid
 from pathlib import Path
 from .io import now,within
-from .sponsor_resolution import init_schema,match_sponsor,query_name_from_listing
+from .sponsor_resolution import init_schema,match_sponsor,query_name_from_listing,proposal_query_issue
 
 _NASDAQ_URL='https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt'
 _OTHER_URL='https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt'
@@ -110,6 +110,8 @@ def review_in_transaction(market,db,proposal_id,decision,reviewer,reason,*,revie
  if reviewer_type=='automated_source_review':_validate_automated(market,row,proposal_id,evidence)
  guard(db)
  if decision=='accepted':
+  issue=proposal_query_issue(market,db,row)
+  if issue:raise ValueError(issue)
   if row['review_status']=='rejected':raise ValueError('公司分类已排除，先重新核对分类')
   if not row['alias'] or len(row['alias'])>200 or not row['evidence_nct']:raise ValueError('缺少可核对的申办方证据')
   old=db.execute('SELECT aliases FROM companies WHERE id=?',(row['candidate_id'],)).fetchone()

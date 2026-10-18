@@ -12,7 +12,7 @@ from vbt.identity_collection import collect as collect_identity
 from vbt import market_jobs as queue
 from vbt.market import Market
 from vbt.market_coverage import refresh_candidates
-from vbt.sponsor_resolution import init_schema as resolution_schema
+from vbt.sponsor_resolution import init_schema as resolution_schema, query_name_from_listing
 
 
 def stamp(epoch):
@@ -44,7 +44,7 @@ def proposals(market, count=1):
             db.execute('''INSERT INTO sponsor_resolution_runs
               (id,candidate_id,candidate_hash,query,started,finished,status,truncated)
               VALUES (?,?,?,?,?,?,'suggested',0)''',
-              (rid, row['id'], row['content_hash'], alias, timestamp, timestamp))
+              (rid, row['id'], row['content_hash'], query_name_from_listing(row['name'], row['market']), timestamp, timestamp))
             db.execute('INSERT INTO sponsor_proposals VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
               (pid, row['id'], row['content_hash'], alias, alias.casefold(), 'normalized_exact',
                json.dumps([nct]), 'https://clinicaltrials.gov/study/' + nct, rid, timestamp, timestamp, 'pending'))
@@ -217,6 +217,26 @@ def failed_handoff(market, monkeypatch):
     assert job['status'] == 'failed' and market.count('companies') == 1
     assert identity.runs(market)[0]['status'] == 'succeeded'
     return market, proposal, job
+
+
+def test_fresh_identity_sources_cannot_approve_a_stale_legacy_lookup_input(market):
+    proposal = proposals(market)[0]
+    # The historical lookup field is an input, not an alias display field.
+    # Even exact fresh source names must not erase a changed lookup history.
+    with market.db() as db:
+        db.execute('UPDATE sponsor_resolution_runs SET query=?', (proposal['alias'],))
+    documents = {identity.DIRECTORY_URLS[0]: (
+        'Symbol|Security Name|Test Issue|ETF\n' + proposal['ticker'] + '|'
+        + proposal['alias'] + ' - Common Stock|N|N\n').encode(),
+        identity.NCT_API + proposal['nct']: json.dumps({'protocolSection': {
+            'identificationModule': {'nctId': proposal['nct']},
+            'sponsorCollaboratorsModule': {'leadSponsor': {'name': proposal['alias']}}}}).encode()}
+    result = identity.collect(market, proposal['id'], fetch=documents.__getitem__)
+    assert result['status'] == 'failed' and 'Lookup input changed' in result['error']
+    assert market.count('companies') == 0
+    with market.db() as db:
+        assert db.execute('SELECT status FROM sponsor_proposals WHERE id=?', (proposal['id'],)).fetchone()[0] == 'pending'
+        assert db.execute('SELECT count(*) FROM sponsor_proposal_reviews').fetchone()[0] == 0
 
 
 def later(monkeypatch):

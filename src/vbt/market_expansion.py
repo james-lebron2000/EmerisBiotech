@@ -2,13 +2,14 @@
 import hashlib,json,uuid
 from .issuer_discovery import discover,initial_mappings,seed_matches_listing,unsupported_listings
 from .market_coverage import refresh_candidates
+from .issuer_directory_screening import supplement_candidates
 from .china_issuer_sources import source_mappings, matches_listing
 from .china_issuer_sources_v2 import source_mappings as source_mappings_v2
 from .china_expansion_review import review_mapping, curated_proposal_plan, VERSION as REVIEW_VERSION
 from .io import now
 
 def expand(market):
- listings=market.rows('listings');candidates=discover(listings)
+ listings=market.rows('listings');candidates=supplement_candidates(market,discover(listings))
  result={'classification':refresh_candidates(market,candidates),'unsupported_identity_count':len(unsupported_listings(listings)),'added':[],'unchanged':[],'conflicts':[],'missing_listing':[],
          'source_name_verified':[],'blocked_evidence':[],'pending_proposal_conflicts':[],'curated_reconciliations':[],'source_name_review_version':REVIEW_VERSION}
  existing={r['id']:r for r in market.rows('companies')}

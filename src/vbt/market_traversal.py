@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from .io import now
 from .market_jobs import init_schema as init_jobs, _enqueue_in_transaction
-from .sponsor_resolution import init_schema as init_resolution, query_name_from_listing
+from .sponsor_resolution import init_schema as init_resolution, candidate_query_contexts
 
 CLASSES = ('drug_developer', 'candidate', 'uncertain', 'drug_developer_candidate')
 LABELS = {'ready': '可排队检索', 'active': '已排队或正在检索', 'needs_name': '需要准确英文主体',
@@ -39,8 +39,8 @@ def _rows(market, market_filter):
         raise ValueError('Unknown market')
     _init(market)
     with market.db() as db:
-        return [dict(r) for r in db.execute('''SELECT c.id,c.name,c.market,c.content_hash,
-          r.id AS resolution_id,r.status AS resolution_status,r.started,
+        rows = [dict(r) for r in db.execute('''SELECT c.id,c.name,c.market,c.content_hash,
+          r.id AS resolution_id,r.status AS resolution_status,r.started,r.query AS resolution_query,
           j.id AS active_job,EXISTS(SELECT 1 FROM sponsor_resolution_runs old
               WHERE old.candidate_id=c.id) AS ever_queried
           FROM issuer_candidates c LEFT JOIN companies m ON m.id=c.id
@@ -53,16 +53,27 @@ def _rows(market, market_filter):
             AND c.classification IN ('drug_developer','candidate','uncertain','drug_developer_candidate')
             AND (?='' OR c.market=?) ORDER BY ever_queried,c.id''',
             (market_filter, market_filter))]
+    contexts = candidate_query_contexts(market, rows)
+    for row in rows:
+        context = contexts[row['id']]
+        row['directory_name_used'] = context['origin'] == 'verified_exchange_english_name'
+        row['registry_query'] = context['query']
+    return rows
 
 
 def _state(row, current):
     if row['active_job']:
         return 'active'
-    if not query_name_from_listing(row['name'], row['market']):
+    if not row['registry_query']:
         return 'needs_name'
     if not row['resolution_id']:
         return 'ready'
     status = row['resolution_status']
+    if (row['directory_name_used'] and status != 'running'
+            and row['resolution_query'] != row['registry_query']):
+        # New independently verified name evidence changes the lookup input.
+        # It does not accept a sponsor proposal or erase the prior blocked run.
+        return 'ready'
     if status in ('suggested', 'ambiguous', 'blocked', 'partial'):
         return 'held_review'
     if status == 'running':

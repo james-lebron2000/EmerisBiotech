@@ -1,14 +1,30 @@
 """Source-backed sponsor suggestions with explicit mapping review."""
-import html
+import html,json
 from urllib.parse import urlencode
 from .market import Market
 from .market_coverage import candidate_rows
-from .sponsor_resolution import proposals,resolution_runs,query_name_from_listing,init_schema
+from .sponsor_resolution import proposals,resolution_runs,candidate_query_contexts,init_schema
 from .market_jobs import enqueue
 from .market_view import _timestamp, _source_link
 
 def e(v):return html.escape(str(v if v is not None else '尚未记录'),quote=True)
 LABEL={'suggested':'规范名称相符，待核对','ambiguous':'主体有歧义，待核对','zero':'未检索到记录','blocked':'需要补充准确英文主体','partial':'分页未完成','failed':'来源请求失败','busy':'同一主体正在检索','cancelled':'已取消','interrupted':'检索中断','running':'检索中'}
+
+def _query_details(context):
+ if isinstance(context,str):
+  try:context=json.loads(context)
+  except (ValueError,TypeError):context={}
+ if not isinstance(context,dict) or not context.get('origin'):
+  return '<p class="cell-meta">查询种子来源与原文：历史记录未保存</p>'
+ origin=context['origin']
+ label={'verified_exchange_english_name':'交易所目录英文全称（已核对原始归档）',
+        'listing_display_name':'证券目录显示名称','unresolved':'准确英文主体尚未取得'}.get(origin,'来源类型未识别')
+ body='<p class="cell-meta">查询种子来源：'+e(label)+'<br>名称原文：'+e(context.get('name_original'))+'</p>'
+ if origin=='verified_exchange_english_name':
+  proof=context.get('directory_evidence')
+  if isinstance(proof,dict):
+   body+='<details><summary>查看查询名称凭据</summary><dl class="source-meta"><dt>目录</dt><dd>'+e(proof.get('source'))+'</dd><dt>来源批次</dt><dd>'+e(proof.get('source_run_id'))+'</dd><dt>凭据</dt><dd>'+e(proof.get('receipt_id'))+'</dd><dt>原件 SHA-256</dt><dd>'+e(proof.get('raw_sha256'))+'</dd></dl><p class="data-note">英文全称只用于检索，不确认申办方、母子公司关系或药物权益。</p></details>'
+ return body
 
 def enqueue_batch(market,limit=20):
  if not 1<=limit<=20:raise ValueError('Batch size must be 1-20')
@@ -45,10 +61,12 @@ def render(app, q):
           + ''.join('<option ' + ('selected ' if q.get('market') == code else '') + 'value="' + code + '">'
                     + label + '</option>' for code, label in [('US', '美股'), ('A', 'A股'), ('HK', '港股')])
           + '</select><button>筛选候选</button></form>')
+ contexts=candidate_query_contexts(m,rows)
  for row in rows:
-  query = query_name_from_listing(row['name'], row['market'])
+  context=contexts[row['id']];query=context['query']
   body += ('<div class="card"><b>' + e(row['name'] + ' · ' + row['id']) + '</b><p>'
            + ('检索名称：' + e(query) if query else '需要先取得准确英文主体；平台不会自动翻译后归属。') + '</p>')
+  body += _query_details(context)
   if query:
    body += form('/market/resolve', {'candidate_id': row['id']}, '检索此公司申办方')
   body += '</div>'
@@ -66,12 +84,15 @@ def render(app, q):
            + '</dd></dl>')
   if row['candidate_changed']:
    body += '<p class="notice">候选识别依据已变化，需要重新检索。</p>'
+  elif row.get('query_input_stale'):
+   body += '<p class="notice">查询名称或其来源依据已变化或暂不可验证，需要重新检索。'+e(row.get('stale_reason'))+'</p>'
   body += ('<details><summary>查看证据并记录决定</summary><dl class="source-meta">'
            '<dt>来源查询完成</dt><dd>' + _timestamp(row['resolved_at']) + '</dd><dt>证据批次</dt><dd><code>'
            + e(row['run_id']) + '</code></dd></dl>'
            '<p class="data-note">当前为关联建议，尚待主体核对。来源核对、记录人声明与人工签署分别记录；'
            '名称相符不能替代药物权益核验或科学审批。</p>')
-  if not row['candidate_changed']:
+  body += '<p>本次查询：'+e(row.get('query_used'))+'</p>'+_query_details(row.get('query_evidence_json'))
+  if not row['candidate_changed'] and not row.get('query_input_stale'):
    field_id = 'mapping-decision-' + str(index)
    body += ('<p class="notice">选择“接受关联并排队抓取”并保存后，将登记该申办方关联并排队抓取临床登记。'
             '选择“排除此关联建议”只记录排除决定。请先核对上述来源和证券主体。</p>'
@@ -95,6 +116,7 @@ def render(app, q):
            + e(LABEL.get(row['status'], row['status'])) + '</b><p>查询名称 ' + e(row['query'])
            + ' · 建议 ' + str(row['proposal_count']) + ' 条</p><p>' + e(row['error'])
            + '</p><p class="ref">' + _timestamp(row['started']) + ' · ' + e(row['id']) + '</p></div>')
+  body += _query_details(row.get('query_evidence_json'))
  body += '</details>'
  with m.db() as db:
   if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sponsor_proposal_reviews'").fetchone():

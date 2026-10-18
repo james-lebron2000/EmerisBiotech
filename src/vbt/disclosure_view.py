@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 from . import disclosures
 from .market import Market
 from .market_assets import normalize_name
+from .market_view import _source_link
 
 PAGE_SIZE = 50
 STATES = {
@@ -25,6 +26,7 @@ STATES = {
     'parse_blocked': '已留存来源，结构化提取待完成',
     'fetch_failed': '抓取失败', 'interrupted': '任务已中断，需重试',
     'superseded': '旧任务已失去执行权', 'cancelled': '已取消',
+    'integrity_blocked': '原件完整性受阻', 'blocked': '验收受阻',
 }
 ROLES = {
     'EXPERIMENTAL': '实验组', 'ACTIVE_COMPARATOR': '活性对照组',
@@ -85,6 +87,16 @@ def _source_options(sources, company='', source_id=''):
             and (not source_id or source['id'] == source_id)]
 
 
+def _historical(source, metadata):
+    return source.get('intake_mode') == 'offline_reviewed_bundle' or metadata.get('historical_disclosure') is True
+
+
+def _content_date(capture, metadata):
+    if metadata.get('as_of_precision') == 'unresolved_report_date':
+        return '<span class="muted">未知（报告日期尚未确定）</span>'
+    return _date(capture.get('as_of'))
+
+
 def select_observations(market, sources, *, company='', source_id='', query='', phase='', offset=0):
     """Read one consistent latest-success page and explicit latest-attempt state."""
     selected = _source_options(sources, company, source_id)
@@ -92,8 +104,8 @@ def select_observations(market, sources, *, company='', source_id='', query='', 
         raise ValueError('查询内容过长')
     if not selected:
         return [], 0, {}
-    captures = {}
-    latest = {}
+    captures, candidates = {}, []
+    latest, integrity = {}, {}
     with market.db() as db:
         db.execute('BEGIN')
         for source in selected:
@@ -102,11 +114,28 @@ def select_observations(market, sources, *, company='', source_id='', query='', 
             if attempt:
                 latest[source['id']] = dict(attempt)
             if success:
-                captures[success['id']] = dict(success)
-        if not captures:
-            return [], 0, {'latest': latest, 'successful': {}}
+                candidates.append((source, dict(success)))
+    # File verification may read its own ledger; do not hold a SQLite read
+    # transaction while asking the independent archive-integrity gate.
+    for source, success in candidates:
+        try:
+            checked = disclosures.capture_integrity(market, success)
+            if not isinstance(checked, dict):
+                raise ValueError('Capture integrity result unavailable')
+        except (AttributeError, OSError, TypeError, ValueError):
+            checked = {'integrity_status': 'blocked', 'errors': ['原件完整性尚未核实；需恢复原件并重新验收。']}
+        integrity[source['id']] = checked
+        if checked.get('integrity_status') != 'verified':
+            continue
+        captures[success['id']] = success
+    if not captures:
+        return [], 0, {'latest': latest, 'successful': {}, 'integrity': integrity, 'phases': []}
+    with market.db() as db:
+        db.execute('BEGIN')
         clause = 'capture_id IN (' + ','.join('?' for _ in captures) + ')'
         params = list(captures)
+        phases = [row[0] for row in db.execute('SELECT DISTINCT phase FROM disclosure_observations WHERE ' + clause
+                    + " AND phase IS NOT NULL AND phase!='' ORDER BY phase", params)]
         if query:
             # Treat user input as literal text, including percent/underscore.
             escaped = query.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
@@ -120,15 +149,19 @@ def select_observations(market, sources, *, company='', source_id='', query='', 
     configs = {source['id']: source for source in selected}
     for row in rows:
         capture = captures[row['capture_id']]
+        metadata = _json_dict(capture['metadata'])
         row.update({
             'data': _json_dict(row['data']), 'url': capture['url'],
-            'sha256': capture['sha256'], 'retrieved_at': capture['finished'],
+            'sha256': capture['sha256'], 'metadata': metadata,
+            'retrieved_at': (metadata.get('original_retrieved_at') or metadata.get('retrieved_at')) if _historical(configs[row['source_id']], metadata) else capture['finished'],
+            'imported_at': metadata.get('imported_at'),
             'published_at': capture['published_at'], 'as_of': capture['as_of'],
             'companies': [company] if company else configs[row['source_id']]['companies'],
             'prior_capture_retained': latest[row['source_id']]['id'] != capture['id'],
             'latest_attempt_status': latest[row['source_id']]['status'],
         })
-    return rows, total, {'latest': latest, 'successful': {row['source_id']: row for row in captures.values()}}
+    return rows, total, {'latest': latest, 'successful': {row['source_id']: row for row in captures.values()},
+                         'integrity': integrity, 'phases': phases}
 
 
 def link_registry(market, observations):
@@ -186,34 +219,93 @@ def link_registry(market, observations):
     return result, malformed
 
 
-def _source_card(source, token, names, success=None):
-    attempt = source.get('latest')
-    status = STATES.get(attempt['status'], attempt['status']) if attempt else '尚未抓取'
-    attempt = attempt or {}
-    success = success or (attempt if attempt.get('status') == 'succeeded' else {})
-    status_class = 'succeeded' if attempt.get('status') == 'succeeded' else 'blocked' if attempt.get('status') in ('fetch_failed', 'parse_blocked', 'interrupted') else ''
+def _review_details(metadata):
+    review = _json_dict(metadata.get('visual_review'))
+    body = '<p class="data-note">视觉转录审查：' + ('助理视觉审查，非人工签署' if review.get('reviewer_type') == 'assistant_visual_review' else '尚未核实') + '。药物权益未独立核验，科学审查待完成。</p>'
+    if review:
+        body += '<dl class="source-meta"><dt>转录审查方法</dt><dd>' + e(review.get('method')) + '</dd><dt>视觉审查日期</dt><dd>' + _date(review.get('reviewed_at')) + '</dd><dt>审查范围</dt><dd>' + e(review.get('coverage')) + '</dd></dl>'
+    return body
+
+
+def _source_card(source, token, names, success=None, integrity=None):
+    attempt = source.get('latest') or {}
+    success = success or {}
+    offline = source.get('intake_mode') == 'offline_reviewed_bundle'
+    metadata = _json_dict((success or attempt).get('metadata'))
+    historical = _historical(source, metadata) or source.get('parser') == 'unsupported_pdf'
+    checked = integrity or {}
+    blocked = bool(checked) and checked.get('integrity_status') != 'verified'
+    status = ('原件完整性受阻，观察暂不展示' if blocked else
+              STATES.get(attempt.get('status'), attempt.get('status')) if attempt else
+              '尚未验收本地历史原件' if offline else '已配置，尚未抓取')
+    status_class = 'blocked' if blocked or attempt.get('status') in ('fetch_failed', 'parse_blocked', 'interrupted', 'blocked') else 'succeeded' if success else ''
+    kind = '离线历史 PDF 图表' if offline else '历史 PDF 来源' if historical else '网页来源'
     body = '<article class="card source-card"><div class="source-card-head"><span class="badge ' + status_class + '">' + e(status) + '</span>'
-    body += '<a class="text-link" href="' + e(source['url']) + '" target="_blank" rel="noopener">官方来源 ↗</a></div><h3>' + e(source['name']) + '</h3>'
+    body += _source_link(source['url'], '官方来源') + '</div><h3>' + e(source['name']) + '</h3><p class="cell-meta">' + kind + '</p>'
     body += '<p class="muted">' + ' / '.join(e(names.get(company, company)) for company in source['companies']) + '</p>'
-    if success:
-        body += '<p class="source-count"><strong>' + str(success.get('count', 0)) + '</strong> 条结构化观察</p>'
+    count = success.get('count')
+    if success and not blocked and type(count) is int and count >= 0:
+        body += '<p class="source-count"><strong>' + str(count) + '</strong> 条结构化观察</p>'
     else:
-        body += '<p class="source-count muted">尚无结构化观察</p>'
-    body += '<dl class="source-meta"><dt>来源内容截止时间</dt><dd>' + _date(success.get('as_of')) + '</dd>'
-    body += '<dt>来源发布日期</dt><dd>' + _date(success.get('published_at') or attempt.get('published_at')) + '</dd>'
-    body += '<dt>最近抓取尝试</dt><dd>' + _date(attempt.get('finished') or attempt.get('started')) + '</dd></dl>'
+        body += '<p class="source-count muted">' + ('可核验观察数量未知' if blocked else '尚无结构化观察') + '</p>'
+    body += '<dl class="source-meta"><dt>来源内容截止时间</dt><dd>' + _content_date(success or attempt, metadata) + '</dd>'
+    body += '<dt>来源发布日期</dt><dd>' + _date((success or attempt).get('published_at')) + '</dd>'
+    if historical:
+        body += '<dt>报告期原文</dt><dd>' + e(metadata.get('reporting_period_original')) + '</dd>'
+    if offline:
+        body += '<dt>原件取回时间</dt><dd>' + _date(metadata.get('original_retrieved_at') or metadata.get('retrieved_at')) + '</dd>'
+        body += '<dt>本地验收入库</dt><dd>' + _date(metadata.get('imported_at')) + '</dd>'
+    else:
+        body += '<dt>最近抓取尝试</dt><dd>' + _date(attempt.get('finished') or attempt.get('started')) + '</dd>'
+    body += '</dl>'
+    if historical:
+        body += '<p class="data-note">历史披露只覆盖所选图表；报告期不等于发布日期或当前管线日期。</p>'
     if success and success.get('id') != attempt.get('id'):
         body += '<p class="notice">最新尝试未发布新的观察，当前仍展示最近成功批次；请核对内容截止日期。</p>'
-    if attempt.get('error'):
-        body += '<p class="source-error">存在来源缺口，请查看下方抓取详情。</p>'
-    body += '<details class="source-details"><summary>覆盖范围与抓取详情</summary><p>覆盖范围：' + e(source['scope']) + '</p>'
-    body += '<p>关联证券：' + ' / '.join(e(company) for company in source['companies']) + '</p>'
-    body += '<p>最近成功结构化批次：' + _date(success.get('finished')) + '</p>'
+    if attempt.get('error') or blocked:
+        body += '<p class="source-error">存在来源缺口，请查看下方详情；未知数量不能记作零。</p>'
+    body += '<details class="source-details"><summary>覆盖范围与原件依据</summary><p>覆盖范围：' + e(source['scope']) + '</p><p>关联证券：' + ' / '.join(e(company) for company in source['companies']) + '</p>'
+    body += '<p>最近执行状态：' + e(STATES.get(attempt.get('status'), attempt.get('status'))) + '；当前原件完整性另行核对。</p>'
     if success:
         body += '<p class="ref">来源批次：' + e(success['id']) + '</p>'
+    if offline:
+        body += _review_details(metadata)
+        body += '<p class="ref">原件相对引用：' + e(metadata.get('raw_reference')) + '</p><p class="ref">转录包 SHA-256：' + e(metadata.get('bundle_sha256')) + '</p>'
     if attempt.get('error'):
         body += '<p class="notice">来源缺口：' + e(attempt['error']) + '</p>'
-    body += '</details><form method="post" action="/market/disclosure/enqueue"><input type="hidden" name="token" value="' + e(token) + '"><input type="hidden" name="source_id" value="' + e(source['id']) + '"><button class="button-secondary">排队刷新官方来源</button></form></article>'
+    for error in checked.get('errors', []) if isinstance(checked.get('errors', []), list) else []:
+        body += '<p class="notice">完整性缺口：' + e(error) + '</p>'
+    body += '</details>'
+    if offline:
+        body += '<p class="data-note">只验收本地冻结原件；不进行定时网络刷新或下载。</p>'
+    body += '<form method="post" action="/market/disclosure/enqueue"><input type="hidden" name="token" value="' + e(token) + '"><input type="hidden" name="source_id" value="' + e(source['id']) + '"><button class="button-secondary">' + ('验收本地历史原件' if offline else '排队刷新官方来源') + '</button></form></article>'
+    return body
+
+
+def _row_provenance(row):
+    metadata = row['metadata']
+    historical = metadata.get('historical_disclosure') is True
+    body = _source_link(row['url'], '官方原文')
+    body += '<p class="cell-meta">' + ('历史 PDF 图表观察' if historical else '网页结构化观察') + '</p><dl class="source-meta"><dt>内容截止</dt><dd>' + _content_date(row, metadata) + '</dd>'
+    if historical:
+        body += '<dt>报告期原文</dt><dd>' + e(metadata.get('reporting_period_original')) + '</dd><dt>原件取回</dt><dd>' + _date(row['retrieved_at']) + '</dd><dt>本地验收</dt><dd>' + _date(row.get('imported_at')) + '</dd>'
+    else:
+        body += '<dt>抓取</dt><dd>' + _date(row['retrieved_at']) + '</dd>'
+    body += '<dt>发布</dt><dd>' + _date(row['published_at']) + '</dd></dl><details><summary>原文定位与完整性依据</summary>'
+    body += '<p class="ref">原文定位：' + e(row['source_locator']) + '</p><p class="ref">来源批次：' + e(row['capture_id']) + '</p><p class="ref">SHA-256：' + e(row['sha256']) + '</p>'
+    original = _json_dict(row['data'].get('original_observation'))
+    locator = _json_dict(original.get('locator'))
+    if historical:
+        body += '<dl class="source-meta">'
+        for label, key in [('物理 PDF 页', 'pdf_page'), ('印刷页码', 'printed_page'), ('图表行', 'chart_row_ordinal'), ('行坐标（PDF pt）', 'row_bbox_pdf_pt'), ('药物单元格坐标', 'drug_cell_bbox_pdf_pt'), ('阶段列坐标', 'phase_header_bbox_pdf_pt')]:
+            body += '<dt>' + label + '</dt><dd>' + e(locator.get(key)) + '</dd>'
+        body += '</dl><p class="data-note">阶段为所选公司图表原文，不推断登记临床分期编码或最高阶段。</p>'
+        body += _review_details(metadata)
+        body += '<p class="ref">原件相对引用：' + e(metadata.get('raw_reference')) + '</p><p class="ref">转录包 SHA-256：' + e(metadata.get('bundle_sha256')) + '</p>'
+        for label, key in [('研究标签原文', 'study_label_original'), ('图表注释原文', 'annotation_original'), ('脚注标记', 'footnote_markers')]:
+            if original.get(key):
+                body += '<p class="ref">' + label + '：' + e(original[key]) + '</p>'
+    body += '<p>未提供字段：' + e(' / '.join(row['data'].get('missing_fields', []))) + '</p><p class="ref">关联证券：' + ' / '.join(e(ident) for ident in row['companies']) + '</p></details>'
     return body
 
 
@@ -243,9 +335,17 @@ def render(app, q):
     body += '</select></div><div class="field"><label for="disclosure-source">官方披露来源</label><select id="disclosure-source" name="source_id"><option value="">全部来源</option>'
     body += ''.join('<option ' + ('selected ' if source_id == source['id'] else '') + 'value="' + e(source['id']) + '">' + e(source['name']) + '</option>' for source in sources)
     body += '</select></div><div class="field"><label for="disclosure-query">药物、代号、靶点或适应症</label><input type="search" id="disclosure-query" name="q" value="' + e(query or '') + '" placeholder="搜索来源原文"></div><div class="field"><label for="disclosure-phase">公司披露阶段</label><select id="disclosure-phase" name="phase"><option value="">全部阶段</option>'
-    body += ''.join('<option ' + ('selected ' if phase == label else '') + 'value="' + e(label) + '">' + e(label) + '</option>' for label in ('Phase I', 'Phase II', 'Phase III', 'NDA/BLA'))
+    body += ''.join('<option ' + ('selected ' if phase == label else '') + 'value="' + e(label) + '">' + e(label) + '</option>' for label in state.get('phases', []))
+    if phase and phase not in state.get('phases', []):
+        body += '<option selected value="' + e(phase) + '">' + e(phase) + '（当前有效来源未见）</option>'
     body += '</select></div></div><div class="filter-actions"><button>查看披露观察</button><a href="/disclosures">清除筛选</a></div></form>'
     body += '<section aria-labelledby="disclosure-sources-heading"><div class="section-head"><h2 id="disclosure-sources-heading">来源状态与覆盖缺口</h2><span>' + str(len(selected)) + ' 个配置来源</span></div><p class="muted">每个来源仅覆盖其明确标注的范围。抓取时间、内容截止时间和发布日期分别保留。</p>'
+    offline_count = sum(source.get('intake_mode') == 'offline_reviewed_bundle' for source in selected)
+    blocked_count = sum((state.get('latest', {}).get(source['id']) or source.get('latest') or {}).get('status') in ('fetch_failed', 'parse_blocked', 'interrupted', 'blocked')
+                        or state.get('integrity', {}).get(source['id'], {}).get('integrity_status') == 'blocked' for source in selected)
+    body += ('<p class="data-note">已配置来源 ' + str(len(selected)) + ' 个 · 离线历史来源 ' + str(offline_count)
+             + ' 个 · 当前可核验结构化来源 ' + str(len(state.get('successful', {}))) + ' 个 · 配置后失败或受阻 '
+             + str(blocked_count) + ' 个。保留旧成功批次时，可核验与最新尝试受阻可同时存在。未配置来源的公司另列明确缺口；来源数和观察行数都不是完整管线覆盖率。</p>')
     if not selected:
         no_source = not any(company in source['companies'] for source in sources) if company else False
         message = '该证券尚未配置官方管线披露来源。' if no_source else '当前公司／来源筛选没有匹配的官方披露来源，可清除来源筛选。'
@@ -253,7 +353,8 @@ def render(app, q):
     else:
         body += '<div class="source-grid">'
         for source in selected:
-            body += _source_card(source, app.token, names, state.get('successful', {}).get(source['id']))
+            current_source = {**source, 'latest': state.get('latest', {}).get(source['id'], source.get('latest'))}
+            body += _source_card(current_source, app.token, names, state.get('successful', {}).get(source['id']), state.get('integrity', {}).get(source['id']))
         body += '</div>'
     body += '</section><section aria-labelledby="disclosure-observations-heading"><div class="section-head"><h2 id="disclosure-observations-heading">药物—适应症—阶段观察 · ' + str(total) + ' 条</h2><span>每页 ' + str(PAGE_SIZE) + ' 条</span></div>'
     body += '<div class="metric-row"><div class="metric-card"><span class="muted">筛选后观察</span><strong class="metric">' + str(total) + '</strong><small>最近成功结构化批次</small></div><div class="metric-card"><span class="muted">本页已建立名称关联</span><strong class="metric">' + str(linked) + '</strong><small>不代表阶段或适应症一致</small></div><div class="metric-card"><span class="muted">本页待关联</span><strong class="metric">' + str(len(observations) - linked) + '</strong><small>不代表缺少临床试验</small></div></div>'
@@ -263,7 +364,7 @@ def render(app, q):
     if observations:
         body += '<p class="scroll-cue muted" id="disclosure-scroll-help">表格包含五列；较窄窗口可横向滚动。键盘用户可聚焦表格区域并使用方向键。</p><div class="table-scroll scroll" role="region" tabindex="0" aria-label="官方披露与同公司登记关联表格" aria-describedby="disclosure-scroll-help"><table class="disclosure-table"><caption class="sr-only">公司披露的药物、适应症、阶段、来源日期及同公司登记名称关联</caption><thead><tr><th scope="col">公司披露的药物／代号</th><th scope="col">靶点／形式</th><th scope="col">适应症／阶段</th><th scope="col">来源与日期</th><th scope="col">同公司登记关联</th></tr></thead><tbody>'
         for row in observations:
-            body += '<tr><td><strong>' + e(row['drug_name']) + '</strong><p class="ref">代号：' + e(row['drug_code']) + '</p><p class="muted">' + ' / '.join(e(names.get(ident, ident)) for ident in row['companies']) + '</p></td><td>' + e(row['target']) + '<p class="muted">' + e(row['modality']) + '</p></td><td>' + e(row['indication']) + '<p><span class="badge">' + e(row['phase']) + '</span></p></td><td><a href="' + e(row['url']) + '" target="_blank" rel="noopener">官方原文 ↗</a><dl class="source-meta"><dt>内容截止</dt><dd>' + _date(row['as_of']) + '</dd><dt>抓取</dt><dd>' + _date(row['retrieved_at']) + '</dd><dt>发布</dt><dd>' + _date(row['published_at']) + '</dd></dl><details><summary>原文定位与完整性依据</summary><p class="ref">原文定位：' + e(row['source_locator']) + '</p><p class="ref">来源批次：' + e(row['capture_id']) + '</p><p class="ref">SHA-256：' + e(row['sha256']) + '</p><p>未提供字段：' + e(' / '.join(row['data'].get('missing_fields', []))) + '</p><p class="ref">关联证券：' + ' / '.join(e(ident) for ident in row['companies']) + '</p></details>'
+            body += '<tr><td><strong>' + e(row['drug_name']) + '</strong><p class="ref">代号：' + e(row['drug_code']) + '</p><p class="muted">' + ' / '.join(e(names.get(ident, ident)) for ident in row['companies']) + '</p></td><td>' + e(row['target']) + '<p class="muted">' + e(row['modality']) + '</p></td><td>' + e(row['indication']) + '<p><span class="badge">' + e(row['phase']) + '</span></p></td><td>' + _row_provenance(row) + ''
             if row['prior_capture_retained']:
                 body += '<p class="notice">保留此前成功批次；最近尝试：' + e(STATES.get(row['latest_attempt_status'], row['latest_attempt_status'])) + '</p>'
             body += '</td><td>'

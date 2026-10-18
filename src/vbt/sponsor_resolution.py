@@ -8,6 +8,7 @@ configured-company, trial or scientific-review tables.
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import unicodedata
 import uuid
@@ -25,10 +26,15 @@ _LEGAL=frozenset('inc incorporated corp corporation ltd limited plc llc co compa
 _SECURITY=re.compile(r'\s+[-–—]\s+(?:class\s+[a-z]\b|common\b|ordinary\b|american\b|ads\b|depositary\b|preferred\b|warrant\b|units?\b).*$',re.I)
 _TRAILING_SECURITY=re.compile(r'\b(?:class\s+[a-z]\s+)?(?:common\s+(?:stock|shares)|ordinary\s+shares|american\s+depositary\s+(?:shares|receipts)|depositary\s+shares|preferred\s+(?:stock|shares)|warrants?)\b.*$',re.I)
 _NON_LATIN=re.compile(r'[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]')
+QUERY_CONTEXT_VERSION='verified-directory-query-2'
 
 
 class _Cancelled(Exception):
  """Internal signal that rolls back a proposal publication transaction."""
+
+
+class _InputChanged(Exception):
+ """Current issuer/hash or verified name no longer matches the frozen lookup."""
 
 
 def _tokens(name):
@@ -62,6 +68,102 @@ def query_name_from_listing(name,market):
  if len(tokens)>1 and not any(len(t)>=4 and re.search('[a-z]',t) for t in distinctive):return None
  result=' '.join(tokens)
  return result if 4<=len(result)<=200 else None
+
+
+def query_name_from_directory(name):
+ """Normalize a *separately verified* full name, without security/brand guessing.
+
+ This is only a bounded literal query builder. Its caller must first obtain a
+ reverified directory receipt; short-name admission rules remain unchanged.
+ """
+ tokens=_tokens(name)
+ query=' '.join(tokens)
+ return query if 4<=len(query)<=200 and re.fullmatch(r'[a-z0-9 ]+',query) and re.search('[a-z]',query) else None
+
+
+def candidate_query_contexts(market,candidates,*,db=None):
+ """Batch lookup inputs; source originals are replayed once per directory."""
+ candidates=[dict(row) for row in candidates]
+ contexts={}
+ for candidate in candidates:
+  query=query_name_from_listing(candidate['name'],candidate['market'])
+  contexts[candidate['id']]={'query':query,'origin':'listing_display_name' if query else 'unresolved',
+    'candidate_id':candidate['id'],'candidate_hash':candidate.get('content_hash'),
+    'name_original':candidate['name'],'query_input_version':QUERY_CONTEXT_VERSION}
+ fallback=[row for row in candidates if row['market']=='A' and not contexts[row['id']]['query']]
+ if not fallback:return contexts
+ from .issuer_directory_names import query_evidences
+ proofs=query_evidences(market,fallback,db=db)
+ for candidate in fallback:
+  proof=proofs.get(candidate['id']);context=contexts[candidate['id']]
+  if (not isinstance(proof,dict) or proof.get('candidate_id')!=candidate['id']
+      or proof.get('candidate_hash')!=candidate.get('content_hash')):continue
+  name=proof.get('english_name');query=query_name_from_directory(name)
+  if not query:continue
+  serial=json.dumps(proof,sort_keys=True,ensure_ascii=False,allow_nan=False)
+  if len(serial.encode())>64_000:raise ValueError('Directory name proof exceeds the query evidence limit')
+  contexts[candidate['id']]={**context,'query':query,'origin':'verified_exchange_english_name',
+    'name_original':name,'directory_evidence':proof}
+ return contexts
+
+
+def candidate_query_context(market,candidate,*,db=None):
+ """Return query and original name from the same verified input version."""
+ return candidate_query_contexts(market,[candidate],db=db)[candidate['id']]
+
+
+def query_for_candidate(market,candidate):
+ return candidate_query_context(market,candidate)['query']
+
+
+def proposal_query_issue(market,db,proposal,*,context=None):
+ """Check current input inside the caller's snapshot/acceptance transaction.
+
+ Equality is semantic query+candidate identity, not receipt ID. A fresh complete
+ directory capture with the same legal-name query does not invalidate history.
+ Legacy runs without frozen context remain visibly unrecorded, but must still
+ match a currently verifiable query before an acceptance is published.
+ """
+ candidate=db.execute('SELECT * FROM issuer_candidates WHERE id=?',(proposal['candidate_id'],)).fetchone()
+ run=db.execute('SELECT * FROM sponsor_resolution_runs WHERE id=?',(proposal['run_id'],)).fetchone()
+ if (not candidate or not run or candidate['content_hash']!=proposal['candidate_hash']
+     or run['candidate_id']!=candidate['id'] or run['candidate_hash']!=candidate['content_hash']):
+  return 'Candidate or resolution identity changed; fresh sponsor resolution required'
+ if context is None:context=candidate_query_context(market,dict(candidate),db=db)
+ if not context.get('query'):
+  return 'Current verified query unavailable; refresh name evidence before acceptance'
+ if run['query']!=context['query']:
+  return 'Lookup input changed; fresh sponsor resolution required'
+ try:
+  frozen=json.loads(run['query_evidence_json'])
+ except (ValueError,TypeError):return 'Frozen query evidence is invalid'
+ if not isinstance(frozen,dict):return 'Frozen query evidence is invalid'
+ if frozen and any(frozen.get(key)!=value for key,value in (
+      ('candidate_id',candidate['id']),('candidate_hash',candidate['content_hash']),('query',run['query']))):
+  return 'Frozen query evidence does not bind the resolution input'
+ if frozen:
+  origin=frozen.get('origin');original=frozen.get('name_original')
+  if origin=='listing_display_name':
+   if query_name_from_listing(original,candidate['market'])!=run['query']:
+    return 'Frozen query evidence original name does not match the lookup'
+  elif origin=='verified_exchange_english_name':
+   proof=frozen.get('directory_evidence')
+   if (not isinstance(proof,dict) or proof.get('english_name')!=original
+       or proof.get('candidate_id')!=candidate['id'] or proof.get('candidate_hash')!=candidate['content_hash']
+       or query_name_from_directory(original)!=run['query']):
+    return 'Frozen query evidence original legal name does not match the lookup'
+   receipt_id=proof.get('receipt_id')
+   has_ledger=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='issuer_directory_name_receipts'").fetchone()
+   ledger=db.execute('SELECT * FROM issuer_directory_name_receipts WHERE id=?',(receipt_id,)).fetchone() if has_ledger and isinstance(receipt_id,str) else None
+   try:
+    serial=json.dumps({k:v for k,v in proof.items() if k not in ('receipt_id','ledger_id')},
+        sort_keys=True,ensure_ascii=False,separators=(',',':'),allow_nan=False)
+   except (ValueError,TypeError):return 'Frozen query evidence receipt is invalid'
+   if (not ledger or proof.get('ledger_id')!=receipt_id or ledger['payload_json']!=serial
+       or hashlib.sha256(serial.encode()).hexdigest()!=receipt_id or ledger['payload_sha256']!=receipt_id):
+    return 'Frozen query evidence receipt does not match the append-only ledger'
+  else:return 'Frozen query evidence source type is invalid'
+ return ''
 
 
 def match_sponsor(query,alias):
@@ -121,8 +223,11 @@ def init_schema(market):
   CREATE INDEX IF NOT EXISTS idx_sponsor_proposals_candidate
     ON sponsor_proposals(candidate_id,status);
   ''')
+  db.execute('BEGIN IMMEDIATE')
   if 'lease_owner' not in {r[1] for r in db.execute('PRAGMA table_info(sponsor_resolution_runs)')}:
    db.execute("ALTER TABLE sponsor_resolution_runs ADD COLUMN lease_owner TEXT NOT NULL DEFAULT ''")
+  if 'query_evidence_json' not in {r[1] for r in db.execute('PRAGMA table_info(sponsor_resolution_runs)')}:
+   db.execute("ALTER TABLE sponsor_resolution_runs ADD COLUMN query_evidence_json TEXT NOT NULL DEFAULT '{}'")
   # Active owners keep their running state. Only old observations whose actual
   # persistent lease expired/lost its owner become interrupted, never completed.
   cutoff=(datetime.now(timezone.utc)-timedelta(minutes=5)).isoformat()
@@ -174,12 +279,12 @@ def resolve(market,candidate_id,fetch=market_sources.fetch,*,max_pages=3,
   candidate=db.execute('SELECT * FROM issuer_candidates WHERE id=?',(candidate_id,)).fetchone()
   mapped=db.execute('SELECT 1 FROM companies WHERE id=?',(candidate_id,)).fetchone()
  if not candidate:raise ValueError('Unknown issuer candidate')
- candidate=dict(candidate);query=query_name_from_listing(candidate['name'],candidate['market'])
+ candidate=dict(candidate);query_context=candidate_query_context(market,candidate);query=query_context['query']
  rid=uuid.uuid4().hex
  with market.db() as db:
   db.execute('''INSERT INTO sponsor_resolution_runs
-    (id,candidate_id,candidate_hash,query,started,status) VALUES (?,?,?,?,?,'running')''',
-    (rid,candidate_id,candidate['content_hash'],query,now()))
+    (id,candidate_id,candidate_hash,query,started,status,query_evidence_json) VALUES (?,?,?,?,?,'running',?)''',
+    (rid,candidate_id,candidate['content_hash'],query,now(),json.dumps(query_context,ensure_ascii=False,sort_keys=True)))
  try:on_start(rid)
  except Exception as ex:return _finish(market,rid,'failed',error='Start callback failed: '+type(ex).__name__+': '+str(ex))
  if cancelled():return _finish(market,rid,'cancelled',error='Cancelled before sponsor lookup')
@@ -219,6 +324,11 @@ def resolve(market,candidate_id,fetch=market_sources.fetch,*,max_pages=3,
    if cancelled():raise _Cancelled('Cancelled before proposal publication')
    lease=db.execute('SELECT 1 FROM leases WHERE key=? AND owner=? AND until>CAST(strftime(\'%s\',\'now\') AS REAL)',(key,lease_token)).fetchone()
    if not lease:raise ValueError('Sponsor-resolution lease no longer owned')
+   current=db.execute('SELECT * FROM issuer_candidates WHERE id=?',(candidate_id,)).fetchone()
+   if (not current or current['content_hash']!=candidate['content_hash']
+       or current['classification'] not in _ELIGIBLE or current['review_status']=='rejected'
+       or candidate_query_context(market,dict(current),db=db)['query']!=query):
+    raise _InputChanged('Lookup input changed or its source proof became unavailable; fresh sponsor resolution required')
    for alias,p in proposed.items():
     ncts=sorted(p['ncts']);timestamp=now()
     db.execute('''INSERT INTO sponsor_proposals
@@ -236,6 +346,8 @@ def resolve(market,candidate_id,fetch=market_sources.fetch,*,max_pages=3,
     'Page cap reached; sponsor search incomplete' if token else 'Registry matches lacked a qualifying exact/high-constraint lead sponsor' if observed and not proposed else '')
  except (_Cancelled,InterruptedError) as ex:
   return _finish(market,rid,'cancelled',pages,0,len({(r['alias'],r['nct_id']) for r in observed}),error=str(ex))
+ except _InputChanged as ex:
+  return _finish(market,rid,'blocked',pages,0,len({(r['alias'],r['nct_id']) for r in observed}),error=str(ex))
  except Exception as ex:
   return _finish(market,rid,'failed',pages,0,len({(r['alias'],r['nct_id']) for r in observed}),False,type(ex).__name__+': '+str(ex))
  finally:market.release(key,lease_token)
@@ -249,14 +361,22 @@ def proposals(market,candidate_id=None,*,status=None,limit=100,offset=0):
  if status:where.append('p.status=?');params.append(status)
  suffix=' WHERE '+' AND '.join(where) if where else ''
  with market.db() as db:
+  db.execute('BEGIN')
   rows=[dict(r) for r in db.execute('''SELECT p.*,c.name AS candidate_name,
     c.content_hash AS current_candidate_hash,r.status AS resolution_status,
-    r.finished AS resolved_at,r.truncated
+    r.finished AS resolved_at,r.truncated,r.query AS query_used,r.query_evidence_json
     FROM sponsor_proposals p JOIN issuer_candidates c ON c.id=p.candidate_id
     JOIN sponsor_resolution_runs r ON r.id=p.run_id'''+suffix+' ORDER BY p.last_seen DESC,p.id LIMIT ? OFFSET ?',params+[limit,offset])]
- for row in rows:
-  row['evidence_nct']=json.loads(row['evidence_nct']);row['candidate_changed']=row['candidate_hash']!=row['current_candidate_hash']
-  row['capture_metadata_root']=str(market.root/'captures'/row['run_id'])
+  ids=list({row['candidate_id'] for row in rows})
+  current=[dict(r) for r in db.execute('SELECT * FROM issuer_candidates WHERE id IN ('+','.join('?' for _ in ids)+')',ids)] if ids else []
+  contexts=candidate_query_contexts(market,current,db=db)
+  for row in rows:
+   context=contexts.get(row['candidate_id'],{})
+   row['stale_reason']=proposal_query_issue(market,db,row,context=context)
+   row['query_input_stale']=bool(row['stale_reason'])
+   row['current_query']=context.get('query')
+   row['evidence_nct']=json.loads(row['evidence_nct']);row['candidate_changed']=row['candidate_hash']!=row['current_candidate_hash']
+   row['capture_metadata_root']=str(market.root/'captures'/row['run_id'])
  return rows
 
 

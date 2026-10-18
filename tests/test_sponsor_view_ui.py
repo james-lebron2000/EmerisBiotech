@@ -198,3 +198,43 @@ def test_source_and_submission_values_cannot_inject_markup(app, monkeypatch):
     form = next(form for form in doc.forms if form['attrs'].get('action') == '/market/proposal-review')
     fields = {attrs['name']: attrs for _, attrs in form['fields']}
     assert fields['token']['value'] == payload and fields['proposal_id']['value'] == payload
+
+
+def test_stale_name_input_hides_acceptance_and_retains_frozen_seed_origin(app, monkeypatch):
+    import json
+    row = proposal(query_input_stale=True, stale_reason='Lookup input changed', query_used='gan and lee pharmaceuticals',
+        query_evidence_json=json.dumps({'origin':'verified_exchange_english_name',
+            'name_original':'Gan & Lee Pharmaceuticals.', 'directory_evidence':{
+                'source':'SH','source_run_id':'synthetic-source-run','receipt_id':'synthetic-receipt','raw_sha256':'a'*64}}))
+    monkeypatch.setattr(sponsor_view,'proposals',lambda *args,**kwargs:[row])
+    body=sponsor_view.render(app,{})
+    assert '查询名称或其来源依据已变化或暂不可验证，需要重新检索' in body
+    assert '交易所目录英文全称（已核对原始归档）' in body
+    assert 'Gan &amp; Lee Pharmaceuticals.' in body and 'synthetic-receipt' in body
+    assert '英文全称只用于检索，不确认申办方、母子公司关系或药物权益' in body
+    assert not any(form['attrs'].get('action')=='/market/proposal-review' for form in Document(body).forms)
+
+
+def test_query_evidence_strings_are_text_not_markup_and_missing_history_stays_unknown(app,monkeypatch):
+    import json
+    row=proposal(query_used='synthetic',query_evidence_json=json.dumps({
+        'origin':'verified_exchange_english_name','name_original':'<script>evil()</script>',
+        'directory_evidence':{'receipt_id':'<img src=x onerror=evil()>'}}))
+    monkeypatch.setattr(sponsor_view,'proposals',lambda *args,**kwargs:[row])
+    body=sponsor_view.render(app,{})
+    assert '&lt;script&gt;' in body and '&lt;img' in body
+    assert not any(tag in ('img','script') for tag,_ in Document(body).elements)
+    assert '查询种子来源与原文：历史记录未保存' in body
+
+
+def test_candidate_cards_request_one_batch_context_not_individual_receipts(app,monkeypatch):
+    rows=[dict(name='合成公司'+str(i),id='A:'+str(i),market='A') for i in range(2)]
+    monkeypatch.setattr(sponsor_view,'candidate_rows',lambda *args,**kwargs:(rows,2))
+    calls=[]
+    def contexts(market,candidates):
+        calls.append(candidates)
+        return {row['id']:{'query':'synthetic pharma','origin':'verified_exchange_english_name',
+            'name_original':'Synthetic Pharma Co., Ltd.','directory_evidence':{}} for row in candidates}
+    monkeypatch.setattr(sponsor_view,'candidate_query_contexts',contexts)
+    body=sponsor_view.render(app,{})
+    assert calls==[rows] and body.count('名称原文：Synthetic Pharma Co., Ltd.')==2

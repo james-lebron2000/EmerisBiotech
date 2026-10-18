@@ -23,6 +23,10 @@ def init_schema(market):
      ON collection_jobs(kind,status,next_at,created,id);
    CREATE TABLE IF NOT EXISTS collection_claim_cursor (
      id INTEGER PRIMARY KEY CHECK(id=1),position INTEGER NOT NULL CHECK(position>=0 AND position<6));
+   CREATE TABLE IF NOT EXISTS collection_source_leases (
+     job_id TEXT NOT NULL,attempt INTEGER NOT NULL CHECK(attempt>0),owner_pid INTEGER NOT NULL,
+     source_id TEXT NOT NULL,run_id TEXT NOT NULL,lease_owner TEXT NOT NULL,created TEXT NOT NULL,
+     PRIMARY KEY(job_id,attempt,run_id));
    INSERT OR IGNORE INTO collection_claim_cursor(id,position) VALUES (1,0);''')
 
 def _enqueue_in_transaction(db,kind,reference):
@@ -242,6 +246,9 @@ def enqueue_disclosures(market,only_due=False):
  from .disclosures import sources
  result=[]
  for source in sources(market):
+  # A fixed historical bundle is rechecked only on an explicit request. It is
+  # never a six-hour web collection target and cannot trigger a PDF download.
+  if only_due and source.get('intake_mode')=='offline_reviewed_bundle':continue
   latest=source.get('latest');started=latest.get('started') if latest else None
   if only_due and started:
    try:
@@ -271,17 +278,24 @@ def recover(market):
   except (OSError,ValueError):alive=False
   if alive and row['heartbeat'] and time.time()-row['heartbeat']<300:continue
   with market.db() as db:
-   changed=db.execute("UPDATE collection_jobs SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'queued' END,owner_pid=NULL,heartbeat=NULL,updated=?,error='Interrupted worker recovered' WHERE id=? AND status='running' AND COALESCE(heartbeat,0)=? AND attempts=? AND owner_pid IS ?",(now(),row['id'],row['heartbeat'] or 0,row['attempts'],row['owner_pid'])).rowcount
+   changed=db.execute("UPDATE collection_jobs SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'queued' END,owner_pid=NULL,heartbeat=NULL,updated=?,error='Interrupted worker recovered' WHERE id=? AND status='running' AND COALESCE(heartbeat,0)=? AND attempts=? AND owner_pid IS ? AND run_id IS ? AND kind=? AND reference=?",(now(),row['id'],row['heartbeat'] or 0,row['attempts'],row['owner_pid'],row.get('run_id'),row['kind'],row['reference'])).rowcount
    if changed:
     if row['kind']=='disclosure':
      # Captures live in their own namespace; never update generic registry runs.
+     # A repeat verification can return a sealed capture from an older attempt.
+     # Its immutable lease_owner is not proof of the current worker's lease.
+     proof=db.execute('''SELECT lease_owner FROM collection_source_leases
+       WHERE job_id=? AND attempt=? AND owner_pid IS ? AND source_id=? AND run_id=?''',
+       (row['id'],row['attempts'],row['owner_pid'],row['reference'],row.get('run_id'))).fetchone()
+     if proof:
+      db.execute('DELETE FROM leases WHERE key=? AND owner=?',('disclosure:'+row['reference'],proof['lease_owner']))
      table=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='disclosure_captures'").fetchone()
      if row.get('run_id') and table:
       columns={r[1] for r in db.execute('PRAGMA table_info(disclosure_captures)')}
       if 'lease_owner' in columns:
-       capture=db.execute('SELECT lease_owner FROM disclosure_captures WHERE id=? AND source_id=?',(row['run_id'],row['reference'])).fetchone()
+       capture=db.execute('SELECT status,lease_owner FROM disclosure_captures WHERE id=? AND source_id=?',(row['run_id'],row['reference'])).fetchone()
        db.execute("UPDATE disclosure_captures SET status='interrupted',finished=?,error='Worker interrupted before completion' WHERE id=? AND source_id=? AND status='running'",(now(),row['run_id'],row['reference']))
-       if capture and capture['lease_owner']:
+       if not proof and capture and capture['status']=='running' and capture['lease_owner']:
         db.execute('DELETE FROM leases WHERE key=? AND owner=?',('disclosure:'+row['reference'],capture['lease_owner']))
       else:
        # Legacy records lack ownership proof: retain the lease until expiry.
@@ -333,6 +347,34 @@ def claim(market):
    return {**dict(row),'attempts':row['attempts']+1}
   return None
 
+def _bind_started_run(market,job,owner,run_id):
+ """Bind a run and its current source lease in the same fenced transaction.
+
+ The capture may already be immutable from a prior publication. Keep its first
+ lease owner intact and record this verification attempt separately. A stale
+ callback or a thread-local token no longer present in leases cannot create a
+ recovery proof for a newer worker.
+ """
+ with market.db() as db:
+  db.execute('BEGIN IMMEDIATE')
+  changed=db.execute("UPDATE collection_jobs SET run_id=? WHERE id=? AND attempts=? AND owner_pid=? AND kind=? AND reference=? AND status='running'",
+    (run_id,job['id'],job['attempts'],owner,job['kind'],job['reference'])).rowcount
+  if not changed or job['kind']!='disclosure':return bool(changed)
+  token=market.lease_tokens().get('disclosure:'+job['reference'])
+  if not token or not db.execute('SELECT 1 FROM leases WHERE key=? AND owner=? AND until>?',
+    ('disclosure:'+job['reference'],token,time.time())).fetchone():return True
+  table=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='disclosure_captures'").fetchone()
+  if not table or not db.execute('SELECT 1 FROM disclosure_captures WHERE id=? AND source_id=?',
+    (run_id,job['reference'])).fetchone():return True
+  old=db.execute('SELECT owner_pid,source_id,lease_owner FROM collection_source_leases WHERE job_id=? AND attempt=? AND run_id=?',
+    (job['id'],job['attempts'],run_id)).fetchone()
+  if old:
+   if tuple(old)!=(owner,job['reference'],token):raise ValueError('Source lease proof changed inside the same collection attempt')
+  else:
+   db.execute('INSERT INTO collection_source_leases VALUES (?,?,?,?,?,?,?)',
+     (job['id'],job['attempts'],owner,job['reference'],run_id,token,now()))
+  return True
+
 def execute(market,job):
  done=threading.Event()
  market._job_context.job=job
@@ -348,7 +390,7 @@ def execute(market,job):
   if cancelled():status='cancelled';rid=None;error='Cancelled before collection'
   else:
    def on_start(value):
-    with market.db() as db:db.execute("UPDATE collection_jobs SET run_id=? WHERE id=? AND attempts=? AND owner_pid=? AND status='running'",(value,job['id'],job['attempts'],owner))
+    _bind_started_run(market,job,owner,value)
    if job['kind']=='resolve':
     from .sponsor_resolution import resolve
     result=resolve(market,job['reference'],cancelled=cancelled,on_start=on_start);rid=result['run_id'];status=result['status'];error=result['error']

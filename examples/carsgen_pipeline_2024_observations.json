@@ -1,0 +1,1015 @@
+{
+  "schema_version": "official-pipeline-observation-bundle-v1",
+  "source_id": "carsgen_annual_pipeline_2024",
+  "issuer": {
+    "display_name": "CARsgen Therapeutics Holdings Limited",
+    "securities": [
+      "HK:02171"
+    ],
+    "issuer_group": "carsgen"
+  },
+  "source": {
+    "url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+    "raw_reference": "artifacts/market/china_expansion_v2/2026-10-17/carsgen2-official.pdf",
+    "raw_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+    "raw_bytes": 11539701,
+    "retrieved_at": "2026-10-17T07:29:34.490328+00:00",
+    "published_at": null,
+    "published_at_precision": "unknown",
+    "reporting_period_original": "ANNUAL REPORT 2024",
+    "reporting_period_year": "2024",
+    "content_as_of": null,
+    "content_as_of_precision": "unresolved_report_date",
+    "content_as_of_original": "as of the date of this report",
+    "date_locator": {
+      "pdf_page": 10,
+      "printed_page": "9",
+      "description": "Paragraph immediately above the Product Pipeline chart"
+    }
+  },
+  "figure": {
+    "title_original": "Our Products and Product Pipeline",
+    "pdf_page": 10,
+    "printed_page": "9",
+    "page_size_pdf_pt": [
+      595.276,
+      807.874
+    ],
+    "chart_bbox_pdf_pt": [
+      93,
+      238,
+      527,
+      436
+    ],
+    "coordinate_system": "PDF points, top-left origin, x0/y0/x1/y1",
+    "stage_columns": [
+      {
+        "label_original": "Pre-clinical",
+        "header_bbox_pdf_pt": [
+          299,
+          238,
+          379,
+          259
+        ]
+      },
+      {
+        "label_original": "Phase I",
+        "header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ]
+      },
+      {
+        "label_original": "Phase II/III",
+        "header_bbox_pdf_pt": [
+          441,
+          238,
+          493,
+          259
+        ]
+      },
+      {
+        "label_original": "BLA/\nNDA",
+        "header_bbox_pdf_pt": [
+          493,
+          238,
+          527,
+          259
+        ]
+      }
+    ],
+    "scope": "All rows in this selected pipeline chart only; not the complete company pipeline",
+    "footnote_locators": [
+      {
+        "marker": "2",
+        "bbox_pdf_pt": [
+          93,
+          569,
+          440,
+          582
+        ],
+        "context": "Phase II trials of some indications are pivotal studies; do not collapse the combined label to Phase III"
+      },
+      {
+        "marker": "3",
+        "bbox_pdf_pt": [
+          93,
+          592,
+          553,
+          615
+        ],
+        "context": "Issuer commercial-rights notes; not adopted as independent ownership verification"
+      },
+      {
+        "marker": "4",
+        "bbox_pdf_pt": [
+          93,
+          624,
+          350,
+          635
+        ],
+        "context": "Issuer CT0590 enrollment note; no trial-success inference"
+      }
+    ],
+    "visible_row_count": 18,
+    "visible_compound_count": 10
+  },
+  "review": {
+    "method": "full_selected_chart_row_visual_review",
+    "reviewer_type": "assistant_visual_review",
+    "reviewed_at": "2026-10-17",
+    "pages_visually_inspected": [
+      10
+    ],
+    "coverage": "all_rows_in_selected_chart",
+    "sample_only": false,
+    "human_sign_off": false,
+    "scientific_review": "pending",
+    "render_reference": "output/pdf/official_pipeline_ascentage_2025/carsgen-pipeline-pdf-page-10.png",
+    "render_sha256": "e961f1ef62491a68d085de2211c8049bf6df7ba5a556f32a19bff0786108ebbf",
+    "render_tool": "Poppler pdftoppm, selected physical PDF page only",
+    "claim_scope": "Faithful issuer-disclosure observations; no independent regulatory, ownership, efficacy or investment validation",
+    "rows_visually_reviewed": 18
+  },
+  "rows": [
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r01",
+      "chart_row_ordinal": 1,
+      "drug_original": "Zevor-cel (CT053)",
+      "drug_code_original": "CT053",
+      "target_original": "BCMA",
+      "indication_original": "R/R MM",
+      "phase_original": "BLA/\nNDA",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "LUMMICAR 1 (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": "launched",
+      "footnote_markers": [
+        "3"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 1,
+        "row_bbox_pdf_pt": [
+          118,
+          261,
+          527,
+          269
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          260,
+          180,
+          278
+        ],
+        "phase_header_bbox_pdf_pt": [
+          493,
+          238,
+          527,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 1, drug CT053; terminal column BLA/ NDA"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r02",
+      "chart_row_ordinal": 2,
+      "drug_original": "Zevor-cel (CT053)",
+      "drug_code_original": "CT053",
+      "target_original": "BCMA",
+      "indication_original": "R/R MM",
+      "phase_original": "Phase II/III",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "LUMMICAR 2 (US, Canada)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [
+        "2",
+        "3"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 2,
+        "row_bbox_pdf_pt": [
+          118,
+          269,
+          527,
+          278
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          260,
+          180,
+          278
+        ],
+        "phase_header_bbox_pdf_pt": [
+          441,
+          238,
+          493,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 2, drug CT053; terminal column Phase II/III"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r03",
+      "chart_row_ordinal": 3,
+      "drug_original": "Satri-cel (CT041)",
+      "drug_code_original": "CT041",
+      "target_original": "Claudin18.2",
+      "indication_original": "GC/GEJ",
+      "phase_original": "Phase II/III",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "ST-01 (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [
+        "2"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 3,
+        "row_bbox_pdf_pt": [
+          118,
+          280,
+          527,
+          288
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          279,
+          180,
+          320
+        ],
+        "phase_header_bbox_pdf_pt": [
+          441,
+          238,
+          493,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 3, drug CT041; terminal column Phase II/III"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r04",
+      "chart_row_ordinal": 4,
+      "drug_original": "Satri-cel (CT041)",
+      "drug_code_original": "CT041",
+      "target_original": "Claudin18.2",
+      "indication_original": "GC/PC",
+      "phase_original": "Phase II/III",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "ST-02 (US, Canada)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [
+        "2"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 4,
+        "row_bbox_pdf_pt": [
+          118,
+          288,
+          527,
+          296
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          279,
+          180,
+          320
+        ],
+        "phase_header_bbox_pdf_pt": [
+          441,
+          238,
+          493,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 4, drug CT041; terminal column Phase II/III"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r05",
+      "chart_row_ordinal": 5,
+      "drug_original": "Satri-cel (CT041)",
+      "drug_code_original": "CT041",
+      "target_original": "Claudin18.2",
+      "indication_original": "PC (adjuvant)",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "ST-05 (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 5,
+        "row_bbox_pdf_pt": [
+          118,
+          296,
+          527,
+          304
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          279,
+          180,
+          320
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 5, drug CT041; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r06",
+      "chart_row_ordinal": 6,
+      "drug_original": "Satri-cel (CT041)",
+      "drug_code_original": "CT041",
+      "target_original": "Claudin18.2",
+      "indication_original": "GC/GEJ, PC, etc.",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 6,
+        "row_bbox_pdf_pt": [
+          118,
+          304,
+          527,
+          312
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          279,
+          180,
+          320
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 6, drug CT041; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r07",
+      "chart_row_ordinal": 7,
+      "drug_original": "Satri-cel (CT041)",
+      "drug_code_original": "CT041",
+      "target_original": "Claudin18.2",
+      "indication_original": "GC/GEJ (adjuvant)",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 7,
+        "row_bbox_pdf_pt": [
+          118,
+          312,
+          527,
+          320
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          279,
+          180,
+          320
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 7, drug CT041; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r08",
+      "chart_row_ordinal": 8,
+      "drug_original": "CT071",
+      "drug_code_original": "CT071",
+      "target_original": "GPRC5D",
+      "indication_original": "R/R MM, R/R pPCL",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "(US)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 8,
+        "row_bbox_pdf_pt": [
+          118,
+          323,
+          527,
+          331
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          322,
+          180,
+          347
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 8, drug CT071; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r09",
+      "chart_row_ordinal": 9,
+      "drug_original": "CT071",
+      "drug_code_original": "CT071",
+      "target_original": "GPRC5D",
+      "indication_original": "R/R MM, R/R PCL",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 9,
+        "row_bbox_pdf_pt": [
+          118,
+          331,
+          527,
+          339
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          322,
+          180,
+          347
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 9, drug CT071; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r10",
+      "chart_row_ordinal": 10,
+      "drug_original": "CT071",
+      "drug_code_original": "CT071",
+      "target_original": "GPRC5D",
+      "indication_original": "NDMM",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 10,
+        "row_bbox_pdf_pt": [
+          118,
+          339,
+          527,
+          347
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          322,
+          180,
+          347
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 10, drug CT071; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r11",
+      "chart_row_ordinal": 11,
+      "drug_original": "CT011",
+      "drug_code_original": "CT011",
+      "target_original": "GPC3",
+      "indication_original": "HCC (adjuvant)",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "(China)",
+      "category_original": "Autologous CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 11,
+        "row_bbox_pdf_pt": [
+          118,
+          348,
+          527,
+          357
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          347,
+          180,
+          357
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 11, drug CT011; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r12",
+      "chart_row_ordinal": 12,
+      "drug_original": "CT0590",
+      "drug_code_original": "CT0590",
+      "target_original": "BCMA",
+      "indication_original": "R/R MM, R/R PCL",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [
+        "4"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 12,
+        "row_bbox_pdf_pt": [
+          118,
+          360,
+          527,
+          370
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          359,
+          180,
+          370
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 12, drug CT0590; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r13",
+      "chart_row_ordinal": 13,
+      "drug_original": "CT059X",
+      "drug_code_original": "CT059X",
+      "target_original": "BCMA",
+      "indication_original": "R/R MM, R/R PCL",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 13,
+        "row_bbox_pdf_pt": [
+          118,
+          371,
+          527,
+          380
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          370,
+          180,
+          380
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 13, drug CT059X; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r14",
+      "chart_row_ordinal": 14,
+      "drug_original": "KJ-C2219",
+      "drug_code_original": "KJ-C2219",
+      "target_original": "CD19/CD20",
+      "indication_original": "B-cell malignancies",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 14,
+        "row_bbox_pdf_pt": [
+          118,
+          381,
+          527,
+          389
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          380,
+          180,
+          398
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 14, drug KJ-C2219; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r15",
+      "chart_row_ordinal": 15,
+      "drug_original": "KJ-C2219",
+      "drug_code_original": "KJ-C2219",
+      "target_original": "CD19/CD20",
+      "indication_original": "SLE, SSc",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 15,
+        "row_bbox_pdf_pt": [
+          118,
+          389,
+          527,
+          398
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          380,
+          180,
+          398
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 15, drug KJ-C2219; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r16",
+      "chart_row_ordinal": 16,
+      "drug_original": "KJ-C2320",
+      "drug_code_original": "KJ-C2320",
+      "target_original": "CD38",
+      "indication_original": "AML",
+      "phase_original": "Phase I",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": "IIT (China)",
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 16,
+        "row_bbox_pdf_pt": [
+          118,
+          399,
+          527,
+          408
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          398,
+          180,
+          409
+        ],
+        "phase_header_bbox_pdf_pt": [
+          379,
+          238,
+          441,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 16, drug KJ-C2320; terminal column Phase I"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r17",
+      "chart_row_ordinal": 17,
+      "drug_original": "KJ-C2114",
+      "drug_code_original": "KJ-C2114",
+      "target_original": "Undisclosed",
+      "indication_original": "Solid tumors",
+      "phase_original": "Pre-clinical",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 17,
+        "row_bbox_pdf_pt": [
+          118,
+          409,
+          527,
+          419
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          409,
+          180,
+          419
+        ],
+        "phase_header_bbox_pdf_pt": [
+          299,
+          238,
+          379,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 17, drug KJ-C2114; terminal column Pre-clinical"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "carsgen_annual_pipeline_2024:r18",
+      "chart_row_ordinal": 18,
+      "drug_original": "KJ-C2526",
+      "drug_code_original": "KJ-C2526",
+      "target_original": "NKG2DL",
+      "indication_original": "AML, other malignancies,\nsenescence",
+      "phase_original": "Pre-clinical",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": "Allogeneic CAR-T",
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf",
+      "source_sha256": "d3c0673f20bf5864ecfcb4ae3e6fda1a71c682617ee4b97585755da8c05fb036",
+      "locator": {
+        "pdf_page": 10,
+        "printed_page": "9",
+        "chart_row_ordinal": 18,
+        "row_bbox_pdf_pt": [
+          118,
+          419,
+          527,
+          436
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          118,
+          419,
+          180,
+          436
+        ],
+        "phase_header_bbox_pdf_pt": [
+          299,
+          238,
+          379,
+          259
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 18, drug KJ-C2526; terminal column Pre-clinical"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    }
+  ],
+  "scope": {
+    "historical_disclosure": true,
+    "current_pipeline_complete": false,
+    "drug_ownership_verified": false,
+    "highest_stage_inferred": false,
+    "clinical_success_inferred": false,
+    "phase_codes_inferred": false,
+    "cross_indication_merging": false,
+    "publication_date_guessed": false
+  },
+  "limitations": [
+    "The stage is the original terminal column of an issuer chart, not an independently verified registry phase or trial outcome.",
+    "No pipeline ownership, territorial rights, clinical success, probability, or current development status is inferred.",
+    "Compound cells span indication rows; inheritance is limited to the same visually checked chart cell.",
+    "Content date and capture date are separate. Publication date remains unknown.",
+    "The chart says as of the date of this report; this package has not established that exact date. The 2024 reporting-period label must not be substituted for the chart date.",
+    "Phase II/III is a combined original chart label; this package never converts it to Phase III.",
+    "The Phase I bar for CT041 IIT (China), GC/GEJ, PC, etc., reaches the right edge of the Phase I column. Only that terminal chart column is recorded; no trial milestone or transition is inferred.",
+    "Rights-related notes appear on the source page; they are not accepted as independently verified ownership or licensed-territory determinations."
+  ]
+}

@@ -40,8 +40,28 @@ SOURCES = {
         'parser': 'unsupported_pdf',
         'scope': 'Historical interim disclosure, not a current complete pipeline',
     },
+    'ascentage_annual_pipeline_2025': {
+        'name': 'Ascentage 官方2025年报管线图（历史披露）',
+        'companies': ['HK:06855'],
+        'url': 'https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b',
+        'parser': 'frozen_official_pdf_observations_v1',
+        'intake_mode': 'offline_reviewed_bundle',
+        'bundle_relative': 'examples/ascentage_pipeline_2025_observations.json',
+        'scope': 'Historical selected annual-report chart, not current complete pipeline; scientific review pending',
+    },
+    'carsgen_annual_pipeline_2024': {
+        'name': 'CARsgen 官方2024年报管线图（历史披露）',
+        'companies': ['HK:02171'],
+        'url': 'https://www.carsgen.com/media/3vsj00ph/2024-annual-report.pdf',
+        'parser': 'frozen_official_pdf_observations_v1',
+        'intake_mode': 'offline_reviewed_bundle',
+        'bundle_relative': 'examples/carsgen_pipeline_2024_observations.json',
+        'scope': 'Historical selected annual-report chart, not current complete pipeline; scientific review pending',
+    },
 }
-ALLOWED_HOSTS = frozenset(urlsplit(x['url']).hostname for x in SOURCES.values())
+NETWORK_URLS = frozenset(x['url'] for x in SOURCES.values()
+                         if x.get('intake_mode') != 'offline_reviewed_bundle')
+ALLOWED_HOSTS = frozenset(urlsplit(url).hostname for url in NETWORK_URLS)
 MAX_BYTES = 20_000_000
 
 
@@ -54,7 +74,7 @@ def validate_url(url):
         raise ValueError('Disclosure source URL rejected') from None
     if (parsed.scheme != 'https' or parsed.hostname not in ALLOWED_HOSTS
             or parsed.username or parsed.password or port not in (None, 443)
-            or parsed.fragment or url not in {x['url'] for x in SOURCES.values()}):
+            or parsed.fragment or url not in NETWORK_URLS):
         raise ValueError('Disclosure source URL rejected')
     return parsed.hostname
 
@@ -376,6 +396,69 @@ def _schema(market):
         db.execute("UPDATE disclosure_captures SET status='interrupted',finished=?,error='Collection lease expired; retry required' WHERE status='running' AND NOT EXISTS (SELECT 1 FROM leases WHERE leases.key='disclosure:' || disclosure_captures.source_id AND leases.owner=disclosure_captures.lease_owner AND leases.until>?)", (now(), time.time()))
 
 
+def initialize_storage(market):
+    """Additive capture storage shared by network and frozen offline adapters."""
+    _schema(market)
+
+
+def capture_integrity(market, capture):
+    """Check retained bytes; execution success alone is not evidence integrity."""
+    if SOURCES.get(capture.get('source_id'), {}).get('intake_mode') == 'offline_reviewed_bundle':
+        from .official_disclosure_intake import verify_capture
+        return verify_capture(market, capture['id'])
+    result = {'integrity_status': 'blocked', 'errors': []}
+    try:
+        if capture.get('status') != 'succeeded':
+            raise ValueError('Capture execution did not publish a successful observation')
+        if capture.get('source_id') not in SOURCES or capture.get('url') != SOURCES[capture['source_id']]['url']:
+            raise ValueError('Capture source binding is not the configured official URL')
+        relative = Path(capture.get('archive_path') or '')
+        expected = Path('disclosures/captures') / capture['id'] / 'source.bin'
+        if relative != expected or relative.is_absolute() or not re.fullmatch('[a-f0-9]{32}', capture['id']):
+            raise ValueError('Capture archive path is outside its source namespace')
+        root = market.root.resolve()
+        path = root / relative
+        if path.resolve() != path.absolute() or not path.is_file():
+            raise ValueError('Capture archive is missing or uses a symbolic link')
+        size = path.stat().st_size
+        if type(capture.get('bytes')) is not int or not 0 < size == capture['bytes'] <= MAX_BYTES:
+            raise ValueError('Capture archive size does not match its recorded source')
+        if not re.fullmatch('[a-f0-9]{64}', str(capture.get('sha256', ''))):
+            raise ValueError('Capture has no valid recorded SHA-256')
+        from .io import digest
+        if digest(path) != capture['sha256']:
+            raise ValueError('Capture archive SHA-256 no longer matches its recorded source')
+        source = SOURCES[capture['source_id']]
+        if source['parser'] != 'hengrui_javascript_literals_v1':
+            raise ValueError('Capture has no independently repeatable structured parser')
+        expected_rows, expected_metadata = parse_hengrui(path.read_bytes())
+        metadata = {'parser': source['parser'], 'scope': source['scope'], 'published_at': None,
+                    'as_of': None, 'as_of_precision': 'unknown', 'date_locator': None,
+                    **expected_metadata}
+        if (type(capture.get('count')) is not int or capture['count'] != len(expected_rows)
+                or capture.get('as_of') != expected_metadata.get('as_of')
+                or capture.get('published_at') != expected_metadata.get('published_at')
+                or json.loads(capture.get('metadata')) != metadata):
+            raise ValueError('Capture count/date no longer agrees with its archived official source')
+        expected = {row['source_locator']: row for row in expected_rows}
+        fields = ('drug_code', 'drug_name', 'modality', 'target', 'indication', 'phase', 'source_locator')
+        with market.db() as db:
+            observed = [dict(r) for r in db.execute(
+                'SELECT * FROM disclosure_observations WHERE capture_id=?', (capture['id'],))]
+        if len(observed) != len(expected_rows):
+            raise ValueError('Published observation count differs from the retained source')
+        for row in observed:
+            original = expected.get(row['source_locator'])
+            if (original is None or any(row[key] != original[key] for key in fields)
+                    or row['source_id'] != capture['source_id'] or row['company'] != source['companies'][0]
+                    or json.loads(row['data']) != original):
+                raise ValueError('Published observation no longer reproduces from its archived source')
+        result['integrity_status'] = 'verified'
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        result['errors'].append('Retained official source is unavailable' if isinstance(exc, OSError) else str(exc))
+    return result
+
+
 def sources(market=None):
     result = []
     latest = {}
@@ -411,6 +494,9 @@ def ingest(market, source_id, fetch=fetch, cancelled=lambda: False, on_start=lam
     if source_id not in SOURCES:
         raise ValueError('Unknown disclosure source')
     source = SOURCES[source_id]
+    if source.get('intake_mode') == 'offline_reviewed_bundle':
+        from .official_disclosure_intake import ingest_offline
+        return ingest_offline(market, source_id, cancelled=cancelled, on_start=on_start)
     url = source['url']
     validate_url(url)
     _schema(market)
@@ -521,21 +607,39 @@ def observations(market, company='', history=False, limit=2000, offset=0):
         raise ValueError('Invalid disclosure pagination')
     source_ids = [key for key, value in SOURCES.items() if not company or company in value['companies']]
     result = []
+    checked_captures = {}
     with market.db() as db:
         for source_id in source_ids:
             latest = db.execute('SELECT * FROM disclosure_captures WHERE source_id=? ORDER BY started DESC,id DESC LIMIT 1', (source_id,)).fetchone()
             successful = db.execute("SELECT * FROM disclosure_captures WHERE source_id=? AND status='succeeded' ORDER BY started DESC,id DESC LIMIT 1", (source_id,)).fetchone()
             if not successful:
                 continue
+            checked_captures[successful['id']] = capture_integrity(market, dict(successful))['integrity_status']
+            if checked_captures[successful['id']] != 'verified':
+                continue
             clause, args = ('source_id=?', [source_id]) if history else ('capture_id=?', [successful['id']])
             for row in db.execute('SELECT * FROM disclosure_observations WHERE ' + clause + ' ORDER BY source_locator', args):
                 item = dict(row)
                 cap = db.execute('SELECT * FROM disclosure_captures WHERE id=?', (item['capture_id'],)).fetchone()
+                if cap['id'] not in checked_captures:
+                    checked_captures[cap['id']] = capture_integrity(market, dict(cap))['integrity_status']
+                if checked_captures[cap['id']] != 'verified':
+                    continue
+                try:
+                    metadata = json.loads(cap['metadata'])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(metadata, dict):
+                    continue
                 item.update({'url': cap['url'], 'sha256': cap['sha256'], 'retrieved_at': cap['finished'],
                              'published_at': cap['published_at'], 'as_of': cap['as_of'],
+                             'metadata': metadata,
                              'companies': SOURCES[source_id]['companies'], 'latest_attempt_status': latest['status'],
                              'prior_capture_retained': latest['id'] != successful['id'],
                              'attribution': 'company-disclosed chart; ownership, territory and completeness not independently verified'})
+                if metadata.get('historical_disclosure'):
+                    item['retrieved_at'] = metadata.get('original_retrieved_at') or metadata.get('retrieved_at')
+                    item['imported_at'] = metadata.get('imported_at')
                 item['data'] = json.loads(item['data'])
                 result.append(item)
     return result[offset:offset + limit]

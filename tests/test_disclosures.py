@@ -22,6 +22,49 @@ def market(tmp_path):
     return Market(tmp_path / 'workspace', tmp_path / 'state')
 
 
+@pytest.mark.parametrize('source_id', ['ascentage_annual_pipeline_2025', 'carsgen_annual_pipeline_2024'])
+def test_historical_bundle_cannot_be_fetched_by_network_connector(source_id, monkeypatch):
+    monkeypatch.setattr(mod.subprocess, 'run', lambda *a, **k: pytest.fail('Historical bundle must never download'))
+    with pytest.raises(ValueError):
+        mod.fetch(mod.SOURCES[source_id]['url'])
+
+
+@pytest.mark.parametrize('damage', ['missing', 'same_size', 'short', 'symlink', 'data', 'column', 'metadata'])
+def test_read_gate_rechecks_raw_and_reproducible_observation_rows(market, tmp_path, damage):
+    result = mod.ingest(market, 'hengrui_pipeline', fetch=lambda _: chart())
+    assert mod.capture_integrity(market, result)['integrity_status'] == 'verified'
+    path = market.root / result['archive_path']
+    if damage == 'missing':
+        path.unlink()
+    elif damage == 'same_size':
+        raw = path.read_bytes();path.write_bytes(raw[:-1] + b'X')
+    elif damage == 'short':
+        path.write_bytes(b'<html>')
+    elif damage == 'symlink':
+        other = tmp_path / 'same-source';other.write_bytes(path.read_bytes());path.unlink();path.symlink_to(other)
+    else:
+        with market.db() as db:
+            if damage == 'data':
+                db.execute("UPDATE disclosure_observations SET data='{}' WHERE capture_id=?", (result['id'],))
+            elif damage == 'column':
+                db.execute("UPDATE disclosure_observations SET phase='Phase III' WHERE capture_id=?", (result['id'],))
+            else:
+                db.execute("UPDATE disclosure_captures SET metadata='{}' WHERE id=?", (result['id'],))
+        result = next(c for c in mod.captures(market) if c['id'] == result['id'])
+    checked = mod.capture_integrity(market, result)
+    assert checked['integrity_status'] == 'blocked' and checked['errors']
+    assert mod.observations(market) == []
+    assert mod.captures(market)[0]['status'] == 'succeeded'  # Preserve execution history.
+
+
+def test_history_read_does_not_reintroduce_tampered_old_rows(market):
+    old = mod.ingest(market, 'hengrui_pipeline', fetch=lambda _: chart(name='SYNTHETIC-OLD'))
+    good = mod.ingest(market, 'hengrui_pipeline', fetch=lambda _: chart(name='SYNTHETIC-NEW'))
+    (market.root / old['archive_path']).write_bytes(b'<html>tampered</html>')
+    rows = mod.observations(market, history=True)
+    assert rows and {row['capture_id'] for row in rows} == {good['id']}
+
+
 def test_structured_chart_exact_fields_and_dates():
     rows, meta = mod.parse_hengrui(chart())
     assert len(rows) == 8

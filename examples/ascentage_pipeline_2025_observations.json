@@ -1,0 +1,629 @@
+{
+  "schema_version": "official-pipeline-observation-bundle-v1",
+  "source_id": "ascentage_annual_pipeline_2025",
+  "issuer": {
+    "display_name": "Ascentage Pharma Group International",
+    "securities": [
+      "HK:06855"
+    ],
+    "issuer_group": "ascentage"
+  },
+  "source": {
+    "url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+    "raw_reference": "artifacts/market/china_expansion_v2/2026-10-17/ascentage5-official.pdf",
+    "raw_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+    "raw_bytes": 5023021,
+    "retrieved_at": "2026-10-17T07:31:57.564722+00:00",
+    "published_at": null,
+    "published_at_precision": "unknown",
+    "reporting_period_original": "ANNUAL REPORT 2025",
+    "reporting_period_year": "2025",
+    "content_as_of": "2025-12-31",
+    "content_as_of_precision": "day",
+    "content_as_of_original": "as of December 31, 2025",
+    "date_locator": {
+      "pdf_page": 17,
+      "printed_page": "16",
+      "description": "Paragraph immediately above the Product Pipeline chart"
+    }
+  },
+  "figure": {
+    "title_original": "Product Pipeline",
+    "pdf_page": 17,
+    "printed_page": "16",
+    "page_size_pdf_pt": [
+      595.276,
+      807.874
+    ],
+    "chart_bbox_pdf_pt": [
+      72,
+      327,
+      521,
+      521
+    ],
+    "coordinate_system": "PDF points, top-left origin, x0/y0/x1/y1",
+    "stage_columns": [
+      {
+        "label_original": "Dose Escalation/\nDose Expansion",
+        "header_bbox_pdf_pt": [
+          266,
+          327,
+          329,
+          342
+        ]
+      },
+      {
+        "label_original": "Clinical POC",
+        "header_bbox_pdf_pt": [
+          329,
+          327,
+          390,
+          342
+        ]
+      },
+      {
+        "label_original": "Registrational Trial",
+        "header_bbox_pdf_pt": [
+          390,
+          327,
+          458,
+          342
+        ]
+      },
+      {
+        "label_original": "Marketed",
+        "header_bbox_pdf_pt": [
+          458,
+          327,
+          516,
+          342
+        ]
+      }
+    ],
+    "scope": "All rows in this selected pipeline chart only; not the complete company pipeline",
+    "footnote_locators": [
+      {
+        "marker": "1",
+        "bbox_pdf_pt": [
+          42,
+          538,
+          553,
+          561
+        ],
+        "context": "Issuer note on China approval and NRDL; not independently adjudicated"
+      },
+      {
+        "marker": "2",
+        "bbox_pdf_pt": [
+          42,
+          574,
+          553,
+          609
+        ],
+        "context": "Issuer note on China approval and NRDL; not independently adjudicated"
+      },
+      {
+        "marker": "3",
+        "bbox_pdf_pt": [
+          42,
+          610,
+          553,
+          644
+        ],
+        "context": "Issuer note on China approval; not independently adjudicated"
+      }
+    ],
+    "visible_row_count": 10,
+    "visible_compound_count": 7
+  },
+  "review": {
+    "method": "full_selected_chart_row_visual_review",
+    "reviewer_type": "assistant_visual_review",
+    "reviewed_at": "2026-10-17",
+    "pages_visually_inspected": [
+      17
+    ],
+    "coverage": "all_rows_in_selected_chart",
+    "sample_only": false,
+    "human_sign_off": false,
+    "scientific_review": "pending",
+    "render_reference": "output/pdf/official_pipeline_ascentage_2025/pipeline-pdf-page-17.png",
+    "render_sha256": "00c2908f787f9b1851a28dcf722a4faecfb3d2b9d8393d3d581e7e6f6656b2bd",
+    "render_tool": "Poppler pdftoppm, selected physical PDF page only",
+    "claim_scope": "Faithful issuer-disclosure observations; no independent regulatory, ownership, efficacy or investment validation",
+    "rows_visually_reviewed": 10
+  },
+  "rows": [
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r01",
+      "chart_row_ordinal": 1,
+      "drug_original": "Olverembatinib\n(HQP1351)",
+      "drug_code_original": "HQP1351",
+      "target_original": "BCR-ABL",
+      "indication_original": "CML",
+      "phase_original": "Marketed",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [
+        "1",
+        "2"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 1,
+        "row_bbox_pdf_pt": [
+          73,
+          343,
+          516,
+          355
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          343,
+          126,
+          368
+        ],
+        "phase_header_bbox_pdf_pt": [
+          458,
+          327,
+          516,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 1, drug HQP1351; terminal column Marketed"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r02",
+      "chart_row_ordinal": 2,
+      "drug_original": "Olverembatinib\n(HQP1351)",
+      "drug_code_original": "HQP1351",
+      "target_original": "BCR-ABL",
+      "indication_original": "CML, Ph+ ALL, SDH-deficient GIST",
+      "phase_original": "Registrational Trial",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 2,
+        "row_bbox_pdf_pt": [
+          73,
+          355,
+          516,
+          368
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          343,
+          126,
+          368
+        ],
+        "phase_header_bbox_pdf_pt": [
+          390,
+          327,
+          458,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 2, drug HQP1351; terminal column Registrational Trial"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r03",
+      "chart_row_ordinal": 3,
+      "drug_original": "Lisaftoclax\n(APG-2575)",
+      "drug_code_original": "APG-2575",
+      "target_original": "Bcl-2 Selective",
+      "indication_original": "CLL/SLL",
+      "phase_original": "Marketed",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [
+        "3"
+      ],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 3,
+        "row_bbox_pdf_pt": [
+          73,
+          368,
+          516,
+          380
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          368,
+          126,
+          394
+        ],
+        "phase_header_bbox_pdf_pt": [
+          458,
+          327,
+          516,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 3, drug APG-2575; terminal column Marketed"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r04",
+      "chart_row_ordinal": 4,
+      "drug_original": "Lisaftoclax\n(APG-2575)",
+      "drug_code_original": "APG-2575",
+      "target_original": "Bcl-2 Selective",
+      "indication_original": "CLL/SLL, AML, MDS, MM",
+      "phase_original": "Registrational Trial",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 4,
+        "row_bbox_pdf_pt": [
+          73,
+          380,
+          516,
+          394
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          368,
+          126,
+          394
+        ],
+        "phase_header_bbox_pdf_pt": [
+          390,
+          327,
+          458,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 4, drug APG-2575; terminal column Registrational Trial"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r05",
+      "chart_row_ordinal": 5,
+      "drug_original": "APG-2449",
+      "drug_code_original": "APG-2449",
+      "target_original": "FAK/ALK/\nROS1",
+      "indication_original": "NSCLC",
+      "phase_original": "Registrational Trial",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 5,
+        "row_bbox_pdf_pt": [
+          73,
+          394,
+          516,
+          406
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          394,
+          126,
+          419
+        ],
+        "phase_header_bbox_pdf_pt": [
+          390,
+          327,
+          458,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 5, drug APG-2449; terminal column Registrational Trial"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r06",
+      "chart_row_ordinal": 6,
+      "drug_original": "APG-2449",
+      "drug_code_original": "APG-2449",
+      "target_original": "FAK/ALK/\nROS1",
+      "indication_original": "Ovarian cancer",
+      "phase_original": "Clinical POC",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 6,
+        "row_bbox_pdf_pt": [
+          73,
+          406,
+          516,
+          419
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          394,
+          126,
+          419
+        ],
+        "phase_header_bbox_pdf_pt": [
+          329,
+          327,
+          390,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 6, drug APG-2449; terminal column Clinical POC"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r07",
+      "chart_row_ordinal": 7,
+      "drug_original": "Alrizomadlin\n(APG-115)",
+      "drug_code_original": "APG-115",
+      "target_original": "MDM2-p53",
+      "indication_original": "ACC, MPNST, AML/MDS,\npediatric solid tumors",
+      "phase_original": "Clinical POC",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 7,
+        "row_bbox_pdf_pt": [
+          73,
+          419,
+          516,
+          444
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          419,
+          126,
+          444
+        ],
+        "phase_header_bbox_pdf_pt": [
+          329,
+          327,
+          390,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 7, drug APG-115; terminal column Clinical POC"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r08",
+      "chart_row_ordinal": 8,
+      "drug_original": "Pelcitoclax\n(APG-1252)",
+      "drug_code_original": "APG-1252",
+      "target_original": "Bcl-2/Bcl-xL",
+      "indication_original": "NSCLC, SCLC, neuroendocrine\ntumors, NHL",
+      "phase_original": "Clinical POC",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 8,
+        "row_bbox_pdf_pt": [
+          73,
+          444,
+          516,
+          469
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          444,
+          126,
+          469
+        ],
+        "phase_header_bbox_pdf_pt": [
+          329,
+          327,
+          390,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 8, drug APG-1252; terminal column Clinical POC"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r09",
+      "chart_row_ordinal": 9,
+      "drug_original": "APG-5918",
+      "drug_code_original": "APG-5918",
+      "target_original": "PRC2 Inhibitor",
+      "indication_original": "anemia, oncology",
+      "phase_original": "Dose Escalation/\nDose Expansion",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 9,
+        "row_bbox_pdf_pt": [
+          73,
+          469,
+          516,
+          495
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          469,
+          126,
+          495
+        ],
+        "phase_header_bbox_pdf_pt": [
+          266,
+          327,
+          329,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 9, drug APG-5918; terminal column Dose Escalation/ Dose Expansion"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    },
+    {
+      "row_id": "ascentage_annual_pipeline_2025:r10",
+      "chart_row_ordinal": 10,
+      "drug_original": "APG-3288",
+      "drug_code_original": "APG-3288",
+      "target_original": "BTK Degrader",
+      "indication_original": "B-cell lymphoma",
+      "phase_original": "Dose Escalation/\nDose Expansion",
+      "phase_semantics": "issuer_chart_terminal_column_only",
+      "clinical_phase_code": null,
+      "study_label_original": null,
+      "category_original": null,
+      "annotation_original": null,
+      "footnote_markers": [],
+      "status": "visually_supported",
+      "blocked_reason": null,
+      "source_url": "https://ir.ascentage.com/static-files/cc6eb0ea-f444-4765-9efb-bb117b570f7b",
+      "source_sha256": "6733d1ec4042e66e9c8f76e7040b345b75d7abd4bd514b4186cd698c420e3068",
+      "locator": {
+        "pdf_page": 17,
+        "printed_page": "16",
+        "chart_row_ordinal": 10,
+        "row_bbox_pdf_pt": [
+          73,
+          495,
+          516,
+          521
+        ],
+        "drug_cell_bbox_pdf_pt": [
+          73,
+          495,
+          126,
+          521
+        ],
+        "phase_header_bbox_pdf_pt": [
+          266,
+          327,
+          329,
+          342
+        ],
+        "row_context": "Compound and target may be inherited only from their visibly merged cell within this chart",
+        "description": "Pipeline chart, indication/study row 10, drug APG-3288; terminal column Dose Escalation/ Dose Expansion"
+      },
+      "human_sign_off": false,
+      "scientific_review": "pending",
+      "drug_ownership_verified": false
+    }
+  ],
+  "scope": {
+    "historical_disclosure": true,
+    "current_pipeline_complete": false,
+    "drug_ownership_verified": false,
+    "highest_stage_inferred": false,
+    "clinical_success_inferred": false,
+    "phase_codes_inferred": false,
+    "cross_indication_merging": false,
+    "publication_date_guessed": false
+  },
+  "limitations": [
+    "The stage is the original terminal column of an issuer chart, not an independently verified registry phase or trial outcome.",
+    "No pipeline ownership, territorial rights, clinical success, probability, or current development status is inferred.",
+    "Compound cells span indication rows; inheritance is limited to the same visually checked chart cell.",
+    "Content date and capture date are separate. Publication date remains unknown."
+  ]
+}

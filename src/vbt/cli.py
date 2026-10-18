@@ -15,7 +15,7 @@ def parser():
     p.add_argument('--data-root',type=Path)
     p.add_argument('--state-dir',type=Path)
     sp=p.add_subparsers(dest='command',required=True)
-    a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies','discover','expand','coverage','enqueue','disclosures','traverse','identity','identity-status']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
+    a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies','discover','expand','coverage','enqueue','disclosures','traverse','identity','identity-status','directory-names']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
     a=sp.add_parser('workbench');a.add_argument('--port',type=int,default=18764)
     a=sp.add_parser('register');a.add_argument('manifest',type=Path)
     a=sp.add_parser('prepare-geo');a.add_argument('--matrix',required=True);a.add_argument('--platform',required=True);a.add_argument('--rules',type=Path,required=True);a.add_argument('--output',type=Path,required=True)
@@ -43,6 +43,10 @@ def main(argv=None):
         state=args.state_dir or Path.home()/'Library/Application Support/VirtualBiotech'/hashlib.sha256(str(args.workspace.resolve()).encode()).hexdigest()[:12]
         m=Market(args.workspace,state)
         try:
+            if args.action=='directory-names':
+                from .issuer_directory_names import enrich
+                result=enrich(m,source=args.reference)
+                print(json.dumps(result,ensure_ascii=False,indent=2));return 0 if result['status']=='succeeded' else 2
             if args.action=='traverse':
                 from .market_traversal import enqueue_traversal
                 result=enqueue_traversal(m,limit=1000,market_filter='' if args.reference=='all' else args.reference)

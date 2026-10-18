@@ -36,11 +36,11 @@ def test_fixed_sources_validation_deduplication_and_company_batch_unchanged(mark
     with pytest.raises(ValueError):jobs.enqueue(market,'disclosure','unknown')
     assert jobs.enqueue_all(market)==[]
     queued=jobs.enqueue_disclosures(market)
-    assert len(queued)==3 and first in queued
-    assert len(jobs.jobs(market))==3
+    assert len(queued)==len(disclosures.SOURCES) and first in queued
+    assert len(jobs.jobs(market))==len(disclosures.SOURCES)
     restored=Market(market.root.parent.parent,market.state)
-    assert len(jobs.enqueue_disclosures(restored))==3
-    assert len(jobs.jobs(restored))==3
+    assert len(jobs.enqueue_disclosures(restored))==len(disclosures.SOURCES)
+    assert len(jobs.jobs(restored))==len(disclosures.SOURCES)
 
 
 def test_successful_disclosure_uses_capture_namespace_and_binds_on_start(market,monkeypatch):
