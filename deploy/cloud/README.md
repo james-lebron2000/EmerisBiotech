@@ -27,7 +27,9 @@ basic_auth {
 
 ## 备份、运维和限制
 
-research/state 命名卷为持久数据；caddy_data 保存证书状态。单实例部署，不支持水平扩容。停止 app 后备份 research 和 state 卷到服务器之外的受控存储，然后启动 app；恢复到新卷并比较笔记数、记录哈希和快照校验。删除容器不会删除命名卷，但 `docker compose down -v` 会删除持久卷，不应用于升级。
+research/state 命名卷为持久数据；caddy_data 保存证书状态。单实例部署，不支持水平扩容。备份前执行 `docker compose stop app worker`，等待两者退出，并确认没有其他 CLI、手动采集或维护进程写入这两个卷。app 与 worker 都是写者，只停止 app 不能得到一致备份。全部停写后，将 research 和 state 作为同一时间点的配套副本，备份到服务器之外的受控存储；保留 state 中的 workbench.sqlite3、market.sqlite3 及其配套文件，以及 research 中的 artifacts/market、研究快照和报告。不要直接复制运行中的 SQLite。备份完成后执行 `docker compose start app worker`。
+
+恢复演练须在隔离环境的新卷中同时还原配套副本，核对笔记与任务数、记录哈希、原件及快照校验、失败记录和证据链接，再启动服务验证读取与继续执行。当前尚未实际完成新卷／外部主机上的备份恢复验收；已有容器重启持久性检查不能替代恢复演练。删除容器不会删除命名卷，但 `docker compose down -v` 会删除持久卷，不应用于升级。
 
 本地 Docker 镜像构建、UID10001卷写入、SIGTERM与队列恢复、HTTP来源／CSRF和导出已通过隔离运行验收，详见 `docs/CONTAINER_ACCEPTANCE_2026-10-17.md`。本机使用 standalone docker-compose 命令。远端 HTTPS／认证网关、证书、真实客户账号、备份恢复和生产可达性仍未验收；本地容器通过不代表已上线。
 

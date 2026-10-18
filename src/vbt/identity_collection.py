@@ -1,4 +1,4 @@
-"""Fresh, archived, fenced US issuer-to-registry name reconciliation.
+"""Fresh, archived, fenced US and sealed-directory A-share name reconciliation.
 
 This collector verifies two independently parsed public sources before accepting
 an exact sponsor-name suggestion. It does not verify drug ownership, a complete
@@ -125,7 +125,7 @@ def _accepted_review(market, db, run):
       JOIN companies m ON m.id=p.candidate_id
       WHERE p.id=? AND p.status='accepted' AND p.candidate_hash=?
         AND r.candidate_hash=p.candidate_hash
-        AND c.content_hash=p.candidate_hash AND e.reviewer_type='automated_source_review'
+        AND c.content_hash=p.candidate_hash AND e.reviewer_type IN ('automated_source_review','a_share_directory_source_review')
         AND e.evidence_sha256=? AND EXISTS
           (SELECT 1 FROM json_each(m.aliases) WHERE value=p.alias)
       ORDER BY r.created DESC LIMIT 1''',
@@ -136,7 +136,13 @@ def _accepted_review(market, db, run):
         if hashlib.sha256(row['evidence_json'].encode()).hexdigest() != row['evidence_sha256']:
             return None
         evidence = json.loads(row['evidence_json'])
-        _validate_automated(market, row, run['proposal_id'], evidence)
+        if evidence.get('collector_run_id')!=run['id'] or row['candidate_id']!=run['candidate_id']:
+            return None
+        if row['reviewer_type']=='a_share_directory_source_review':
+            from .a_share_identity import validate
+            validate(market, db, row, run['proposal_id'], evidence, recovery=True)
+        else:
+            _validate_automated(market, row, run['proposal_id'], evidence)
     except (ValueError, OSError, KeyError, TypeError):
         return None
     return {'company': row['candidate_id'], 'review_id': row['review_id']}
@@ -164,16 +170,29 @@ def eligible_proposals(market, *, limit=100, offset=0):
         raise ValueError('Invalid identity proposal pagination')
     init_schema(market)
     with market.db() as db:
-        return [dict(r) for r in db.execute('''SELECT p.id,p.candidate_id,c.name,c.ticker,
-          c.market,p.alias,p.source_url,p.last_seen FROM sponsor_proposals p
+        db.execute('BEGIN')
+        rows = [dict(r) for r in db.execute('''SELECT p.*,c.name,c.ticker,c.classification,
+          c.market,c.review_status,c.content_hash AS current_hash,r.status AS resolution_status,r.truncated FROM sponsor_proposals p
           JOIN issuer_candidates c ON c.id=p.candidate_id
           JOIN sponsor_resolution_runs r ON r.id=p.run_id
-          WHERE p.status='pending' AND c.market='US' AND c.review_status!='rejected'
+          WHERE p.status='pending' AND c.market IN ('US','A') AND c.review_status!='rejected'
             AND c.classification IN ('candidate','drug_developer')
             AND p.candidate_hash=c.content_hash AND p.match_type='normalized_exact'
             AND r.status='suggested' AND r.truncated=0
             AND NOT EXISTS (SELECT 1 FROM companies m WHERE m.id=c.id)
-          ORDER BY p.created,p.id LIMIT ? OFFSET ?''', (limit, offset))]
+          ORDER BY p.created,p.id''')]
+        from .sponsor_resolution import candidate_query_contexts
+        from .a_share_identity import admission_context
+        a_ids = {r['candidate_id'] for r in rows if r['market']=='A'}
+        a_rows = [dict(r) for r in db.execute("SELECT * FROM issuer_candidates WHERE market='A'") if r['id'] in a_ids] if a_ids else []
+        contexts = candidate_query_contexts(market,a_rows,db=db)
+        admitted = []
+        for row in rows:
+            if row['market']=='A':
+                try:admission_context(market,db,row,context=contexts.get(row['candidate_id'],{}))
+                except (ValueError,KeyError,TypeError,OSError):continue
+            admitted.append(row)
+        return admitted[offset:offset+limit]
 
 
 def sources(market, *, limit=100, offset=0):
@@ -241,15 +260,21 @@ def collect(market, proposal_id, fetch=fetch, cancelled=lambda: False, on_start=
         raise ValueError('Invalid sponsor proposal ID')
     init_schema(market)
     with market.db() as db:
+        db.execute('BEGIN')
         row = _row(db, proposal_id)
         if not row:
             raise ValueError('Unknown sponsor proposal')
         prior = db.execute("SELECT * FROM identity_collection_runs WHERE proposal_id=? AND status='succeeded' ORDER BY started DESC LIMIT 1", (proposal_id,)).fetchone()
         if prior and _accepted_review(market, db, prior):
             return _result(db, prior['id'])
-    row = dict(row)
+        row = dict(row)
+        a_context = None
+        if row['market']=='A':
+            from .a_share_identity import admission_context
+            try:a_context=admission_context(market,db,row);blocked=''
+            except (ValueError,KeyError,TypeError,OSError) as exc:blocked=str(exc)
+        else:blocked=_gate(row)
     run_id, key = uuid.uuid4().hex, 'identity:' + proposal_id
-    blocked = _gate(row)
     claimed = not blocked and market.claim(key)
     token = market.lease_tokens()[key] if claimed else ''
     status = 'blocked' if blocked else 'running' if claimed else 'busy'
@@ -325,13 +350,22 @@ def collect(market, proposal_id, fetch=fetch, cancelled=lambda: False, on_start=
             raise Cancelled('Cancelled before identity source fetch')
         folder.mkdir(parents=True, exist_ok=False)
         selected = None
-        for index, url in enumerate(DIRECTORY_URLS):
-            raw, exchange = capture('directory-' + str(index) + '.txt', url, kind='exchange')
-            selected = exchange_identity(raw, url, row['ticker'], row['alias'])
-            if selected is not None:
-                break
-        if selected is None:
-            raise ValueError('Current ticker absent from both official security directories')
+        if a_context:
+            from .a_share_identity import directory_bytes
+            proof=a_context['directory_evidence']
+            raw=directory_bytes(market,proof)
+            if cancelled():raise Cancelled('Cancelled before sealed directory capture')
+            exchange=save('a-share-directory.bin',raw,kind='exchange',ticker=row['ticker'])
+            exchange.update(url=proof['source_url'],fetched_at=proof['retrieved_at'])
+            with market.db() as db:_event(db,run_id,'captured',json.dumps(exchange,ensure_ascii=False,sort_keys=True))
+        else:
+            for index, url in enumerate(DIRECTORY_URLS):
+                raw, exchange = capture('directory-' + str(index) + '.txt', url, kind='exchange')
+                selected = exchange_identity(raw, url, row['ticker'], row['alias'])
+                if selected is not None:
+                    break
+            if selected is None:
+                raise ValueError('Current ticker absent from both official security directories')
         exchange_manifest = save('exchange_manifest.json', json.dumps(exchange, ensure_ascii=False, sort_keys=True).encode())
         nct = row['source_url'].removeprefix('https://clinicaltrials.gov/study/')
         registry_url = NCT_API + nct
@@ -340,7 +374,7 @@ def collect(market, proposal_id, fetch=fetch, cancelled=lambda: False, on_start=
         checked = now()
         evidence = {'status': 'verified', 'candidate_id': row['candidate_id'], 'proposal_id': proposal_id,
                     'candidate_hash': row['candidate_hash'], 'alias': row['alias'],
-                    'verified_company_name': query_name_from_listing(selected['Security Name'], 'US'),
+                    'verified_company_name': proof['english_name'] if a_context else query_name_from_listing(selected['Security Name'], 'US'),
                     'market': row['market'], 'ticker': row['ticker'], 'official_source_url': exchange['url'],
                     'registry_source_url': row['source_url'], 'registry_api_url': registry_url,
                     'supporting_fact': 'Fresh official security directory matches the exact ticker and normalized legal issuer name; '
@@ -352,18 +386,33 @@ def collect(market, proposal_id, fetch=fetch, cancelled=lambda: False, on_start=
                     'evidence_capture_manifest': manifest['path'], 'reviewer_type': 'automated_source_review',
                     'scope': 'listed_entity_to_exact_registry_sponsor_name_only',
                     'human_sign_off': False, 'drug_ownership_verified': False,
-                    'exchange_security_name': selected['Security Name'], 'collector_run_id': run_id}
+                    'exchange_security_name': proof['listing_name'] if a_context else selected['Security Name'], 'collector_run_id': run_id}
+        if a_context:
+            from .a_share_identity import REVIEWER_TYPE,SCOPE,VERSION,MAX_SOURCE_AGE_DAYS
+            from .sponsor_review import _stamp
+            evidence.update(reviewer_type=REVIEWER_TYPE,scope=SCOPE,adapter_version=VERSION,
+                directory_name_receipt=proof,directory_age_limit_days=MAX_SOURCE_AGE_DAYS,
+                directory_source_age_seconds=(_stamp(checked)-_stamp(proof['retrieved_at'])).total_seconds(),
+                resolution_query_evidence_sha256=a_context['resolution_query_evidence_sha256'],
+                drug_developer_status_verified=False,full_pipeline_verified=False,scientific_review='pending',
+                supporting_fact='The current sealed SZ/SH/STAR directory names this exact listed entity and English legal name; '
+                  'the newly fetched canonical NCT names the exact proposed lead sponsor. '
+                  'This is bounded-age source-name association, not a real-time directory, business classification approval, '
+                  'human sign-off, drug ownership, scientific review or complete pipeline coverage.')
         payload = json.dumps(evidence, ensure_ascii=False, sort_keys=True)
         saved = save('evidence.json', payload.encode())
         with market.db() as db:
             db.execute('BEGIN IMMEDIATE')
             guard(db)
             current = _row(db, proposal_id)
-            gap = _gate(current) if current else 'Proposal missing during publication'
+            if current and a_context:
+                from .a_share_identity import admission_context
+                admission_context(market,db,current);gap=''
+            else:gap = _gate(current) if current else 'Proposal missing during publication'
             if gap:
                 raise ValueError(gap)
             result = review_in_transaction(market, db, proposal_id, 'accepted', 'Official source identity collector',
-                    evidence['supporting_fact'], reviewer_type='automated_source_review', evidence=evidence, guard=guard)
+                    evidence['supporting_fact'], reviewer_type=evidence['reviewer_type'], evidence=evidence, guard=guard)
             guard(db)
             db.execute("UPDATE identity_collection_runs SET status='succeeded',finished=?,company=?,review_id=?,evidence_path=?,evidence_sha256=? WHERE id=? AND lease_owner=? AND status='running'",
                        (now(), result['company'], result['review_id'], saved['path'], saved['sha256'], run_id, token))

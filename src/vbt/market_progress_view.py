@@ -1,14 +1,17 @@
 """Customer-readable issuer discovery progress; all source material is escaped."""
 import html
 import json
-from datetime import date
+import math
+import re
+from datetime import date, datetime, timezone
+from itertools import islice
 from pathlib import Path
 from urllib.parse import urlencode
 
 from .market import Market
 from .market_coverage import candidate_rows, coverage_summary
 from . import market_jobs
-from .market_view import _timestamp, _source_link
+from .market_view import _timestamp, _source_link, SOURCES as DIRECTORY_LABELS
 from .market_traversal import readiness, LABELS as TRAVERSAL_LABELS
 
 REGISTRY_AUDIT = Path('artifacts/market/china_registry_source_audit/2026-10-17/source_audit.json')
@@ -49,6 +52,185 @@ def action_form(app, action, label, fields=None):
 
 def _badge(label, state=""):
     return '<span class="badge ' + e(state) + '">' + e(label) + '</span>'
+
+
+QUEUE_KINDS = {'universe': '证券目录更新', 'resolve': '申办方名称检索',
+               'identity': '来源身份核对', 'company': '临床登记采集', 'disclosure': '官方披露采集／验收'}
+RUN_LABELS = {**STATE_LABELS, 'suggested': '已产生关联建议', 'ambiguous': '存在多项候选，待核对',
+              'zero': '本次检索零结果', 'busy': '来源正在使用中'}
+
+
+def _queue_error(value):
+    """Keep an escaped diagnostic useful without disclosing paths or credentials."""
+    lines = []
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2060-\u2069]', '', str(value or '')[:2000])
+    for line in text.splitlines():
+        if re.search(r'''(?i)\b(authorization|proxy-authorization|set-cookie|cookie|x-api-key|api[_-]?key|(?:access[_-]?|refresh[_-]?)?token|password|passwd|secret|client[_-]?secret)["']?\s*[:=]|\bbearer\s+|https?://[^/\s@]+@''', line):
+            lines.append('[敏感凭据或响应头已隐藏]')
+        else:
+            # Paths can contain spaces. Hide the remainder rather than revealing
+            # the username or a quoted suffix after the first space.
+            lines.append(re.sub(r'(?<![:/\w])/(?:Users|Volumes|home|tmp|private|var|workspace|state|mnt|opt|etc)(?:/|\b)[^\n]*|(?<![:/\w])/(?:[A-Za-z0-9_.-]+/)[^\n]*|\bartifacts/[^\n]*', '[本地路径已隐藏]', line))
+    return '\n'.join(lines)
+
+
+def _retry_time(job):
+    value = job.get('next_at')
+    if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+        return '重试时刻尚未核实'
+    try:
+        return '最早重试 ' + _timestamp(datetime.fromtimestamp(value, timezone.utc).isoformat())
+    except (ValueError, OverflowError, OSError):
+        return '重试时刻尚未核实'
+
+
+def _queue_context(market, queue):
+    """Bounded SELECT-only enrichment of the displayed jobs, never init/recover.
+
+    A queue run_id is not a foreign key: check its kind-specific target before
+    using it as a result or giving the reader a contextual page link.
+    """
+    from .disclosures import SOURCES as disclosure_sources
+    queue = list(islice(queue, 30))
+    with market.db() as db:
+        tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+
+        def select(table, columns, key, values):
+            values = sorted({v for v in values if isinstance(v, str) and v})
+            if table not in tables or not values:
+                return {}
+            sql = 'SELECT ' + columns + ' FROM ' + table + ' WHERE ' + key + ' IN (' + ','.join('?' for _ in values) + ')'
+            return {r[key]: dict(r) for r in db.execute(sql, values)}
+
+        proposals = select('sponsor_proposals', 'id,candidate_id,candidate_hash,alias', 'id',
+                           [j['reference'] for j in queue if j['kind'] == 'identity'])
+        candidate_ids = [j['reference'] for j in queue if j['kind'] == 'resolve'] + [p['candidate_id'] for p in proposals.values()]
+        candidates = select('issuer_candidates', 'id,market,ticker,name,content_hash', 'id', candidate_ids)
+        companies = select('companies', 'id,market,ticker,name', 'id',
+                           [j['reference'] for j in queue if j['kind'] == 'company'] + candidate_ids)
+        runs = {}
+        specs = {
+            'universe': ('runs', 'id,source,company,started,finished,status,count,substr(error,1,2000) AS error'),
+            'company': ('runs', 'id,source,company,started,finished,status,count,substr(error,1,2000) AS error'),
+            'resolve': ('sponsor_resolution_runs', 'id,candidate_id,candidate_hash,started,finished,status,proposal_count,observation_count,truncated,substr(error,1,2000) AS error'),
+            'identity': ('identity_collection_runs', 'id,proposal_id,candidate_id,candidate_hash,company,started,finished,status,substr(error,1,2000) AS error'),
+            'disclosure': ('disclosure_captures', 'id,source_id,company,url,started,finished,status,count,substr(error,1,2000) AS error'),
+        }
+        for kind, (table, columns) in specs.items():
+            runs[kind] = select(table, columns, 'id', [j.get('run_id') for j in queue if j['kind'] == kind])
+        company_refs = sorted({j['reference'] for j in queue if j['kind'] == 'company' and j['reference'] in companies})
+        stored_trials = {}
+        if company_refs and 'trials' in tables:
+            stored_trials = {r['company']: r['n'] for r in db.execute('SELECT company,count(*) AS n FROM trials WHERE company IN (' + ','.join('?' for _ in company_refs) + ') GROUP BY company', company_refs)}
+        source_refs = sorted({j['reference'] for j in queue if j['kind'] == 'disclosure' and j['reference'] in disclosure_sources})
+        stored_disclosures = {}
+        if source_refs and 'disclosure_observations' in tables:
+            stored_disclosures = {r['source_id']: r['n'] for r in db.execute('SELECT source_id,count(*) AS n FROM disclosure_observations WHERE source_id IN (' + ','.join('?' for _ in source_refs) + ') GROUP BY source_id', source_refs)}
+    result = {}
+    for job in queue:
+        kind, reference = job['kind'], job['reference']
+        proposal = proposals.get(reference) if kind == 'identity' else None
+        candidate = candidates.get(proposal['candidate_id'] if proposal else reference)
+        company = companies.get(reference) if kind == 'company' else None
+        source = disclosure_sources.get(reference) if kind == 'disclosure' else None
+        subject = ('证券目录来源尚未核实' if kind == 'universe' else '任务主体尚未核实')
+        identifier = None
+        if kind == 'universe' and reference in DIRECTORY_LABELS:
+            subject, identifier = DIRECTORY_LABELS[reference], reference
+        elif kind == 'company' and company:
+            subject, identifier = company['name'], company['id']
+        elif kind in ('resolve', 'identity') and candidate:
+            subject, identifier = candidate['name'], candidate['id']
+        elif source:
+            subject = source['name']
+        run = runs.get(kind, {}).get(job.get('run_id'))
+        bound = False
+        if run:
+            if kind == 'universe':
+                bound = reference in DIRECTORY_LABELS and run['source'] == reference and run['company'] == ''
+            elif kind == 'company':
+                bound = bool(company and run['source'] == 'ClinicalTrials.gov' and run['company'] == reference)
+            elif kind == 'resolve':
+                bound = bool(candidate and run['candidate_id'] == reference and run['candidate_hash'] == candidate['content_hash'])
+            elif kind == 'identity':
+                bound = bool(proposal and candidate and run['proposal_id'] == reference
+                             and run['candidate_id'] == proposal['candidate_id']
+                             and run['candidate_hash'] == proposal['candidate_hash'] == candidate['content_hash']
+                             and (not run['company'] or run['company'] == candidate['id']))
+            elif kind == 'disclosure':
+                bound = bool(source and run['source_id'] == reference and run['company'] == source['companies'][0]
+                             and run['url'] == source['url'])
+        links = []
+        details = []
+        if bound:
+            if kind == 'universe':
+                details.append('本次目录条数 ' + (str(run['count']) if run['status'] == 'succeeded' and type(run['count']) is int and run['count'] >= 0 else '未知'))
+                links.append(('/market', '查看目录来源与观察'))
+            elif kind == 'company':
+                details.append('本次返回登记 ' + (str(run['count']) + ' 条' if run['status'] == 'succeeded' and type(run['count']) is int and run['count'] >= 0 else '条数未知'))
+                links.append(('/market?' + urlencode({'company': reference}), '查看该公司已存登记与历史'))
+            elif kind == 'resolve':
+                complete = run['status'] in ('suggested', 'ambiguous', 'zero', 'succeeded')
+                proposals_count = str(run['proposal_count']) if complete and type(run['proposal_count']) is int and run['proposal_count'] >= 0 else '未知'
+                observations_count = str(run['observation_count']) if complete and type(run['observation_count']) is int and run['observation_count'] >= 0 else '未知'
+                details.append('本次关联建议 ' + proposals_count + ' 条 · 名称观察 ' + observations_count + ' 条')
+                if run['truncated']:
+                    details.append('本次检索未穷尽全部分页')
+                links.append(('/mapping?' + urlencode({'market': candidate['market'], 'q': candidate['ticker']}), '查看该证券核对建议与记录'))
+            elif kind == 'identity':
+                details.append('来源身份核对结果；不代表人工签署、权益确认或临床验证')
+                if re.fullmatch(r'[a-f0-9]{32}', run['id']):
+                    links.append(('/mapping?' + urlencode({'identity_run': run['id']}) + '#identity-events', '查看该次身份核对事件'))
+            else:
+                details.append('关联来源记录 ' + (str(run['count']) + ' 行' if run['status'] == 'succeeded' and type(run['count']) is int and run['count'] >= 0 else '行数未知') + '（不是本次新增行数）')
+                details.append('执行条数未经本页原件完整性复核；历史披露不升级为当前管线')
+                links.append(('/disclosures?' + urlencode({'source_id': reference}), '查看披露原件、日期与完整性状态'))
+        else:
+            details.append('尚无可核对的来源运行记录' if not job.get('run_id') else '来源运行绑定尚未核实，结果未知')
+        if kind == 'company' and company and 'trials' in tables:
+            details.append('当前已存登记 ' + str(stored_trials.get(reference, 0)) + ' 条（含以往观察，不是本次返回条数）')
+        elif kind == 'disclosure' and source and 'disclosure_observations' in tables:
+            details.append('库内披露观察 ' + str(stored_disclosures.get(reference, 0)) + ' 行（跨批次，未在此验真）')
+        result[job['id']] = dict(subject=subject, identifier=identifier, run=run if bound else None,
+                                 details=details, links=links)
+    return result
+
+
+def _queue_table(app, market, queue):
+    queue = list(islice(queue, 30))
+    contexts = _queue_context(market, queue)
+    body = '<div class="scroll"><table><thead><tr><th>任务与主体</th><th>队列状态</th><th>来源运行结果</th><th>操作与追溯</th></tr></thead><tbody>'
+    for job in queue:
+        context = contexts[job['id']]
+        body += '<tr><td><strong>' + e(QUEUE_KINDS.get(job['kind'], '未知任务类型')) + '</strong><p>' + e(context['subject']) + '</p>'
+        if context['identifier']:
+            body += '<p class="ref">' + e(context['identifier']) + '</p>'
+        body += '</td><td>' + _badge(STATE_LABELS.get(job['status'], job['status']), job['status'])
+        body += '<p class="ref">队列更新 ' + _timestamp(job['updated']) + ' · 尝试 ' + e(job['attempts']) + ' 次</p>'
+        if job['status'] == 'retry_wait':
+            body += '<p class="ref">' + _retry_time(job) + '；实际执行取决于队列与来源限制。</p>'
+        if job.get('cancel_requested') and job['status'] == 'running':
+            body += '<p>已请求取消，等待执行器确认。</p>'
+        body += '</td><td>'
+        run = context['run']
+        if run:
+            body += _badge(RUN_LABELS.get(run['status'], run['status']), run['status']) + '<p class="ref">来源运行时间 ' + _timestamp(run['finished'] or run['started']) + '</p>'
+        body += ''.join('<p class="cell-meta">' + e(detail) + '</p>' for detail in context['details']) + '</td><td>'
+        body += ''.join('<p><a href="' + e(url) + '">' + e(label) + ' →</a></p>' for url, label in context['links'])
+        if job.get('error') or (run and run.get('error')):
+            body += '<details><summary>查看执行原因</summary>'
+            if job.get('error'):
+                body += '<p class="body">队列：' + e(_queue_error(job['error'])) + '</p>'
+            if run and run.get('error'):
+                body += '<p class="body">来源：' + e(_queue_error(run['error'])) + '</p>'
+            body += '</details>'
+        if run:
+            run_label = run['id'] if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', str(run['id'])) else '运行标识格式尚未核实'
+            body += '<details><summary>来源运行标识</summary><p class="ref">' + e(run_label) + '</p></details>'
+        if job['status'] in ('queued', 'retry_wait'):
+            body += action_form(app, '/market/cancel', '取消待执行任务', {'jid': job['id']})
+        body += '</td></tr>'
+    return body + '</tbody></table></div><p class="ref">展示最近 30 个任务；队列总数按全部持久记录统计。来源结果只在运行类型、主体及候选版本可核对时展示；页面入口可能包含其他历史批次。执行完成不替代记录完整性、科学审查或权益证据。查询零结果不代表没有管线。</p>'
 
 
 def _evidence(row):
@@ -254,19 +436,11 @@ def render(app, q):
             for event in db.execute('SELECT * FROM market_discovery_events ORDER BY created DESC LIMIT 5'):
                 body += '<details><summary>'+_timestamp(event['created'])+' · '+e(event['status'])+'</summary><pre>'+e(event['payload'])+'</pre></details>'
     body += '</details>'
-    body += '<section id="collection-queue" tabindex="-1" aria-labelledby="collection-queue-title"><h2 id="collection-queue-title">采集队列</h2><p>' + queue_summary + '。任务与错误会在重启后保留。</p>'
+    body += '<section id="collection-queue" tabindex="-1" aria-labelledby="collection-queue-title"><h2 id="collection-queue-title">采集队列</h2><p>' + queue_summary + '。任务与错误会在重启后保留。</p><p class="ref">以下为三地市场全部任务，不随上方公司筛选变化。</p>'
     if not queue:
         body += '<div class="empty">尚无采集任务。登记申办方后可批量抓取。</div>'
     else:
-        body += '<div class="scroll"><table><tr><th>目标</th><th>状态与时间</th><th>结果或操作</th></tr>'
-        for job in queue:
-            body += '<tr><td>' + e(job["reference"]) + '</td><td>' + _badge(STATE_LABELS.get(job["status"], job["status"]), job["status"]) + '<p class="ref">' + _timestamp(job["updated"]) + ' · 尝试 ' + str(job["attempts"]) + ' 次</p></td><td>'
-            if job.get("error"):
-                body += '<details><summary>查看原因</summary><p class="body">' + e(job["error"]) + '</p></details>'
-            if job["status"] in ("queued", "retry_wait"):
-                body += action_form(app, "/market/cancel", "取消待执行任务", {"jid": job["id"]})
-            body += '</td></tr>'
-        body += '</table></div><p class="ref">展示最近 30 个任务；队列总数按全部持久记录统计。</p>'
+        body += _queue_table(app, market, queue)
     body += '</section><details class="card"><summary>覆盖缺口与目录来源日期</summary>'
     body += ''.join('<p>' + gap + '</p>' for gap in GAPS)
     for code, data in summary["markets"].items():

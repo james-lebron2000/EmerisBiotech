@@ -130,15 +130,18 @@ def render(app, q):
     body += '<p class="data-note">尚未记录主体核对决定。</p>'
    for row in reviewed:
     curated = row['reviewer_type'] == 'curated_official_source_review'
-    automated = row['reviewer_type'] == 'automated_source_review' or curated
+    a_share = row['reviewer_type'] == 'a_share_directory_source_review'
+    automated = row['reviewer_type'] == 'automated_source_review' or curated or a_share
     human_declared = row['reviewer_type'] == 'human_declared'
-    label = ('官方资料与登记名称核对，非人工签署' if curated else '自动双源名称核对，非人工签署' if automated else
+    label = ('A股官方法人名与登记核对，非人工签署' if a_share else '官方资料与登记名称核对，非人工签署' if curated else '自动双源名称核对，非人工签署' if automated else
              '记录人声明的主体核对' if human_declared else '核对类型未记录')
     signing = '人工签署：无（自动来源核对）' if automated else '人工签署：未验证'
     body += ('<div class="card"><span class="badge">' + label + '</span><b>' + e(row['reviewer'])
              + ' · ' + ('接受' if row['decision'] == 'accepted' else '排除') + '</b><p>' + e(row['reason'])
              + '</p><p class="cell-meta">' + signing + ' · 药物权益与科学审批分别核对</p><p class="ref">'
              + _timestamp(row['created']) + ' · ' + e(row['proposal_id']) + '</p>')
+    if a_share:
+     body += '<p class="data-note">仅核对官方法人名与精确登记申办方；药物研发业务类型尚未独立确认。</p>'
     if row['evidence_json']:
      body+='<details><summary>查看已记录的来源依据与校验值</summary><p class="ref">'+e(row['evidence_sha256'])+'</p><pre>'+e(row['evidence_json'])+'</pre></details>'
     body+='</div>'

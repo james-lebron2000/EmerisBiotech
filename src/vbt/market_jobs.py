@@ -8,6 +8,23 @@ ACTIVE=('queued','running','retry_wait')
 # identities, company follow-ups and source refreshes receive a durable turn.
 CLAIM_CYCLE=('universe','identity','resolve','company','resolve','disclosure')
 
+def _transient_error(error):
+ """Retry known transport failures, never reinterpret TLS/access/size rejection.
+
+ Source curl exit codes survive in the archived error string. A receive error
+ (56), for example, need not contain the word "connection". Keep the existing
+ three-attempt job limit and backoff; this only classifies the failed attempt.
+ """
+ message=str(error).lower()
+ code=re.search(r'\bcurl:\s*\(([0-9]{1,3})\)',message)
+ if code:
+  value=int(code.group(1))
+  if value in (5,6,7,18,28,52,55,56,92):return True
+  # --fail uses 22 for HTTP errors; access denials remain terminal.
+  if value==22:return bool(re.search(r'\b(?:429|502|503|504)\b',message))
+  return False
+ return any(x in message for x in ('timed out','timeout','429','503','502','504','connection','already leased','lease is active'))
+
 def init_schema(market):
  with market.db() as db:
   db.executescript('''CREATE TABLE IF NOT EXISTS collection_jobs (
@@ -87,7 +104,17 @@ def _identity_time(value,clock):
   return epoch
  except (ValueError,OverflowError,OSError):return None
 
-def _identity_schedule_state(db,proposal,clock,force):
+def _identity_query_contexts(market,db,proposals):
+ """Revalidate A-share lookup inputs once per source in the caller's snapshot."""
+ from .sponsor_resolution import candidate_query_contexts
+ ids=list(dict.fromkeys(p['id'] for p in proposals));candidates={}
+ for offset in range(0,len(ids),400):
+  part=ids[offset:offset+400]
+  for row in db.execute("SELECT c.* FROM issuer_candidates c JOIN sponsor_proposals p ON p.candidate_id=c.id WHERE c.market='A' AND p.id IN ("+','.join('?' for _ in part)+')',part):
+   candidates[row['id']]=dict(row)
+ return candidate_query_contexts(market,candidates.values(),db=db)
+
+def _identity_schedule_state(market,db,proposal,clock,force,contexts):
  from .identity_collection import _row,_gate
  result={'proposal_id':proposal['id'],'candidate_id':proposal['candidate_id'],
          'candidate_hash':None,'status':'unknown','reason':'核对调度状态尚未核实',
@@ -98,7 +125,11 @@ def _identity_schedule_state(db,proposal,clock,force):
  row=_row(db,proposal['id'])
  if not row:return state('ineligible','建议已不存在，需重新检索')
  result['candidate_hash']=row['candidate_hash']
- gap=_gate(row)
+ if row['market']=='A':
+  from .a_share_identity import admission_context
+  try:admission_context(market,db,row,context=contexts.get(row['candidate_id'],{}));gap=''
+  except (ValueError,KeyError,TypeError,OSError) as exc:gap=str(exc)
+ else:gap=_gate(row)
  if gap:return state('ineligible',gap)
  if db.execute('SELECT 1 FROM companies WHERE id=?',(row['candidate_id'],)).fetchone():
   return state('ineligible','证券主体已有申办方关联；请检查已记录的核对结果')
@@ -155,7 +186,8 @@ def identity_schedule(market,*,force=False):
  init_schema(market);proposals=_identity_proposals(market);clock=time.time()
  with market.db() as db:
   db.execute('BEGIN')
-  result=[_identity_schedule_state(db,row,clock,force) for row in proposals]
+  contexts=_identity_query_contexts(market,db,proposals)
+  result=[_identity_schedule_state(market,db,row,clock,force,contexts) for row in proposals]
  return [{k:v for k,v in row.items() if k!='_priority'} for row in result]
 
 def enqueue_identity(market,limit=20,*,force=False):
@@ -171,7 +203,8 @@ def enqueue_identity(market,limit=20,*,force=False):
  init_schema(market);proposals=_identity_proposals(market);clock=time.time()
  with market.db() as db:
   db.execute('BEGIN IMMEDIATE')
-  candidates=[_identity_schedule_state(db,row,clock,force) for row in proposals]
+  contexts=_identity_query_contexts(market,db,proposals)
+  candidates=[_identity_schedule_state(market,db,row,clock,force,contexts) for row in proposals]
   ready=sorted((row for row in candidates if row['status']=='ready'),key=lambda row:row['_priority'])
   return [_enqueue_in_transaction(db,'identity',row['proposal_id']) for row in ready[:limit]]
 
@@ -413,7 +446,7 @@ def execute(market,job):
     else:
      with market.db() as db:r=db.execute('SELECT * FROM runs WHERE id=?',(rid,)).fetchone()
      status=r['status'];error=r['error']
-  transient=any(x in error.lower() for x in ('timed out','timeout','429','503','502','connection','already leased','lease is active'))
+  transient=_transient_error(error)
   if status in ('failed','fetch_failed','retry_wait') and transient and job['attempts']<3:status='retry_wait'
   elif status=='retry_wait':status='failed'
   with market.db() as db:

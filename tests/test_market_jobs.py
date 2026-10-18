@@ -62,6 +62,50 @@ def test_transient_retry_is_bounded(market,monkeypatch):
   with market.db() as db:db.execute('UPDATE collection_jobs SET next_at=0')
  assert jobs(market)[0]['status']=='failed' and jobs(market)[0]['attempts']==3
 
+@pytest.mark.parametrize('message', [
+ 'OSError: Source request failed: curl: (56) Failure when receiving data from the peer',
+ 'OSError: Source request failed: curl: (18) transfer closed with outstanding read data remaining',
+ 'OSError: Source request failed: curl: (52) Empty reply from server',
+ 'OSError: Source request failed: curl: (92) HTTP/2 stream was not closed cleanly',
+])
+def test_transport_retry_retains_previous_snapshot_and_stops_after_three_attempts(market,monkeypatch,message):
+ market.sync_company('US:TEST',fetch=lambda url:response())
+ def broken(cid,cancelled):
+  def source(url):raise OSError(message)
+  return Market.sync_company(market,cid,fetch=source,cancelled=cancelled)
+ monkeypatch.setattr(market,'sync_company',broken)
+ enqueue(market,'company','US:TEST')
+ for attempt in range(1,4):
+  execute(market,claim(market))
+  row=jobs(market)[0]
+  assert row['attempts']==attempt
+  assert row['status']==('retry_wait' if attempt<3 else 'failed')
+  assert [r['nct'] for r in market.rows('trials')]==['NCT00000001']
+  assert len(market.rows('changes'))==1
+  assert claim(market) is None  # backoff or terminal, never an immediate retry loop.
+  with market.db() as db:db.execute('UPDATE collection_jobs SET next_at=0')
+ assert len([r for r in market.rows('runs') if r['status']=='failed'])==3
+
+@pytest.mark.parametrize('message', [
+ 'curl: (60) SSL peer certificate verification failed; connection rejected',
+ 'curl: (35) SSL connect error; connection failed',
+ 'curl: (63) Maximum file size exceeded',
+ 'curl: (22) The requested URL returned error: 403',
+ 'curl: (22) The requested URL returned error: 404',
+])
+def test_transport_retry_never_retries_certificate_size_or_access_rejection(market,monkeypatch,message):
+ def failed(cid,cancelled):
+  rid=market.begin('ClinicalTrials.gov',cid);market.finish(rid,'failed',0,message);return rid
+ monkeypatch.setattr(market,'sync_company',failed)
+ enqueue(market,'company','US:TEST');execute(market,claim(market))
+ assert jobs(market)[0]['status']=='failed' and jobs(market)[0]['attempts']==1
+ assert claim(market) is None
+
+@pytest.mark.parametrize('status',[429,502,503,504])
+def test_curl_http_status_retry_is_bounded_by_existing_policy(status):
+ from vbt.market_jobs import _transient_error
+ assert _transient_error('curl: (22) The requested URL returned error: '+str(status))
+
 def test_fixed_worker_capacity(market):
  stop=threading.Event();threads=run_worker(market,stop,workers=2)
  assert len(threads)==2

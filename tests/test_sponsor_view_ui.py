@@ -159,6 +159,16 @@ def test_legacy_review_and_date_precision_remain_distinct(app):
     assert 'datetime="2026-10-17T01:00:00+00:00"' in body and '2026-10-17 09:00 UTC+8' in body
 
 
+def test_a_share_name_review_is_typed_and_does_not_become_business_or_human_approval(app):
+    review_tables(app)
+    put_review(app, 'a-share', 'a_share_directory_source_review')
+    body = sponsor_view.render(app, {})
+    assert 'A股官方法人名与登记核对，非人工签署' in body
+    assert '人工签署：无（自动来源核对）' in body
+    assert '药物研发业务类型尚未独立确认' in body
+    assert '核对类型未记录' not in body and '人工签署通过' not in body
+
+
 def test_curated_source_review_is_explicitly_nonhuman_and_readable(app):
     review_tables(app)
     put_review(app, 'curated', 'curated_official_source_review')

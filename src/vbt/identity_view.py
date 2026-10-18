@@ -29,8 +29,9 @@ def render(app, market, q):
     scheduled=identity_schedule(market)
     enabled=market.setting('identity.enabled','0')=='1'
     counts={status:sum(r['status']==status for r in scheduled) for status in ('ready','active','cooldown','blocked','unknown')}
-    body=('<section class="card" id="source-identity"><h2>美股严格来源名称核对</h2>'
-          '<p>只处理当前候选版本中的精确名称建议，重新读取官方证券目录和对应 NCT 登记。证券代码、规范名称与精确 lead sponsor 均符合规则后，记录自动来源核对并排队采集公司登记。</p>'
+    body=('<section class="card" id="source-identity"><h2>严格来源名称核对 · 美股与A股</h2>'
+          '<p>只处理当前候选版本中的精确名称建议。美股重新读取官方证券目录与 NCT；A股重验深交所、沪市或科创板已封存的英文法人名原件，再获取对应 NCT 登记。证券代码、规范名称与精确 lead sponsor 均符合限定规则后，记录来源名称核对并排队采集公司登记。</p>'
+          '<p class="data-note">A股使用原件取回时间判定目录证据期限，不把本地建账时间当作来源更新时间。北交所、港股、业务不明及歧义建议仍需补充来源或独立核对。</p>'
           '<p class="data-note">这项核对只建立证券主体与登记申办方的来源名称关联，不构成人工签署、药物权益核验、完整管线验收或科学审批。</p>'
           '<p>符合自动核对范围 '+str(len(scheduled))+' 项 · 可排队 '+str(counts['ready'])+' · 执行或排队 '+str(counts['active'])+' · 冷却 '+str(counts['cooldown'])+' · 受阻或待核对 '+str(counts['blocked']+counts['unknown'])+'</p>'
           '<div class="page-actions">'+_button(app,'/market/identity-batch','核对全部符合条件的建议')
@@ -97,6 +98,11 @@ def evidence_file(market, run_id, kind):
 
     proof_raw=read(row['evidence_path'],1024*1024,row['evidence_sha256'])
     proof=json.loads(proof_raw)
+    if isinstance(proof,dict) and proof.get('reviewer_type')=='a_share_directory_source_review':
+        # Historical attachment integrity is separate from re-accepting today's
+        # candidate. The typed reader binds the run, review, receipt and bytes.
+        from .a_share_identity import evidence_file as a_share_evidence_file
+        return a_share_evidence_file(market,run_id,kind)
     if (not isinstance(proof,dict) or proof.get('collector_run_id')!=run_id
         or proof.get('proposal_id')!=row['proposal_id'] or proof.get('candidate_id')!=row['candidate_id']
         or proof.get('candidate_hash')!=row['candidate_hash'] or proof.get('human_sign_off') is not False

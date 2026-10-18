@@ -99,7 +99,7 @@ def review_in_transaction(market,db,proposal_id,decision,reviewer,reason,*,revie
  Normal UI callers should use review(), which owns the transaction itself.
  """
  if not db.in_transaction:raise ValueError('Review publication requires a transaction')
- if reviewer_type not in ('human_declared','automated_source_review'):raise ValueError('Unknown reviewer type')
+ if reviewer_type not in ('human_declared','automated_source_review','a_share_directory_source_review'):raise ValueError('Unknown reviewer type')
  if decision not in ('accepted','rejected'):raise ValueError('Unknown proposal decision')
  reviewer,reason=reviewer.strip(),reason.strip()
  if not 1<=len(reviewer)<=100 or not 10<=len(reason)<=5000:raise ValueError('填写记录人和至少十个字符的主体核对依据')
@@ -108,6 +108,9 @@ def review_in_transaction(market,db,proposal_id,decision,reviewer,reason,*,revie
  if row['status']!='pending':raise ValueError('建议已处理；请查看历史核对记录')
  if row['candidate_hash']!=row['current_hash']:raise ValueError('公司识别依据已变化，需要重新检索和核对')
  if reviewer_type=='automated_source_review':_validate_automated(market,row,proposal_id,evidence)
+ if reviewer_type=='a_share_directory_source_review':
+  from .a_share_identity import validate
+  validate(market,db,row,proposal_id,evidence)
  guard(db)
  if decision=='accepted':
   issue=proposal_query_issue(market,db,row)
@@ -117,7 +120,7 @@ def review_in_transaction(market,db,proposal_id,decision,reviewer,reason,*,revie
   old=db.execute('SELECT aliases FROM companies WHERE id=?',(row['candidate_id'],)).fetchone()
   if old and row['alias'] not in json.loads(old['aliases']):raise ValueError('已有不同申办方映射，需要单独核对变更')
   if not old:
-   provenance=('Automated source-name reconciliation (not human sign-off) by ' if reviewer_type=='automated_source_review' else 'Declared mapping review by ')+reviewer+' at '+now()+'; '+reason[:1000]+'; exact registry source '+row['source_url']+'; proposal '+proposal_id+'. Drug ownership and full pipeline completeness remain unverified.'
+   provenance=('A-share source-name reconciliation (not human sign-off; business classification unverified) by ' if reviewer_type=='a_share_directory_source_review' else 'Automated source-name reconciliation (not human sign-off) by ' if reviewer_type=='automated_source_review' else 'Declared mapping review by ')+reviewer+' at '+now()+'; '+reason[:1000]+'; exact registry source '+row['source_url']+'; proposal '+proposal_id+'. Drug ownership and full pipeline completeness remain unverified.'
    db.execute('INSERT INTO companies VALUES (?,?,?,?,?,?,?)',(row['candidate_id'],row['market'],row['ticker'],row['name'],json.dumps([row['alias']],ensure_ascii=False),provenance,now()))
  rid=uuid.uuid4().hex
  db.execute('INSERT INTO sponsor_proposal_reviews VALUES (?,?,?,?,?,?,?)',(rid,proposal_id,row['candidate_hash'],decision,reviewer,reason,now()))
