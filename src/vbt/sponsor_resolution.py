@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import hashlib
 import re
+import sqlite3
 import unicodedata
 import uuid
 import time
@@ -26,7 +27,7 @@ _LEGAL=frozenset('inc incorporated corp corporation ltd limited plc llc co compa
 _SECURITY=re.compile(r'\s+[-–—]\s+(?:class\s+[a-z]\b|common\b|ordinary\b|american\b|ads\b|depositary\b|preferred\b|warrant\b|units?\b).*$',re.I)
 _TRAILING_SECURITY=re.compile(r'\b(?:class\s+[a-z]\s+)?(?:common\s+(?:stock|shares)|ordinary\s+shares|american\s+depositary\s+(?:shares|receipts)|depositary\s+shares|preferred\s+(?:stock|shares)|warrants?)\b.*$',re.I)
 _NON_LATIN=re.compile(r'[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]')
-QUERY_CONTEXT_VERSION='verified-directory-query-2'
+QUERY_CONTEXT_VERSION='verified-directory-query-3-hk'
 
 
 class _Cancelled(Exception):
@@ -91,19 +92,33 @@ def candidate_query_contexts(market,candidates,*,db=None):
     'candidate_id':candidate['id'],'candidate_hash':candidate.get('content_hash'),
     'name_original':candidate['name'],'query_input_version':QUERY_CONTEXT_VERSION}
  fallback=[row for row in candidates if row['market']=='A' and not contexts[row['id']]['query']]
- if not fallback:return contexts
- from .issuer_directory_names import query_evidences
- proofs=query_evidences(market,fallback,db=db)
- for candidate in fallback:
-  proof=proofs.get(candidate['id']);context=contexts[candidate['id']]
-  if (not isinstance(proof,dict) or proof.get('candidate_id')!=candidate['id']
-      or proof.get('candidate_hash')!=candidate.get('content_hash')):continue
-  name=proof.get('english_name');query=query_name_from_directory(name)
-  if not query:continue
-  serial=json.dumps(proof,sort_keys=True,ensure_ascii=False,allow_nan=False)
-  if len(serial.encode())>64_000:raise ValueError('Directory name proof exceeds the query evidence limit')
-  contexts[candidate['id']]={**context,'query':query,'origin':'verified_exchange_english_name',
-    'name_original':name,'directory_evidence':proof}
+ if fallback:
+  from .issuer_directory_names import query_evidences
+  proofs=query_evidences(market,fallback,db=db)
+  for candidate in fallback:
+   proof=proofs.get(candidate['id']);context=contexts[candidate['id']]
+   if (not isinstance(proof,dict) or proof.get('candidate_id')!=candidate['id']
+       or proof.get('candidate_hash')!=candidate.get('content_hash')):continue
+   name=proof.get('english_name');query=query_name_from_directory(name)
+   if not query:continue
+   serial=json.dumps(proof,sort_keys=True,ensure_ascii=False,allow_nan=False)
+   if len(serial.encode())>64_000:raise ValueError('Directory name proof exceeds the query evidence limit')
+   contexts[candidate['id']]={**context,'query':query,'origin':'verified_exchange_english_name',
+     'name_original':name,'directory_evidence':proof}
+ hk=[row for row in candidates if row['market']=='HK']
+ if hk:
+  from .hk_issuer_names import query_evidences as hk_evidences
+  proofs=hk_evidences(market,hk,db=db)
+  for candidate in hk:
+   proof=proofs.get(candidate['id']);context=contexts[candidate['id']]
+   if (not isinstance(proof,dict) or proof.get('candidate_id')!=candidate['id']
+       or proof.get('candidate_hash')!=candidate.get('content_hash')):continue
+   name=proof.get('english_name');query=query_name_from_directory(name)
+   if not query:continue
+   serial=json.dumps(proof,sort_keys=True,ensure_ascii=False,allow_nan=False)
+   if len(serial.encode())>64_000:raise ValueError('HK name proof exceeds the query evidence limit')
+   contexts[candidate['id']]={**context,'query':query,'origin':'verified_hk_official_name',
+     'name_original':name,'hk_name_evidence':proof}
  return contexts
 
 
@@ -114,6 +129,75 @@ def candidate_query_context(market,candidate,*,db=None):
 
 def query_for_candidate(market,candidate):
  return candidate_query_context(market,candidate)['query']
+
+
+def _hk_frozen_name_issue(market,db,candidate,run,context,frozen):
+ """Verify a frozen HK receipt and its historical bytes, not a new admission.
+
+ The current context has independently replayed current candidate/listing/source
+ proof. An older frozen capture is checked at its original capture time, so a
+ same-name source refresh does not invalidate the old query merely by age.
+ """
+ from . import hk_issuer_names as hk,issuer_directory_names as sealed
+ proof=frozen.get('hk_name_evidence');original=frozen.get('name_original')
+ if (candidate['market']!='HK' or context.get('origin')!='verified_hk_official_name'
+     or not isinstance(context.get('hk_name_evidence'),dict)):
+  return 'Current verified HK name evidence unavailable; refresh name receipt before acceptance'
+ if (not isinstance(proof,dict) or proof.get('candidate_id')!=candidate['id']
+     or proof.get('candidate_hash')!=candidate['content_hash'] or proof.get('english_name')!=original
+     or query_name_from_directory(original)!=run['query']):
+  return 'Frozen query evidence HK name does not match the lookup'
+ try:
+  rid=proof.get('receipt_id')
+  if not isinstance(rid,str) or not re.fullmatch(r'[a-f0-9]{32}',rid):
+   raise ValueError('Invalid HK receipt ID')
+  has=db.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name IN ('hk_issuer_name_receipts','hk_issuer_name_captures')").fetchone()[0]
+  if has!=2:raise ValueError('HK name ledger missing')
+  ledger=db.execute('SELECT * FROM hk_issuer_name_receipts WHERE id=?',(rid,)).fetchone()
+  payload=sealed._serial({k:v for k,v in proof.items() if k!='receipt_id'})
+  if (not ledger or ledger['payload_json']!=payload or ledger['payload_sha256']!=sealed._sha(payload.encode())
+      or ledger['candidate_id']!=candidate['id'] or ledger['candidate_hash']!=candidate['content_hash']
+      or ledger['capture_id']!=proof.get('capture_id')):
+   raise ValueError('HK receipt does not match the append-only ledger')
+  capture=db.execute('SELECT * FROM hk_issuer_name_captures WHERE id=?',(ledger['capture_id'],)).fetchone()
+  if not capture or sealed._sha(capture['payload_json'].encode())!=capture['payload_sha256']:
+   raise ValueError('HK frozen capture ledger digest mismatch')
+  cp=sealed._json(capture['payload_json']);cid=capture['id']
+  if not isinstance(cp,dict):raise ValueError('HK frozen capture payload must be an object')
+  if (cp.get('schema_version')!=hk.VERSION or cp.get('capture_id')!=cid
+      or cp.get('capture_reference')!=f'hk_issuer_names/captures/{cid}/source.html'):
+   raise ValueError('HK frozen capture identity/version mismatch')
+  folder=hk._folder(market,cid);raw=hk._read_file(folder,'source.html',hk.MAX_HTML_BYTES)
+  meta_raw=hk._read_file(folder,'metadata.json',64_000);meta=sealed._json(meta_raw)
+  if (not isinstance(meta,dict) or meta.get('url')!=hk.SOUTHBOUND_URL or meta.get('method')!='GET'
+      or type(meta.get('status')) is not int or meta['status']!=200 or type(meta.get('bytes')) is not int
+      or meta['bytes']!=len(raw) or meta.get('sha256')!=sealed._sha(raw)
+      or cp.get('raw_sha256')!=sealed._sha(raw) or cp.get('raw_bytes')!=len(raw)
+      or cp.get('metadata_sha256')!=sealed._sha(meta_raw) or cp.get('retrieved_at')!=meta.get('retrieved_at')
+      or cp.get('source_url')!=hk.SOUTHBOUND_URL):
+   raise ValueError('HK frozen source bytes/metadata differ')
+  captured=sealed._stamp(capture['created']);retrieved=sealed._stamp(meta.get('retrieved_at'))
+  if not -300<=(captured-retrieved).total_seconds()<=7*86400:
+   raise ValueError('HK source chronology was invalid at capture')
+  parsed=hk.parse_southbound(raw);named=parsed['rows'].get(candidate['ticker'])
+  as_of=datetime.strptime(parsed['content_as_of'],'%Y-%m-%d').date()
+  if (not 0<=(retrieved.date()-as_of).days<=7 or not named or not named['query_seed_eligible']
+      or named['english_name']!=original or named['source_locator']!=proof.get('source_locator')
+      or cp.get('content_as_of')!=parsed['content_as_of'] or cp.get('row_count')!=parsed['row_count']
+      or cp.get('rows_sha256')!=sealed._sha(sealed._serial(parsed['rows']).encode())):
+   raise ValueError('HK frozen table/date/name replay mismatch')
+  required={'schema_version':hk.VERSION,'market':'HK','ticker':candidate['ticker'],
+    'listing_name':candidate['name'],'source':'HKEX_SOUTHBOUND','source_url':hk.SOUTHBOUND_URL,
+    'name_kind':'hkex_reported_english_issuer_name','source_run_id':cid,
+    'scope':'exact_hk_security_to_official_english_name_query_seed_only',
+    'registry_alias_proven':False,'human_sign_off':False,'drug_ownership_verified':False,
+    'drug_developer_status_verified':False,'full_pipeline_verified':False}
+  required.update({k:cp[k] for k in ('raw_sha256','raw_bytes','retrieved_at','content_as_of','capture_reference')})
+  if any(k not in proof or type(proof[k]) is not type(v) or proof[k]!=v for k,v in required.items()):
+   raise ValueError('HK proof scope/source binding changed')
+ except (ValueError,TypeError,KeyError,OSError,sqlite3.DatabaseError) as exc:
+  return 'Frozen query evidence HK receipt cannot be verified: '+str(exc)
+ return ''
 
 
 def proposal_query_issue(market,db,proposal,*,context=None):
@@ -162,6 +246,9 @@ def proposal_query_issue(market,db,proposal,*,context=None):
    if (not ledger or proof.get('ledger_id')!=receipt_id or ledger['payload_json']!=serial
        or hashlib.sha256(serial.encode()).hexdigest()!=receipt_id or ledger['payload_sha256']!=receipt_id):
     return 'Frozen query evidence receipt does not match the append-only ledger'
+  elif origin=='verified_hk_official_name':
+   issue=_hk_frozen_name_issue(market,db,candidate,run,context,frozen)
+   if issue:return issue
   else:return 'Frozen query evidence source type is invalid'
  return ''
 

@@ -438,7 +438,7 @@ def intake_history(market, source_id='', limit=200):
     return rows
 
 
-def verify_capture(market, capture_id):
+def verify_capture(market, capture_id, *, db=None):
     """Read-only verification of a published offline capture and all evidence.
 
     Does not recreate schema, change capture status, repair files, acquire leases,
@@ -451,8 +451,11 @@ def verify_capture(market, capture_id):
     try:
         if not isinstance(capture_id, str) or len(capture_id) != 32 or any(ch not in '0123456789abcdef' for ch in capture_id):
             raise ValueError('Invalid offline capture identifier')
-        with market.db() as db:
-            db.execute('BEGIN')
+        from contextlib import nullcontext
+        with (nullcontext(db) if db is not None else market.db()) as connection:
+            if db is None:
+                connection.execute('BEGIN')
+            db = connection
             cap = db.execute('SELECT * FROM disclosure_captures WHERE id=?', (capture_id,)).fetchone()
             if not cap or cap['status'] != 'succeeded':
                 raise ValueError('No successful frozen official capture to verify')

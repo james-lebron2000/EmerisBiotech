@@ -16,6 +16,8 @@ def parser():
     p.add_argument('--state-dir',type=Path)
     sp=p.add_subparsers(dest='command',required=True)
     a=sp.add_parser('market');a.add_argument('action',choices=['universe','sync','import-companies','discover','expand','coverage','enqueue','disclosures','traverse','identity','identity-status','directory-names']);a.add_argument('reference');a.add_argument('--max-pages',type=int,default=20)
+    a=sp.add_parser('market-hk-names',help='Seal already captured official HK names; offline, query seeds only')
+    a.add_argument('action',nargs='?',choices=['seal'],default='seal');a.add_argument('--raw',type=Path,required=True);a.add_argument('--metadata',type=Path,required=True)
     a=sp.add_parser('workbench');a.add_argument('--port',type=int,default=18764)
     a=sp.add_parser('register');a.add_argument('manifest',type=Path)
     a=sp.add_parser('prepare-geo');a.add_argument('--matrix',required=True);a.add_argument('--platform',required=True);a.add_argument('--rules',type=Path,required=True);a.add_argument('--output',type=Path,required=True)
@@ -37,6 +39,33 @@ def parser():
 
 def main(argv=None):
     args=parser().parse_args(argv)
+    if args.command=='market-hk-names':
+        try:
+            import hashlib
+            from types import SimpleNamespace
+            from .market import Market
+            from .hk_issuer_names import seal_southbound,MAX_HTML_BYTES,_capture_metadata
+            from .issuer_directory_names import _json
+            from .io import ensure_storage
+            def bounded(path,maximum):
+                with path.open('rb') as file:raw=file.read(maximum+1)
+                if not 0<len(raw)<=maximum:raise ValueError('Offline HK source is empty or oversized: '+str(path))
+                return raw
+            raw=bounded(args.raw,MAX_HTML_BYTES);metadata=_json(bounded(args.metadata,64_000))
+            _capture_metadata(raw,metadata)
+            workspace=ensure_storage(args.workspace)
+            state=(args.state_dir or Path.home()/'Library/Application Support/VirtualBiotech'/hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()[:12]).expanduser().absolute()
+            path=state/'market.sqlite3'
+            if state.resolve()!=state or state.resolve().is_relative_to('/Volumes') or path.is_symlink() or path.resolve()!=path.absolute():raise ValueError('HK name ledger must remain on local non-aliased storage')
+            if not path.is_file():raise ValueError('Offline HK names require an existing initialized market database and sealed HK directory')
+            # Avoid Market.__init__: this offline command must not recover or
+            # schedule unrelated jobs while adding only the independent ledger.
+            m=SimpleNamespace(root=workspace/'artifacts/market',state=state,path=path)
+            m.db=lambda:Market.db(m)
+            result=seal_southbound(m,raw,metadata)
+            print(json.dumps(result,ensure_ascii=False,indent=2));return 0
+        except Exception as ex:
+            print(json.dumps({'status':'blocked','error':str(ex)},ensure_ascii=False),file=sys.stderr);return 2
     if args.command=='market':
         import hashlib
         from .market import Market

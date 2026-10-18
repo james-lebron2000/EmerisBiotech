@@ -54,6 +54,143 @@ def _badge(label, state=""):
     return '<span class="badge ' + e(state) + '">' + e(label) + '</span>'
 
 
+def _coverage_scope(summary):
+    """Display stored workflow numerators without inventing a market denominator."""
+    totals = summary['totals']
+    body = ('<section class="card" id="coverage-scope" aria-labelledby="coverage-scope-title">'
+            '<div class="section-heading"><div><h2 id="coverage-scope-title">本页统计范围</h2>'
+            '<p class="cell-meta">三地市场全部已存记录 · 不随下方公司筛选变化</p></div>'
+            '<a class="text-link" href="#coverage-source-status">核对目录来源与日期 ↓</a></div>'
+            '<div class="metric-row" aria-label="已存范围与计数单位">')
+    for key, label, note in (
+            ('mapped_company_count', '已配置证券主体', '证券与申办方检索目标的已配置关联，不是药企总数'),
+            ('companies_with_trials', '有已存登记的证券', '按证券标识计数；包含历史观察'),
+            ('trial_records', '证券—试验关联', '同一 NCT 可关联多个证券；不是去重试验数或独立资产数')):
+        body += ('<div class="metric-card" data-coverage-count="' + e(key) + '"><span class="metric-label">'
+                 + label + '</span><strong class="metric">' + format(totals[key], ',') + '</strong><small>'
+                 + note + '</small></div>')
+    return body + ('</div><dl class="source-meta"><dt>完整药企分母</dt><dd>未知 · 尚未独立确认三地市场全部合资格药企</dd>'
+                   '<dt>完整管线覆盖</dt><dd>尚未核验 · 采集成功、已有登记及名称数量均不能替代完整性与权益核对</dd>'
+                   '<dt>统计观察时间</dt><dd>' + _timestamp(summary['as_of']) + '</dd></dl>'
+                   '<p class="data-note">以上证券按市场与代码区分，多地上市不会自动合并为一个法人。'
+                   '候选识别、已配置关联和来源采集是不同处理阶段；不据此计算全市场覆盖率或临床成功概率。</p></section>')
+
+
+def _read_hk_directory_audit(market):
+    """The versioned adapter performs bounded read-only raw/snapshot replay."""
+    try:
+        from .hk_issuer_names import directory_audit
+        return directory_audit(market)
+    except (ImportError, OSError, ValueError, TypeError):
+        return None
+
+
+def _hk_date_context(summary, audit):
+    """Never combine an audit of a different snapshot with current source rows."""
+    unknown = {'date': '未知 · 未取得与当前目录批次一致的可重验日期摘要', 'retrieved': None,
+               'locator': None, 'audit': None, 'warning': '港股来源内容日期尚未核实；已有本地目录与既有关联分别保留，不能据此推定全部港股映射失效。'}
+    if not isinstance(audit, dict):
+        return unknown
+    if (type(audit.get('schema_version')) is not int or audit['schema_version'] != 1
+            or audit.get('adapter_version') != 'hk-issuer-names-1' or audit.get('source') != 'HK'
+            or audit.get('status') not in ('verified', 'verified_bytes_date_anomaly')):
+        return unknown
+    source = next((source for source in summary['markets']['HK']['universe_sources'] if source['source'] == 'HK'), None)
+    success = source.get('last_success_run') if source else None
+    if (not source or not source['current_snapshot_verified'] or not success
+            or success['id'] != audit.get('source_run_id')
+            or type(audit.get('directory_count')) is not int or audit['directory_count'] <= 0
+            or audit['directory_count'] != source['records'] or audit['directory_count'] != success['count']
+            or not re.fullmatch(r'[0-9a-f]{64}', str(audit.get('raw_sha256')))
+            or not re.fullmatch(r'[0-9a-f]{64}', str(audit.get('rows_sha256')))
+            or type(audit.get('raw_bytes')) is not int or audit['raw_bytes'] <= 0):
+        return unknown
+    try:
+        retrieved = audit.get('retrieved_at')
+        if not isinstance(retrieved, str) or len(retrieved) > 100:
+            return unknown
+        stamp = datetime.fromisoformat(retrieved.replace('Z', '+00:00'))
+        if stamp.tzinfo is None or stamp.utcoffset() is None:
+            return unknown
+    except (TypeError, ValueError, OverflowError):
+        return unknown
+    context = {**unknown, 'retrieved': retrieved, 'audit': audit, 'warning': ''}
+    content, locator, state = audit.get('content_as_of'), audit.get('date_locator'), audit.get('date_status')
+    if state == 'unknown' and content is None:
+        context.update(date='未知 · 原件日期标记缺失或尚未核对', warning='港股原件与当前目录批次已重验，但来源内容日期仍未知；不能用本地取回时间替代。')
+        return context
+    try:
+        if not isinstance(content, str) or not re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}', content):
+            return unknown
+        date.fromisoformat(content)
+        if not isinstance(locator, str) or not re.fullmatch(r'sheet1![A-Z]{1,3}[1-9][0-9]{0,5}', locator):
+            return unknown
+    except ValueError:
+        return unknown
+    if state == 'future_dated' and audit['status'] == 'verified_bytes_date_anomaly':
+        context.update(date=content + ' · 未来日期，尚待核实', locator=locator,
+                       warning='港股 HKEX 目录原文内容日期为 ' + content + '，审计标为未来日期异常；本地取回时间另列。原件与当前目录批次已重验不等于来源日期有效，不能据此把内容升级为当前有效目录，也不据此推定全部港股映射失效。')
+    elif state == 'known' and audit['status'] == 'verified':
+        context.update(date=content + ' · 已定位原文日期标记，不是平台取回日期', locator=locator)
+    else:
+        return unknown
+    return context
+
+
+def _directory_sources(summary, hk_audit=None):
+    """Expose directory publication, attempt and independently audited source clocks."""
+    body = ('<section class="card" id="coverage-source-status" tabindex="-1" aria-labelledby="coverage-source-title">'
+            '<div class="section-heading"><div><h2 id="coverage-source-title">目录来源状态与日期</h2>'
+            '<p class="cell-meta">按已配置目录来源逐项核对，不是完整管线覆盖率</p></div>'
+            '<a class="text-link" href="/market">查看市场页来源观察 →</a></div>'
+            '<p class="data-note">库内发布关联一致只表示当前目录行、发布批次与成功记录相符，本页未据此证明原件完整性。'
+            '本地取回／观察时间、成功抓取时间与来源内容有效日期分别记录；刚抓取不代表内容刚更新。'
+            '本地目录为 0 行不等于源站确认零条，缺失或失败来源的返回数量仍未知。</p>')
+    hk_date = _hk_date_context(summary, hk_audit) if hk_audit is not None else None
+    if hk_date and hk_date['warning']:
+        body += '<p class="notice" data-source-date-warning="HK">' + e(hk_date['warning']) + '</p>'
+    for code, data in summary['markets'].items():
+        sources = data['universe_sources']
+        consistent = sum(source['current_snapshot_verified'] for source in sources)
+        body += ('<details data-directory-market="' + e(code) + '"><summary>' + e(MARKET_LABELS[code])
+                 + ' · ' + str(len(sources)) + ' 项已配置目录来源 · 库内发布关联一致 ' + str(consistent)
+                 + ' 项 · 尚未核对 ' + str(len(sources) - consistent) + ' 项</summary>'
+                 '<p class="cell-meta">本地目录证券 ' + str(data['securities_count']) + ' 条去重记录，其中代码可匹配 '
+                 + str(data['normalized_security_count']) + '，标识待处理 ' + str(data['unsupported_identity_count'])
+                 + '。待处理记录仍保留在原始目录中。</p>')
+        for source in sources:
+            latest, success = source['latest_run'], source['last_success_run']
+            body += '<section class="source-details"><h3>' + e(DIRECTORY_LABELS.get(source['source'], '目录来源待核对')) + '</h3><dl class="source-meta">'
+            values = [('本地已存目录行', e(source['records'])),
+                      ('库内发布关联', '当前目录与成功批次一致' if source['current_snapshot_verified'] else '尚未核对'),
+                      ('最近抓取尝试', (_badge(STATE_LABELS.get(latest['status'], latest['status']), latest['status'])
+                                      + ' · ' + _timestamp(latest['finished'] or latest['started'])) if latest else '尚无抓取记录 · 来源返回数量未知'),
+                      ('最近成功抓取', _timestamp(success['finished'] or success['started']) if success else '尚无成功记录'),
+                      ('本地目录观察', _timestamp(source['last_observed'])),
+                      ('来源内容日期', e(hk_date['date']) if source['source'] == 'HK' and hk_date else '未知 · 不能用本地取回或发布时间替代')]
+            if source['source'] == 'HK' and hk_date:
+                values.append(('原件取回时间', _timestamp(hk_date['retrieved']) if hk_date['retrieved'] else '未知 · 原件／当前批次绑定尚未核实'))
+                if hk_date['locator']:
+                    values.append(('原文日期位置', e(hk_date['locator'])))
+            body += ''.join('<dt>' + label + '</dt><dd>' + value + '</dd>' for label, value in values) + '</dl>'
+            if latest and latest['status'] in ('failed', 'partial', 'interrupted', 'cancelled'):
+                body += '<p class="notice">最近刷新失败或未完成；已有目录另行保留，不代表源站没有证券。</p>'
+            if source.get('status_note'):
+                body += '<p class="ref">' + e(source['status_note']) + '</p>'
+            if latest and latest.get('error'):
+                body += '<details><summary>查看最近抓取原因</summary><p class="body">' + e(_queue_error(latest['error'])) + '</p></details>'
+            if source['source'] == 'HK' and hk_date and hk_date['audit']:
+                audit = hk_date['audit']
+                body += ('<details><summary>查看原件日期审计的批次与校验值</summary><dl class="source-meta">'
+                         '<dt>审计范围</dt><dd>当前本地 HKEX 证券目录原件及库内发布关联；不确认英文法人名、权益或完整管线</dd>'
+                         '<dt>来源运行</dt><dd><code>' + e(audit['source_run_id']) + '</code></dd>'
+                         '<dt>原件 SHA-256</dt><dd><code>' + e(audit['raw_sha256']) + '</code></dd>'
+                         '<dt>原件字节数</dt><dd>' + e(audit['raw_bytes']) + '</dd></dl></details>')
+            body += '</section>'
+        body += '</details>'
+    return body + '<p class="data-note">目录只用于识别证券与候选。ClinicalTrials.gov、公司官网／历史年报和中国境内登记是不同来源；目录可读或任务成功均不证明这些管线来源已经齐备。</p></section>'
+
+
 QUEUE_KINDS = {'universe': '证券目录更新', 'resolve': '申办方名称检索',
                'identity': '来源身份核对', 'company': '临床登记采集', 'disclosure': '官方披露采集／验收'}
 RUN_LABELS = {**STATE_LABELS, 'suggested': '已产生关联建议', 'ambiguous': '存在多项候选，待核对',
@@ -382,6 +519,7 @@ def render(app, q):
             + '。<a href="#collection-queue">跳至任务与错误记录 ↓</a></p>'
             '<p><a href="/market">查看临床登记与来源观察 →</a> · <a href="/disclosures">公司披露与登记核对 →</a></p>')
     body += '<div class="notice">目录中的证券按市场与代码去重。药企候选需要核对；申办方映射用于检索登记，药物所有权另需证据。目前完整药企分母未知，暂不报告全市场覆盖率。</div>'
+    body += _coverage_scope(summary)
     body += _traversal_panel(market, market_filter)
     body += _expansion_gaps(market) + _registry_audit(app)
     body += '<div class="case-grid">'
@@ -390,7 +528,8 @@ def render(app, q):
         for label, field in (("尚未判定业务", "unclassified_count"), ("当前规则筛除", "excluded_count"), ("已关联申办方", "mapped_company_count"), ("已有临床登记", "companies_with_trials"), ("尚未关联的候选", "unmapped_candidate_count"), ("已映射，等待采集", "uncollected_count"), ("最近采集失败", "failed_count"), ("结果需要更新", "stale_count")):
             body += '<tr><td>' + label + '</td><td>' + str(data[field]) + '</td></tr>'
         body += '</tbody></table><p class="ref">最近查询零结果 ' + str(data["success_zero_count"]) + ' 家；零结果不代表没有管线。</p><a href="/market/progress?' + e(urlencode({"market": code})) + '">查看' + MARKET_LABELS[code] + '识别记录 →</a></div>'
-    body += '</div><div class="card"><h2>推进覆盖</h2><p><a class="button" href="/mapping">检索并核对新的申办方关联 →</a></p><p>刷新识别会重新检查当前已入库的证券目录，并保留人工分类决定。批量抓取把所有已登记申办方加入持久队列，可离开页面后再回来查看。</p><div class="primary-actions">' + action_form(app, "/market/discover", "刷新药企识别") + action_form(app, "/market/expand", "补入已核对来源的申办方映射") + action_form(app, "/market/batch", "抓取全部已关联公司") + '</div><p class="ref">采集任务按队列执行；页面不会承诺尚未取得的完整管线。</p></div>'
+    body += '</div>' + _directory_sources(summary, _read_hk_directory_audit(market))
+    body += '<div class="card"><h2>推进覆盖</h2><p><a class="button" href="/mapping">检索并核对新的申办方关联 →</a></p><p>刷新识别会重新检查当前已入库的证券目录，并保留人工分类决定。批量抓取把所有已登记申办方加入持久队列，可离开页面后再回来查看。</p><div class="primary-actions">' + action_form(app, "/market/discover", "刷新药企识别") + action_form(app, "/market/expand", "补入已核对来源的申办方映射") + action_form(app, "/market/batch", "抓取全部已关联公司") + '</div><p class="ref">采集任务按队列执行；页面不会承诺尚未取得的完整管线。</p></div>'
     body += '<h2>公司识别与关联进度</h2><form method="get" action="/market/progress"><label for="coverage-query">公司名称、证券代码或来源关键词</label><input id="coverage-query" type="search" name="q" value="' + e(query) + '"><select name="market" aria-label="市场"><option value="">三地市场</option>'
     for code, label in MARKET_LABELS.items():
         body += '<option value="' + code + '"' + (' selected' if market_filter == code else '') + '>' + label + '</option>'
@@ -430,7 +569,7 @@ def render(app, q):
         if offset + 50 < total:
             body += '<a href="/market/progress?' + e(urlencode({**q, "offset": offset + 50})) + '">下一页 →</a>'
         body += '</p>'
-    body += '<details class="card"><summary>持续发现与来源更新</summary><p>自动更新开启时，证券目录每24小时检查，已配置公司的临床登记与官方披露每6小时检查。目录变更后重新识别候选，并每小时最多排队20个尚未检索且具有可用名称的主体。名称建议仍需有来源依据的核对后才能建立关联。抓取服务须保持运行，源站发布时间和访问限制影响时效。</p>'
+    body += '<details class="card"><summary>持续发现与来源更新</summary><p>自动更新开启时，证券目录每24小时检查，已配置公司的临床登记与支持网络采集的官方披露每6小时检查；离线历史披露仅验收本地归档，不作定时网络刷新。目录变更后重新识别候选，并每小时最多排队20个尚未检索且具有可用名称的主体。名称建议仍需有来源依据的核对后才能建立关联。抓取服务须保持运行，检查频率不是源内容更新时间或客户SLA。</p>'
     with market.db() as db:
         if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_discovery_events'").fetchone():
             for event in db.execute('SELECT * FROM market_discovery_events ORDER BY created DESC LIMIT 5'):
@@ -443,16 +582,6 @@ def render(app, q):
         body += _queue_table(app, market, queue)
     body += '</section><details class="card"><summary>覆盖缺口与目录来源日期</summary>'
     body += ''.join('<p>' + gap + '</p>' for gap in GAPS)
-    for code, data in summary["markets"].items():
-        body += '<h3>' + MARKET_LABELS[code] + '</h3>'
-        body += '<p>目录证券 ' + str(data["securities_count"]) + ' 条去重记录，其中代码可匹配 ' + str(data["normalized_security_count"]) + '，标识待处理 ' + str(data["unsupported_identity_count"]) + '。待处理记录仍保留在原始目录中。</p>'
-        for source in data["universe_sources"]:
-            latest = source["latest_run"]
-            label = '北交所 A 股' if source['source']=='BSE' else source['source']
-            body += '<p>' + e(label) + ' · 当前目录 ' + str(source["records"]) + ' 条 · 目录观察时间 ' + _timestamp(source["last_observed"]) + ' · 最近任务 ' + (_timestamp(latest["finished"] or latest["started"]) if latest else "尚无抓取任务记录") + (' · ' + e(STATE_LABELS.get(latest["status"], latest["status"])) if latest else '') + '</p>'
-            if source.get('status_note'):
-                body += '<p class="ref">'+e(source['status_note'])+'</p>'
-            if source['source']=='BSE' and latest and latest.get('error'):
-                body += '<details><summary>北交所最近采集原因</summary><p>'+e(latest['error'])+'</p></details>'
+    body += '<p><a href="#coverage-source-status">核对各目录来源的发布关联、最近尝试和内容日期 ↑</a></p>'
     body += '<p class="ref">汇总时间 ' + _timestamp(summary["as_of"]) + '。当前“需要更新”表示最近一次成功采集已超过24小时，未成功过的公司另列等待或失败状态。</p></details>'
     return body

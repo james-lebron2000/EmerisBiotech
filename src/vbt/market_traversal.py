@@ -39,7 +39,7 @@ def _rows(market, market_filter):
         raise ValueError('Unknown market')
     _init(market)
     with market.db() as db:
-        rows = [dict(r) for r in db.execute('''SELECT c.id,c.name,c.market,c.content_hash,
+        rows = [dict(r) for r in db.execute('''SELECT c.id,c.name,c.market,c.ticker,c.content_hash,
           r.id AS resolution_id,r.status AS resolution_status,r.started,r.query AS resolution_query,
           j.id AS active_job,EXISTS(SELECT 1 FROM sponsor_resolution_runs old
               WHERE old.candidate_id=c.id) AS ever_queried
@@ -56,7 +56,7 @@ def _rows(market, market_filter):
     contexts = candidate_query_contexts(market, rows)
     for row in rows:
         context = contexts[row['id']]
-        row['directory_name_used'] = context['origin'] == 'verified_exchange_english_name'
+        row['directory_name_used'] = context['origin'] in ('verified_exchange_english_name', 'verified_hk_official_name')
         row['registry_query'] = context['query']
     return rows
 

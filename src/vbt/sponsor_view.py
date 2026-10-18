@@ -18,12 +18,33 @@ def _query_details(context):
   return '<p class="cell-meta">查询种子来源与原文：历史记录未保存</p>'
  origin=context['origin']
  label={'verified_exchange_english_name':'交易所目录英文全称（已核对原始归档）',
+        'verified_hk_official_name':'HKEX 官方英文名称（检索依据）',
         'listing_display_name':'证券目录显示名称','unresolved':'准确英文主体尚未取得'}.get(origin,'来源类型未识别')
  body='<p class="cell-meta">查询种子来源：'+e(label)+'<br>名称原文：'+e(context.get('name_original'))+'</p>'
  if origin=='verified_exchange_english_name':
   proof=context.get('directory_evidence')
   if isinstance(proof,dict):
    body+='<details><summary>查看查询名称凭据</summary><dl class="source-meta"><dt>目录</dt><dd>'+e(proof.get('source'))+'</dd><dt>来源批次</dt><dd>'+e(proof.get('source_run_id'))+'</dd><dt>凭据</dt><dd>'+e(proof.get('receipt_id'))+'</dd><dt>原件 SHA-256</dt><dd>'+e(proof.get('raw_sha256'))+'</dd></dl><p class="data-note">英文全称只用于检索，不确认申办方、母子公司关系或药物权益。</p></details>'
+ elif origin=='verified_hk_official_name':
+  proof=context.get('hk_name_evidence')
+  if not isinstance(proof,dict):
+   return body+'<p class="notice">HKEX 名称凭据未保存或格式尚未核实；不能据此确认登记申办方别名。</p>'
+  from .hk_issuer_names import SOUTHBOUND_URL
+  source_url=proof.get('source_url')
+  source_link=_source_link(source_url,'HKEX 官方名称来源') if isinstance(source_url,str) and source_url==SOUTHBOUND_URL else '<span class="cell-meta">HKEX 来源链接尚未核实</span>'
+  body+='<details><summary>查看 HKEX 查询名称凭据</summary><dl class="source-meta">'
+  for field,value in [('名称凭据 UUID',e(proof.get('receipt_id'))),
+                      ('来源英文名称原文',e(proof.get('english_name'))),
+                      ('来源内容日期',_timestamp(proof.get('content_as_of'))),
+                      ('原件取回时间',_timestamp(proof.get('retrieved_at'))),
+                      ('官方来源',source_link),('原文定位',e(proof.get('source_locator'))),
+                      ('原件 SHA-256',e(proof.get('raw_sha256'))),
+                      ('保存的凭据范围',e(proof.get('scope')))]:
+   body+='<dt>'+field+'</dt><dd>'+value+'</dd>'
+  body+='</dl><p class="data-note">query_seed_only：仅用作检索种子。登记申办方别名尚未证明；该来源只覆盖已观察到的互联互通持股子集，不能作为全市场药企目录、独立法人认证、母子公司关系或药物权益验证。</p>'
+  if proof.get('directory_date_status')=='future_dated':
+   body+='<p class="notice">证券目录原文日期存在未来日期异常，需另行核对；英文名称来源日期不能解除该异常或证明申办方关联。</p>'
+  body+='<p class="ref">以上转录本次检索保存的来源字段；本视图未重新验真，当前查询依据是否失效另列记录。</p></details>'
  return body
 
 def enqueue_batch(market,limit=20):

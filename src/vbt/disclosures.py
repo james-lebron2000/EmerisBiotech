@@ -6,6 +6,7 @@ unsupported layouts retain an archived capture and an explicit parse_blocked sta
 from __future__ import annotations
 
 import ast
+from contextlib import nullcontext
 import hashlib
 from html.parser import HTMLParser
 import json
@@ -33,6 +34,12 @@ SOURCES = {
         'url': 'https://www.pfizer.com/science/drug-product-pipeline',
         'parser': 'unsupported',
         'scope': 'Official pipeline page; structured extraction pending',
+    },
+    'merck_pipeline': {
+        'name': 'Merck 官方后期临床开发管线（网页）', 'companies': ['US:MRK'],
+        'url': 'https://www.merck.com/research/product-pipeline/',
+        'parser': 'merck_dual_table_v1',
+        'scope': 'Official late-stage program-indication-phase observations; not Phase 1, all mechanisms, drug rights or a complete current portfolio',
     },
     'innovent_interim_pipeline_2025': {
         'name': '信达生物官方 2025 中期业绩公告及管线图', 'companies': ['HK:01801'],
@@ -401,17 +408,28 @@ def initialize_storage(market):
     _schema(market)
 
 
-def capture_integrity(market, capture):
+def _parse_structured(source, raw):
+    if source['parser'] == 'hengrui_javascript_literals_v1':
+        return parse_hengrui(raw)
+    if source['parser'] == 'merck_dual_table_v1':
+        from .merck_disclosure import parse_merck
+        return parse_merck(raw)
+    raise ParseBlocked('Capture has no independently repeatable structured parser')
+
+
+def capture_integrity(market, capture, *, db=None):
     """Check retained bytes; execution success alone is not evidence integrity."""
     if SOURCES.get(capture.get('source_id'), {}).get('intake_mode') == 'offline_reviewed_bundle':
         from .official_disclosure_intake import verify_capture
-        return verify_capture(market, capture['id'])
+        return verify_capture(market, capture['id'], db=db)
     result = {'integrity_status': 'blocked', 'errors': []}
     try:
         if capture.get('status') != 'succeeded':
             raise ValueError('Capture execution did not publish a successful observation')
         if capture.get('source_id') not in SOURCES or capture.get('url') != SOURCES[capture['source_id']]['url']:
             raise ValueError('Capture source binding is not the configured official URL')
+        if capture.get('company') != SOURCES[capture['source_id']]['companies'][0]:
+            raise ValueError('Capture company differs from its configured official source')
         relative = Path(capture.get('archive_path') or '')
         expected = Path('disclosures/captures') / capture['id'] / 'source.bin'
         if relative != expected or relative.is_absolute() or not re.fullmatch('[a-f0-9]{32}', capture['id']):
@@ -429,9 +447,7 @@ def capture_integrity(market, capture):
         if digest(path) != capture['sha256']:
             raise ValueError('Capture archive SHA-256 no longer matches its recorded source')
         source = SOURCES[capture['source_id']]
-        if source['parser'] != 'hengrui_javascript_literals_v1':
-            raise ValueError('Capture has no independently repeatable structured parser')
-        expected_rows, expected_metadata = parse_hengrui(path.read_bytes())
+        expected_rows, expected_metadata = _parse_structured(source, path.read_bytes())
         metadata = {'parser': source['parser'], 'scope': source['scope'], 'published_at': None,
                     'as_of': None, 'as_of_precision': 'unknown', 'date_locator': None,
                     **expected_metadata}
@@ -442,8 +458,8 @@ def capture_integrity(market, capture):
             raise ValueError('Capture count/date no longer agrees with its archived official source')
         expected = {row['source_locator']: row for row in expected_rows}
         fields = ('drug_code', 'drug_name', 'modality', 'target', 'indication', 'phase', 'source_locator')
-        with market.db() as db:
-            observed = [dict(r) for r in db.execute(
+        with (nullcontext(db) if db is not None else market.db()) as connection:
+            observed = [dict(r) for r in connection.execute(
                 'SELECT * FROM disclosure_observations WHERE capture_id=?', (capture['id'],))]
         if len(observed) != len(expected_rows):
             raise ValueError('Published observation count differs from the retained source')
@@ -457,6 +473,59 @@ def capture_integrity(market, capture):
     except (KeyError, TypeError, ValueError, OSError) as exc:
         result['errors'].append('Retained official source is unavailable' if isinstance(exc, OSError) else str(exc))
     return result
+
+
+def evidence_file(market, capture_id, kind):
+    """Read one verified archived disclosure, never a caller-supplied path.
+
+    Both network HTML and the two sealed PDF adapters use the same fail-closed
+    reader. HTML is returned as plain text; original scripts cannot execute.
+    The record is assembled from the reverified version, not its current site.
+    """
+    if not isinstance(capture_id, str) or not re.fullmatch(r'[a-f0-9]{32}', capture_id) or kind not in ('source', 'record'):
+        raise ValueError('Unknown disclosure evidence reference')
+    with market.db() as db:
+        db.execute('BEGIN')
+        tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('disclosure_captures','disclosure_observations')")}
+        if tables != {'disclosure_captures', 'disclosure_observations'}:
+            raise ValueError('Disclosure evidence storage is not available')
+        row = db.execute('SELECT * FROM disclosure_captures WHERE id=?', (capture_id,)).fetchone()
+        if not row:
+            raise ValueError('Disclosure capture does not exist')
+        capture = dict(row)
+        checked = capture_integrity(market, capture, db=db)
+        if checked.get('integrity_status') != 'verified':
+            raise ValueError('Disclosure evidence did not pass its current read gate')
+        relative = Path('disclosures') / 'captures' / capture_id / 'source.bin'
+        if capture.get('archive_path') != str(relative):
+            raise ValueError('Disclosure evidence is outside its capture directory')
+        path = Path(market.root) / relative
+        if path.resolve() != path.absolute() or not path.is_file() or path.stat().st_nlink != 1:
+            raise ValueError('Disclosure source must be an independent ordinary file')
+        with path.open('rb') as handle:
+            raw = handle.read(MAX_BYTES + 1)
+        if len(raw) != capture['bytes'] or len(raw) > MAX_BYTES or hashlib.sha256(raw).hexdigest() != capture['sha256']:
+            raise ValueError('Disclosure source changed during evidence read')
+        if kind == 'source':
+            payload = raw
+            media = 'application/pdf' if raw.lstrip().startswith(b'%PDF') else 'text/plain; charset=utf-8'
+        else:
+            fields = ('id', 'source_id', 'company', 'started', 'finished', 'status', 'url',
+                      'sha256', 'bytes', 'content_type', 'published_at', 'as_of', 'count')
+            observations = [json.loads(item['data']) for item in db.execute(
+                'SELECT data FROM disclosure_observations WHERE capture_id=? ORDER BY source_locator', (capture_id,))]
+            record = {'schema_version': 1, 'capture': {key: capture[key] for key in fields},
+                      'metadata': json.loads(capture['metadata']), 'observations': observations,
+                      'read_gate': 'archived_source_and_all_observations_replayed',
+                      'scientific_review': 'pending', 'human_sign_off': False,
+                      'drug_ownership_verified': False, 'full_pipeline_verified': False}
+            payload = (json.dumps(record, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + '\n').encode()
+            media = 'application/json; charset=utf-8'
+    with market.db() as db:
+        current = db.execute('SELECT * FROM disclosure_captures WHERE id=?', (capture_id,)).fetchone()
+        if not current or dict(current) != capture:
+            raise ValueError('Disclosure capture binding changed during evidence read')
+    return payload, media
 
 
 def sources(market=None):
@@ -553,10 +622,10 @@ def ingest(market, source_id, fetch=fetch, cancelled=lambda: False, on_start=lam
             status = 'cancelled'
             raise InterruptedError('Disclosure cancelled after capture; observations not published')
         status = 'parse_blocked'
-        if source['parser'] == 'hengrui_javascript_literals_v1':
+        if source['parser'] in ('hengrui_javascript_literals_v1', 'merck_dual_table_v1'):
             if raw.lstrip().startswith(b'%PDF'):
                 raise ParseBlocked('Expected official HTML, received PDF')
-            rows, parsed_metadata = parse_hengrui(raw)
+            rows, parsed_metadata = _parse_structured(source, raw)
             metadata = {**metadata, **parsed_metadata}
         elif source['parser'] == 'unsupported_pdf':
             if not raw.lstrip().startswith(b'%PDF'):

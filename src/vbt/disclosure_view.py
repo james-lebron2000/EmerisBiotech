@@ -92,6 +92,8 @@ def _historical(source, metadata):
 
 
 def _content_date(capture, metadata):
+    if metadata.get('as_of_precision') == 'conflicting_source_dates':
+        return '<span class="muted">未知（来源自身的截止日期存在冲突）</span>'
     if metadata.get('as_of_precision') == 'unresolved_report_date':
         return '<span class="muted">未知（报告日期尚未确定）</span>'
     return _date(capture.get('as_of'))
@@ -227,6 +229,27 @@ def _review_details(metadata):
     return body
 
 
+def _evidence_actions(source, capture, integrity):
+    """Expose only a verified, source-bound version; the reader rechecks on open."""
+    if not capture:
+        return ''
+    capture_id = capture.get('id')
+    if (not isinstance(integrity, dict) or integrity.get('integrity_status') != 'verified'
+            or capture.get('status') != 'succeeded'
+            or not isinstance(capture_id, str) or not re.fullmatch(r'[a-f0-9]{32}', capture_id)
+            or source.get('id') not in disclosures.SOURCES
+            or capture.get('source_id') != source['id'] or capture.get('url') != source['url']
+            or not source.get('companies') or capture.get('company') != source['companies'][0]):
+        return '<p class="source-error">封存附件入口暂不可用：原件完整性或版本绑定尚未核实。</p>'
+    root = '/market/disclosure-evidence?'
+    body = '<div class="primary-actions" aria-label="该版本封存证据">'
+    for kind, label in [('source', '打开封存原件'), ('record', '结构化记录（JSON）')]:
+        body += ('<a class="button secondary small" target="_blank" rel="noopener noreferrer" href="'
+                 + e(root + urlencode({'id': capture_id, 'file': kind})) + '">' + label + '</a>')
+    return body + ('</div><p class="cell-meta">顶部官方来源为站点当前页；这里固定于该来源批次。'
+                   '网页原件按源文本只读打开，历史 PDF 保留原文；打开时再次核对完整性，变化或受阻时拒绝读取。</p>')
+
+
 def _source_card(source, token, names, success=None, integrity=None):
     attempt = source.get('latest') or {}
     success = success or {}
@@ -258,16 +281,29 @@ def _source_card(source, token, names, success=None, integrity=None):
     else:
         body += '<dt>最近抓取尝试</dt><dd>' + _date(attempt.get('finished') or attempt.get('started')) + '</dd>'
     body += '</dl>'
+    if metadata.get('as_of_precision') == 'conflicting_source_dates':
+        values = metadata.get('source_date_values')
+        dates = ' / '.join(str(value) for value in values[:10]) if isinstance(values, list) else '待核对'
+        body += '<p class="notice">来源自身的截止日期存在冲突：' + e(dates) + '。内容截止时间保持未知，抓取时间不能替代。</p>'
+    differences = metadata.get('representation_annotation_difference_count')
+    if type(differences) is int and differences > 0:
+        body += '<p class="data-note">手机与桌面布局有 ' + str(differences) + ' 处阶段附注差异；两份原文均保留，不能据此推定全球权益或批准状态。</p>'
     if historical:
         body += '<p class="data-note">历史披露只覆盖所选图表；报告期不等于发布日期或当前管线日期。</p>'
     if success and success.get('id') != attempt.get('id'):
         body += '<p class="notice">最新尝试未发布新的观察，当前仍展示最近成功批次；请核对内容截止日期。</p>'
     if attempt.get('error') or blocked:
         body += '<p class="source-error">存在来源缺口，请查看下方详情；未知数量不能记作零。</p>'
+    body += _evidence_actions(source, success, checked)
     body += '<details class="source-details"><summary>覆盖范围与原件依据</summary><p>覆盖范围：' + e(source['scope']) + '</p><p>关联证券：' + ' / '.join(e(company) for company in source['companies']) + '</p>'
     body += '<p>最近执行状态：' + e(STATES.get(attempt.get('status'), attempt.get('status'))) + '；当前原件完整性另行核对。</p>'
     if success:
         body += '<p class="ref">来源批次：' + e(success['id']) + '</p>'
+    assertions = metadata.get('source_date_assertions')
+    if isinstance(assertions, list):
+        for assertion in assertions[:20]:
+            if isinstance(assertion, dict):
+                body += '<p class="ref">日期声明原文：' + e(assertion.get('source_text')) + '</p>'
     if offline:
         body += _review_details(metadata)
         body += '<p class="ref">原件相对引用：' + e(metadata.get('raw_reference')) + '</p><p class="ref">转录包 SHA-256：' + e(metadata.get('bundle_sha256')) + '</p>'

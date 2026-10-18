@@ -111,11 +111,11 @@ def test_cancelled_queue_does_not_fetch_or_create_capture(market,monkeypatch):
 
 def test_disclosure_freshness_separate_from_ctg_runs(market):
     disclosures.ingest(market,'hengrui_pipeline',fetch=lambda url:synthetic_chart())
-    assert len(jobs.enqueue_disclosures(market,only_due=True))==2
-    assert {r['reference'] for r in jobs.jobs(market)}=={'pfizer_pipeline','innovent_interim_pipeline_2025'}
-    with market.db() as db:db.execute("UPDATE disclosure_captures SET started='2000-01-01T00:00:00+00:00'")
     assert len(jobs.enqueue_disclosures(market,only_due=True))==3
-    assert len(jobs.jobs(market))==3
+    assert {r['reference'] for r in jobs.jobs(market)}=={'pfizer_pipeline','innovent_interim_pipeline_2025','merck_pipeline'}
+    with market.db() as db:db.execute("UPDATE disclosure_captures SET started='2000-01-01T00:00:00+00:00'")
+    assert len(jobs.enqueue_disclosures(market,only_due=True))==4
+    assert len(jobs.jobs(market))==4
 
 
 def test_recover_disclosure_interrupts_capture_releases_only_proven_owner(market):

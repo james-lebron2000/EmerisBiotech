@@ -180,6 +180,11 @@ def handler(app, public_origin=None):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/market/disclosure-evidence':
+                    from .market import Market
+                    from .disclosures import evidence_file
+                    raw,mime=evidence_file(Market(app.workspace,app.state),q.get('id',''),q.get('file',''))
+                    self.send_bytes(200,raw,mime,True);return
                 if u.path=='/market/identity-evidence':
                     from .market import Market
                     from .identity_view import evidence_file
