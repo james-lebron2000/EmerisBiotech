@@ -56,7 +56,9 @@ def main():
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9.-]*',a.host):raise ValueError('Invalid SSH host')
     if not a.identity.is_file():raise ValueError('SSH identity not found')
     commit,files,expected=verify_local(a.archive)
-    with tempfile.TemporaryDirectory(prefix='predome-ssh-') as control:
+    # macOS TMPDIR can exceed the 104-byte Unix socket limit after %C expands.
+    # mkdtemp creates a private 0700 directory under the short Unix temp root.
+    with tempfile.TemporaryDirectory(prefix='pd-ssh-', dir='/tmp') as control:
         options=['-F','/dev/null','-i',str(a.identity.resolve()),'-o','IdentitiesOnly=yes','-o','BatchMode=yes',
                  '-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=10','-o','ServerAliveInterval=15',
                  '-o','ServerAliveCountMax=3','-o','ControlMaster=auto','-o','ControlPersist=60',
