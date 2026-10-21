@@ -132,8 +132,11 @@ def test_repeated_reads_and_real_http_requests_stay_below_fd_budget(tmp_path):
     env = os.environ.copy()
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     env['PYTHONPATH'] = str(Path(__file__).resolve().parents[1] / 'src')
+    # Hosted macOS runners can take longer than 30 seconds for the repeated
+    # SQLite opens. This tests descriptor ownership, not throughput: retain
+    # every cycle and the strict FD budget while bounding a stalled child.
     result = subprocess.run([sys.executable, '-B', '-c', script, str(tmp_path)],
-                            capture_output=True, text=True, env=env, timeout=30)
+                            capture_output=True, text=True, env=env, timeout=120)
     assert result.returncode == 0, result.stdout + result.stderr
     report = json.loads(result.stdout)
     assert report['read_cycles'] == 200 and report['http_requests'] == 80
