@@ -44,3 +44,7 @@ EMERIS_DATA_DIR=/absolute/private/state .venv/bin/python run.py
 - [预测锁定与核验](docs/ledger_预测锁定与核验.md)
 
 旧工作台与本产品仍是独立运行模块。共享登录、数据迁移与跨产品导航尚未实现，不将源码同仓管理说成数据已经合并。
+
+## 前端设计规范
+
+主要产品页面共用 [Editorial 01 设计系统](docs/DESIGN_SYSTEM.md)，包含配色、字体、组件、响应式与深色模式约定。本次界面修订使用独立静态发布流程，保留1.1.8后端及冻结数据。
