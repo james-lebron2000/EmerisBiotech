@@ -1,0 +1,8 @@
+[Unit]
+Description=Emeris encrypted database daily snapshot
+After=emeris-live.service
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/opt/emeris-live/venv/bin/python /opt/emeris-live/current/deploy/backup_daily.py

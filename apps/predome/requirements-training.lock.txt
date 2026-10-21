@@ -1,0 +1,6 @@
+# Offline operator training only; no change to production service dependencies.
+numpy==2.2.6
+scipy==1.16.3
+scikit-learn==1.8.0
+joblib==1.5.3
+threadpoolctl==3.6.0

@@ -1,0 +1,28 @@
+[Unit]
+Description=Emeris Research Workbench
+After=network.target
+
+[Service]
+Type=simple
+User=emeris
+Group=emeris
+WorkingDirectory=/opt/emeris-live/current
+EnvironmentFile=/etc/emeris-live.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/emeris-live/venv/bin/python run.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/emeris-live
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=384M
+MemoryHigh=256M
+CPUQuota=75%
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

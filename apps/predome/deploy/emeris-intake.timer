@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily public evidence intake for locked clinical forecasts
+
+[Timer]
+OnCalendar=*-*-* 01:10:00 UTC
+RandomizedDelaySec=300
+Persistent=true
+Unit=emeris-intake.service
+
+[Install]
+WantedBy=timers.target

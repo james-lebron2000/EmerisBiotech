@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Emeris TLS renewal every six hours
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:15:00 Asia/Taipei
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

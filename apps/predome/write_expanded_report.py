@@ -1,0 +1,23 @@
+from predome_pilot import ROOT,write_new
+from predome_prior import DATA
+import json
+
+def main():
+    report=json.loads((DATA/'runs/expanded-v1/report.json').read_text());comp=json.loads((DATA/'runs/expanded-v1/comparison.json').read_text());rows=json.loads((DATA/'dataset.json').read_text());records=json.loads((DATA/'prior_records.json').read_text())['records']
+    old=json.loads((ROOT/'predome_data/historical_v2/runs/pilot-v1/report.json').read_text())
+    lines=['# Predome Agent System：扩展训练与证据比较','',f"本轮完成 {report['counts']['candidate_rows']} 项候选审计，{report['accepted']} 项符合探索性数据门槛。训练集 {report['counts']['train']} 项，历史重放 {report['counts']['test']} 项。研究用途；临床预测尚未验证。",'', '## 本轮做了什么','', '新增 IMvigor010、CANOPY-1、CANOPY-2、CANOPY-A、SEQUOIA、JAVELIN Gastric100 的真实公布前注册快照和主要终点标签。六项均为已知阴性后定向选择，不能据此估计行业成功率。CANOPY-1／2 的注册主要终点数保留 3／2，疗效失败仅针对随机部分的 PFS＋OS／OS，不包含安全性导入期 DLT。Actual 入组数不冒充计划入组数。','', '训练标签从 11 阳性／1 阴性扩至 '+str(report['label_counts']['train']['success'])+' 阳性／'+str(report['label_counts']['train']['failure'])+' 阴性。主要终点核验由独立 agent 完成，尚无人类双人裁定。','', '## 输入、训练和输出','', '输入为真实历史注册快照的九项设计变量，以及按截止日过滤、经过适用性审查的前期随机证据。药物、NCT、公司名、结果日期和结果文本不进入特征矩阵。结果日期用于划分和回顾性截止，不是模型输入。注册快照日期与预测截止日期分别保存。截止日统一设为首次已核实官方结果前七天；这是事后锚定，不代表当时已知公布日。','', '前期效应保留原单位、点估计、置信区间、置信水平、样本量、分析人群、对照、终点、剂量、来源日期及 SHA。比值指标先取对数，连续差和风险差保留自身单位；按真实 90%／95% 区间反推近似标准误，再算有利方向的 z。四项适用性标记及效应类型同时输入。CI 四舍五入使反推 SE 仅为近似值。未找到合适证据记缺失，不记零。','', 'A 为直接可比随机证据，B 为同药同病但人群／终点／对照／时间等存在差异的随机证据，C 为跨病种或非随机信号。本批已选数值证据全部为 B，只作为间接预测变量，不能代替目标疗效。目标精度、显著性门槛和假设亦未联合核实，assurance 全部拒答。','', '固定训练四个模型：设计变量 L2 logistic、设计变量 Extra Trees，以及相应的前期证据增强版本。超参数在本轮拟合前固定。训练集内按整个药物资产留一交叉验证，每折重新拟合缺失值填补、缩放和类别编码；该分组 CV 并非时间前推，各折可能使用更晚的训练病例。未用 CV 或已见测试表现选模、调参、拟合校准器。','', '输出为指定主要疗效分析成功的未校准研究概率、证据和适用性、缺失项、拒答、分组 CV 和历史重放指标。不能预测单个患者疗效，也不是临床治疗建议或批准预测。','', '## 本轮历史重放比较','', '以下 8 项是前一轮已经看过的同一批试验。它们是开发重放，不是新增独立验证。Brier 和 log loss 越低越好，AUROC 越高越好。模型与 DeepSeek 的公共回答子集单独计算；LLM 拒答时不把它填成 0.5。','', '|方法|n|Brier|Log loss|AUROC|','|---|---:|---:|---:|---:|']
+    for k,v in comp['metrics'].items():lines.append(f"|{k}|{v['n']}|{v['brier']:.4f}|{v['log_loss']:.4f}|{v['auroc'] if v['auroc'] is not None else 'NA'}|")
+    lines+=['', '共同回答集只有 1 项阳性、5 项阴性；两者拒答的 INAVO120 与 HERCULES 都为阳性。子集 AUROC=1 只有一个阳性支持，不构成可靠排名或前瞻命中率。', '', f"DeepSeek 共同回答 {comp['common_answered']}／{comp['test_total']}；覆盖率：`{json.dumps(comp['coverage'])}`。",'', '两个 DeepSeek 版本实际调用相同匿名设计＋前期证据，互相不可见；输出有引用、事实陈述、假设和未知项，保留原始概率。历史事件可能进入预训练，即使匿名仍不能排除记忆污染。两个模型属于同一供应商，不能视为独立外部验证。其主观概率与数据模型均未校准。','', '## 训练集内按资产留一的结果','', '|方法|OOF n|Brier|AUROC|','|---|---:|---:|---:|']
+    for k,v in report['training_cv']['metrics'].items():lines.append(f"|{k}|{v['n']}|{v['brier']:.4f}|{v['auroc'] if v['auroc'] is not None else 'NA'}|")
+    lines+=['','这些分数用于展示稳定性，不用来选择最优方法。资产数少；bootstrap 按资产重采样，只反映固定模型在所选重放队列上的条件不确定性，不含训练和裁定误差。','', '## 证据覆盖','', '|分组|数值前期证据|总数|A／B|assurance回答|','|---|---:|---:|---:|---:|']
+    for k,v in report['prior_coverage'].items():lines.append(f"|{k}|{v['eligible_numeric']}|{v['total']}|{v['A']}／{v['B']}|{v['assurance_answered']}|")
+    lines+=['','## 六项新增记录','', '|试验|注册快照|预测截止|首次官方结果|标签|前期证据|','|---|---|---|---|---:|']
+    for r in rows[-6:]:lines.append(f"|{r['trial_name']} / {r['nct_id']}|{r['features_as_of']}|{r['forecast_as_of']}|{r['first_result_at']}|0，主要疗效未达|{r.get('prior_selection',{}).get('record_id') if r.get('prior_selection') else '未知／不合格'}|")
+    lines+=['','## 如何优化','', '1. 先扩展连续时间窗口、与结果无关的完整试验清单，同时补足阳性和阴性；按登记时可见条件抽样，保留无法判定及未公布病例，避免只挑容易找到结果的试验。','2. 双人独立裁定首次公开日期、主要终点与人群，记录分歧及仲裁。补版本化 protocol／SAP、精度与 alpha、事件数、效应异质性、治疗背景和生物标志物分层。','3. 将前期证据提取变成受控流水线：检索→原文事实→效应／SE→适用性→独立审核。所有字段保留来源和时间，研究文献文本的公开可读性不等于训练授权。','4. 冻结全新、尚未出结果的外部试验名单、特征和概率，独立校准集不参与训练。按药物、机制、公司、治疗领域和时间检查漂移；在新结果公布后只追加标签，不覆盖旧预测。','5. 模型训练、统计 assurance 和 LLM 保持独立。资料不足时拒答；用 Brier、log loss、分层校准、覆盖率、相对恒定基线的增益和前瞻审计评价，不能以少量命中率营销。','6. 自进化应是新结果进入隔离数据区→审核→版本化重训→门槛比较→人工批准晋升。线上不自主改权重，不在待验证预测中反复追改。','7. 现有 18 项训练远少于正式门槛 200 训练／50 校准／50 新测试及双人审核。近期优先数据和前瞻验证，基础模型堆叠与多 LLM 投票不能补齐证据。','', '## 可复现与保留记录','', '原 v2 数据、模型、DeepSeek 调用和前向预测记录保持不变。本轮有独立协议、三项拟合前澄清、数据、模型、调用、评测、审核与来源哈希。完整 JSON 和本报告从网站下载。','', '部分关键原始资料：', '']
+    urls={r['source']['url'] for r in records if r.get('source')}
+    for u in sorted(urls):lines.append(f'- [原始随机试验／官方资料]({u})')
+    review=json.loads((DATA/'independent_output_review.json').read_text())
+    lines+=['', '## DeepSeek 解释的独立事实核对', '', f"发现 {len(review['semantic_issues'])} 项事实或措辞问题，原始概率全部保留。引用 ID 验证只确认来源存在，不证明自然语言陈述受支持。以下列出问题，不能因指标较好而忽略解释错误。", '']
+    for issue in review['semantic_issues']:lines.append(f"- {issue['model']} / {issue['case_id']} / {issue['severity']}：{issue['finding']}")
+    (ROOT/'docs/Predome_扩展训练与比较_20261017.md').write_text('\n'.join(lines)+'\n')
+if __name__=='__main__':main()

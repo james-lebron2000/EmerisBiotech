@@ -1,0 +1,10 @@
+[Unit]
+Description=Emeris daily backup with 14-day retention
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 Asia/Taipei
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target
