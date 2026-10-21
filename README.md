@@ -88,3 +88,13 @@ uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 ## 扩展药企识别与覆盖进度
 
 `/coverage` 展示三地候选识别、申办方映射、采集进度和缺口；`/assets` 展示公司候选药物与逐项试验的角色及来源。持久采集队列支持有限并发、取消、重试、进程恢复及原子快照发布。参见 [客户试用流程](docs/CUSTOMER_PILOT.md) 与 [覆盖接口](docs/MARKET_COVERAGE_API.md)。
+
+## Predome 临床读出产品
+
+[apps/predome](apps/predome/README.md) 纳入 Predome 1.1.8 的应用源码、日历与预测界面、锁定/核验账本和测试。原 `src/vbt` 功能及CLI保持不变，两套应用使用独立环境和状态目录。第三方证据与实际运行档案通过哈希清单管理，不随源码公开复制。
+
+- [Predome 产品与启动](apps/predome/README.md)
+- [经过版本和哈希检查的部署流程](apps/predome/DEPLOYMENT.md)
+- [两套应用的CI](.github/workflows/ci.yml)
+
+源码整合不等于临床预测效能已得到验证，也不等于两套应用的用户和数据库已合并。

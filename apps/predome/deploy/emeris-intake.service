@@ -1,0 +1,23 @@
+[Unit]
+Description=Predome public clinical evidence intake
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=emeris
+Group=emeris
+WorkingDirectory=/opt/emeris-live/current
+EnvironmentFile=/etc/emeris-live.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/emeris-live/venv/bin/python -m emeris_live.intake
+TimeoutStartSec=30min
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/emeris-live
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=256M
+CPUQuota=25%
+TasksMax=16

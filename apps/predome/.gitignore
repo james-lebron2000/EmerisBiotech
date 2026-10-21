@@ -1,0 +1,14 @@
+predome_data/
+dashboard_data/
+trial_data/
+public_data/
+verification/
+artifacts/
+RELEASE_MANIFEST.json
+.venv/
+node_modules/
+playwright-report/
+test-results/
+*.sqlite3*
+*.key
+.env*

@@ -1,0 +1,657 @@
+Predome Agent：临床试验预测与验证平台产品升级
+
+一、产品目标
+
+你是一名兼具临床试验研发、AI产品设计、数据可视化、全栈工程和生物医药行业经验的资深产品架构师。
+
+请对现有 Predome Agent 产品进行系统性升级。
+
+产品定位：
+
+Predome Agent — Predict Clinical Outcomes Before They Happen.
+
+打造一个能够预测临床试验结果，并通过真实世界公开结果持续验证预测能力的 AI Agent 平台。
+
+本次开发的核心目标：
+
+1. 让没有技术背景的用户也能迅速理解产品的输入、处理过程和输出。
+2. 让用户在首页看到未来即将公布结果的临床试验日历，以及平台对这些试验的预测。
+3. 让用户查看已经公布结果的历史临床试验，对比平台预测与实际结果。
+4. 通过透明、可审计、可复现的预测记录，建立用户对产品的信任。
+5. 让用户能够自主提交临床试验信息，获得结构化的预测报告。
+6. 建立从预测、结果公布、自动核验到模型评估的完整数据闭环。
+
+产品必须兼顾科学严谨性、商业可信度与用户体验。
+
+核心原则：用可核验的预测记录建立信任，而不是通过视觉包装制造准确性的印象。
+
+⸻
+
+二、首页整体设计
+
+首页采用现代化 AI-native biotech SaaS Dashboard 设计。
+
+设计参考方向：
+
+* Bloomberg Terminal：高信息密度与实时事件监测。
+* Linear：简洁、精致的交互体验。
+* Vercel：现代化技术产品视觉语言。
+* 临床研究数据库：结构化科学信息展示。
+* 金融预测平台：预测概率、事件日历和历史绩效。
+
+采用深蓝、白色、浅灰为主要视觉体系，绿色表示验证成功，红色表示预测错误，黄色表示结果待定或证据不足。
+
+避免大量无意义动画、复杂装饰和营销式大数字。
+
+首页按以下信息优先级组织。
+
+2.1 Hero Section：让用户理解产品价值
+
+主标题：
+
+Predict Clinical Trial Outcomes Before They Happen.
+
+副标题：
+
+AI-powered clinical trial intelligence that forecasts upcoming readouts, tracks real-world outcomes, and continuously evaluates prediction performance.
+
+展示三个核心入口：
+
+* Explore Upcoming Readouts
+* View Prediction Track Record
+* Predict a Clinical Trial
+
+主标题下方展示产品运行流程：
+
+Clinical Trial Data → AI Prediction → Prediction Lock → Public Readout → Outcome Verification
+
+每个环节都可以点击查看解释。
+
+重点说明输入信息、模型输出及结果核验机制。
+
+2.2 Prediction Performance：历史预测表现
+
+首页顶部展示真实、可核验的模型表现。
+
+建议展示：
+
+* Total Locked Predictions：已经锁定的预测数量。
+* Verified Readouts：已经获得公开结果并完成核验的数量。
+* Prediction Accuracy：按预先定义标准计算的预测准确率。
+* Brier Score：概率预测的整体误差。
+* Calibration：预测概率与实际事件发生频率的一致程度。
+* Upcoming Readouts：未来90天预计公布结果的试验数量。
+
+所有指标必须由真实数据库计算。
+
+没有足够历史数据时，展示：
+
+Insufficient verified predictions to establish performance.
+
+禁止使用虚构准确率、虚构预测样本或未经验证的模型表现。
+
+区分回顾性评估与真正的前瞻性预测记录，禁止混合计算后统一宣传为历史预测准确率。
+
+⸻
+
+三、Upcoming Clinical Trial Readouts Calendar
+
+这是首页最重要的功能模块。
+
+3.1 产品目标
+
+让用户直观看到未来30天、90天、180天及12个月内，预计公布临床试验结果的研究。
+
+提供三种视图：
+
+1. Calendar View：按月展示试验结果公布时间。
+2. Timeline View：按时间先后展示未来重要试验。
+3. Table View：支持排序、筛选和批量比较。
+
+默认展示未来90天的临床试验。
+
+3.2 每个试验展示的信息
+
+每个临床试验使用独立的 Trial Prediction Card。
+
+包括：
+
+基本信息
+
+* Trial Name
+* NCT ID
+* Sponsor
+* Drug / Intervention
+* Indication
+* Drug Modality
+* Clinical Phase
+* Trial Design
+* Primary Endpoint
+* Estimated Readout Date
+
+AI预测
+
+* Probability of Primary Endpoint Success
+* Predicted Outcome：Positive / Negative / Inconclusive
+* Prediction Confidence / Uncertainty
+* Prediction Date
+* Model Version
+* Prediction Status：Draft / Locked / Awaiting Readout / Verified
+
+必须区分预测的主要终点达成概率与监管批准概率。
+
+预测成功事件必须根据试验方案预先定义，不能简单把所有试验结果统一为模糊的 Success / Failure。
+
+3.3 日历交互
+
+用户点击日历中的某项试验后，右侧打开详情面板。
+
+展示：
+
+* 临床试验设计概要。
+* AI预测结果。
+* 关键预测依据。
+* 主要风险因素。
+* 预测锁定时间。
+* 预期结果公布时间。
+* 原始临床试验登记链接。
+* 相关公开研究资料。
+
+允许用户按照以下条件筛选：
+
+* Oncology / Immunology / Neurology / Metabolic Diseases / Others
+* Phase I / II / III
+* Sponsor
+* Drug Modality
+* Expected Readout Date
+* Predicted Success Probability
+* Prediction Availability
+
+支持搜索药物名称、靶点、适应症、公司和NCT编号。
+
+3.4 结果公布日期的可信度
+
+必须明确区分：
+
+* Officially Announced Readout Date
+* Estimated Readout Window
+* Primary Completion Date
+* Study Completion Date
+
+不能直接将 ClinicalTrials.gov 的 Primary Completion Date 当作实际结果公布日期。
+
+对于预测的公布时间，展示日期来源、最近核验时间及不确定性。
+
+⸻
+
+四、Historical Predictions vs Actual Outcomes
+
+这是产品建立科学可信度的核心模块。
+
+4.1 历史预测验证页面
+
+建立独立页面：
+
+Prediction Track Record
+
+展示已经公布结果的临床试验，以及平台在结果公布前作出的预测。
+
+每条记录至少包含：
+
+Trial	Prediction	Actual Outcome	Probability	Prediction Date	Readout Date	Status
+Trial A	Positive	Positive	82%	日期	日期	Correct
+Trial B	Positive	Negative	71%	日期	日期	Incorrect
+Trial C	Negative	Negative	24%	日期	日期	Correct
+
+以上仅为界面示例，不得作为真实预测数据。
+
+对于未提前锁定预测的历史试验，必须标注：
+
+Retrospective Evaluation
+
+不得将其伪装成真实的前瞻性预测。
+
+4.2 Prediction vs Reality 可视化
+
+为每项历史试验建立对比卡片。
+
+左侧：
+
+AI Prediction
+
+* Predicted Outcome
+* Probability
+* Prediction Timestamp
+* Model Version
+* Supporting Evidence
+
+右侧：
+
+Actual Clinical Readout
+
+* Reported Outcome
+* Primary Endpoint Result
+* Effect Size
+* Confidence Interval
+* P Value（如适用）
+* Source
+* Publication Date
+
+中间展示：
+
+Prediction Assessment
+
+* Correct
+* Incorrect
+* Indeterminate
+* Not Evaluable
+
+注意：概率预测不能仅依靠单次二元结果判定模型质量，必须同时提供整体校准度和概率评分。
+
+4.3 预测历史记录
+
+建立不可覆盖的预测版本机制。
+
+每次正式预测必须记录：
+
+* Trial ID
+* Prediction ID
+* Prediction Timestamp
+* Input Data Snapshot
+* Data Cutoff Date
+* Model Version
+* Prompt / Pipeline Version
+* Predicted Probability
+* Predicted Endpoint
+* Evidence Sources
+* Prediction Hash
+
+预测锁定后不得修改。
+
+如果模型升级，必须创建新的预测版本，并保留旧版本。
+
+在结果公布前后均可查看原始预测快照。
+
+4.4 防止数据泄漏
+
+历史试验评估必须严格遵守时间截断原则。
+
+模型仅允许使用预测时点之前已经公开的信息。
+
+记录：
+
+* Evidence Availability Date
+* Model Training Data Cutoff
+* Prediction Cutoff
+* Actual Readout Date
+
+对回顾性测试，检查训练集是否包含该试验的结果、衍生报道或其他泄漏信息。
+
+存在无法排除的信息泄漏时，必须明确标注，不得计入前瞻性绩效。
+
+⸻
+
+五、Prediction Analytics：模型预测能力可视化
+
+建立模型性能分析页面。
+
+5.1 Calibration Plot
+
+展示模型预测概率与真实成功率之间的关系。
+
+横轴：
+
+Predicted Probability
+
+纵轴：
+
+Observed Success Rate
+
+绘制理想校准线与实际校准曲线。
+
+同时显示样本量和置信区间。
+
+5.2 Probability Distribution
+
+分别展示成功试验和失败试验的预测概率分布。
+
+帮助用户理解模型是否具有区分能力。
+
+5.3 Cumulative Track Record
+
+按时间展示累计已验证预测数量、Brier Score及其他预先定义的性能指标。
+
+提供滚动窗口分析，避免累计指标掩盖模型表现变化。
+
+5.4 Performance by Subgroup
+
+支持按照以下维度分析：
+
+* Clinical Phase
+* Therapeutic Area
+* Drug Modality
+* Trial Design
+* Sponsor Category
+* Prediction Horizon
+
+每个子组显示样本量。
+
+样本量不足时，不展示可能误导用户的精确绩效结论。
+
+5.5 Baseline Comparison
+
+将 Predome Agent 与合理的基线模型进行比较。
+
+例如：
+
+* Historical Base Rate
+* Simple Statistical Baseline
+* Predome Agent
+
+确保所有模型使用一致的预测目标、评估样本和信息截止时间。
+
+不能通过选择不同测试集制造模型优势。
+
+⸻
+
+六、用户输入与预测结果展示
+
+建立独立的：
+
+Predict a Trial
+
+页面。
+
+6.1 用户输入
+
+支持三种方式。
+
+方式一：输入 NCT ID
+
+系统自动检索公开临床试验信息。
+
+方式二：上传临床试验方案
+
+支持 PDF、DOCX 等格式。
+
+系统解析：
+
+* Indication
+* Drug
+* Mechanism of Action
+* Phase
+* Trial Design
+* Population
+* Inclusion / Exclusion Criteria
+* Sample Size
+* Primary Endpoint
+* Comparator
+* Statistical Design
+
+方式三：手动填写
+
+用户可以编辑结构化试验信息。
+
+系统必须显示字段来源与缺失情况。
+
+不得把缺失字段自动填充为未经验证的事实。
+
+6.2 输入数据可视化
+
+使用结构化 Trial Profile 展示用户输入。
+
+通过临床试验流程图展示：
+
+Population → Intervention / Comparator → Endpoint → Follow-up
+
+明确区分：
+
+* 用户提供的数据。
+* 外部公开数据。
+* 系统推断的信息。
+* 缺失或待确认的信息。
+
+用户可以修改输入并重新运行预测。
+
+6.3 AI预测输出
+
+预测报告必须包含：
+
+Primary Prediction
+
+主要终点达成概率及其严格定义。
+
+Uncertainty
+
+预测区间、模型分歧或其他适用的不确定性指标。
+
+Key Drivers
+
+对预测产生主要影响的因素。
+
+Risk Factors
+
+可能导致试验失败的关键风险。
+
+Comparable Trials
+
+具有相似机制、适应症或设计的临床试验。
+
+Evidence Quality
+
+输入证据的完整性、可靠性与适用范围。
+
+Model Provenance
+
+使用的模型、版本、运行时间和数据截止时间。
+
+对解释性因素应区分模型归因、相关性和已经证实的因果机制。
+
+不能将 LLM 生成的理由直接宣称为经过验证的生物学机制。
+
+6.4 多模型预测
+
+如现有系统支持不同 LLM API 或预测模型，增加 Model Comparison。
+
+展示：
+
+* Model A Probability
+* Model B Probability
+* Model C Probability
+* Ensemble Probability
+* Model Disagreement
+
+所有模型必须针对同一个预先定义的事件进行预测。
+
+模型分歧不能直接等同于统计学置信区间。
+
+⸻
+
+七、Trial Detail：单个临床试验详情页
+
+每项试验建立独立详情页。
+
+页面结构：
+
+1. Trial Overview
+2. Study Design
+3. Predome Prediction
+4. Evidence & Reasoning
+5. Comparable Trials
+6. Prediction History
+7. Actual Readout
+8. Verification & Sources
+
+对于尚未公布结果的试验，重点展示预测结果和锁定状态。
+
+对于已经公布结果的试验，重点展示预测与实际结果的对比。
+
+建立清晰的时间轴：
+
+Trial Registration → Prediction Generated → Prediction Locked → Public Readout → Outcome Verified
+
+所有时间均使用明确时区，并保留原始来源记录。
+
+⸻
+
+八、数据与系统架构
+
+建议建立以下核心数据实体：
+
+* trials
+* trial_versions
+* trial_readout_events
+* prediction_runs
+* prediction_snapshots
+* prediction_evidence
+* actual_outcomes
+* outcome_verifications
+* model_versions
+* evaluation_results
+
+建立完整关联关系。
+
+每项预测必须可以追溯到原始输入和模型版本。
+
+每项实际结果必须可以追溯到公开来源。
+
+数据来源
+
+优先接入：
+
+* ClinicalTrials.gov
+* PubMed
+* 公开临床试验结果数据库
+* 官方企业公告
+* 学术会议公开摘要
+* 同行评议论文
+
+需要区分结构化数据库记录与未经核验的新闻或公告。
+
+对于尚未获得结果的试验，不能根据缺少阳性公告推断失败。
+
+自动化更新
+
+建立定期更新机制：
+
+1. 检索未来预计公布结果的试验。
+2. 更新公布时间及来源。
+3. 识别新的公开试验结果。
+4. 抽取主要终点及关键统计数据。
+5. 对照锁定预测。
+6. 生成待审核的核验记录。
+7. 审核通过后更新绩效指标。
+
+结果抽取失败、来源冲突或终点定义不一致时，应进入人工审核队列。
+
+不得自动强行判定正确或错误。
+
+⸻
+
+九、用户信任设计
+
+产品的可信度来自可验证的信息。
+
+每个关键结果都应支持点击查看：
+
+* 原始数据来源。
+* 预测生成时间。
+* 预测锁定时间。
+* 使用的模型版本。
+* 预测目标定义。
+* 实际结果来源。
+* 核验标准。
+* 评估方法。
+
+首页增加：
+
+How We Validate Predictions
+
+通过简洁流程展示：
+
+Prediction → Timestamped Lock → Real-world Readout → Independent Verification → Performance Update
+
+明确展示哪些预测已经得到验证，哪些仍在等待结果。
+
+对于回顾性测试、模拟数据、前瞻性预测，采用不同视觉标识。
+
+禁止使用未经证实的性能声明。
+
+⸻
+
+十、产品交互与视觉要求
+
+信息层级
+
+首页应按照以下顺序布局：
+
+1. Hero：产品价值与核心操作。
+2. Prediction Performance：已验证预测表现。
+3. Upcoming Readouts Calendar：未来结果日历。
+4. Featured Predictions：重点即将公布结果的预测。
+5. Prediction Track Record：历史预测与实际结果。
+6. How It Works：输入、预测与验证流程。
+7. Predict a Trial：用户提交试验的入口。
+
+设计要求
+
+* 现代化、专业、可信的生物医药AI产品。
+* Desktop-first，同时兼容移动设备。
+* 清晰的数据层级。
+* 高质量交互式图表。
+* 支持搜索、筛选、排序。
+* 支持从首页进入试验详情。
+* 支持深色和浅色模式。
+* 加载、错误、无数据状态完整。
+* 所有关键预测结果可追溯。
+* 避免过度动画与装饰。
+
+页面不应只有静态展示，所有主要交互必须具备实际功能。
+
+⸻
+
+十一、开发执行要求
+
+请先检查现有项目的代码结构、前端框架、后端服务、数据库模型和已实现功能。
+
+优先复用现有架构，不要无必要地重建项目。
+
+按照以下顺序实施：
+
+Phase 1：产品信息架构与首页
+
+完成首页布局、产品流程、日历、预测卡片和历史结果对比组件。
+
+Phase 2：真实数据集成
+
+接入临床试验登记信息、结果公布时间及公开结果来源。
+
+Phase 3：预测系统集成
+
+将现有预测引擎连接到结构化输入与输出界面。
+
+Phase 4：预测锁定与结果核验
+
+实现预测快照、版本管理、时间戳和实际结果核验。
+
+Phase 5：模型性能分析
+
+完成历史绩效、概率校准、分组分析和基线比较。
+
+Phase 6：质量验证
+
+完成端到端测试、数据完整性检查、响应式布局测试及预测记录审计。
+
+开发过程中可以使用明确标注的 Demo Data 验证界面，但生产环境不得将演示数据混入真实试验或模型绩效。
+
+对于暂时无法实现的数据接入和预测功能，应保留明确的未完成状态，不得伪造结果。
+
+⸻
+
+十二、验收标准
+
+最终产品必须满足以下用户体验。
+
+场景一：首次访问
+
+用户进入首页30秒内，可以理解产品接收哪些

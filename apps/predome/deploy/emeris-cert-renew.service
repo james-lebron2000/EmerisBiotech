@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew Emeris short-lived IP TLS certificate
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/emeris-certbot-venv/bin/certbot renew --quiet --config-dir /etc/emeris-letsencrypt --work-dir /var/lib/emeris-letsencrypt --logs-dir /var/log/emeris-letsencrypt --deploy-hook "systemctl reload nginx"
