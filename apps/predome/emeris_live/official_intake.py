@@ -242,6 +242,9 @@ def collect_official(store,ncts,fetcher=fetch_official,config=None,listings=None
     except (OSError,ValueError,TypeError,KeyError) as error:
         report['failures'].append(failure_details('official_source_configuration',None,error)|{'category':'integrity_error'})
         return report
+    report['requested_trial_ids']=list(dict.fromkeys(ncts))
+    report['configured_trial_ids']=list(dict.fromkeys(r['nct_id'] for r in records))
+    report['unconfigured_trial_ids']=[n for n in report['requested_trial_ids'] if n not in report['configured_trial_ids']]
     queue={};dates={}
     for r in records:
         for source in r['sources']:

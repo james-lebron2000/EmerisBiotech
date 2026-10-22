@@ -77,9 +77,11 @@ def registry_summary(value):
             'note':'Reported measures, analyses, effect estimates and P values are retained as source structure. No primary success label is inferred.'}
 
 def run_intake(store,ncts,fetcher=fetch,discover=True,official=False):
-    initialize(store);start=now();id=uuid.uuid4().hex;report={'status':'completed','sources_checked':0,'new_candidates':0,'failures':[],'auto_approved':0,'scope':'bounded registered trial watch plus sponsor discovery; not whole-market coverage'}
-    requested=list(dict.fromkeys(ncts))[:30]
-    if any(not NCT.fullmatch(n) for n in requested):raise ValueError('Invalid tracked trial id')
+    all_requested=list(dict.fromkeys(ncts))
+    if any(not isinstance(n,str) or not NCT.fullmatch(n) for n in all_requested):raise ValueError('Invalid tracked trial id')
+    requested,deferred=all_requested[:30],all_requested[30:]
+    initialize(store);start=now();id=uuid.uuid4().hex;report={'status':'completed','sources_checked':0,'new_candidates':0,'failures':[],'auto_approved':0,'scope':'bounded registered trial watch plus sponsor discovery; not whole-market coverage',
+        'requested_ncts':requested,'deferred_ncts':deferred,'tracked_limit':30,'complete_requested_coverage':not deferred}
     result_candidates=[]
     for nct in requested:
         url='https://clinicaltrials.gov/api/v2/studies/'+nct
@@ -134,21 +136,39 @@ def run_intake(store,ncts,fetcher=fetch,discover=True,official=False):
                     'truncated':suggestion.get('truncated',False),'status':'needs_review'})
             except Exception as e:
                 report['failures'].append({'candidate_id':cid,'source':'registry_result_suggestions','error_type':type(e).__name__})
-    if report['failures']:report['status']='partial' if report['sources_checked'] else 'failed'
+    if report['failures'] or deferred:report['status']='partial' if report['sources_checked'] else 'failed'
     with store.connect() as db:db.execute('INSERT INTO intake_jobs VALUES(?,?,?,?)',(id,start,now(),store.pack(report)))
     return dict(job_id=id,started=start,**report)
 
 def tracked_trial_ids(store):
     from .product import build_product
     from .platform_store import PlatformStore
-    ids=[t['nct_id'] for t in build_product()['upcoming']]
+    from .arena_watch import current_trial_ids
+    # Formal forecasts take priority within the existing bounded daily intake.
+    ids=current_trial_ids(store)+[t['nct_id'] for t in build_product()['upcoming']]
     for run in PlatformStore(store).list_public_snapshots():
         record=run.get('record',run);nct=record.get('trial_id')
         if nct and NCT.fullmatch(nct):ids.append(nct)
     return list(dict.fromkeys(ids))
 
-if __name__=='__main__':
-    import os
+def main(argv=None):
+    import argparse,os
+    from types import SimpleNamespace
     from .store import Store
-    store=Store(os.environ.get('EMERIS_DATA_DIR',str(Path.home()/'.local/share/emeris-live')))
-    print(json.dumps(run_intake(store,tracked_trial_ids(store),official=True),ensure_ascii=False))
+    from .arena_watch import current_trial_ids
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--data-dir',type=Path,default=Path(os.environ.get('EMERIS_DATA_DIR',str(Path.home()/'.local/share/emeris-live'))))
+    parser.add_argument('--arena-only',action='store_true')
+    parser.add_argument('--skip-discovery',action='store_true')
+    parser.add_argument('--skip-official',action='store_true')
+    args=parser.parse_args(argv)
+    ids=current_trial_ids(SimpleNamespace(path=args.data_dir)) if args.arena_only else None
+    if args.arena_only and not ids:raise ValueError('No existing current formal cohort to collect')
+    store=Store(args.data_dir)
+    report=run_intake(store,ids if ids is not None else tracked_trial_ids(store),
+        discover=not args.skip_discovery,official=not args.skip_official)
+    print(json.dumps(report,ensure_ascii=False))
+    return report
+
+
+if __name__=='__main__':main()

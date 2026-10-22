@@ -48,7 +48,7 @@ def isolated(tmp_path,monkeypatch):
     home=tmp_path/'app';base=home/'releases/base';base.mkdir(parents=True);data=tmp_path/'data'
     ledger,_,_=registered(data);make_workbench(data/'workbench.sqlite3')
     sealed=base/'arena_data/sealed.json';sealed.parent.mkdir();sealed.write_bytes(b'original frozen data')
-    manifest={'version':'1.2.2','git_commit':release.BASE_COMMIT,'files':[{'path':'arena_data/sealed.json','sha256':release.digest(sealed.read_bytes()),'bytes':sealed.stat().st_size}]}
+    manifest={'version':release.BASE_VERSION,'git_commit':release.BASE_COMMIT,'files':[{'path':'arena_data/sealed.json','sha256':release.digest(sealed.read_bytes()),'bytes':sealed.stat().st_size}]}
     (base/'RELEASE_MANIFEST.json').write_text(json.dumps(manifest))
     current=home/'current';current.symlink_to(base);config=home/'config';config.write_bytes(b'private config fixture')
     monkeypatch.setattr(release,'BASE',base);monkeypatch.setattr(release,'TARGET',home/'releases/new')
@@ -67,7 +67,7 @@ def test_code_only_success_preserves_database_and_sealed_files(tmp_path,isolated
     assert result['database_imports']==0 and result['old_arena_events_preserved']
     assert ledger.events()==events and calls==['restart']
     assert (home/'current/arena_data/sealed.json').read_bytes()==b'original frozen data'
-    assert (home/'backups/20261023-publiccompare04/arena.sqlite3').is_file()
+    assert (home/'backups/20261023-outcomewatch05/arena.sqlite3').is_file()
     assert (home/'current').resolve()==release.TARGET
 
 
