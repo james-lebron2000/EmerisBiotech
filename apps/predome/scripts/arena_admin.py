@@ -2,9 +2,11 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
+import uuid
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, sha
 from emeris_live import arena_providers
@@ -55,6 +57,76 @@ def verify_registered_model(row, model, budget):
     current = execution_contract(row, budget)
     if any(row.get(k) != value for k, value in current.items()):
         raise ValueError('Runner, prompt, input or budget changed since registration')
+
+
+RECEIPT_FIELDS = frozenset(('status probability reasoning evidence_ids supporting_evidence_ids '
+    'opposing_evidence_ids key_assumptions key_unknowns returned_model usage cost_usd known_cost_usd '
+    'cost_amount known_cost_amount cost_currency cost_basis cost_note latency_ms prompt_sha256 '
+    'request_sha256 provider_response_sha256 error_code adapter_version workflow workflow_version '
+    'clinical_prediction_validated evidence_review provider requested_model config_sha256 '
+    'input_sha256 model_id budget preflight_cost_upper_estimate billing_status').split())
+ATTEMPT_FIELDS = frozenset(('stage requested_model returned_model prompt_sha256 request_sha256 '
+    'response_sha256 usage cost_usd cost_amount cost_currency cost_basis latency_ms status error_code').split())
+ACCOUNTING_FIELDS = frozenset(('attempts usage cost_usd known_cost_usd cost_amount known_cost_amount '
+    'cost_currency cost_basis cost_note latency_ms returned_model request_sha256 provider_response_sha256').split())
+
+
+def _json_value(value):
+    """Only bounded JSON data from the adapter, never arbitrary exception objects."""
+    if value is None or type(value) in (bool, int, str):
+        return value
+    if type(value) is float:
+        return value if math.isfinite(value) else None
+    if isinstance(value, list):
+        return [_json_value(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _json_value(v) for k, v in value.items() if isinstance(k, str)
+                and k.lower() not in ('api_key', 'authorization', 'token', 'secret', 'password',
+                                      'endpoint', 'base_url', 'raw_response', 'raw_error', 'headers')}
+    return None
+
+
+def save_result_receipt(data_dir, run_id, result):
+    """Persist sanitized adapter fields before ledger validation; never overwrite."""
+    safe = {k: _json_value(v) for k, v in result.items() if k in RECEIPT_FIELDS}
+    safe['attempts'] = [{k: _json_value(v) for k, v in attempt.items() if k in ATTEMPT_FIELDS}
+                        for attempt in result.get('attempts', []) if isinstance(attempt, dict)]
+    document = {'schema_version': 'arena-result-receipt-v1', 'run_id': run_id, 'result': safe}
+    raw = json.dumps(document, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+    directory = Path(data_dir) / 'arena_receipts'
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    # The generated name is independent of provider-controlled fields and cannot
+    # escape the private runtime directory. O_EXCL also protects prior receipts.
+    path = directory / (uuid.uuid4().hex + '.json')
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, 'wb') as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return safe, {'receipt_path': path.relative_to(Path(data_dir)).as_posix(),
+                  'receipt_sha256': hashlib.sha256(raw).hexdigest()}
+
+
+def finish_with_receipt(ledger, data_dir, run_id, slot, result):
+    safe, link = save_result_receipt(data_dir, run_id, result)
+    try:
+        ledger.finish(run_id, {**result, **link})
+        return result
+    except ValueError:
+        # The original result remains in the private receipt. Do not repeat the
+        # call, hide its cost, or treat a rejected probability as a forecast.
+        rejected = {k: v for k, v in safe.items() if k in ACCOUNTING_FIELDS}
+        rejected.update(status='failed', probability=None, error_code='contract_rejected',
+            model_id=slot['model_id'], requested_model=slot.get('requested_model'), provider=slot.get('provider'),
+            config_sha256=slot.get('provider_config_snapshot', {}).get('config_sha256'),
+            workflow_version=slot['workflow_version'], evidence_ids=[],
+            supporting_evidence_ids=[], opposing_evidence_ids=[], contract_complete=False,
+            billing_status='reported_attempts_preserved' if safe.get('attempts') else 'unknown_after_contract_rejection',
+            **link)
+        # Frozen identity describes the assigned slot; rejected observed identity
+        # and input hashes are preserved only in the receipt, never substituted.
+        ledger.finish(run_id, rejected)
+        return rejected
 
 
 def main():
@@ -112,7 +184,7 @@ def main():
                     'provider':slot['provider'],'config_sha256':slot['provider_config_snapshot']['config_sha256'],
                     'workflow_version':slot['workflow_version'],'evidence_ids':[],
                     'cost_usd':None,'attempts':[],'usage':{},'billing_status':'unknown_after_runner_exception'}
-            ledger.finish(row['id'],result)
+            result=finish_with_receipt(ledger,a.data_dir,row['id'],slot,result)
             print(json.dumps({'run_id':row['id'],'model_id':row['model_id'],'status':result['status'],
                 'probability':result.get('probability'),'returned_model':result.get('returned_model'),
                 'latency_ms':result.get('latency_ms'),'error_code':result.get('error_code')},ensure_ascii=False),flush=True)

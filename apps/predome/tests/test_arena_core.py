@@ -265,3 +265,98 @@ def test_cli_frozen_execution_contract_detects_config_and_budget_changes():
     with pytest.raises(ValueError,match='budget'):
         admin.verify_registered_model(slot,model,{**budget,'max_output_tokens':2048})
     with pytest.raises(ValueError,match='limits'):admin.validate_budget({'max_output_tokens':1024})
+
+
+@pytest.mark.parametrize('status', ['predicted', 'abstain'])
+def test_complete_outputs_require_complete_prompt_contract(tmp_path, status):
+    t,s=spec();s[0]['expected_prompt_sha256']='c'*64
+    ledger=ArenaLedger(tmp_path);ids=ledger.register('c',[t],s,{})
+    ledger.start(ids[0])
+    with pytest.raises(ValueError,match='prompt'):
+        ledger.finish(ids[0],{'status':status,'probability':.5 if status=='predicted' else None,
+            'evidence_ids':['e1'],'prompt_sha256':'d'*64})
+    ledger.finish(ids[0],{'status':'failed','probability':None,'prompt_sha256':'d'*64,'contract_complete':True})
+    assert ledger.snapshot()['runs'][0]['contract_complete'] is False
+
+
+def test_real_shared_adapter_early_failure_preserves_receipt_and_billing(tmp_path, monkeypatch):
+    """Real adapter path with isolated transport; this is not a live model call."""
+    import hashlib
+    import json
+    import httpx
+    from emeris_live import arena_providers as providers
+    admin=admin_module()
+    config=tmp_path/'models.json'
+    config.write_text(json.dumps({'models':[{'id':'A','provider':'openai','model':'fixture-only',
+        'api_key_env':'ARENA_ISOLATED_KEY','pricing':{'input_usd_per_million':1,'output_usd_per_million':2,
+        'source_url':'https://example.org/test-only-prices','verified_at':'2026-01-01'}}]}))
+    monkeypatch.setenv('EMERIS_ARENA_MODELS_FILE',str(config))
+    monkeypatch.setenv('EMERIS_ENABLE_ARENA_LLM','true')
+    monkeypatch.setenv('ARENA_ISOLATED_KEY','isolated-fixture-secret')
+    original=httpx.Client;calls=[]
+    def respond(request):
+        calls.append(request)
+        return httpx.Response(200,json={'model':'fixture-returned','choices':[{'finish_reason':'stop',
+            'message':{'content':'{"not_the_required_review_schema":true}'}}],
+            'usage':{'prompt_tokens':100,'completion_tokens':20}})
+    monkeypatch.setattr(providers.httpx,'Client',lambda **kw:original(transport=httpx.MockTransport(respond),**kw))
+    t,s=spec();slot=s[0];slot.pop('workflow_version');slot['track']='shared_agent'
+    model=providers.list_models()[0]
+    slot.update(requested_model=model['requested_model'],provider=model['provider'],provider_config_snapshot=model)
+    budget={'max_requests':2,'max_output_tokens':512,'max_input_chars':4000,'timeout_seconds':30}
+    slot.update(admin.execution_contract(slot,budget))
+    ledger=ArenaLedger(tmp_path/'runtime');ident=ledger.register('early-stop',[t],[slot],{'execution_budget':budget})[0]
+    started=ledger.start(ident)
+    result=providers.forecast('A',started['packet'],workflow='evidence_review',budget=budget)
+    assert len(calls)==1 and result['error_code']=='invalid_review'
+    assert result['prompt_sha256']!=slot['expected_prompt_sha256']
+    assert result['cost_usd']==pytest.approx(.00014)
+    admin.finish_with_receipt(ledger,tmp_path/'runtime',ident,started,result)
+    run=ledger.snapshot()['runs'][0]
+    assert run['status']=='failed' and run['contract_complete'] is False
+    assert run['attempts'][0]['stage']=='evidence_review' and run['usage']['input_tokens']==100
+    assert run['cost_usd']==pytest.approx(.00014) and build_metrics(ledger.snapshot(),track='shared_agent')['failed']==1
+    saved=tmp_path/'runtime'/run['receipt_path'];raw=saved.read_bytes()
+    assert hashlib.sha256(raw).hexdigest()==run['receipt_sha256']
+    assert json.loads(raw)['result']['attempts']==run['attempts']
+    assert saved.stat().st_mode & 0o777==0o600
+    assert b'isolated-fixture-secret' not in raw and not run['receipt_path'].startswith('/')
+    with pytest.raises(ValueError,match='already started'):ledger.start(ident)
+
+
+def test_contract_rejection_is_terminal_with_receipt_and_known_cost(tmp_path,monkeypatch):
+    import hashlib
+    import json
+    admin=admin_module();ledger,t,ids=registered(tmp_path);slot=ledger.start(ids[0])
+    result={'status':'predicted','probability':.8,'evidence_ids':['invented'],
+        'cost_usd':None,'known_cost_usd':.001,'usage':{'input_tokens':100},'returned_model':'observed-version',
+        'attempts':[{'stage':'forecast','cost_usd':.001,'usage':{'input_tokens':100},'raw_error':'secret-error'}],
+        'api_key':'top-secret','raw_response':'private transport response'}
+    original=ledger.finish
+    def receipt_exists_first(ident,value):
+        path=tmp_path/value['receipt_path']
+        assert path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==value['receipt_sha256']
+        return original(ident,value)
+    monkeypatch.setattr(ledger,'finish',receipt_exists_first)
+    rejected=admin.finish_with_receipt(ledger,tmp_path,ids[0],slot,result)
+    run=ledger.snapshot()['runs'][0]
+    assert rejected['error_code']==run['error_code']=='contract_rejected'
+    assert run['probability'] is None and run['known_cost_usd']==.001 and run['cost_usd'] is None
+    assert run['contract_complete'] is False and run['returned_model']=='observed-version'
+    raw=(tmp_path/run['receipt_path']).read_text()
+    assert all(secret not in raw for secret in ['top-secret','secret-error','private transport response'])
+    assert json.loads(raw)['result']['probability']==.8
+    with pytest.raises(ValueError):ledger.start(ids[0])
+    assert build_metrics(ledger.snapshot())['assigned']==2 and build_metrics(ledger.snapshot())['failed']==1
+
+
+def test_receipts_never_overwrite_existing_file(tmp_path,monkeypatch):
+    admin=admin_module()
+    class Fixed:
+        hex='fixed-fixture'
+    monkeypatch.setattr(admin.uuid,'uuid4',lambda:Fixed())
+    _,link=admin.save_result_receipt(tmp_path,'run-fixture',{'status':'failed','probability':None})
+    path=tmp_path/link['receipt_path'];before=path.read_bytes()
+    with pytest.raises(FileExistsError):
+        admin.save_result_receipt(tmp_path,'run-fixture',{'status':'predicted','probability':.9})
+    assert path.read_bytes()==before

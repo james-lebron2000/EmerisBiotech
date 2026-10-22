@@ -280,10 +280,15 @@ class ArenaLedger:
                 raise ValueError('Provider configuration differs from registered slot')
             if result.get('provider', slot.get('provider')) != slot.get('provider'):
                 raise ValueError('Provider differs from registered slot')
-            for frozen, returned in [('expected_provider_input_sha256', 'provider_input_sha256'),
-                                     ('expected_prompt_sha256', 'prompt_sha256')]:
-                if slot.get(frozen) and (status == 'predicted' or result.get(returned) is not None) and result.get(returned) != slot[frozen]:
-                    raise ValueError('Provider input or prompt differs from registered slot')
+            complete = status in ('predicted', 'abstained')
+            expected_input = slot.get('expected_provider_input_sha256')
+            if expected_input and (complete or result.get('provider_input_sha256') is not None) and result.get('provider_input_sha256') != expected_input:
+                raise ValueError('Provider input differs from registered slot')
+            # A failed review may stop before the forecast request. Its observed
+            # prompt sequence is partial, but its billed attempt must survive.
+            if complete and slot.get('expected_prompt_sha256') and result.get('prompt_sha256') != slot['expected_prompt_sha256']:
+                raise ValueError('Provider prompt differs from registered slot')
+            result['contract_complete'] = complete
             evidence_ids = {e['id'] for e in slot['packet']['evidence']}
             cited = result.get('evidence_ids', [])
             if not isinstance(cited, list) or any(e not in evidence_ids for e in cited) or (status == 'predicted' and not cited):
