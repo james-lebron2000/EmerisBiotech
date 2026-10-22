@@ -286,6 +286,20 @@ def result_view(target):
     if label == 'not_adjudicable': label = 'inconclusive'
     if label not in ('success', 'failure', 'mixed', 'inconclusive'): label = None
     status = target.get('status')
+    provenance=result.get('review_provenance')
+    note=text(result.get('verification_note'),1000)
+    if isinstance(provenance,dict):
+        basis=provenance.get('basis')
+        scope={'ai_only':'AI source reviews; no human review is recorded.',
+            'human_only':'Operator-declared human reviews; identities and qualifications are not independently authenticated.',
+            'mixed':'Mixed declared review types; not independent clinical validation.',
+            'unspecified_only':'Reviewer types were not specified; human review is unverified.',
+            'legacy_unspecified':'Legacy review identities have no recorded AI/human type; human review is unverified.'}.get(basis,
+                'Review provenance is incomplete; human review is unverified.')
+        note=('Conflicting reviews remain unresolved. ' if provenance.get('typed_conflict') else '')+scope
+        if status!='adjudicated':
+            label=None
+            note+=' Awaiting agreement against the exact registered target; no match score is assigned.'
     return {'status': status if status in ('pending', 'announced', 'adjudicated') else 'pending',
             'label': label, 'first_public_at': text(result.get('first_public_at') or result.get('published_at'), 80),
             'source_url': public_url(result.get('source_url')),
@@ -294,7 +308,7 @@ def result_view(target):
             'confidence_interval': clinical_value(result.get('confidence_interval')),
             'p_value': clinical_value(result.get('p_value')),
             'numeric_source_url': public_url(result.get('numeric_source_url')),
-            'verification_note': text(result.get('verification_note'), 1000)}
+            'verification_note': note}
 
 
 def direction(run):

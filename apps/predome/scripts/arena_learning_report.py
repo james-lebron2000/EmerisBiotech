@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, canonical, https, instant, sha
 from emeris_live.arena_metrics import _eligible
 
-VERSION = 'arena-learning-report-1.0'
+VERSION = 'arena-learning-report-1.1'
 HASH = re.compile(r'[a-f0-9]{64}')
 MODEL_FIELDS = ('cohort_id', 'track', 'condition', 'provider', 'model_id', 'requested_model',
                 'returned_model', 'workflow_version', 'config_sha256', 'execution_budget_sha256')
@@ -173,6 +173,8 @@ def _loss(run, target):
         'correct_at_threshold_0_5': correct, 'error_category': category,
         'high_confidence_error': not correct and (p >= .8 or p <= .2),
         'outcome_source_sha256': target['result'].get('source_sha256'),
+        'outcome_review_basis':target['result'].get('review_provenance',{}).get('basis','not_recorded'),
+        'independent_human_review_verified':False,
         'timestamp_basis': 'external_TSA_and_server_ledger' if run.get('timestamp_proof',{}).get('status')=='attested' else 'server_ledger_only'}
 
 

@@ -1,5 +1,5 @@
 """Paired probability scores; missing forecasts retain their assigned denominator."""
-from collections import defaultdict
+from collections import Counter, defaultdict
 import math
 import random
 from .arena_store import instant, sha
@@ -108,6 +108,7 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'timestamp_basis': 'external_TSA_and_server_ledger' if usable and all(r.get('timestamp_proof',{}).get('status')=='attested' for r in usable.values()) else 'server_ledger_only_or_mixed',
             'common_log_loss': common_score['log_loss'], 'common_tasks': len(common),
             'independent_projects': len({targets[i]['project_id'] for i in usable}),
+            'outcome_review_basis_counts':dict(Counter((targets[i].get('result') or {}).get('review_provenance',{}).get('basis','not_recorded') for i in usable)),
             'cost_usd': sum(costs) if costs_complete else None,
             'cost_complete': costs_complete,'citation_support': aggregate_runs(rows)})
     paired = []
