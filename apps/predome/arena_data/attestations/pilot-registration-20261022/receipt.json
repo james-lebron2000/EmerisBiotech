@@ -1,0 +1,25 @@
+{
+  "id": "pilot-registration-20261022",
+  "purpose": "registration",
+  "ledger_sha256": "2ec4fb9f86831bc04c345cb2d0522ab379fdbccd80f35d3b000be4405de531f4",
+  "covered_event_count": 6,
+  "tsa": "FreeTSA",
+  "generated_at_utc": "2026-10-22T15:49:38+00:00",
+  "verified_at_utc": "2026-10-22T15:49:38.868955+00:00",
+  "verification_method": "openssl_ts_verify",
+  "signature_verified": true,
+  "timestamp_response_sha256": "337d2f9f141461887920998fe891d46743035885f31f4e12f0209b027ae9c21a",
+  "manifest_sha256": "dbf27f6558bd6c9c1ec0e50768f515a320a39c98ab64117a7aa1a60ee5882e4c",
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "public_url": "https://8.148.145.28/api/arena/attestations/pilot-registration-20261022",
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+  "files": {
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "manifest.json": "dbf27f6558bd6c9c1ec0e50768f515a320a39c98ab64117a7aa1a60ee5882e4c",
+    "manifest.tsq": "e7b1380c98200ab9ff4529dda81157a7af87e5ece21f0911bd8d9d0a0ce779c0",
+    "manifest.tsr": "337d2f9f141461887920998fe891d46743035885f31f4e12f0209b027ae9c21a",
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "verification.txt": "59b9d249b15e4bbba3985139a3e6bf79d2dd541c239407cdedcc1c5e2b62ca50"
+  }
+}

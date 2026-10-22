@@ -1,0 +1,110 @@
+{
+  "schema_version": "patent-pilot-0.1",
+  "purpose": "Targeted download and provenance QA; not a model-ready evidence pack",
+  "items": [
+    {
+      "publication_number": "WO2019125938A1",
+      "title": "Incretin analogs and uses thereof",
+      "publication_date": "2019-06-27",
+      "original_assignee": "Eli Lilly and Company",
+      "candidate_drug": "retatrutide (LY3437943)",
+      "mapping_reference": "https://patents.google.com/patent/WO2024141760A1/en",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf",
+      "response_content_type": "application/pdf",
+      "resolved_download_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf",
+      "retrieved_at": "2026-10-22T14:46:36.913324+00:00",
+      "raw_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "bytes": 1978569,
+      "page_count": 46,
+      "native_text_characters": 0,
+      "pages_with_native_text": 0,
+      "local_path": "patents/WO2019125938A1.pdf",
+      "native_text_path": "extracted/WO2019125938A1.native.txt",
+      "extractor": "pypdf native text; no OCR",
+      "mapping_status": "candidate_cross_reference_requires_structure_or_sequence_review",
+      "eligible_for_forecast": false,
+      "evidence_review_status": "not_scientifically_reviewed",
+      "access_method": "two targeted public PDF downloads from links on Google Patents; no PATENTSCOPE scraping",
+      "usage_review_status": "research pilot only; review source terms before bulk ingestion, redistribution or training",
+      "exclusions": [
+        "drug identity not independently verified against exact compound/sequence",
+        "later mapping cross-reference cannot be used before its own publication date",
+        "priority date is not public availability date",
+        "no prospective prediction or clinical validation performed"
+      ],
+      "extraction_status": "requires_ocr",
+      "cover_preview_path": "previews/WO2019125938A1-cover.png",
+      "cover_ocr_path": "extracted/WO2019125938A1-cover.ocr.txt",
+      "ocr_engine": "tesseract 5.5.2",
+      "ocr_scope_pdf_pages": [
+        1
+      ],
+      "visual_review": {
+        "scope": "cover only",
+        "reviewer": "AI assistant visual inspection, not patent counsel or scientific expert",
+        "verified_fields": [
+          "publication_number",
+          "publication_date",
+          "title",
+          "applicant"
+        ],
+        "whole_document_reviewed": false
+      },
+      "ocr_quality_note": "Cover OCR contains character errors. Do not use raw OCR identifiers, sequence strings or numbers without page-level verification. Remaining pages not OCR processed.",
+      "full_document_model_ready": false
+    },
+    {
+      "publication_number": "WO2020240467A1",
+      "title": "Dosage of an antibody-drug conjugate",
+      "publication_date": "2020-12-03",
+      "original_assignee": "Daiichi Sankyo Company Limited",
+      "candidate_drug": "datopotamab deruxtecan (DS-1062)",
+      "mapping_reference": "https://patents.google.com/patent/WO2025120513A1/en",
+      "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+      "response_content_type": "application/pdf",
+      "resolved_download_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+      "retrieved_at": "2026-10-22T14:46:37.965785+00:00",
+      "raw_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "bytes": 6559716,
+      "page_count": 134,
+      "native_text_characters": 0,
+      "pages_with_native_text": 0,
+      "local_path": "patents/WO2020240467A1.pdf",
+      "native_text_path": "extracted/WO2020240467A1.native.txt",
+      "extractor": "pypdf native text; no OCR",
+      "mapping_status": "candidate_cross_reference_requires_structure_or_sequence_review",
+      "eligible_for_forecast": false,
+      "evidence_review_status": "not_scientifically_reviewed",
+      "access_method": "two targeted public PDF downloads from links on Google Patents; no PATENTSCOPE scraping",
+      "usage_review_status": "research pilot only; review source terms before bulk ingestion, redistribution or training",
+      "exclusions": [
+        "drug identity not independently verified against exact compound/sequence",
+        "later mapping cross-reference cannot be used before its own publication date",
+        "priority date is not public availability date",
+        "no prospective prediction or clinical validation performed"
+      ],
+      "extraction_status": "requires_ocr",
+      "cover_preview_path": "previews/WO2020240467A1-cover.png",
+      "cover_ocr_path": "extracted/WO2020240467A1-cover.ocr.txt",
+      "ocr_engine": "tesseract 5.5.2",
+      "ocr_scope_pdf_pages": [
+        1
+      ],
+      "visual_review": {
+        "scope": "cover only",
+        "reviewer": "AI assistant visual inspection, not patent counsel or scientific expert",
+        "verified_fields": [
+          "publication_number",
+          "publication_date",
+          "title",
+          "applicant"
+        ],
+        "whole_document_reviewed": false
+      },
+      "ocr_quality_note": "Cover OCR contains character errors. Do not use raw OCR identifiers, sequence strings or numbers without page-level verification. Remaining pages not OCR processed.",
+      "full_document_model_ready": false
+    }
+  ]
+}

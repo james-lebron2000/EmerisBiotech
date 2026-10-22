@@ -1,0 +1,2877 @@
+{
+  "schema_version": "predome-patent-evidence-1.0",
+  "created_at": "2026-10-22T15:52:05.191504+00:00",
+  "purpose": "Traceable patent evidence; extraction and scientific review are independent states",
+  "items": [
+    {
+      "publication_number": "WO2019125938A1",
+      "title": "Incretin analogs and uses thereof",
+      "publication_date": "2019-06-27",
+      "original_assignee": "Eli Lilly and Company",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf",
+      "retrieved_at": "2026-10-22T14:46:36.913324+00:00",
+      "raw_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "bytes": 1978569,
+      "page_count": 46,
+      "public_available_at": "2019-06-27",
+      "date_verification": "PDF cover visually checked by AI assistant during pilot; date precision is one day",
+      "drug_mapping": {
+        "candidate_name": "retatrutide (LY3437943)",
+        "aliases": [
+          "retatrutide",
+          "LY3437943",
+          "LY-3437943"
+        ],
+        "status": "candidate_cross_reference_requires_structure_or_sequence_review",
+        "reviewer": null,
+        "reviewed_at": null,
+        "basis": "Later patent cross-reference; exact compound/sequence identity has not been verified",
+        "sources": [
+          {
+            "url": "https://patents.google.com/patent/WO2024141760A1/en",
+            "public_available_at": "2024-07-04",
+            "role": "later_cross_reference_identity_unreviewed"
+          }
+        ],
+        "document_evidence": []
+      },
+      "family": {
+        "id": null,
+        "status": "official_family_lookup_pending",
+        "members": [
+          "WO2019125938A1"
+        ],
+        "deduplication_key": "publication:WO2019125938A1",
+        "deduplication_basis": "single publication only; no inferred family membership"
+      },
+      "extraction": {
+        "method": "pdftoppm+tesseract_eng",
+        "complete": true,
+        "completed_pages": 46,
+        "total_pages": 46,
+        "status": "full_ocr_completed_requires_scientific_review",
+        "text_characters": 86043,
+        "page_manifest_sha256": "f856d16a519e96dce6b6f8ebb89a6a3a6ff96877de36a7fb68a1d876ac7367a5"
+      },
+      "page_references": [
+        {
+          "pdf_page_1_based": 1,
+          "text_sha256": "fd0d318075e2d5912c448bdb285f459fb71a272cb4d14c6f344395ef49182f93",
+          "characters": 3176,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=1",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 2,
+          "text_sha256": "52a4464917416fc4263a08616dee18585567d3720878b5bb3952937819e9fa31",
+          "characters": 2387,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=2",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 3,
+          "text_sha256": "a9dac72967dfe2df842b3121dd38e8866679a440822065a6eab04284c6bac013",
+          "characters": 2646,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=3",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 4,
+          "text_sha256": "85d885b10652df0ba7babe410a0c7cbf8857ec05df23d4d9d26ef0c43376b2a8",
+          "characters": 2372,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=4",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 5,
+          "text_sha256": "7bfbe5596ba58bc2a39916982c22cd243b5b60a5cced01f08f8c5dd8b179a69b",
+          "characters": 2434,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=5",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 6,
+          "text_sha256": "9f638bae6308cd9618d2371f241fc27fc1d75648e396d5674a85ae366de8488e",
+          "characters": 2496,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=6",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 7,
+          "text_sha256": "35d027af8e05c6b02fbca96f47a1d7be94c728670925b3c7e1b1dcdce1f34875",
+          "characters": 2540,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=7",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 8,
+          "text_sha256": "406b228239765d8461f14bf611ae4e9b8de07d342caab6366750e68b23bc421c",
+          "characters": 2550,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=8",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 9,
+          "text_sha256": "f1983697cb19c7a462061f7f44f0424f304848e99353800b0257cab1a3cae35d",
+          "characters": 2085,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=9",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 10,
+          "text_sha256": "d00afdaf74d237bf84328c3407cf7a84a29e6dc536611a03b6368625dfcca1b0",
+          "characters": 2408,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=10",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 11,
+          "text_sha256": "b8d6fb7ad0ea000fc7e83294af6cae6b010dccea7a0d53cc83fd779a645d9244",
+          "characters": 2029,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=11",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 12,
+          "text_sha256": "1246651fe9135917d4c914c383bbe11165e973712a169e2b09ab34ef341efb91",
+          "characters": 1840,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=12",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 13,
+          "text_sha256": "088286bb41335df67f266ad897a43cf95f11f36cb4e6fa135d12edeb2bb2eb2b",
+          "characters": 2418,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=13",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 14,
+          "text_sha256": "f31cd4e1adf9f5240d27efc34ac60a253481aeb7538125df48105bd5e148b1e7",
+          "characters": 2199,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=14",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 15,
+          "text_sha256": "1bacc0a0ce7af314aa38a9d08bf533a81b3f977860b96ef3a1db85c9eb262fc2",
+          "characters": 2127,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=15",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 16,
+          "text_sha256": "e11dec83d90a640c8ed047d6e44761d1d5240e1292e2a1ae317b2f98c3c6e1e1",
+          "characters": 1835,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=16",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 17,
+          "text_sha256": "477f2a18bcaa4545a92fa092e79f6814d9474e5f824387f2fd6d35c17764f7eb",
+          "characters": 1225,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=17",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 18,
+          "text_sha256": "35f7cc0a2a941843076c0ffccd9f3a9ec551b7c8f175353d5f8b2a8e7f3ed9c7",
+          "characters": 1407,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=18",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 19,
+          "text_sha256": "e5fffa9ec674f6c4c5a6298c0d8125f005e7a78d6a1aaa72d189038606730d76",
+          "characters": 1306,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=19",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 20,
+          "text_sha256": "532348f8a82233f49f272825bfed0d36766b3c838b132c47eb4fa11a9aeecfda",
+          "characters": 1217,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=20",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 21,
+          "text_sha256": "a8e719eecd94c40464ae98a5c451126e947a190f059700edf31bedbdae61609c",
+          "characters": 1312,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=21",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 22,
+          "text_sha256": "d4ab3937c1f973d2f0eee11d4f2ac90ea89c7e5c575d1b53ee8be5814f4abfdf",
+          "characters": 1445,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=22",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 23,
+          "text_sha256": "7040f8eea66833d78edc312959fe55d55a74a30240454b8f2ad29bbffd541723",
+          "characters": 1249,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=23",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 24,
+          "text_sha256": "ea68d3eb32ac4f399ab913b6eec175df9fc558ba2c0a2dac5a731d27c2b2b51d",
+          "characters": 1370,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=24",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 25,
+          "text_sha256": "0ca5e0aa03bf58e12a8ceb6932996fc4fb346e77421d65e4352b26c425197afa",
+          "characters": 1414,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=25",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 26,
+          "text_sha256": "0e58bf7feca6e11952e9c1da45a0f082c35d2b62c6cbe0d95e887ed6bc67c7be",
+          "characters": 1216,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=26",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 27,
+          "text_sha256": "aabfdec1d8c8048674f5b662ff3984267086414c73876208752e57de3c95745e",
+          "characters": 1885,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=27",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 28,
+          "text_sha256": "247414d6e58026cdb8e68db8c0bd52d267d1ca7b18ecdc2eb4d5144fac844df7",
+          "characters": 2612,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=28",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 29,
+          "text_sha256": "04798e8d77de498fdd6c04858b103347e93f11e216e1fbafd0f4b61189186739",
+          "characters": 2233,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=29",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 30,
+          "text_sha256": "d41a0066c5c649c04be02f43309878608de8d1b11d6605e645207632a0a187fa",
+          "characters": 2333,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=30",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 31,
+          "text_sha256": "93696a0b1677230335ce7347112f1cdbb312af45b63a832be9eaf9c23f612f47",
+          "characters": 2435,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=31",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 32,
+          "text_sha256": "5288040b73e5a4e4d85d74ff7cc1fa76160159645de9c6ae62f80ca0d6933c82",
+          "characters": 2422,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=32",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 33,
+          "text_sha256": "f1dedf639de760211542308f5ce218bc9881054b6c3d290a5f321dc2d54423ac",
+          "characters": 2487,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=33",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 34,
+          "text_sha256": "a582566312713478399744fd6bcc599efbd2077836c637a0fc57bd429aba34e9",
+          "characters": 2682,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=34",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 35,
+          "text_sha256": "f838d3f2f726d3cd79b41b87de47a8b9fde82806a9b31cb20291119dda4aa1e5",
+          "characters": 1962,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=35",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 36,
+          "text_sha256": "add6099ebe2fe36798b2753501020d0a556907e08c9cf4de4ec788b622e501d6",
+          "characters": 1106,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=36",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 37,
+          "text_sha256": "bb2182f0f2b031e46aae6d581c90d9796ef88aa98acd75b50c540f569cd1a2c9",
+          "characters": 1235,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=37",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 38,
+          "text_sha256": "1a03d65d58dccb4561efe2021860f934fa3d58af6e1498425a5f7cea82985eab",
+          "characters": 1296,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=38",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 39,
+          "text_sha256": "cb6f0a0ab14c95d5ad11146f8f28cabdfe45554170639f00b4a6e4630f6e2d61",
+          "characters": 130,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=39",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 40,
+          "text_sha256": "728694eaac1d321035d5d3a0281093b187d7c9a30134c0298c35339fad195ca6",
+          "characters": 1230,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=40",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 41,
+          "text_sha256": "df20304258374e0e8fc0172f6504c9543414fc999e0e95df52c425a9c27bf0d2",
+          "characters": 1441,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=41",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 42,
+          "text_sha256": "2e01bd2e3efe7978eb5282783e9668370f863739627e0a76f28e0ad4644c612b",
+          "characters": 1541,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=42",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 43,
+          "text_sha256": "84e74099f813930b5c9e0cbc71f0ab37a4808f61ce73072a5e7f290d258275e4",
+          "characters": 549,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=43",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 44,
+          "text_sha256": "1613fccf955f5dc11a36289990f932085bc79964af58ba12421ece18b0f984d4",
+          "characters": 3081,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=44",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 45,
+          "text_sha256": "9a4a3bda2e2ee302c0e64c07d27ff6c009dc7dbea562f249604c28263806db1b",
+          "characters": 1814,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=45",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 46,
+          "text_sha256": "25af5d184a1cb28202e67ea0f878c86549504e88c5ec30672f52f0ebebc252de",
+          "characters": 866,
+          "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=46",
+          "status": "machine_ocr_unreviewed"
+        }
+      ],
+      "experiment_cards": [
+        {
+          "publication_number": "WO2019125938A1",
+          "public_available_at": "2019-06-27",
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=34",
+          "pdf_page_1_based": 34,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "a582566312713478399744fd6bcc599efbd2077836c637a0fc57bd429aba34e9",
+          "review": {
+            "status": "ai_page_visual_check_not_human_scientific_review",
+            "reviewer": null,
+            "reviewed_at": null,
+            "verification_actor": "AI assistant",
+            "verification_date": "2026-10-22",
+            "human_scientific_review": false
+          },
+          "eligible_for_forecast": false,
+          "extraction_method": "OCR extraction with AI visual comparison against original PDF page",
+          "unit": "percent; g for vehicle-adjusted difference",
+          "evidence_id": "WO2019125938A1-table7-mouse-weight",
+          "example_id": "Table 7 / Example 1 analog",
+          "title": "饮食诱导肥胖小鼠中的体重变化实验",
+          "section_type": "preclinical_experiment",
+          "experiment_system": "Diet-induced obese C57BL/6 mice; body weight after 15 days",
+          "species_or_cell": "Male C57BL/6 mice",
+          "sample_size": {
+            "per_group_range": [
+              5,
+              6
+            ]
+          },
+          "dose": {
+            "compound": "Example 1 analog, not independently identified as retatrutide",
+            "amount": 3,
+            "unit": "nmol/kg",
+            "route": "subcutaneous",
+            "schedule": "every 3 days over 15 days"
+          },
+          "comparator": "Vehicle; semaglutide also included in the study",
+          "endpoint": "Within-group percent body-weight change from day 1 to day 15",
+          "result": {
+            "mean_percent_change": -10.04,
+            "sem_percent": 1.14,
+            "vehicle_adjusted_difference_g": -5.42,
+            "sem_g": 0.54
+          },
+          "missing_fields": [
+            "Exact mapping of Example 1 analog to clinical drug",
+            "Independent human scientific review",
+            "Human clinical endpoint"
+          ],
+          "source_location": "PDF page 34, printed page 33, Table 7, Ex. 1 row at 3 nmol/kg; experimental design on PDF page 33",
+          "source_excerpt": "Body Weight Change After Treatment with Exemplary Analogs After Fifteen Days.",
+          "interpretation_limit": "Animal pharmacology supports a hypothesis about an analog. It does not establish retatrutide identity, human efficacy or a clinical trial success probability.",
+          "supporting_pdf_pages": [
+            33,
+            34
+          ]
+        }
+      ],
+      "review_gaps": [
+        "Exact drug identity/sequence not verified",
+        "Scientific review of completed versus prophetic experiments incomplete",
+        "Whole-document OCR numeric values and structures not fully verified against page images",
+        "Official family membership not yet fetched"
+      ],
+      "provenance": {
+        "access_method": "two targeted public PDF downloads from links on Google Patents; no PATENTSCOPE scraping",
+        "raw_file_verified_locally": true,
+        "download_receipt": "sources/pilot_manifest.json",
+        "human_scientific_review": false
+      },
+      "usage_status": "Targeted public research evidence; no bulk PATENTSCOPE scraping; no efficacy or FTO conclusion",
+      "document_observations": [
+        {
+          "observation": "Table 7 contains mouse pharmacology for numbered analogs; no identity assertion is made for retatrutide.",
+          "pdf_page_1_based": 34,
+          "review_status": "AI page visual check; no human scientific review"
+        }
+      ],
+      "candidate_experiment_cards": [
+        {
+          "evidence_id": "WO2019125938A1-p14-example-1",
+          "publication_number": "WO2019125938A1",
+          "example_id": "1",
+          "title": "Example 1 Example | is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=14",
+          "pdf_page_1_based": 14,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "f31cd4e1adf9f5240d27efc34ac60a253481aeb7538125df48105bd5e148b1e7",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 1\n\nExample | is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\nCO-(CH2)1s-CO2H)AQ-aMeK-AFIEYLLA-Aib-GPSSGAPPPS-NFD (SEQ ID NO:7).\n\nBelow is a depiction of the structure of Example 1 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17, oMeK20 and\n\nAib29, where the structures of these amino acid residues have been expanded:",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p16-example-2",
+          "publication_number": "WO2019125938A1",
+          "example_id": "2",
+          "title": "Example 2 15 Example 2 is a compound represented by the following description:",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=16",
+          "pdf_page_1_based": 16,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "e11dec83d90a640c8ed047d6e44761d1d5240e1292e2a1ae317b2f98c3c6e1e1",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 2\n15 Example 2 is a compound represented by the following description:\n\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQHAFIEYLLA-Aib-GPSSGAPPPS-NH> (SEQ ID NO:6).\n\nBelow is a depiction of the structure of Example 2 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17 and Aib29, where\n\n20 _ the structures of these amino acid residues have been expanded\n\nHO.\n\npeek DE-N@ Spr AQHA FIEYLLEAN7 “yo G PSSGAPPP-NT ype NH,\n° Hoo Rog Hog\n\na\n\nSimilar processes to those described above for Example 1 are used to synthesize\nthe peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\nto confirm the molecular weight of Example 2.\n\n25",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p17-example-3",
+          "publication_number": "WO2019125938A1",
+          "example_id": "3",
+          "title": "Example 3",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=17",
+          "pdf_page_1_based": 17,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "477f2a18bcaa4545a92fa092e79f6814d9474e5f824387f2fd6d35c17764f7eb",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 3:\n\nExample 3 is a compound represented by the following description\nY-Aib-QGTFTSDYSI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\nCO-(CH2)1s-CO2H)AQ-aMeK-AFIEYLLEGGPSSGAPPPS-NED (SEQ ID NO:8).\n\n5 Below is a depiction of the structure of Example 3 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17, and aMeK20,\n\nwhere the structures of these amino acid residues have been expanded:\n\nSimilar processes to those described above for Example 1 are used to synthesize\n10 the peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 3.\n\nExample 4:\nExample 4 is a compound represented by the following description:\n15 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)1s-CO2H)AQ-Aib-AFIE YLLA-Aib-GPSSGAPPPS-NH2 (SEQ ID NO:9).\nBelow is a depiction of the structure of Example 4 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, Aib20 and Aib29, where the\n\nstructures of these amino acid residues have been expanded:\nce\n\nNNN Net\nON ONION SO\n\nHO.\n\nyy GPSSCAPPP-N” “Ny NBD\n\n20 ° oO",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p17-example-4",
+          "publication_number": "WO2019125938A1",
+          "example_id": "4",
+          "title": "Example 4",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=17",
+          "pdf_page_1_based": 17,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "477f2a18bcaa4545a92fa092e79f6814d9474e5f824387f2fd6d35c17764f7eb",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 4:\nExample 4 is a compound represented by the following description:\n15 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)1s-CO2H)AQ-Aib-AFIE YLLA-Aib-GPSSGAPPPS-NH2 (SEQ ID NO:9).\nBelow is a depiction of the structure of Example 4 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, Aib20 and Aib29, where the\n\nstructures of these amino acid residues have been expanded:\nce\n\nNNN Net\nON ONION SO\n\nHO.\n\nyy GPSSCAPPP-N” “Ny NBD\n\n20 ° oO",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p18-example-6",
+          "publication_number": "WO2019125938A1",
+          "example_id": "6",
+          "title": "Example 6 Example 6 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=18",
+          "pdf_page_1_based": 18,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "35f7cc0a2a941843076c0ffccd9f3a9ec551b7c8f175353d5f8b2a8e7f3ed9c7",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 6\nExample 6 is a compound represented by the following description\nY-Aib-QGTFTSDYSI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\n20 CO-(CH2)is-COxH)AAQAFIEYLLEGGPSSGAPPPS-NED (SEQ ID NO:11)\nBelow is a depiction of the structure of Example 6 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13, and K17, where the\n\nstructures of these amino acid residues have been expanded",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p19-example-7",
+          "publication_number": "WO2019125938A1",
+          "example_id": "7",
+          "title": "Example 7 Example 7 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=19",
+          "pdf_page_1_based": 19,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "e5fffa9ec674f6c4c5a6298c0d8125f005e7a78d6a1aaa72d189038606730d76",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 7\nExample 7 is a compound represented by the following description\nY-Aib-QGTFTSDYSI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\nCO-(CH2)1s-CO2H)AQHAFIEYLLEGGPSSGAPPPS-NE> (SEQ ID NO:12)\n10 Below is a depiction of the structure of Example 7 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13 and K17, where the\n\nstructures of these amino acid residues have been expanded\n\n9\n\n3\n\n“OR\n\nHO.\n\nos ‘YO GTFETSDY SiN”\nrye N\n\nEDN\n\nAQHAFIEYLLEGGPSSGAPPP-N® “y-NlHy\n2\n\nQ\n\nSimilar processes to those described above for Example 1 are used to synthesize\n15 the peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 7\n\nExample 8:\nExample 8 is a compound represented by the following description\n20 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)s-(yGlu)-CO-\n(CH2)is-CO2H)AQ-aMeK-AFIE YLLEGGPSSGAPPPS-NH2 (SEQ ID NO: 13).",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p19-example-8",
+          "publication_number": "WO2019125938A1",
+          "example_id": "8",
+          "title": "Example 8",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=19",
+          "pdf_page_1_based": 19,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "e5fffa9ec674f6c4c5a6298c0d8125f005e7a78d6a1aaa72d189038606730d76",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 8:\nExample 8 is a compound represented by the following description\n20 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)s-(yGlu)-CO-\n(CH2)is-CO2H)AQ-aMeK-AFIE YLLEGGPSSGAPPPS-NH2 (SEQ ID NO: 13).",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p20-example-9",
+          "publication_number": "WO2019125938A1",
+          "example_id": "9",
+          "title": "Example 9",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=20",
+          "pdf_page_1_based": 20,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "532348f8a82233f49f272825bfed0d36766b3c838b132c47eb4fa11a9aeecfda",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 9:\n\n10 Example 9 is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((yGlu):-CO-(CH2)1s-\nCO.H)AQHAFIEYLLEGGPSSGAPPPS-NED (SEQ ID NO: 14).\n\nBelow is a depiction of the structure of Example 9 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13 and K17, where the\n\n15 structures of these amino acid residues have been expanded:\n\nsthon\n\n; HO\nyen + st AA ~ an + : 5 oy,\nYON Sp QGTETSDY SIN “-LDK-N” ya QHAFIEYLLEGGPSSGAPPP-N” “y-NHy\n\nSimilar processes to those described above for Example 1 are used to synthesize\nthe peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\nto confirm the molecular weight of Example 9.\n20",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p21-example-10",
+          "publication_number": "WO2019125938A1",
+          "example_id": "10",
+          "title": "Example 10 Example 10 is a compound represented by the following description:",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=21",
+          "pdf_page_1_based": 21,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "a8e719eecd94c40464ae98a5c451126e947a190f059700edf31bedbdae61609c",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 10\n\nExample 10 is a compound represented by the following description:\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CHp)1s-CO2H) AQHAFIEYLLEGGPSSGAPPPS-NH> (SEQ ID NO:15).\n\n5 Below is a depiction of the structure of Example 10 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13 and K17, where the\nstructures of these amino acid residues have been expanded\n\nGo\n\nho\n\nPOO ON ON EON ee\n\n{ OH\n\nfal\n\ni\n\nyore ”\n\nfommeel)\nHO\n\nwn J OSTRESDYSEN” eee Cy AQHAFIBYLLEGGPSSGAPPP-NT yee\n\nSimilar processes to those described above for Example 1 are used to synthesize\n10 the peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 10.\n\nExample 11:\nExample 11 is a compound represented by the following description\n15 Y-Aib-QGTFTSDYSI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\nCO-(CH2)1s-CO2H)AQ-Aib-AFIEYLLEGGPSSGAPPPS-NID (SEQ ID NO:16).\nBelow is a depiction of the structure of Example 11 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17 and Aib20, where\n\nthe structures of these amino acid residues have been expanded:\n\nHO.\n\nyoSFIEVLLEGGPSSGAPPP~K\n\n20 ° 3 °",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p21-example-11",
+          "publication_number": "WO2019125938A1",
+          "example_id": "11",
+          "title": "Example 11",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=21",
+          "pdf_page_1_based": 21,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "a8e719eecd94c40464ae98a5c451126e947a190f059700edf31bedbdae61609c",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 11:\nExample 11 is a compound represented by the following description\n15 Y-Aib-QGTFTSDYSI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-\nCO-(CH2)1s-CO2H)AQ-Aib-AFIEYLLEGGPSSGAPPPS-NID (SEQ ID NO:16).\nBelow is a depiction of the structure of Example 11 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17 and Aib20, where\n\nthe structures of these amino acid residues have been expanded:\n\nHO.\n\nyoSFIEVLLEGGPSSGAPPP~K\n\n20 ° 3 °",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p22-example-12",
+          "publication_number": "WO2019125938A1",
+          "example_id": "12",
+          "title": "Example 12 Example 12 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=22",
+          "pdf_page_1_based": 22,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "d4ab3937c1f973d2f0eee11d4f2ac90ea89c7e5c575d1b53ee8be5814f4abfdf",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 12\n\nExample 12 is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLEGGPSSGAPPPS-NH> (SEQ ID NO:17).\n\nBelow is a depiction of the structure of Example 12 using the standard single letter\namino acid codes with the exception of residues Aib2, oMeL13, K17 and Aib20, where\n\nthe structures of these amino acid residues have been expanded\n\nPA RIB YLLEGGPSSGAPP PANT Yet,\nHog yog ~\n\nSimilar processes to those described above for Example 1 are used to synthesize\nthe peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 12.\n\nExample 13\n\nExample 13 is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSSGAPPPS-NH> (SEQ ID NO:18).\n\nBelow is a depiction of the structure of Example 13 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13, K17, Aib20 and Aib29,\n\nwhere the structures of these amino acid residues have been expanded:",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p22-example-13",
+          "publication_number": "WO2019125938A1",
+          "example_id": "13",
+          "title": "Example 13 Example 13 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=22",
+          "pdf_page_1_based": 22,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "d4ab3937c1f973d2f0eee11d4f2ac90ea89c7e5c575d1b53ee8be5814f4abfdf",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 13\n\nExample 13 is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSSGAPPPS-NH> (SEQ ID NO:18).\n\nBelow is a depiction of the structure of Example 13 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13, K17, Aib20 and Aib29,\n\nwhere the structures of these amino acid residues have been expanded:",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p23-example-14",
+          "publication_number": "WO2019125938A1",
+          "example_id": "14",
+          "title": "Example 14",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=23",
+          "pdf_page_1_based": 23,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "7040f8eea66833d78edc312959fe55d55a74a30240454b8f2ad29bbffd541723",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 14:\n\nExample 14 is a compound represented by the following description\nY-Aib-QGTFTSDY SI-aMeL-LDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CHp)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSS-Aib-APPPS-NH2 (SEQ ID NO:19).\n\n10 Below is a depiction of the structure of Example 14 using the standard single letter\namino acid codes with the exception of residues Aib2, aMeL13, K17, Aib20, Aib29 and\n\nAib34 where the structures of these amino acid residues have been expanded:\n\nCAP PRON Uy NMy\ni ao?\n\n° > : 3 og oe\n\nSimilar processes to those described above for Example 1 are used to synthesize\n\n15 the peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 14.\n\nExample 15:\n\nExample 15 is a compound represented by the following description:\n20 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)s-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIE YLLA-Aib-GPSSGAPPPS-NH2 (SEQ ID NO:20)",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p23-example-15",
+          "publication_number": "WO2019125938A1",
+          "example_id": "15",
+          "title": "Example 15",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=23",
+          "pdf_page_1_based": 23,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "7040f8eea66833d78edc312959fe55d55a74a30240454b8f2ad29bbffd541723",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 15:\n\nExample 15 is a compound represented by the following description:\n20 Y-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)s-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIE YLLA-Aib-GPSSGAPPPS-NH2 (SEQ ID NO:20)",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p24-example-16",
+          "publication_number": "WO2019125938A1",
+          "example_id": "16",
+          "title": "Example 16 10 Example 16 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=24",
+          "pdf_page_1_based": 24,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "ea68d3eb32ac4f399ab913b6eec175df9fc558ba2c0a2dac5a731d27c2b2b51d",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 16\n10 Example 16 is a compound represented by the following description\n\nY-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)2-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLEGGPSSGAPPPS-NH> (SEQ ID NO:21).\n\nBelow is a depiction of the structure of Example 16 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, and Aib20, where the\n\n15 structures of these amino acid residues have been expanded:\n\nHO\n\nYN yQ GTFTSDYSILL DEW Sper Oe\n\nye BIBYELEGGPSSGAPPP-N Sp-NH,\n° Bog Hoo\n\nSimilar processes to those described above for Example 1 are used to synthesize\nthe peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\nto confirm the molecular weight of Example 16.\n20\n\nExample 17\nExample 17 is a compound represented by the following description",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p24-example-17",
+          "publication_number": "WO2019125938A1",
+          "example_id": "17",
+          "title": "Example 17 Example 17 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=24",
+          "pdf_page_1_based": 24,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "ea68d3eb32ac4f399ab913b6eec175df9fc558ba2c0a2dac5a731d27c2b2b51d",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 17\nExample 17 is a compound represented by the following description",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p25-example-18",
+          "publication_number": "WO2019125938A1",
+          "example_id": "18",
+          "title": "Example 18 Example 18 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=25",
+          "pdf_page_1_based": 25,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "0ca5e0aa03bf58e12a8ceb6932996fc4fb346e77421d65e4352b26c425197afa",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 18\nExample 18 is a compound represented by the following description\nY-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLEGGPSSGAPPPS-NH> (SEQ ID NO:23).\n15 Below is a depiction of the structure of Example 18 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, and Aib20, where the\n\nstructures of these amino acid residues have been expanded:\n\nHO\n\npQGTETSDYSILLDK-N” 8 Q-N”\nHg #\n\nWAFIEYLLEGGPSSGAPPP-N Sy\nfe} Hoo\n\nSimilar processes to those described above for Example 1 are used to synthesize\n20 the peptide backbone, to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 18",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p26-example-19",
+          "publication_number": "WO2019125938A1",
+          "example_id": "19",
+          "title": "Example 19",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=26",
+          "pdf_page_1_based": 26,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "0e58bf7feca6e11952e9c1da45a0f082c35d2b62c6cbe0d95e887ed6bc67c7be",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 19:\nExample 19 is a compound represented by the following description:\nY-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)2-CO-\n5 (CH)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSSGAPPPS-NH (SEQ ID NO:24).\nBelow is a depiction of the structure of Example 19 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, Aib20 and Aib29, where the\n\nstructures of these amino acid residues have been expanded\n\nRO\n\ny-AFIEVLLE-N“ “y-GPSSGAPPP-N” “y—NHy\nj ng ag\n\n10 Similar processes to those described above for Example 1 are used to synthesize\n\nthe peptide backbone to conjugate the fatty acid-linker moiety, to examine the purity, and\n\nto confirm the molecular weight of Example 19.\n\nExample 20\n15 Example 20 is a compound represented by the following description\n\nY-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSSGAPPPS-NH> (SEQ ID NO:25).\n\nBelow is a depiction of the structure of Example 20 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, Aib20 and Aib29, where the\n\n20 _ structures of these amino acid residues have been expanded:",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2019125938A1-p26-example-20",
+          "publication_number": "WO2019125938A1",
+          "example_id": "20",
+          "title": "Example 20 15 Example 20 is a compound represented by the following description",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=26",
+          "pdf_page_1_based": 26,
+          "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+          "text_sha256": "0e58bf7feca6e11952e9c1da45a0f082c35d2b62c6cbe0d95e887ed6bc67c7be",
+          "public_available_at": "2019-06-27",
+          "source_excerpt": "Example 20\n15 Example 20 is a compound represented by the following description\n\nY-Aib-QGTFTSDYSILLDKK ((2-[2-(2-amino-ethoxy)-ethoxy]-acetyl)-(yGlu)-CO-\n(CH2)is-CO2H)AQ-Aib-AFIEYLLE-Aib-GPSSGAPPPS-NH> (SEQ ID NO:25).\n\nBelow is a depiction of the structure of Example 20 using the standard single letter\namino acid codes with the exception of residues Aib2, K17, Aib20 and Aib29, where the\n\n20 _ structures of these amino acid residues have been expanded:",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        }
+      ],
+      "record_sha256": "bc85edbaad75869931f339a2b49a10839c94dce08f840568b3735aea68ad8222"
+    },
+    {
+      "publication_number": "WO2020240467A1",
+      "title": "Dosage of an antibody-drug conjugate",
+      "publication_date": "2020-12-03",
+      "original_assignee": "Daiichi Sankyo Company Limited",
+      "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+      "retrieved_at": "2026-10-22T14:46:37.965785+00:00",
+      "raw_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "bytes": 6559716,
+      "page_count": 134,
+      "public_available_at": "2020-12-03",
+      "date_verification": "PDF cover visually checked by AI assistant during pilot; date precision is one day",
+      "drug_mapping": {
+        "candidate_name": "datopotamab deruxtecan",
+        "aliases": [
+          "datopotamab deruxtecan",
+          "Dato-DXd",
+          "DS-1062",
+          "DS-1062a",
+          "DS1062a",
+          "datopotamab"
+        ],
+        "status": "ai_verified_explicit_code_and_trial_identity",
+        "reviewer": [
+          "/root/patent_infra_plan",
+          "/root"
+        ],
+        "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+        "basis": "Original patent ADC (1) = DS-1062a and NCT03401385 / DS1062-A-J101; official NCI and ClinicalTrials.gov explicitly connect the same codes to datopotamab deruxtecan. No later secondary patent cross-reference is required.",
+        "sources": [
+          {
+            "source_id": "patent",
+            "url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+            "public_available_at": "2020-12-03",
+            "raw_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+            "role": "original_patent_explicit_code_and_clinical_results"
+          },
+          {
+            "source_id": "nci",
+            "url": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/datopotamab-deruxtecan",
+            "public_available_at": "2026-10-22T15:47:12.656710+00:00",
+            "raw_sha256": "577471680947142824556fb2b54b808e73ef66c5f7c58f274dd845afa792bad8",
+            "retrieved_at": "2026-10-22T15:47:12.656710+00:00",
+            "role": "official_canonical_drug_and_development_aliases",
+            "availability_basis": "Conservative retrieval timestamp; historical webpage version not verified"
+          },
+          {
+            "source_id": "trial",
+            "url": "https://clinicaltrials.gov/api/v2/studies/NCT03401385",
+            "public_available_at": "2026-10-22T15:47:13.148202+00:00",
+            "raw_sha256": "16cc8336d142898229b7112d46bbca5a73e9d163ddc3a352e066126023c7958d",
+            "retrieved_at": "2026-10-22T15:47:13.148202+00:00",
+            "role": "official_trial_id_program_id_and_intervention_aliases",
+            "availability_basis": "Conservative retrieval timestamp; historical registry versions not fetched"
+          }
+        ],
+        "document_evidence": [
+          {
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+            "pdf_page_1_based": 85,
+            "location": "Example 1 [0410]-[0411]",
+            "observation": "ADC (1) uses heavy-chain SEQ ID NO 45 and light-chain SEQ ID NO 46; DAR 3.5–4.5. ADC (2), DAR 6.5–8.0, must not be substituted.",
+            "public_available_at": "2020-12-03"
+          },
+          {
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+            "pdf_page_1_based": 87,
+            "location": "Example 4 [0419]",
+            "observation": "Antibody-drug conjugate (1) is explicitly also referred to as DS-1062a.",
+            "public_available_at": "2020-12-03"
+          },
+          {
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+            "pdf_page_1_based": 88,
+            "location": "Example 5 [0425]",
+            "observation": "First-in-human DS-1062a study explicitly identifies NCT03401385.",
+            "public_available_at": "2020-12-03"
+          },
+          {
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+            "pdf_page_1_based": 93,
+            "location": "Example 7 [0455]-[0458], Table 2",
+            "observation": "Study DS1062-A-J101; cutoff 2019-11-16. 95 treated; 88 response evaluable. 6 mg/kg: 5/18, 27.8%, 95% CI 9.7–53.5. 8 mg/kg: 13/34, 38.2%, 95% CI 22.2–56.4. Investigator-assessed unconfirmed responses.",
+            "public_available_at": "2020-12-03"
+          },
+          {
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+            "pdf_page_1_based": 94,
+            "location": "[0459] and Table 2 footnote",
+            "observation": "Response evaluable requires baseline and post-baseline assessment, or treatment discontinuation; confidence intervals are exact Clopper-Pearson.",
+            "public_available_at": "2020-12-03"
+          }
+        ]
+      },
+      "family": {
+        "id": null,
+        "status": "official_family_lookup_pending",
+        "members": [
+          "WO2020240467A1"
+        ],
+        "deduplication_key": "publication:WO2020240467A1",
+        "deduplication_basis": "single publication only; no inferred family membership"
+      },
+      "extraction": {
+        "method": "pdftoppm+tesseract_eng",
+        "complete": true,
+        "completed_pages": 134,
+        "total_pages": 134,
+        "status": "full_ocr_completed_selected_card_ai_source_checked",
+        "text_characters": 264350,
+        "page_manifest_sha256": "47ba673e45de6232efbb67bf0cef496cf87ed93127198db7e26dcf7f26d32e8e"
+      },
+      "page_references": [
+        {
+          "pdf_page_1_based": 1,
+          "text_sha256": "d81d155b7aa87cd1f3ad7eea43a314ba88ea9e6c5b2f8d42d6497d0ee5795aeb",
+          "characters": 3033,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=1",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 2,
+          "text_sha256": "e76bd853cd3de060e66625556022254e8fd8c2ed111d5c1ce0aedc58fce8e0b4",
+          "characters": 363,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=2",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 3,
+          "text_sha256": "24cf9ecb01906eb441157aa504be927d4752bdae75305b325c8089a7e2dffd36",
+          "characters": 2436,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=3",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 4,
+          "text_sha256": "c45903b1ec953d794214eeb5ceb0527eda1212f7bc1a06318086c5d0597e40c3",
+          "characters": 2625,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=4",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 5,
+          "text_sha256": "1776124e2596d80bd011c70eb4b7b0ab06e30a83b726e8376b9cacc4ef6984cc",
+          "characters": 1823,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=5",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 6,
+          "text_sha256": "784ac90faa3acc173ed661fe38a2cb2f0a696ca6d53e6da57b546ead6c77e311",
+          "characters": 2555,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=6",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 7,
+          "text_sha256": "e8cba0d373c743e438ea4300d7bd356fc2dab7668b10b1b956d585744f80de01",
+          "characters": 2301,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=7",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 8,
+          "text_sha256": "dc6237a977fd1f311b09c6c07f0753385829dc603c77a86f3fb1575ae9be5ac4",
+          "characters": 2172,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=8",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 9,
+          "text_sha256": "11a872387f062f98a1a3e23ea60203256ba70b3f972350c9c038f63d917a1fc8",
+          "characters": 2327,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=9",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 10,
+          "text_sha256": "37251450f6a31d933e1e23ec67b342a44c74c8c945cecb56041489ee77a00f4a",
+          "characters": 2331,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=10",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 11,
+          "text_sha256": "8547e8910e43dbb6ac293bac7340a95fd652954897f9955a1c9128f0dca6e755",
+          "characters": 2762,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=11",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 12,
+          "text_sha256": "0d2ff991d82bb1dc8d2196b50913726877b00ec5825d1e889bff220f7d3d41df",
+          "characters": 2672,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=12",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 13,
+          "text_sha256": "3cffbd3840d374cae8974819485f95f5977e44a752015d40ba48b8e0023f3375",
+          "characters": 2545,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=13",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 14,
+          "text_sha256": "4b0a5b413c6c23997f87119f02d8fb17f76c8b4e600f13b9ab465eddc1789fee",
+          "characters": 2870,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=14",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 15,
+          "text_sha256": "21777ea40efd630ac67d8ef2d9560a072ddac34ba795343fc2e6eec79b2bb0df",
+          "characters": 2555,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=15",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 16,
+          "text_sha256": "f898f04178649ff2e7b9b82c7852e0826d32b7b97217d33c8a533480392e61f0",
+          "characters": 2621,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=16",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 17,
+          "text_sha256": "dd21842a27b58d41771b7f9d8681482523adb757cb0efa549a136d71368d3752",
+          "characters": 2797,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=17",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 18,
+          "text_sha256": "7d952e52a05aa4ad313184bd22d1ea69c2122f34428154efc835006a1a70d2ba",
+          "characters": 3174,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=18",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 19,
+          "text_sha256": "b04c5214729d7df3f6d59c1e6960cbf35680cfb0c7f577b5ba8f9578807f677e",
+          "characters": 3078,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=19",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 20,
+          "text_sha256": "3a4654c2509f8699ff68d4d8d2569aae4da4b0334cbca5ef8c9b5daa30815e85",
+          "characters": 2958,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=20",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 21,
+          "text_sha256": "7b7441e9b6ef4796039eeca5b69739d7245dc6b7e661d7d474fa034607706ec1",
+          "characters": 2475,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=21",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 22,
+          "text_sha256": "235cd046b8f03fec7228b6bbacc5208cad2c78015cf957aa7d3abe1353509b82",
+          "characters": 2292,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=22",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 23,
+          "text_sha256": "48bd62f09f93a7654d6d4d3e1cec04971fe69e1fed4ac1c69f4f8594496d4b1f",
+          "characters": 2638,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=23",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 24,
+          "text_sha256": "dc4791c299d305ea4d5ddefd7a13ff8f6282128ed8833afeec652661818c9911",
+          "characters": 2200,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=24",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 25,
+          "text_sha256": "b4295fa79868bcfff40996944091ad24bc2942e8ee0c6ba9998e83be28cebd38",
+          "characters": 2103,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=25",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 26,
+          "text_sha256": "cdce2693c205990eac2bb13455fd59608658429e88ba85b0ef10c77c982a3666",
+          "characters": 2449,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=26",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 27,
+          "text_sha256": "7938a0f39d4a2a669993433e57537b41241b15e7452f6a3cc763a9a16c7b532f",
+          "characters": 2546,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=27",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 28,
+          "text_sha256": "bf672675521f41572c0a8319dd4432dce8fd4d6088555b7ed7b22dac39dc7246",
+          "characters": 2683,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=28",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 29,
+          "text_sha256": "8096bfb762cb1fac758bd59f4a9730d74d67a75dfecffb36b0da525e4b6012aa",
+          "characters": 2452,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=29",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 30,
+          "text_sha256": "1315f83fed85e18773295dc601d4bc42ac6a81b42bbaf9360d34830325089895",
+          "characters": 2213,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=30",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 31,
+          "text_sha256": "4e5ba5cf78ec2e2e615e0cfbb600c8bcd614e31a7ac44bc8d26ac9a87a7d6f7d",
+          "characters": 2089,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=31",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 32,
+          "text_sha256": "ae6fb075833fc79a1607a16b69084367999a2bb23b7984ab10b53ca1686cae5f",
+          "characters": 2655,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=32",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 33,
+          "text_sha256": "e1320adc2fb8ada422f7be5509c5b7cc87d0c244fa8a27432be77e35001f633e",
+          "characters": 2836,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=33",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 34,
+          "text_sha256": "dd0d060168370f01a89a01f8ad8c6043ff647bd8c299b5b0cb6fad5cd731fbfa",
+          "characters": 3181,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=34",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 35,
+          "text_sha256": "9a6e8515862ad8d3b23b35f94bc3a0568bf336659c29433e6174f551f2d89135",
+          "characters": 3136,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=35",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 36,
+          "text_sha256": "5c041d7cccc68d83f0a6d12db8a268f73391cfe137c3fe3cfd6805844a027fa4",
+          "characters": 3151,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=36",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 37,
+          "text_sha256": "ff834144db8d44f34ad28186390e1221feeada0b9baf9ac7e0c94b8d38124a38",
+          "characters": 3042,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=37",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 38,
+          "text_sha256": "6c9301cd692340017509959c98ea4ae1676ae5a4e101ccba609ea7dc599fb909",
+          "characters": 2815,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=38",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 39,
+          "text_sha256": "4ce3a64e508ae36a98ba2f89a791a73a9bff475a2d93cd922b90d2932b34ddca",
+          "characters": 2555,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=39",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 40,
+          "text_sha256": "b63e3e280ecc0047265ff8db8f13a5c254130e60585d513d58a4c23a6176d7ae",
+          "characters": 2976,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=40",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 41,
+          "text_sha256": "9028b6f0620614c92c4190d34ab8cc8d1bfb49a29e9a45e21e0b99ef46736b64",
+          "characters": 2800,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=41",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 42,
+          "text_sha256": "a19060d0ca4f231f2662aee8bbd8069af28d0b79f6118a865f348b618567d739",
+          "characters": 3211,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=42",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 43,
+          "text_sha256": "5f0f0ed2ace3e8bd4fdaca22e16f91feb04a63a84f0bfce8fe635aebf29f6656",
+          "characters": 2433,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=43",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 44,
+          "text_sha256": "9e39f09914b054d6300f0b401265c0ee573249553ad5771959c41c529a191a1a",
+          "characters": 2152,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=44",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 45,
+          "text_sha256": "abc55c4bf7612456da338fb4958a2e8a9e208e06d15c465a08bf3e2bf8a11569",
+          "characters": 2207,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=45",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 46,
+          "text_sha256": "b59513d893b93e0a6837b00a2840195d1914f67ee549a03f22b383921a4f22d9",
+          "characters": 1072,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=46",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 47,
+          "text_sha256": "b210ae9114ac94b895b39c790e87799ae3ae56650c1f91a2906a44deadb3ddc5",
+          "characters": 1807,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=47",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 48,
+          "text_sha256": "bd5ec36c0e9011962218816509626067c9178c49555716ec816adf4dee1862ec",
+          "characters": 949,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=48",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 49,
+          "text_sha256": "0a1896d67511c72e9298f47400238927f0c8f2fca8eba90d17d4a7b5d43959c4",
+          "characters": 733,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=49",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 50,
+          "text_sha256": "98359a5c40f3df6947436e1f2a54a77ff04093b828a936d890d58797c3d1aba9",
+          "characters": 2034,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=50",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 51,
+          "text_sha256": "fdb4f84455eb9596ff41b739fad354896ee3aa334e6f1a1fe953b7699a9743bd",
+          "characters": 1495,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=51",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 52,
+          "text_sha256": "796fb93a079c37931a71e5d613c5914fe7c0e3608afaa7ff75f3af8cf0d67567",
+          "characters": 1751,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=52",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 53,
+          "text_sha256": "304bfc58eefa9262ab58a201e5b8a653c4264abf587e291bc2d19e9c32095a32",
+          "characters": 1395,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=53",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 54,
+          "text_sha256": "1805c97d4fc2fa72e41ff8d368f70109adb54c5d06a525defeaea6188877599c",
+          "characters": 1456,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=54",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 55,
+          "text_sha256": "520e3ad94154b014c2b8f7fe5da0b0556eeba078a729c7ae0c5520d942201cb7",
+          "characters": 1530,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=55",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 56,
+          "text_sha256": "b1e6721a0765e7e879d27194175682ced9e410c67cde044660e1379d61f63d0c",
+          "characters": 2893,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=56",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 57,
+          "text_sha256": "a0173682a20fa7efb21f2ddb9e541419a0637a773318e0b35584aaf900d1404f",
+          "characters": 2401,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=57",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 58,
+          "text_sha256": "6ca4e9803d9422a6a30b9c0847107f006a5fe13633742405982b7792db984138",
+          "characters": 2657,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=58",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 59,
+          "text_sha256": "a6f61affec90794eae1bdb33d2bd310e7b5db324b124d25f3f07078cfedd8466",
+          "characters": 2608,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=59",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 60,
+          "text_sha256": "6bf073f6e524e61be94b2183d304ec00367102bfb1f29fef3c39f03401bcbb79",
+          "characters": 1691,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=60",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 61,
+          "text_sha256": "3261721717e087896ccc401ed36242f782dc31b756b2153fcfd91ffc7754cf24",
+          "characters": 1543,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=61",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 62,
+          "text_sha256": "c0a94c91bf089c4c6a710d7d94fcd2e0fcb02518fd179b338fa6c5a318229a4a",
+          "characters": 1404,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=62",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 63,
+          "text_sha256": "29c4b81209b3162dfec319ed8cddae1340ed0e52e60baa049e5e423ed3ff8b91",
+          "characters": 1117,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=63",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 64,
+          "text_sha256": "db57a9b4b89ab0f79f52527b2fc269dc3b7528a3f1634baabd4f357a26334e72",
+          "characters": 2050,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=64",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 65,
+          "text_sha256": "786e20aaa051cf2b8053778d37fb34309e77c304bbcceb30ab3d15ab573628bc",
+          "characters": 1704,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=65",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 66,
+          "text_sha256": "8dd9165bafe76e213d18304859fcdfa3cc45efed752542aa08f9c9ed55397f30",
+          "characters": 1657,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=66",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 67,
+          "text_sha256": "ebac4bdd569b109e5d93e0284f81f2df567ead79f545c81232fa9547dde40efc",
+          "characters": 1843,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=67",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 68,
+          "text_sha256": "e3a1dbdbcf912b2366d09bcd0c8ec9dfc019eb88e8d8b64e5e976c8946a7f4c6",
+          "characters": 2941,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=68",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 69,
+          "text_sha256": "6ccaf46ca9cc50b527b9cff062739f6a9004de945b4fba50e78c1c66031d5f01",
+          "characters": 2865,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=69",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 70,
+          "text_sha256": "e31dc1b0ed6364c9649605024930211b1ca0605b8011c47d831981aeab67fae0",
+          "characters": 2902,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=70",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 71,
+          "text_sha256": "9aa31fc17df2dc61d18d2d34d06aa6752260fba7c63c07196a4990de33b17769",
+          "characters": 2507,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=71",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 72,
+          "text_sha256": "3f1dbbeb38e75444fff31a333484bf7f72bb50595bc3c7272902484c95c10d1f",
+          "characters": 1648,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=72",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 73,
+          "text_sha256": "a86f7b7a159287580de356d0072e01c6684fd186a4cb742c92cd9d3bcad27742",
+          "characters": 2011,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=73",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 74,
+          "text_sha256": "7127c47719bb123d55c9738ad847fe848bff87fb351ce044ed160f30f02b591a",
+          "characters": 3136,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=74",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 75,
+          "text_sha256": "b3ebaa6beef64b1c37e125ef6164566fdb672dccb791a4cb2d1af2429cdd7c6e",
+          "characters": 2764,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=75",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 76,
+          "text_sha256": "27e9f396a9c96620107ce9e9c9611564e6946c2319e24498d5f21b4d6db07bd3",
+          "characters": 1829,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=76",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 77,
+          "text_sha256": "2c541e72ff401467f9ce44552f950661a9dfcbed141278bd31418de5b985dfdc",
+          "characters": 2573,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=77",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 78,
+          "text_sha256": "d77b66d7dcd78907d3932bf89600692a7e76dddf62256f2ce0f99a5d1599d954",
+          "characters": 2856,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=78",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 79,
+          "text_sha256": "2ef80992bc26fe95a51d7b0afab895d43739f76fbe5f12009c4c716a93339e3a",
+          "characters": 3048,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=79",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 80,
+          "text_sha256": "4309f35c399d9aeb23008b2bfdf557feedf8c6239bc20a2de99a95e447adbf87",
+          "characters": 2927,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=80",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 81,
+          "text_sha256": "b8d6686a0e9faf991708504be533bbfc1383ffb332c0401b60af77c2fa635933",
+          "characters": 2362,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=81",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 82,
+          "text_sha256": "a6032255df5fb436b5d9577cbeac7f2ef4ffb8d319f1823e67e275172010c527",
+          "characters": 2911,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=82",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 83,
+          "text_sha256": "95852b09f35df46b1011dfc8736a3823c25be487e714369341cc85ef7841e489",
+          "characters": 3094,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=83",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 84,
+          "text_sha256": "5c23b2cf960d87b824a4e2b2a0c217e8e35e211e0d9cd8ed7e2710a2b021dc10",
+          "characters": 2828,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=84",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 85,
+          "text_sha256": "96c74dfbc1fe3f81e75a74a9d31f20d47456104c452dbf82a7a11ca2437feaae",
+          "characters": 1940,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 86,
+          "text_sha256": "e8ba4aa3bec0661ed90899003c4cf1211b08b12dbf1a27265de21dac0d213a02",
+          "characters": 2556,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=86",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 87,
+          "text_sha256": "bce3288c10c7939a673bc459d9557a0bf70fc6de4859d187d3b2a1c8979336bc",
+          "characters": 2870,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 88,
+          "text_sha256": "8133bb541e38c59fb0b209bdff30da19c2bbae31c74af268654f17ba6bec7f1a",
+          "characters": 2134,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 89,
+          "text_sha256": "683d9febaa3edcaa6f136f7b0289ed48e9045eb837411ab5e57da650996a8d28",
+          "characters": 2389,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=89",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 90,
+          "text_sha256": "f3d7f2e9fa428377872daca57a78909daf948440f2c380c723127c492a73bc6d",
+          "characters": 2794,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=90",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 91,
+          "text_sha256": "156113c66eeda5fa163cc3bac56a139e1d1ea3a6f8d0da706ccf414a37a36f20",
+          "characters": 2530,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=91",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 92,
+          "text_sha256": "d1952681ba8d238d92544bba08967c142a9d2ee0aad8a0d60da02f49f9bbf197",
+          "characters": 2923,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=92",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 93,
+          "text_sha256": "e10a61c47f1cd311ee6fa98a9cc029e9ea5cded859157c468970a506d3e2b740",
+          "characters": 1974,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 94,
+          "text_sha256": "2e39b0e514cd0c89e407eee88e8ccf40af0daf17e568caa053baa54da0c1ece4",
+          "characters": 1908,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 95,
+          "text_sha256": "9a5ab1d2dee256f10bc6ad7a501a41cd307fb4ced7ea5a43a28fb941212b02e4",
+          "characters": 2141,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=95",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 96,
+          "text_sha256": "afc30e657a666d1241d03d8356db05e3420d501034d5e7aec646c97f220ffd2b",
+          "characters": 1460,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=96",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 97,
+          "text_sha256": "76224b19a952afc60848b67033d0231bd68769f262c3dd00b0d620e8d5795489",
+          "characters": 1513,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=97",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 98,
+          "text_sha256": "ab3dd111cd27c72db6b2913d4ae5008ad72742229acfe152d88681abe64fd782",
+          "characters": 2049,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=98",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 99,
+          "text_sha256": "ebd0884e971001fc2e696ba359bc2efbf4fc34140e192816750df06c89fcd5fe",
+          "characters": 1868,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=99",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 100,
+          "text_sha256": "518967606c85f3eb69e05f79266f00bc3364fd9c15ca2edb1ea87f7ea956046f",
+          "characters": 1513,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=100",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 101,
+          "text_sha256": "14cb81a4f30085a59629dcd0830d7c8dac1d68fcb8f10fd18c2100e14d60cddf",
+          "characters": 2022,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=101",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 102,
+          "text_sha256": "df24653191cd1cbcbb7995ab9d450b247eb0ec672db27caa56df8a2a25528763",
+          "characters": 1795,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=102",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 103,
+          "text_sha256": "7d0b552e9bce30e27d55081fb86f4d13406b10af0c019adf740a6b8a1e555bd7",
+          "characters": 1592,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=103",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 104,
+          "text_sha256": "00f07b78f4bfab65081e1cf6a4d4648a2b541d83825b50b1dd8a1b2e126b8cdb",
+          "characters": 1867,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=104",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 105,
+          "text_sha256": "da1ddc92d6bb774919f63d0e954b5fce0c448bdfc748ecd694834ffcaf7fb1f9",
+          "characters": 1017,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=105",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 106,
+          "text_sha256": "eaf0d1b3cebf523493b1661202450c2400bf1a545cbd81c12d0d33d85eddc943",
+          "characters": 257,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=106",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 107,
+          "text_sha256": "bad20537480787f35d9a13bedc9683c38bf091e5c6e39771e0256a0a57989f5e",
+          "characters": 961,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=107",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 108,
+          "text_sha256": "163fc26b3e790604c707086e84609433454a1162132df75b953ab6cf9b72544c",
+          "characters": 445,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=108",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 109,
+          "text_sha256": "ba1587a2b2b15236e1a4da572eb41b1bbed9df67866f58c021589245663039e5",
+          "characters": 442,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=109",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 110,
+          "text_sha256": "6090972c1f0ccb2acef487d7881b36b62be310c532d414041c32623913445af5",
+          "characters": 777,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=110",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 111,
+          "text_sha256": "8fb6c11a1401f43fe1d5a0ee0595b1df802190beadb39e129ffce9b0d94424ee",
+          "characters": 1567,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=111",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 112,
+          "text_sha256": "1f8db468d39707f6dd0e97b69beef56be21ef9dde06d679d9a883d1da12a9838",
+          "characters": 701,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=112",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 113,
+          "text_sha256": "2051c7b90b00c8cd03895cf655439ac50b117d4cc14926b9f3164a45d9aa4d9a",
+          "characters": 565,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=113",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 114,
+          "text_sha256": "80154ac4f497bcc6995233bde3fae993eea959b38e9e1ebf745117342c23d707",
+          "characters": 444,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=114",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 115,
+          "text_sha256": "3c757be9cb6083b6aa0d0f5fb48685084d6bf0b7357a519e956b5f0bc1d36368",
+          "characters": 621,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=115",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 116,
+          "text_sha256": "6e89baad13f0d968043a3107200df20e8ba750b228efc76c27560df4237313e2",
+          "characters": 358,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=116",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 117,
+          "text_sha256": "62ebf1a1fd43c26893074eca7645631ee68ba9ac237bd073bba848629df3239b",
+          "characters": 199,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=117",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 118,
+          "text_sha256": "0d227c0cdeda10762b6cda09da1c56861801096e6a274f69fc196fb032fc169f",
+          "characters": 1091,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=118",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 119,
+          "text_sha256": "6061efbea13c827072c135d96c3d94354298611da92eba4cd78f8cae6703c878",
+          "characters": 1953,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=119",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 120,
+          "text_sha256": "96716d50922aaefe1968b72f1249a50607c123b100978720c2b0d8a2644ac60e",
+          "characters": 254,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=120",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 121,
+          "text_sha256": "7940f3fb8b24b829ad9cc8cbeb8a0053695eb082db8bcf4c60dc35d90a4d3be7",
+          "characters": 254,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=121",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 122,
+          "text_sha256": "c81818cbb07c4f4486e9df6420de9f814b0d836dbc57439741e7e50946f56818",
+          "characters": 379,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=122",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 123,
+          "text_sha256": "169b9eed2258bbe726e84a9cb731efb8047afd87e20e5cb646829a63f01477d1",
+          "characters": 392,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=123",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 124,
+          "text_sha256": "8e5023cc85c17669d10c28fc5a045bc7538dd2e896388326419e48f2ff36fc6d",
+          "characters": 446,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=124",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 125,
+          "text_sha256": "5ba6c14c7b6ba9c826b097a76e2e79cd448836509fd147386a6cdfd48d83abe1",
+          "characters": 283,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=125",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 126,
+          "text_sha256": "07d1ea2d69951a3ab2b6ee8a9c120a8509b0c599cfdad0f013e245425fd605b8",
+          "characters": 458,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=126",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 127,
+          "text_sha256": "28ad7cf8346386b4aeb3f8efd0a801d4a90f169db83f9f3c24f916aa7b7987a3",
+          "characters": 1326,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=127",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 128,
+          "text_sha256": "dcb3f9d39f9d05ac6e61bd1171c57a25dc53de388b400440239643fd259aa4c1",
+          "characters": 418,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=128",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 129,
+          "text_sha256": "079542a4d38a6f1b8cf6fa4418f72c0933c6110285c7d1f046fb0a433dc67fac",
+          "characters": 243,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=129",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 130,
+          "text_sha256": "88df05920fcd059d7ac060e86141ae06212e97925fc0dec81f5fb3069b42c809",
+          "characters": 2721,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=130",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 131,
+          "text_sha256": "ffb124f7af35a2fa3d6ae5f41dc571c31ae7390706179d540778863ac7e8e8f3",
+          "characters": 1426,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=131",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 132,
+          "text_sha256": "b33c7240db5fe1497085f41c0813d315b428224d51b7d800753f26ef55da31bf",
+          "characters": 1223,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=132",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 133,
+          "text_sha256": "dcfa4432885787de4e4d9a3cee5351b05123847119e91bd8363a2dc848dab933",
+          "characters": 1834,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=133",
+          "status": "machine_ocr_unreviewed"
+        },
+        {
+          "pdf_page_1_based": 134,
+          "text_sha256": "3014fab4d06244e4dcd116d48074c25153ab8f3be68de9f0ce4f41b382f36293",
+          "characters": 1177,
+          "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=134",
+          "status": "machine_ocr_unreviewed"
+        }
+      ],
+      "experiment_cards": [
+        {
+          "publication_number": "WO2020240467A1",
+          "public_available_at": "2020-12-03",
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+          "pdf_page_1_based": 93,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "e10a61c47f1cd311ee6fa98a9cc029e9ea5cded859157c468970a506d3e2b740",
+          "review": {
+            "status": "two_agent_visual_source_check",
+            "reviewer": [
+              "/root/patent_infra_plan",
+              "/root"
+            ],
+            "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+            "receipt_sha256": "c061b893bb0959074dfcf546998ce49c713c13ace5c52de299a566d4ccad80a8",
+            "human_review_count": 0,
+            "human_scientific_review": false,
+            "same_base_model_correlation_disclosed": true
+          },
+          "eligible_for_forecast": false,
+          "extraction_method": "OCR extraction with AI visual comparison against original PDF page",
+          "unit": "percent",
+          "evidence_id": "WO2020240467A1-example7-orr",
+          "example_id": "7",
+          "title": "一期 DS-1062a 研究中的未确认客观缓解率",
+          "section_type": "clinical_study",
+          "experiment_system": "Phase 1 open-label dose escalation/expansion; 6 mg/kg escalation cohort; 8 mg/kg escalation and expansion cohorts; response-evaluable analysis set",
+          "species_or_cell": "Human participants with previously treated NSCLC",
+          "trial_id": "NCT03401385",
+          "sample_size": {
+            "treated": 95,
+            "response_evaluable": 88,
+            "groups": [
+              {
+                "dose_mg_kg": 6,
+                "n": 18
+              },
+              {
+                "dose_mg_kg": 8,
+                "n": 34
+              }
+            ]
+          },
+          "dose": {
+            "route": "intravenous",
+            "groups_mg_kg": [
+              6,
+              8
+            ]
+          },
+          "comparator": null,
+          "endpoint": "Investigator-assessed unconfirmed objective response rate",
+          "result": {
+            "groups": [
+              {
+                "dose_mg_kg": 6,
+                "responders": 5,
+                "denominator": 18,
+                "percent": 27.8,
+                "ci95_percent": [
+                  9.7,
+                  53.5
+                ]
+              },
+              {
+                "dose_mg_kg": 8,
+                "responders": 13,
+                "denominator": 34,
+                "percent": 38.2,
+                "ci95_percent": [
+                  22.2,
+                  56.4
+                ]
+              }
+            ]
+          },
+          "data_cutoff": "2019-11-16",
+          "missing_fields": [
+            "Randomized concurrent comparator",
+            "Independent human scientific review",
+            "Full sequence alignment against regulatory INN reference"
+          ],
+          "source_location": "PDF page 93, printed page 91, Example 7, paragraphs [0455]-[0458], Table 2",
+          "source_excerpt": "5/18 subjects with response, all with PR; 13/34, all with PR.",
+          "interpretation_limit": "This is a patent-reported, early-phase, nonrandomized, unconfirmed response outcome. It is not a phase 3 treatment effect or a validated forecast.",
+          "supporting_pdf_pages": [
+            87,
+            88,
+            89,
+            93,
+            94
+          ],
+          "response_evaluable_definition": "Baseline and post-baseline tumor assessment, or discontinuation of study treatment (PDF p94, paragraph [0459])."
+        }
+      ],
+      "review_gaps": [
+        "Human scientific review count is zero; the two AI roles share a base model.",
+        "The exact identity is verified through explicit development codes and trial identifiers; full sequence alignment to a regulatory INN document has not been performed.",
+        "Patent-reported, early-phase, nonrandomized unconfirmed ORR cannot be treated as a phase 3 treatment effect or a validated forecast.",
+        "The 88 response-evaluable patients span all reported dose groups; do not use 88 as the denominator for the selected 6 mg/kg (18) or 8 mg/kg (34) groups.",
+        "Whole-document OCR is complete but only selected source pages and the selected experiment card were checked; ADC (2) and other unreviewed examples are excluded.",
+        "Current NCI and ClinicalTrials.gov identity records are conservatively available only at their recorded retrieval timestamps; do not backdate into historical forecasts.",
+        "Official patent-family membership and legal status have not been verified.",
+        "No demonstrated incremental prediction accuracy or prospective clinical validation."
+      ],
+      "provenance": {
+        "access_method": "two targeted public PDF downloads from links on Google Patents; no PATENTSCOPE scraping",
+        "raw_file_verified_locally": true,
+        "download_receipt": "sources/pilot_manifest.json",
+        "human_scientific_review": false
+      },
+      "usage_status": "Targeted public research evidence; no bulk PATENTSCOPE scraping; no efficacy or FTO conclusion",
+      "document_observations": [
+        {
+          "observation": "Example 4 calls antibody-drug conjugate (1) DS-1062a. Example 7 reports a phase 1 response dataset, not a randomized phase 3 effect.",
+          "pdf_page_1_based": 87,
+          "paragraph": "[0419]",
+          "review_status": "AI page visual check; no human scientific review"
+        }
+      ],
+      "candidate_experiment_cards": [
+        {
+          "evidence_id": "WO2020240467A1-p85-example-1",
+          "publication_number": "WO2020240467A1",
+          "example_id": "1",
+          "title": "Example 1  Production of Antibody Drug Conjugates",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+          "pdf_page_1_based": 85,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "96c74dfbc1fe3f81e75a74a9d31f20d47456104c452dbf82a7a11ca2437feaae",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 1 — Production of Antibody Drug Conjugates\n\n[0410] According to production methods disclosed in International Publication No.\nWO02015/098099 and International Publication No. WO2017/002776, an anti-TROP2 antibody\n(e.g., an antibody comprising a heavy chain consisting of the amino acid sequence at amino acid\npositions 1 to 451 in SEQ ID NO: 45 and a light chain consisting of the amino acid sequence at\namino acid positions 1 to 214 in SEQ ID NO: 46) was used to produce an antibody-drug conjugate\n(1) and an antibody-drug conjugate (2)(hereinafter referred to as the “antibody-drug conjugate (1)”\nand the “antibody-drug conjugate (2)”) in which the anti-TROP2 antibody is bound, via a thioether\n\nbond, to a drug linker represented by the following formula:\n\nAnti-TROP2 © oy\nantibody 2 KvAAy 1 i N\nn\n\nwhere n represents an average drug-to-antibody ratio (DAR) per single antibody molecule; and the\n\nvalue of n of the antibody-drug conjugate (1) falls within the range of 3.5 to 4.5; whereas, the value\nof n of the antibody-drug conjugate (2) falls within the range of 6.5 to 8.0.\n\n[0411] The general structures and sequences of antibody-drug conjugate (1) and antibody-drug\n\nconjugate (2) are found in Figures 1 and 2.\n\nExample 2 — Test for Antitumor Effect of Antibody Drug Conjugates\n\n[0412] For the purposes of this experiment, 5-6 weeks old, female, BALB/c nude mice (Charles\n\nRiver Lab",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p85-example-2",
+          "publication_number": "WO2020240467A1",
+          "example_id": "2",
+          "title": "Example 2  Test for Antitumor Effect of Antibody Drug Conjugates",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+          "pdf_page_1_based": 85,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "96c74dfbc1fe3f81e75a74a9d31f20d47456104c452dbf82a7a11ca2437feaae",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 2 — Test for Antitumor Effect of Antibody Drug Conjugates\n\n[0412] For the purposes of this experiment, 5-6 weeks old, female, BALB/c nude mice (Charles\n\nRiver Laboratories Japan), were subjected to experiments. Human pancreatic adenocarcinoma cell\n\nline, CFPAC-1 cells, purchased from ATCC were suspended in saline, and 4 x 10° cells were\n\ntransplanted to a right-side portion of the body of each of the female nude mice. Fourteen days\n-83-",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p87-example-3",
+          "publication_number": "WO2020240467A1",
+          "example_id": "3",
+          "title": "Example 3  Safety Evaluation of Antibody Drug Conjugates",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+          "pdf_page_1_based": 87,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "bce3288c10c7939a673bc459d9557a0bf70fc6de4859d187d3b2a1c8979336bc",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 3 — Safety Evaluation of Antibody Drug Conjugates\n\n[0418] The antibody-drug conjugates (1) and (2) produced according to Example 1 were separately\nadministered to a cross-reactive species, cynomolgus monkeys. More specifically, the antibody-\ndrug conjugate (1) was administered at intervals of once in every three weeks, three times in total;\nwhereas, the antibody-drug conjugate (2) was administered at intervals of once a week, twice in\ntotal. In the case of the antibody-drug conjugate (1), observation was continued up to the following\nday of the final administration. In the case of the antibody-drug conjugate (2), observation was\ncontinued up to the following week of the final administration. As a result, the highest non-\nseverely toxic dose (HNSTD) of the antibody-drug conjugate (2) was less than 10 mg/kg; whereas,\nthe HNSTD of the antibody-drug conjugate (1) was 30 mg/kg. Thus, it was demonstrated that the\nantibody-drug conjugate (1) has better safety than the antibody-drug conjugate (2).\n\nExample 4 — Estimation of Effective Dosage/Dose of Antibody-Drug Conjugate (1) in\n\nHumans\n\n[0419] Hereinafter, “antibody-drug conjugate (1)” may also be referred to as “DS-1062a.”\n\n[0420] The antibody-drug conjugate (1) (i.e., DS-1062a)was intravenously administered once in a\ndose of 0.2, 0.6, 2 or 6 mg/kg to cynomolgus monkeys. Thereafter, based on the plasma\nconcentration of the a",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p87-example-4",
+          "publication_number": "WO2020240467A1",
+          "example_id": "4",
+          "title": "Example 4  Estimation of Effective Dosage/Dose of Antibody-Drug Conjugate (1) in",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+          "pdf_page_1_based": 87,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "bce3288c10c7939a673bc459d9557a0bf70fc6de4859d187d3b2a1c8979336bc",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 4 — Estimation of Effective Dosage/Dose of Antibody-Drug Conjugate (1) in\n\nHumans\n\n[0419] Hereinafter, “antibody-drug conjugate (1)” may also be referred to as “DS-1062a.”\n\n[0420] The antibody-drug conjugate (1) (i.e., DS-1062a)was intravenously administered once in a\ndose of 0.2, 0.6, 2 or 6 mg/kg to cynomolgus monkeys. Thereafter, based on the plasma\nconcentration of the antibody-drug conjugate (1), pharmacokinetic parameters were calculated\nusing a target mediated drug disposition model. Further, the plasma concentration change of\nantibody-drug conjugate with time during the repeated administration to human was estimated. The\nantibody-drug conjugate (1) was administered by repeating a dosing cycle consisting of 0.27, 0.54,\n0.81, 1.6, 3.2, and 6.4 mg/kg once in every three weeks, three times (q3w x 3). The results are\nshown in Figure 4. The plasma concentration change with time of the antibody-drug conjugate (1)\nestimated in humans was compared to the plasma concentration on Day 21 in a CFPAC-1 tumor-\n\n-85-",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p88-example-5",
+          "publication_number": "WO2020240467A1",
+          "example_id": "5",
+          "title": "Example 5  Initial Phase 1 Clinical Study",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+          "pdf_page_1_based": 88,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "8133bb541e38c59fb0b209bdff30da19c2bbae31c74af268654f17ba6bec7f1a",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 5 — Initial Phase 1 Clinical Study\n\n[0421] Introduction\n\n[0422] DS-1062a is a trophoblast cell-surface antigen 2 (TROP2)-targeting antibody-drug\nconjugate with a novel topoisomerase I inhibitor (Exatecan derivative; DXd). DS-1062a binds to\nTROP2 on the cell surface, internalizes and releases DXd into the cytoplasm after enzymatic\n\nprocessing which inhibits topoisomerase I and leads to apoptosis of the target cells.\n\n[0423] TROP2 is highly expressed in epithelial cancers, including lung cancer, and is associated\nwith poor survival. In preclinical studies, DS-1062a showed promising antitumor activity in\n\nxenograft mouse models.\n[0424] Purpose\n\n[0425] The purpose of this study was to evaluate the safety and tolerability of DS-1062a and\ndetermine the maximum tolerated dose (MTD) and recommended dose for expansion (RDE) (see\nclinicaltrials. gov identifier NCT03401385).\n\n[0426] Study Design and Methods\n\n[0427] The Phase 1 study was a multicenter, open-label, multiple-dose, first-in-human study of DS-\n1062a, which enrolled subjects in the United States and Japan. The study included both a dose\nescalation arm and a dose expansion arm, as shown in Figure 5. The dose escalation arm included\na single intravenous infusion of DS-1062a and a 21-day dose-limiting toxicity (DLT) observation\nperiod (Cycle 1). The dose-expansion arm included administering to NSCLC subjects a dose of\nDS-",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p91-example-6",
+          "publication_number": "WO2020240467A1",
+          "example_id": "6",
+          "title": "Example 6  Phase 1 Clinical Study as of New Cut-off Date",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=91",
+          "pdf_page_1_based": 91,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "156113c66eeda5fa163cc3bac56a139e1d1ea3a6f8d0da706ccf414a37a36f20",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 6 — Phase 1 Clinical Study as of New Cut-off Date\n\n[0448] After the initial datacut, additional patients were enrolled in the Phase | study, bringing the\noverall number of participants to fifty-nine (N=59). All patients had unresected advanced NSCLC\ntumors that were relapsed/refractory to standard of care (SOC). The patients were 57.7% male,\n88.5% has Stage IV disease, 73.1% had adenocarcinoma histology, 80.8% had Eastern Cooperative\nOncology Group performance status (ECOG PS) of 1, and 86.5% had failed prior immune\ncheckpoint inhibitor treatment. The same dose escalation and dose expansion study design was\n\nused.\n\n[0449] The number of patients in the Phase 1 study as of the new cut-off date with treatment-\nemergent adverse events (TEAEs), regardless of causality, is shown in Figure 13. Briefly, dose\nlimiting toxicity (DLT) reached at 10 mg/kg, and the maximum tolerated dose (MTD) was\nestablished at 8 mg/kg, which was also the recommended dose for expansion (RDE) in future dose\nexpansion part. Median exposure duration for the patients was 10.6 (range 3.0 — 43.1) weeks.\nSerious TEAEs occurred in 14 (26.9%) patients and death in 3 (5.8%) patients; no deaths were\n\nrelated to the study drug. TEAEs associated with dose reduction, interruption, or discontinuation\n-89-",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        },
+        {
+          "evidence_id": "WO2020240467A1-p93-example-7",
+          "publication_number": "WO2020240467A1",
+          "example_id": "7",
+          "title": "Example 7  Preliminary Efficacy of Antibody Drug Conjugate",
+          "section_type": "example_requires_completed_vs_prophetic_classification",
+          "experiment_system": null,
+          "species_or_cell": null,
+          "sample_size": null,
+          "dose": null,
+          "comparator": null,
+          "endpoint": null,
+          "result": null,
+          "unit": null,
+          "missing_fields": [
+            "experiment_system",
+            "species_or_cell",
+            "sample_size",
+            "dose",
+            "comparator",
+            "endpoint",
+            "result",
+            "unit"
+          ],
+          "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+          "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+          "pdf_page_1_based": 93,
+          "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+          "text_sha256": "e10a61c47f1cd311ee6fa98a9cc029e9ea5cded859157c468970a506d3e2b740",
+          "public_available_at": "2020-12-03",
+          "source_excerpt": "Example 7 — Preliminary Efficacy of Antibody Drug Conjugate\n\n[0455] As of 16 Nov 2019, 88 of the 95 subjects that had been treated with DS-1062a were\n\nevaluable for response\n\n[0456] The investigator-assessed overall response rate (ORR; unconfirmed) was 27.8% (95% CI:\n9.7, 53.5) in the 6 mg/kg dose group (5/18 subjects with response, all with PR) and 38.2% (95% CI\n22.2, 56.4) in the 8 mg/kg dose group (13/34, all with PR) (Table 2 and Figure 22). The disease\ncontrol rate (DCR=CR+PR+SD) was 72.2% in 6 mg/kg and 79.4% in 8 mg/kg.\n\n[0457] At the data cut-off date, all 5 subjects with PR in the 6 mg/kg dose group were ongoing on\n\ntreatment without disease progression or death\n\n[0458] In the 8 mg/kg dose group, 6 of 13 subjects with PR were ongoing on treatment without\ndisease progression or death; 2 had progressive disease; 1 died; and 4 discontinued the DS-1062a\n\ndue to reasons other than disease progression or death.\n\nTable 2 — Summary of Investigator-assessed Objective Response Rate, Disease Control Rate,\nand Best Overall Response in Evaluable Subjects as of 16 Nov 2019 in Study DS1062-A-J101\n(Response Evaluable Analysis Set)\n\nEfficacy Variable Dose Escalation* Dose Dose Escalation\nEscalation +\nDose\nExpansion\n2 mg/kg 4 mg/kg 6 mg/kg 8 mg/kg 10 mg/kg\n(N=6) (N=6) (N=18) | (N=34) (N=8)\nORR (CR + PR) 116.7) 2 33.3) 5 (27.8) 13 (38.2) 1125)\n95% Exact CI* 0.4, 64.1 4.3, 77.7 9.7, 53.5",
+          "extraction_method": "tesseract_ocr_heading_locator",
+          "review": {
+            "status": "unreviewed_ocr_candidate",
+            "reviewer": null,
+            "reviewed_at": null
+          },
+          "eligible_for_forecast": false
+        }
+      ],
+      "research_review": {
+        "schema_version": "predome-patent-ai-source-review-1.0",
+        "review_id": "dato-dxd-two-agent-20261022",
+        "review_type": "two_agent_visual_source_check",
+        "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+        "publication_number": "WO2020240467A1",
+        "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+        "identity_decision": "supported_by_explicit_development_code_and_trial_id",
+        "reviewers": [
+          {
+            "actor_id": "/root/patent_infra_plan",
+            "actor_type": "ai",
+            "role": "patent_identity_and_numerical_source_verifier",
+            "status": "completed",
+            "scope": "Primary source alias lookup and original PDF visual verification, including pages 85,87,88,93,94"
+          },
+          {
+            "actor_id": "/root",
+            "actor_type": "ai",
+            "role": "separate_context_source_reviewer",
+            "status": "completed",
+            "scope": "Independently opened pages 87,88,93,94; checked NCI code names and live ClinicalTrials.gov intervention/alias/program mapping",
+            "confirmation_basis": "Parent collaboration message explicitly confirms each page, dose denominator, ORR, CI, response-evaluable definition and official alias checks"
+          }
+        ],
+        "same_base_model_correlation_disclosed": true,
+        "independence_limit": "Two separately executed AI roles share the same base model and may share systematic errors; this is not independent human scientific review.",
+        "human_review_count": 0,
+        "clinical_prediction_validated": false,
+        "research_use_only": true,
+        "drug_mapping": {
+          "candidate_name": "datopotamab deruxtecan",
+          "aliases": [
+            "datopotamab deruxtecan",
+            "Dato-DXd",
+            "DS-1062",
+            "DS-1062a",
+            "DS1062a",
+            "datopotamab"
+          ],
+          "status": "ai_verified_explicit_code_and_trial_identity",
+          "reviewer": [
+            "/root/patent_infra_plan",
+            "/root"
+          ],
+          "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+          "basis": "Original patent ADC (1) = DS-1062a and NCT03401385 / DS1062-A-J101; official NCI and ClinicalTrials.gov explicitly connect the same codes to datopotamab deruxtecan. No later secondary patent cross-reference is required.",
+          "sources": [
+            {
+              "source_id": "patent",
+              "url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+              "public_available_at": "2020-12-03",
+              "raw_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+              "role": "original_patent_explicit_code_and_clinical_results"
+            },
+            {
+              "source_id": "nci",
+              "url": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/datopotamab-deruxtecan",
+              "public_available_at": "2026-10-22T15:47:12.656710+00:00",
+              "raw_sha256": "577471680947142824556fb2b54b808e73ef66c5f7c58f274dd845afa792bad8",
+              "retrieved_at": "2026-10-22T15:47:12.656710+00:00",
+              "role": "official_canonical_drug_and_development_aliases",
+              "availability_basis": "Conservative retrieval timestamp; historical webpage version not verified"
+            },
+            {
+              "source_id": "trial",
+              "url": "https://clinicaltrials.gov/api/v2/studies/NCT03401385",
+              "public_available_at": "2026-10-22T15:47:13.148202+00:00",
+              "raw_sha256": "16cc8336d142898229b7112d46bbca5a73e9d163ddc3a352e066126023c7958d",
+              "retrieved_at": "2026-10-22T15:47:13.148202+00:00",
+              "role": "official_trial_id_program_id_and_intervention_aliases",
+              "availability_basis": "Conservative retrieval timestamp; historical registry versions not fetched"
+            }
+          ],
+          "document_evidence": [
+            {
+              "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+              "pdf_page_1_based": 85,
+              "location": "Example 1 [0410]-[0411]",
+              "observation": "ADC (1) uses heavy-chain SEQ ID NO 45 and light-chain SEQ ID NO 46; DAR 3.5–4.5. ADC (2), DAR 6.5–8.0, must not be substituted.",
+              "public_available_at": "2020-12-03"
+            },
+            {
+              "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+              "pdf_page_1_based": 87,
+              "location": "Example 4 [0419]",
+              "observation": "Antibody-drug conjugate (1) is explicitly also referred to as DS-1062a.",
+              "public_available_at": "2020-12-03"
+            },
+            {
+              "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+              "pdf_page_1_based": 88,
+              "location": "Example 5 [0425]",
+              "observation": "First-in-human DS-1062a study explicitly identifies NCT03401385.",
+              "public_available_at": "2020-12-03"
+            },
+            {
+              "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+              "pdf_page_1_based": 93,
+              "location": "Example 7 [0455]-[0458], Table 2",
+              "observation": "Study DS1062-A-J101; cutoff 2019-11-16. 95 treated; 88 response evaluable. 6 mg/kg: 5/18, 27.8%, 95% CI 9.7–53.5. 8 mg/kg: 13/34, 38.2%, 95% CI 22.2–56.4. Investigator-assessed unconfirmed responses.",
+              "public_available_at": "2020-12-03"
+            },
+            {
+              "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+              "pdf_page_1_based": 94,
+              "location": "[0459] and Table 2 footnote",
+              "observation": "Response evaluable requires baseline and post-baseline assessment, or treatment discontinuation; confidence intervals are exact Clopper-Pearson.",
+              "public_available_at": "2020-12-03"
+            }
+          ]
+        },
+        "page_checks": [
+          {
+            "pdf_page_1_based": 85,
+            "printed_page": 83,
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+            "location": "Example 1 [0410]-[0411]",
+            "observation": "ADC (1) uses heavy-chain SEQ ID NO 45 and light-chain SEQ ID NO 46; DAR 3.5–4.5. ADC (2), DAR 6.5–8.0, must not be substituted.",
+            "preview_relative_path": "receipts/review/WO2020240467A1-p85.png",
+            "preview_sha256": "d596ee069d3404ac2e281efb5098bd000f4f428e9f4aa1556a3352f467b3beb7",
+            "ai_role_checks": 1
+          },
+          {
+            "pdf_page_1_based": 87,
+            "printed_page": 85,
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+            "location": "Example 4 [0419]",
+            "observation": "Antibody-drug conjugate (1) is explicitly also referred to as DS-1062a.",
+            "preview_relative_path": "receipts/review/WO2020240467A1-p87.png",
+            "preview_sha256": "0b696854891b93b6dcf0106137821308747747ebdcfc1e746e1a02e0389ef206",
+            "ai_role_checks": 2
+          },
+          {
+            "pdf_page_1_based": 88,
+            "printed_page": 86,
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+            "location": "Example 5 [0425]",
+            "observation": "First-in-human DS-1062a study explicitly identifies NCT03401385.",
+            "preview_relative_path": "receipts/review/WO2020240467A1-p88.png",
+            "preview_sha256": "162f1571a6767633538ccee210a26f0d773c0d0af84991ad7b579127117a111f",
+            "ai_role_checks": 2
+          },
+          {
+            "pdf_page_1_based": 93,
+            "printed_page": 91,
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+            "location": "Example 7 [0455]-[0458], Table 2",
+            "observation": "Study DS1062-A-J101; cutoff 2019-11-16. 95 treated; 88 response evaluable. 6 mg/kg: 5/18, 27.8%, 95% CI 9.7–53.5. 8 mg/kg: 13/34, 38.2%, 95% CI 22.2–56.4. Investigator-assessed unconfirmed responses.",
+            "preview_relative_path": "receipts/review/WO2020240467A1-p93.png",
+            "preview_sha256": "e97f27e9f161d3248c87b900ffbb26ba7cc1f6b93a5db6a2142fae498d561d58",
+            "ai_role_checks": 2
+          },
+          {
+            "pdf_page_1_based": 94,
+            "printed_page": 92,
+            "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+            "location": "[0459] and Table 2 footnote",
+            "observation": "Response evaluable requires baseline and post-baseline assessment, or treatment discontinuation; confidence intervals are exact Clopper-Pearson.",
+            "preview_relative_path": "receipts/review/WO2020240467A1-p94.png",
+            "preview_sha256": "777c22542048cb2df5dd7637bf2907bdb2f29d15490266a1a4d8e0c12e79b11c",
+            "ai_role_checks": 2
+          }
+        ],
+        "official_identity_checks": [
+          {
+            "source_id": "nci",
+            "canonical_name": "datopotamab deruxtecan-dlnk",
+            "development_codes": [
+              "DS-1062",
+              "DS-1062a"
+            ],
+            "abbreviation": "Dato-DXd"
+          },
+          {
+            "source_id": "trial",
+            "trial_id": "NCT03401385",
+            "program_id": "DS1062-A-J101",
+            "intervention_name": "Datopotamab Deruxtecan (Dato-DXd)",
+            "intervention_other_name": "DS1062a",
+            "last_update_submitted": "2026-08-28",
+            "last_update_posted": "2026-09-01",
+            "scope": "Identity fields only; current trial status, outcomes and design are not used as historical efficacy evidence."
+          }
+        ],
+        "experiment_card_checks": [
+          {
+            "evidence_id": "WO2020240467A1-example7-orr",
+            "content_sha256": "bdd50a5f7225a9f7fcd2b7b3b25ba4be56c5e70510fe0a7f178170a0b9a6dae1",
+            "numerical_source_check": true,
+            "completed_experiment_check": true,
+            "source_pages": [
+              93,
+              94
+            ],
+            "endpoint_interpretation": "Unconfirmed, investigator-assessed phase 1 ORR in dose-specific response-evaluable groups; no randomized concurrent comparator."
+          }
+        ],
+        "remaining_limitations": [
+          "Human scientific review count is zero; the two AI roles share a base model.",
+          "The exact identity is verified through explicit development codes and trial identifiers; full sequence alignment to a regulatory INN document has not been performed.",
+          "Patent-reported, early-phase, nonrandomized unconfirmed ORR cannot be treated as a phase 3 treatment effect or a validated forecast.",
+          "The 88 response-evaluable patients span all reported dose groups; do not use 88 as the denominator for the selected 6 mg/kg (18) or 8 mg/kg (34) groups.",
+          "Whole-document OCR is complete but only selected source pages and the selected experiment card were checked; ADC (2) and other unreviewed examples are excluded.",
+          "Current NCI and ClinicalTrials.gov identity records are conservatively available only at their recorded retrieval timestamps; do not backdate into historical forecasts.",
+          "Official patent-family membership and legal status have not been verified.",
+          "No demonstrated incremental prediction accuracy or prospective clinical validation."
+        ],
+        "excluded_inferences": [
+          "ADC (2) efficacy or safety assigned to ADC (1)",
+          "Predicted human pharmacokinetics treated as observed human clinical data",
+          "Patent narrative comparisons to docetaxel treated as controlled causal estimates",
+          "Current registry outcomes imported into earlier evidence cutoffs"
+        ],
+        "receipt_sha256": "c061b893bb0959074dfcf546998ce49c713c13ace5c52de299a566d4ccad80a8"
+      },
+      "record_sha256": "84279ec4fe6fb48ea9ed7240b6780e42f61cb08cbe5ce152393a89c8f68769a8"
+    }
+  ],
+  "catalog_sha256": "05827737b995cf40af15dd75febd3999a0a5634d3b5a8a001289fad693c5e231"
+}
