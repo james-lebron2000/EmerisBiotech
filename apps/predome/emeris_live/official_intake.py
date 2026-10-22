@@ -20,7 +20,7 @@ LISTINGS=[
  'https://www.roche.com/media/releases',
  'https://www.pfizer.com/news/press-releases',
  'https://news.bms.com/news/default.aspx',
- 'https://investors.biogen.com/news-releases',
+ 'https://investors.biogen.com/news/news-releases',
  'https://www.sanofi.com/en/media-room/press-releases',
 ]
 MAX_BYTES=6*1024*1024

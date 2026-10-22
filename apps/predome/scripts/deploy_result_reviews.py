@@ -1,4 +1,4 @@
-"""Fixed code-only 1.2.4 -> 1.2.5 release. No ledger imports or database restores."""
+"""Fixed code-only 1.2.5 official listing correction. No ledger imports or database restores."""
 import argparse
 from datetime import datetime, timezone
 import fcntl
@@ -14,14 +14,14 @@ import tarfile
 import time
 import urllib.request
 
-BASE=Path('/opt/emeris-live/releases/20261023-outcomewatch05')
-TARGET=Path('/opt/emeris-live/releases/20261023-officialwatch06')
+BASE=Path('/opt/emeris-live/releases/20261023-officialwatch06')
+TARGET=Path('/opt/emeris-live/releases/20261023-officialwatch06b')
 CURRENT=Path('/opt/emeris-live/current')
 DATA=Path('/var/lib/emeris-live')
 HOME=Path('/opt/emeris-live')
 PYTHON='/opt/emeris-live/venv/bin/python'
-BASE_COMMIT='0c3a0313c2b4f82ec6bc8b001e19b6f02781818d'
-BASE_VERSION='1.2.4'
+BASE_COMMIT='d7a30e1c4819695f914025852c7cf806976aeb09'
+BASE_VERSION='1.2.5'
 VERSION='1.2.5'
 FILES=frozenset(('emeris_live/main.py','emeris_live/official_intake.py',
     'ARENA_OUTCOME_WATCH.md','docs/OPEN_FORECAST_RESULT_SOURCE_AUDIT_20261023.md','scripts/deploy_result_reviews.py'))
@@ -55,7 +55,7 @@ def helpers():
 
 
 def switch(destination):
-    marker=CURRENT.with_name('current-officialwatch06-next')
+    marker=CURRENT.with_name('current-officialwatch06b-next')
     if marker.exists() or marker.is_symlink():raise ValueError('Concurrent release marker')
     marker.symlink_to(destination);marker.replace(CURRENT)
 
@@ -84,7 +84,7 @@ def deploy(archive,expected_hash,commit):
         config_hashes={str(p):d.sha(d.regular(p)) for p in CONFIGS}
         base_hash=d.sha(BASE/'RELEASE_MANIFEST.json')
         events=h.read_events(DATA/'arena.sqlite3');rows=d.sealed_rows(DATA/'workbench.sqlite3')
-        backup=HOME/'backups/20261023-officialwatch06';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
+        backup=HOME/'backups/20261023-officialwatch06b';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
         for name in ('arena.sqlite3','workbench.sqlite3'):d.backup_sqlite(DATA/name,backup/name)
         d.exclusive_write(backup/'base-manifest.json',(BASE/'RELEASE_MANIFEST.json').read_bytes())
         shutil.copytree(BASE,TARGET,ignore=shutil.ignore_patterns('__pycache__','.pytest_cache'))
@@ -107,7 +107,7 @@ def deploy(archive,expected_hash,commit):
             preserved()
             if CURRENT.resolve()!=BASE or d.sha(BASE/'RELEASE_MANIFEST.json')!=base_hash:raise ValueError('Current release changed before switch')
             switch(TARGET);switched=True;restart();await_health()
-            verify=HOME/'officialwatch06-operational.json'
+            verify=HOME/'officialwatch06b-operational.json'
             subprocess.run([PYTHON,str(TARGET/'deploy/verify_server_state.py'),str(verify)],check=True,stdout=subprocess.DEVNULL)
             preserved()
             receipt={'status':'deployed','version':VERSION,'git_commit':commit,'release':str(TARGET),
@@ -116,7 +116,7 @@ def deploy(archive,expected_hash,commit):
                 'arena_current_head':h.head(h.read_events(DATA/'arena.sqlite3')),'database_imports':0,
                 'old_arena_events_preserved':True,'old_sealed_rows_preserved':True,'configurations_unchanged':True,
                 'code_transport_sha256':expected_hash,'at':datetime.now(timezone.utc).isoformat()}
-            d.exclusive_write(HOME/'officialwatch06-receipt.json',json.dumps(receipt,indent=2).encode())
+            d.exclusive_write(HOME/'officialwatch06b-receipt.json',json.dumps(receipt,indent=2).encode())
             return receipt
         except BaseException:
             # Roll back only code; never overwrite new data written by users.
