@@ -1,0 +1,297 @@
+{
+  "consensus": {
+    "agreement": 0.5,
+    "agreement_denominator": 4,
+    "assigned": 4,
+    "average_probability": null,
+    "calibration_status": "not_established",
+    "confidence": null,
+    "counts": {
+      "Failure": 1,
+      "Success": 1,
+      "Uncertain": 2
+    },
+    "predicted_outcome": "Uncertain"
+  },
+  "evidence": [
+    {
+      "id": "registry-NCT06551324",
+      "kind": "trial_registry",
+      "page": null,
+      "publication_date": "2026-08-11",
+      "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+      "title": "MEVPRO-1 frozen registered design"
+    },
+    {
+      "id": "mevpro-protocol",
+      "kind": "trial_protocol",
+      "page": null,
+      "publication_date": "2026-05-10",
+      "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+      "title": "Published protocol and phase I background"
+    }
+  ],
+  "public_policy": {
+    "calibration_status": "not_established",
+    "clinical_prediction_validated": false,
+    "comparison_scope": "Same-evidence clinical-only assignments, separately for each exact registered target. Historical records remain separate.",
+    "confidence": null,
+    "consensus_rule": "Each assigned model slot counts once. A class needs more than half of all assigned slots; otherwise consensus is Uncertain. Agreement is the largest class count divided by all assigned slots, including Uncertain; it is not accuracy or confidence.",
+    "direction_rule": "Direction only: persisted valid model value >0.5 = Success; <0.5 = Failure; exactly 0.5, abstention, failed/missing output or blocked input = Uncertain. This is not a calibrated clinical success probability.",
+    "probability": null
+  },
+  "result": null,
+  "runs": [
+    {
+      "brief_reason": "本次未产生可用研究判断。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-season-20261023-corrected-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-22T17:10:27.332370+00:00",
+      "id": "run-f4978968e8ec4c809a3abb55a9773bdf",
+      "locked_at_utc": "2026-10-22T17:10:27.332370+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "glm-5.2",
+      "model_version": "glm-5.2",
+      "predicted_outcome": "Uncertain",
+      "probability": null,
+      "reason": "本次未产生可用研究判断。",
+      "requested_model": "glm-5.2",
+      "scope": "prospective_challenge",
+      "sources": [],
+      "status": "failed",
+      "target_id": "of-season-20261023-corrected-mevpro1",
+      "track": "same_evidence"
+    },
+    {
+      "brief_reason": "支持面是方案外早期剂量扩展显示 mevrometostat+enzalutamide 对 enzalutamide 的中位 rPFS 差距较大（14.3 vs 6.2 个月），且 III 期采用 BICR、分层双侧 log-rank、rPFS 先于 OS 的层级检验，具备可判定主终点框架。限制是该早期比较非 MEVPRO-1、样本小且未覆盖 docetaxel 医师选择对照；III 期为开放标签（虽 BICR 可部分降偏倚）、当前 SAP/事件成熟度/依从性未核实，成功还要求“统计学合格”而非仅数值改善。因此仅给到略高於中性的主观概率。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-season-20261023-corrected-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-22T17:08:26.061038+00:00",
+      "id": "run-2d7ba8b659fc43e48eae2289686d5de9",
+      "locked_at_utc": "2026-10-22T17:08:26.061038+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "kimi-k3",
+      "model_version": "kimi-k3",
+      "predicted_outcome": "Success",
+      "probability": null,
+      "reason": "支持面是方案外早期剂量扩展显示 mevrometostat+enzalutamide 对 enzalutamide 的中位 rPFS 差距较大（14.3 vs 6.2 个月），且 III 期采用 BICR、分层双侧 log-rank、rPFS 先于 OS 的层级检验，具备可判定主终点框架。限制是该早期比较非 MEVPRO-1、样本小且未覆盖 docetaxel 医师选择对照；III 期为开放标签（虽 BICR 可部分降偏倚）、当前 SAP/事件成熟度/依从性未核实，成功还要求“统计学合格”而非仅数值改善。因此仅给到略高於中性的主观概率。",
+      "requested_model": "kimi-k3",
+      "scope": "prospective_challenge",
+      "sources": [
+        {
+          "id": "registry-NCT06551324",
+          "kind": "trial_registry",
+          "page": null,
+          "publication_date": "2026-08-11",
+          "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+          "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+          "title": "MEVPRO-1 frozen registered design"
+        },
+        {
+          "id": "mevpro-protocol",
+          "kind": "trial_protocol",
+          "page": null,
+          "publication_date": "2026-05-10",
+          "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+          "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+          "title": "Published protocol and phase I background"
+        }
+      ],
+      "status": "predicted",
+      "target_id": "of-season-20261023-corrected-mevpro1",
+      "track": "same_evidence"
+    },
+    {
+      "brief_reason": "登记库确认MEVPRO-1为随机、开放标签III期研究，主要终点为BICR评估的rPFS，符合目标。方案发表显示81例II期扩展中mevrometostat+恩杂鲁胺组rPFS 14.3个月对恩杂鲁胺组6.2个月，提供支持性但非目标试验证据。该II期不是MEVPRO-1，未覆盖医生选择多西他赛对照；III期对照异质性、无rPFS期中分析、 operative SAP和事件成熟度未知，均削弱成功外推。未建立概率校准。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-season-20261023-corrected-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-22T17:08:00.434361+00:00",
+      "id": "run-591612c68a404efe8dcbdcd6bf1c3ed1",
+      "locked_at_utc": "2026-10-22T17:08:00.434361+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "deepseek-v4.1-flash",
+      "model_version": "deepseek-v4.1-flash",
+      "predicted_outcome": "Failure",
+      "probability": null,
+      "reason": "登记库确认MEVPRO-1为随机、开放标签III期研究，主要终点为BICR评估的rPFS，符合目标。方案发表显示81例II期扩展中mevrometostat+恩杂鲁胺组rPFS 14.3个月对恩杂鲁胺组6.2个月，提供支持性但非目标试验证据。该II期不是MEVPRO-1，未覆盖医生选择多西他赛对照；III期对照异质性、无rPFS期中分析、 operative SAP和事件成熟度未知，均削弱成功外推。未建立概率校准。",
+      "requested_model": "deepseek-v4.1-flash",
+      "scope": "prospective_challenge",
+      "sources": [
+        {
+          "id": "registry-NCT06551324",
+          "kind": "trial_registry",
+          "page": null,
+          "publication_date": "2026-08-11",
+          "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+          "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+          "title": "MEVPRO-1 frozen registered design"
+        },
+        {
+          "id": "mevpro-protocol",
+          "kind": "trial_protocol",
+          "page": null,
+          "publication_date": "2026-05-10",
+          "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+          "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+          "title": "Published protocol and phase I background"
+        }
+      ],
+      "status": "predicted",
+      "target_id": "of-season-20261023-corrected-mevpro1",
+      "track": "same_evidence"
+    },
+    {
+      "brief_reason": "现有证据仅包含MEVPRO-1试验注册信息、方案发表细节以及一项非目标试验的剂量扩展比较数据，均未提供MEVPRO-1的rPFS主要分析结果、事件数或任何疗效数据。无法基于有限证据形成关于该确证性终点是否达到统计优效的可靠主观概率，因此不做预测。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-season-20261023-corrected-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-22T17:07:36.419856+00:00",
+      "id": "run-33414d65ff334ef387c5b9a9842b3038",
+      "locked_at_utc": "2026-10-22T17:07:36.419856+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "deepseek-v4-pro",
+      "model_version": "deepseek-v4-pro",
+      "predicted_outcome": "Uncertain",
+      "probability": null,
+      "reason": "现有证据仅包含MEVPRO-1试验注册信息、方案发表细节以及一项非目标试验的剂量扩展比较数据，均未提供MEVPRO-1的rPFS主要分析结果、事件数或任何疗效数据。无法基于有限证据形成关于该确证性终点是否达到统计优效的可靠主观概率，因此不做预测。",
+      "requested_model": "deepseek-v4-pro",
+      "scope": "prospective_challenge",
+      "sources": [
+        {
+          "id": "registry-NCT06551324",
+          "kind": "trial_registry",
+          "page": null,
+          "publication_date": "2026-08-11",
+          "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+          "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+          "title": "MEVPRO-1 frozen registered design"
+        },
+        {
+          "id": "mevpro-protocol",
+          "kind": "trial_protocol",
+          "page": null,
+          "publication_date": "2026-05-10",
+          "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+          "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+          "title": "Published protocol and phase I background"
+        }
+      ],
+      "status": "abstained",
+      "target_id": "of-season-20261023-corrected-mevpro1",
+      "track": "same_evidence"
+    }
+  ],
+  "sources": [
+    {
+      "id": "registry-NCT06551324",
+      "kind": "trial_registry",
+      "page": null,
+      "publication_date": "2026-08-11",
+      "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+      "title": "MEVPRO-1 frozen registered design"
+    },
+    {
+      "id": "mevpro-protocol",
+      "kind": "trial_protocol",
+      "page": null,
+      "publication_date": "2026-05-10",
+      "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+      "title": "Published protocol and phase I background"
+    }
+  ],
+  "target": {
+    "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Randomization up to approximately 2 years.",
+    "cohort_id": "of-season-20261023-corrected-v1",
+    "comparison": "Mevrometostat 875 mg twice daily with food + enzalutamide 160 mg/day versus physician choice enzalutamide or docetaxel.",
+    "consensus": {
+      "agreement": 0.5,
+      "agreement_denominator": 4,
+      "assigned": 4,
+      "average_probability": null,
+      "calibration_status": "not_established",
+      "confidence": null,
+      "counts": {
+        "Failure": 1,
+        "Success": 1,
+        "Uncertain": 2
+      },
+      "predicted_outcome": "Uncertain"
+    },
+    "design": {
+      "allocation": "RANDOMIZED",
+      "enrollment": {
+        "count": 600,
+        "type": "ESTIMATED"
+      },
+      "intervention_model": "PARALLEL",
+      "masking": "NONE",
+      "primary_purpose": "TREATMENT"
+    },
+    "drug": "mevrometostat",
+    "endpoint": "Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3)",
+    "execution_status": null,
+    "id": "of-season-20261023-corrected-mevpro1",
+    "indication": "Metastatic castration-resistant prostate cancer",
+    "information_cutoff_utc": "2026-10-22T17:00:02.856446+00:00",
+    "nct_id": "NCT06551324",
+    "phase": "PHASE3",
+    "population": "Metastatic castration-resistant prostate adenocarcinoma progressing after abiraterone in mCSPC or first-line mCRPC; ECOG 0-2; randomized analysis population.",
+    "readout": {
+      "end": "2026-12-31",
+      "label": "2026 sponsor guidance",
+      "precision": "year",
+      "source_granularity": "named_trial",
+      "source_note": null,
+      "source_title": null,
+      "source_url": "https://cdn.pfizer.com/pfizercom/pfizer-2026-pipeline-catalysts.pdf",
+      "start": "2026-01-01"
+    },
+    "record_kind": null,
+    "registered_at": "2026-10-22T17:05:34.510867+00:00",
+    "registry_status": "ACTIVE_NOT_RECRUITING",
+    "registry_url": "https://clinicaltrials.gov/study/NCT06551324",
+    "result": null,
+    "scope": "prospective_challenge",
+    "sources": [
+      {
+        "id": "registry-NCT06551324",
+        "kind": "trial_registry",
+        "page": null,
+        "publication_date": "2026-08-11",
+        "source_snapshot_url": "/api/arena/sources/b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+        "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+        "title": "MEVPRO-1 frozen registered design"
+      },
+      {
+        "id": "mevpro-protocol",
+        "kind": "trial_protocol",
+        "page": null,
+        "publication_date": "2026-05-10",
+        "source_snapshot_url": "/api/arena/sources/8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+        "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+        "title": "Published protocol and phase I background"
+      }
+    ],
+    "sponsor": "Pfizer",
+    "status": "pending",
+    "success_definition": "The first official decisive prespecified primary analysis of Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3) reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+    "trial_name": "MEVPRO-1",
+    "verification_note": null
+  },
+  "version": "arena-clinical-public-1.0"
+}
