@@ -124,7 +124,7 @@ def _registry():
             raise ProviderError('invalid_registry')
         row = dict(raw)
         model_id, provider = row.get('id'), row.get('provider')
-        if not isinstance(model_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', model_id) or model_id in seen:
+        if not isinstance(model_id, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,80}', model_id) or model_id in seen:
             raise ProviderError('invalid_registry')
         if provider not in (*DEFAULTS, 'openai_compatible'):
             raise ProviderError('invalid_registry')

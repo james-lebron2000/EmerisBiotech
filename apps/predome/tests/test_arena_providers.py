@@ -325,3 +325,12 @@ def test_truncated_response_and_credential_echo_are_not_published(monkeypatch, t
     response['choices'][0]['message']['content'] = json.dumps(answer(reasoning=KEY))
     result = svc.forecast('fixture', packet())
     assert result['error_code'] == 'credential_echo_rejected' and KEY not in json.dumps(result)
+
+
+def test_exact_gateway_model_ids_may_contain_dots(tmp_path,monkeypatch):
+    config=tmp_path/'models.json'
+    config.write_text(json.dumps({'models':[{'id':'glm-5.2','provider':'openai_compatible','model':'glm-5.2',
+        'api_key_env':'ISOLATED_TEST_KEY','base_url':'https://gateway.example.org/v1'}]}))
+    monkeypatch.setenv('EMERIS_ARENA_MODELS_FILE',str(config))
+    monkeypatch.setenv('EMERIS_ARENA_ALLOWED_PROVIDER_HOSTS','gateway.example.org')
+    assert svc.list_models()[0]['requested_model']=='glm-5.2'
