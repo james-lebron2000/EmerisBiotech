@@ -29,3 +29,4 @@ tests/test_prepare_arena_season.py
 tests/test_arena_lab.py
 tests/test_arena_public.py
 tests/test_arena_frontend_config.py
+tests/test_public_campaign_export.py
