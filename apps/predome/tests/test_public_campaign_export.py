@@ -116,3 +116,11 @@ def test_readable_report_escapes_untrusted_html_links_and_table_cells(records):
     text=export.report_text(record).decode()
     assert '<img' not in text and '[click](' not in text
     assert '&lt;img' in text and '\\|' in text and '\n# heading' not in text
+
+
+def test_report_rebuild_is_stable_after_canonical_json_sorts_registry_fields(records):
+    _,data,_,_=records
+    record=deepcopy(data['fixture-0'])
+    record['target']['design']={'masking':'NONE','allocation':'RANDOMIZED',
+        'enrollment':{'type':'ACTUAL','count':100},'intervention_model':'PARALLEL'}
+    assert export.report_text(record)==export.report_text(json.loads(export.canonical(record)))

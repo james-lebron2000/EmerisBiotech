@@ -125,6 +125,9 @@ def validate_record(record, selected):
 
 
 def cell(value):
+    # A JSON round trip sorts nested registry fields; rendering must not depend
+    # on dictionary insertion order if a report is to be independently rebuilt.
+    value=json.dumps(value,ensure_ascii=False,sort_keys=True) if isinstance(value,(dict,list)) else value
     text=str(value if value is not None else 'N/A').replace('\n',' ').replace('\r',' ')
     return re.sub(r'([\\`*_{}\[\]()#+!|])',r'\\\1',html.escape(text,quote=False))
 
