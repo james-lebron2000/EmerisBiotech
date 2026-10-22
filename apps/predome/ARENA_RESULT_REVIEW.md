@@ -1,4 +1,4 @@
-# Predome 1.2.2 — public clinical outcomes and source review
+# Predome 1.2.3 — public clinical outcomes and source review
 
 The public clinical page remains a three-module comparison: trial facts, actual same-evidence model records, and consensus versus published outcomes. The stored forecast, model execution, probability and original ledger events are not rewritten. Uncalibrated public probabilities and confidence remain N/A. Model assignment failures and abstentions stay visible.
 
@@ -30,6 +30,8 @@ These are operator commands, not publicly available API writes. Do not run submi
 
 Public HTML uses only the sanitized public API. Historical replay records never become prospective hits. Actual result links and announcement dates are retained. A nonbinary or unresolved result remains unscored even if an upstream payload contains a premature match flag.
 
-The code-only 1.2.2 deployment preserves the original Arena chain, sealed Workbench rows, model configuration, access controls and Nginx routing. It creates SQLite backups, verifies source manifests, atomically changes the release link and checks the active service. Rollback changes code only and never restores a database over concurrent user writes.
+The code-only 1.2.3 deployment preserves the original Arena chain, sealed Workbench rows, model configuration, access controls and Nginx routing. It creates SQLite backups, verifies source manifests, atomically changes the release link and checks the active service. Rollback changes code only and never restores a database over concurrent user writes.
 
 Synthetic test fixtures check behavior, not actual trial outcomes, model accuracy or clinical performance. No model calls, new forecasts, clinical adjudications or scientific validation are included in this release.
+
+The consensus distribution uses SVG geometry attributes and external stylesheet fills, compatible with the production Content Security Policy. It requires no inline style permission.

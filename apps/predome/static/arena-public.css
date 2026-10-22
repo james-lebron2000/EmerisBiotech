@@ -44,4 +44,4 @@ html .public-arena>header{display:flex;align-items:center;justify-content:space-
 }
 
 /* Categorical counts, never a probability or calibrated confidence score. */
-.public-agreement-bar{display:flex;gap:3px;height:5px;margin:0 0 9px;overflow:hidden;border-radius:2px}.public-agreement-success{background:var(--public-success)}.public-agreement-failure{background:var(--public-danger)}.public-agreement-uncertain{background:var(--public-muted)}
+.public-agreement-bar{display:block;width:100%;height:5px;margin:0 0 9px;overflow:hidden;border-radius:2px}.public-agreement-success{fill:var(--public-success)}.public-agreement-failure{fill:var(--public-danger)}.public-agreement-uncertain{fill:var(--public-muted)}

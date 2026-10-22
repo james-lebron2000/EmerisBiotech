@@ -1,4 +1,4 @@
-"""Fixed code-only 1.2.1 -> 1.2.2 release. No ledger imports or database restores."""
+"""Fixed code-only 1.2.2 -> 1.2.3 release. No ledger imports or database restores."""
 import argparse
 from datetime import datetime, timezone
 import fcntl
@@ -14,14 +14,14 @@ import tarfile
 import time
 import urllib.request
 
-BASE=Path('/opt/emeris-live/releases/20261023-openforecast02')
-TARGET=Path('/opt/emeris-live/releases/20261023-resultreviews03')
+BASE=Path('/opt/emeris-live/releases/20261023-resultreviews03')
+TARGET=Path('/opt/emeris-live/releases/20261023-publiccompare04')
 CURRENT=Path('/opt/emeris-live/current')
 DATA=Path('/var/lib/emeris-live')
 HOME=Path('/opt/emeris-live')
 PYTHON='/opt/emeris-live/venv/bin/python'
-BASE_COMMIT='b7849824370ece4230b61356b7269f92e616dc05'
-VERSION='1.2.2'
+BASE_COMMIT='5b20f0123236de574537048a3e574547ebd03984'
+VERSION='1.2.3'
 FILES=frozenset(('emeris_live/arena_metrics.py','emeris_live/arena_public.py','emeris_live/arena_store.py',
     'emeris_live/main.py','scripts/arena_learning_report.py','scripts/arena_result_review.py',
     'static/arena-lab.html','static/arena-public.html','static/arena-public.css','static/arena-public.js','static/arena.js',
@@ -56,7 +56,7 @@ def helpers():
 
 
 def switch(destination):
-    marker=CURRENT.with_name('current-resultreviews03-next')
+    marker=CURRENT.with_name('current-publiccompare04-next')
     if marker.exists() or marker.is_symlink():raise ValueError('Concurrent release marker')
     marker.symlink_to(destination);marker.replace(CURRENT)
 
@@ -81,11 +81,11 @@ def deploy(archive,expected_hash,commit):
         if (not CURRENT.is_symlink() or CURRENT.resolve()!=BASE or TARGET.exists() or TARGET.is_symlink()
                 or any(p.is_symlink() for p in BASE.rglob('*'))):raise ValueError('Expected fixed base and unused code successor')
         h=helpers();d=h.d;manifest=h.verify_manifest(BASE)
-        if manifest.get('version')!='1.2.1' or manifest.get('git_commit')!=BASE_COMMIT:raise ValueError('Unexpected live code version')
+        if manifest.get('version')!='1.2.2' or manifest.get('git_commit')!=BASE_COMMIT:raise ValueError('Unexpected live code version')
         config_hashes={str(p):d.sha(d.regular(p)) for p in CONFIGS}
         base_hash=d.sha(BASE/'RELEASE_MANIFEST.json')
         events=h.read_events(DATA/'arena.sqlite3');rows=d.sealed_rows(DATA/'workbench.sqlite3')
-        backup=HOME/'backups/20261023-resultreviews03';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
+        backup=HOME/'backups/20261023-publiccompare04';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
         for name in ('arena.sqlite3','workbench.sqlite3'):d.backup_sqlite(DATA/name,backup/name)
         d.exclusive_write(backup/'base-manifest.json',(BASE/'RELEASE_MANIFEST.json').read_bytes())
         shutil.copytree(BASE,TARGET,ignore=shutil.ignore_patterns('__pycache__','.pytest_cache'))
@@ -108,7 +108,7 @@ def deploy(archive,expected_hash,commit):
             preserved()
             if CURRENT.resolve()!=BASE or d.sha(BASE/'RELEASE_MANIFEST.json')!=base_hash:raise ValueError('Current release changed before switch')
             switch(TARGET);switched=True;restart();await_health()
-            verify=HOME/'resultreviews03-operational.json'
+            verify=HOME/'publiccompare04-operational.json'
             subprocess.run([PYTHON,str(TARGET/'deploy/verify_server_state.py'),str(verify)],check=True,stdout=subprocess.DEVNULL)
             preserved()
             receipt={'status':'deployed','version':VERSION,'git_commit':commit,'release':str(TARGET),
@@ -117,7 +117,7 @@ def deploy(archive,expected_hash,commit):
                 'arena_current_head':h.head(h.read_events(DATA/'arena.sqlite3')),'database_imports':0,
                 'old_arena_events_preserved':True,'old_sealed_rows_preserved':True,'configurations_unchanged':True,
                 'code_transport_sha256':expected_hash,'at':datetime.now(timezone.utc).isoformat()}
-            d.exclusive_write(HOME/'resultreviews03-receipt.json',json.dumps(receipt,indent=2).encode())
+            d.exclusive_write(HOME/'publiccompare04-receipt.json',json.dumps(receipt,indent=2).encode())
             return receipt
         except BaseException:
             # Roll back only code; never overwrite new data written by users.
