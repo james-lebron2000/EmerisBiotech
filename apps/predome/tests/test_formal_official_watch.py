@@ -18,6 +18,7 @@ def formal_snapshot(monkeypatch):
     snapshot={'cohorts':[{'id':'formal','registered_at':'2026-01-01T00:00:00Z',
         'protocol':{'season_kind':'registered_12_project_season'}}],'targets':targets}
     monkeypatch.setattr(arena_public,'read_frozen',lambda _:deepcopy(snapshot))
+    monkeypatch.setattr(official,'tracked_config',lambda:[])
     return snapshot
 
 
