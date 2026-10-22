@@ -315,3 +315,21 @@ def test_committed_overlay_contains_two_complete_attestations(tmp_path, monkeypa
     proofs = {name: raw for name, raw in result.items() if '/attestations/' in name}
     assert len(proofs) == 14
     assert set(deploy.validate_attestations(proofs)) == {'pilot-registration-20261022', 'pilot-predictions-20261022'}
+
+
+def test_overlay_git_pathspec_works_from_nested_application_root(tmp_path, monkeypatch):
+    repo=tmp_path/'repo';root=repo/'apps/predome';root.mkdir(parents=True)
+    def git(*args):
+        return subprocess.check_output(['git',*args],cwd=repo,text=True).strip()
+    git('init','-q')
+    git('-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','--allow-empty','-qm','base')
+    base=git('rev-parse','HEAD')
+    script=root/'scripts/deploy_arena.py';script.parent.mkdir();script.write_bytes(Path(deploy.__file__).read_bytes())
+    catalog=root/'patent_data/catalog.json';catalog.parent.mkdir();catalog.write_text('{"items":[]}')
+    git('add','apps')
+    git('-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','overlay')
+    monkeypatch.setattr(deploy,'ROOT',root)
+    monkeypatch.setattr(deploy,'BASE_COMMIT',base)
+    monkeypatch.setattr(deploy,'__file__',str(script))
+    monkeypatch.setattr(deploy,'patent_assets',lambda files:{})
+    assert set(deploy.committed_overlay(git('rev-parse','HEAD')))=={'scripts/deploy_arena.py','patent_data/catalog.json'}

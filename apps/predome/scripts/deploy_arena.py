@@ -463,7 +463,7 @@ def committed_overlay(commit):
     if not re.fullmatch(r'[a-f0-9]{40}', commit):
         raise ValueError('Invalid source commit')
     records = subprocess.check_output(['git', 'diff', '--name-status', '--no-renames', BASE_COMMIT, commit,
-                                      '--', 'apps/predome'], cwd=ROOT, text=True).splitlines()
+                                      '--', ':(top)apps/predome'], cwd=ROOT, text=True).splitlines()
     files = {}
     for record in records:
         change, full = record.split('\t', 1)
