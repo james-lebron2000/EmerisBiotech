@@ -1,0 +1,119 @@
+{
+  "release_version": "1.2.0",
+  "deployed_commit": "3026062c7936a90b06cc40095b915cc2c5803b60",
+  "deployed_at_utc": "2026-10-22T16:15:50.153325+00:00",
+  "production_url": "https://8.148.145.28/arena",
+  "release_archive_sha256": "7e01112bd176ee0f00fb6aa505bdc784ff20b54aaa012f55b9fd1aa3c66a4de5",
+  "ledger_sha256": "a40e5c755fe0fb127b004271ff25ffc61f5d905b73862d7bf22a115cdebb7c4f",
+  "preserved_frozen_files": 730,
+  "old_clinical_rows_preserved": true,
+  "unrelated_processes_preserved": true,
+  "api_verification": {
+    "at": "2026-10-22T16:17:04.506631+00:00",
+    "base": "https://8.148.145.28",
+    "tls_verified": true,
+    "version": "1.2.0",
+    "ledger_sha256": "a40e5c755fe0fb127b004271ff25ffc61f5d905b73862d7bf22a115cdebb7c4f",
+    "registered": 10,
+    "states": {
+      "failed": 4,
+      "predicted": 3,
+      "abstained": 3
+    },
+    "packets_verified": 10,
+    "reports_verified": 2,
+    "proofs": [
+      {
+        "id": "pilot-registration-20261022",
+        "verified": true,
+        "bundle_sha256": "2b0a05ffbda5d7f743731ad2af6a6ce526038ad49b757e4c06e17a6633828ee4"
+      },
+      {
+        "id": "pilot-predictions-20261022",
+        "verified": true,
+        "bundle_sha256": "f328955c4b01fc0989f6b63010c8ea1e6bfb30b310a98adc20d89b849d804d4e"
+      },
+      {
+        "id": "ablation-registration-20261022",
+        "verified": true,
+        "bundle_sha256": "21b11e51f230259cea22ea0e8d48d2af1d8178e039c336b2472e21c93b4cf9b6"
+      },
+      {
+        "id": "ablation-predictions-20261022",
+        "verified": true,
+        "bundle_sha256": "867a1b017f522d9d7c6b55ba8c20b4a3608762c4c46a7c65099f350ae4708593"
+      }
+    ],
+    "patents": 2,
+    "model_ids": [
+      {
+        "id": "glm-5.2",
+        "available": true,
+        "real_api_verified": true
+      },
+      {
+        "id": "kimi-k3",
+        "available": true,
+        "real_api_verified": true
+      },
+      {
+        "id": "deepseek-v4.1-flash",
+        "available": true,
+        "real_api_verified": true
+      },
+      {
+        "id": "deepseek-v4-pro",
+        "available": true,
+        "real_api_verified": true
+      },
+      {
+        "id": "deepseek-flash",
+        "available": false,
+        "real_api_verified": false
+      }
+    ],
+    "paid_calls": 0
+  },
+  "browser_verification": {
+    "at": "2026-10-22T16:16:39.871Z",
+    "base": "https://8.148.145.28",
+    "version": "open-forecast-1.0",
+    "scope": "Read-only live backend rendering. No provider execution, writes, or validation claims.",
+    "targets": 12,
+    "runs": 30,
+    "patents": 2,
+    "checks": [
+      "overview loaded from actual API; no object-string rendering or mobile overflow",
+      "detail loaded from actual API; no object-string rendering or mobile overflow",
+      "leaderboard loaded from actual API; no object-string rendering or mobile overflow",
+      "patents loaded from actual API; no object-string rendering or mobile overflow",
+      "methodology loaded from actual API; no object-string rendering or mobile overflow"
+    ],
+    "errors": []
+  },
+  "navigation_verification": {
+    "at": "2026-10-22T16:17:36.117Z",
+    "base": "https://8.148.145.28",
+    "scope": "Read-only navigation and existing control smoke checks; no model calls or data writes",
+    "checks": [
+      "dashboard: desktop and mobile link opens real arena",
+      "track-record: desktop and mobile link opens real arena",
+      "trials: desktop and mobile link opens real arena",
+      "research: desktop and mobile link opens real arena",
+      "index: desktop and mobile link opens real arena",
+      "predome: desktop and mobile link opens real arena",
+      "guide: desktop and mobile link opens real arena",
+      "analytics: desktop and mobile link opens real arena",
+      "predict: desktop and mobile link opens real arena",
+      "trial-detail: desktop and mobile link opens real arena",
+      "reviews: desktop and mobile link opens real arena",
+      "Homepage calendar filters and table view still work; no mobile overflow",
+      "Trial catalog search works and worklist/design controls survive; no mobile overflow"
+    ],
+    "errors": []
+  },
+  "clinical_prediction_validated": false,
+  "registered_tasks": 10,
+  "independent_assets": 1,
+  "actual_result_count": 0
+}
