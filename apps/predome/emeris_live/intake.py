@@ -81,7 +81,7 @@ def run_intake(store,ncts,fetcher=fetch,discover=True,official=False):
     if any(not isinstance(n,str) or not NCT.fullmatch(n) for n in all_requested):raise ValueError('Invalid tracked trial id')
     requested,deferred=all_requested[:30],all_requested[30:]
     initialize(store);start=now();id=uuid.uuid4().hex;report={'status':'completed','sources_checked':0,'new_candidates':0,'failures':[],'auto_approved':0,'scope':'bounded registered trial watch plus sponsor discovery; not whole-market coverage',
-        'requested_ncts':requested,'deferred_ncts':deferred,'tracked_limit':30,'complete_requested_coverage':not deferred}
+        'requested_ncts':requested,'deferred_ncts':deferred,'tracked_limit':30,'all_requested_ids_scheduled':not deferred,'registry_checked_ncts':[],'literature_checked_ncts':[]}
     result_candidates=[]
     for nct in requested:
         url='https://clinicaltrials.gov/api/v2/studies/'+nct
@@ -90,7 +90,7 @@ def run_intake(store,ncts,fetcher=fetch,discover=True,official=False):
             actual=value.get('protocolSection',{}).get('identificationModule',{}).get('nctId')
             if actual!=nct:raise ValueError('Registry identity mismatch')
             summary=registry_summary(value);kind='reported_results_candidate' if summary['has_results'] else 'registry_update'
-            cid,created=save_candidate(store,nct,kind,url,raw,summary);report['new_candidates']+=int(created);report['sources_checked']+=1
+            cid,created=save_candidate(store,nct,kind,url,raw,summary);report['new_candidates']+=int(created);report['sources_checked']+=1;report['registry_checked_ncts'].append(nct)
             if kind=='reported_results_candidate':result_candidates.append(cid)
         except Exception as e:report['failures'].append({'nct_id':nct,'source':'ClinicalTrials.gov','error_type':type(e).__name__})
         puburl='https://www.ebi.ac.uk/europepmc/webservices/rest/search?'+urlencode({'query':nct,'format':'json','pageSize':10,'resultType':'core'})
@@ -99,7 +99,7 @@ def run_intake(store,ncts,fetcher=fetch,discover=True,official=False):
             hits=[{'id':h.get('id'),'source':h.get('source'),'title':h.get('title'),'firstPublicationDate':h.get('firstPublicationDate'),'doi':h.get('doi'),'abstractText':h.get('abstractText'), 'publication_url':'https://pubmed.ncbi.nlm.nih.gov/'+h['pmid']+'/' if h.get('pmid') else None} for h in value.get('resultList',{}).get('result',[]) if nct in json.dumps(h)]
             if hits:
                 _,created=save_candidate(store,nct,'pubmed_literature_candidate',puburl,raw,{'articles':hits,'index':'Europe PMC / PubMed','extraction_status':'needs_review','label':None,'note':'NCT text match is not proof of target primary outcome.'});report['new_candidates']+=int(created)
-            report['sources_checked']+=1
+            report['sources_checked']+=1;report['literature_checked_ncts'].append(nct)
         except Exception as e:report['failures'].append({'nct_id':nct,'source':'PubMed via Europe PMC','error_type':type(e).__name__})
     if discover:
         # A discovery queue only: completion dates never promoted into readout dates.

@@ -68,7 +68,7 @@ def test_intake_bound_reports_every_deferred_id_instead_of_silent_truncation(tmp
     report=intake.run_intake(store,ids,fetcher,discover=False)
     assert report['requested_ncts']==ids[:30] and report['deferred_ncts']==ids[30:]
     assert report['sources_checked']==60 and report['status']=='partial'
-    assert report['complete_requested_coverage'] is False and report['auto_approved']==0
+    assert report['all_requested_ids_scheduled'] is False and report['auto_approved']==0
     with pytest.raises(ValueError):intake.run_intake(store,ids[:30]+['malformed'],lambda _:pytest.fail('Invalid tail cannot be hidden'))
 
 
@@ -163,3 +163,12 @@ def test_bounded_arena_only_collector_preserves_explicit_source_options(acquired
 
 def test_inbox_cannot_silently_report_missing_runtime_as_no_results(tmp_path):
     with pytest.raises(ValueError,match='Existing runtime'):inbox.build(tmp_path/'missing')
+
+
+def test_scheduled_ids_are_not_conflated_with_successful_source_checks(tmp_path):
+    store=Store(tmp_path/'runtime')
+    def failed(url):raise TimeoutError('isolated source failure')
+    r=intake.run_intake(store,['NCT12345678'],failed,discover=False)
+    assert r['all_requested_ids_scheduled'] is True
+    assert r['registry_checked_ncts']==r['literature_checked_ncts']==[]
+    assert r['status']=='failed' and r['sources_checked']==0 and r['auto_approved']==0
