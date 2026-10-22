@@ -22,7 +22,8 @@ HASH = re.compile(r'[a-f0-9]{64}')
 FROZEN_RUN_FIELDS = {'id', 'target_id', 'cohort_id', 'track', 'condition', 'packet', 'scope',
     'registered_at', 'started_at', 'locked_at_utc', 'generated_at_utc', 'timestamp_proof',
     'execution_state', 'provider_config_snapshot', 'provider_implementation_sha256',
-    'expected_provider_input_sha256', 'expected_prompt_sha256', 'execution_budget_sha256'}
+    'expected_provider_input_sha256', 'expected_prompt_sha256', 'execution_budget_sha256',
+    'agent_spec', 'agent_contract', 'runner_implementation_sha256', 'citation_reviews', 'citation_support_reviews'}
 
 
 def now():
@@ -338,6 +339,32 @@ class ArenaLedger:
                 return 'adjudicated'
         return 'announced_pending_adjudication'
 
+    def record_citation_review(self, run_id, assessment, *, reviewer_id, reviewer_kind, supersedes=None):
+        """Append source-bound assessments; a declared AI role is never a human review."""
+        from .arena_citations import validate_review
+        if (not isinstance(reviewer_id,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}',reviewer_id)
+                or reviewer_kind not in ('ai','human')):
+            raise ValueError('Explicit reviewer identity and AI/human kind required')
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            events=self._verified_events(db)
+            assigned=next((e for e in events if e['kind']=='slot_registered' and e['entity_id']==run_id),None)
+            completed=next((e for e in events if e['kind']=='run_completed' and e['entity_id']==run_id),None)
+            if not assigned or not completed:
+                raise ValueError('A completed registered run is required')
+            run={**assigned['payload'],**completed['payload']}
+            clean=validate_review(run,assessment)
+            prior=[e['payload'] for e in events if e['kind']=='citation_review' and e['entity_id']==run_id
+                   and e['payload']['reviewer_id']==reviewer_id and e['payload']['reviewer_kind']==reviewer_kind]
+            if (prior and supersedes!=prior[-1]['review_sha256']) or (not prior and supersedes is not None):
+                raise ValueError('Correction must identify the latest review by this reviewer')
+            payload={'assessment':clean,'reviewer_id':reviewer_id,'reviewer_kind':reviewer_kind,
+                     'supersedes':supersedes}
+            payload['review_sha256']=sha(payload)
+            if prior and clean==prior[-1]['assessment']:
+                raise ValueError('Identical review must not be counted twice')
+            return self._append(db,'citation_review',run_id,payload)
+
     def attest(self, receipt):
         """Append an operator-verified RFC3161 receipt; no public mutation route."""
         receipt = dict(receipt)
@@ -389,6 +416,8 @@ class ArenaLedger:
             elif kind == 'run_completed':
                 runs[ident].update(p, generated_at_utc=event['created_at'], locked_at_utc=event['created_at'], execution_state='terminal')
                 runs[ident]['completion_event_seq'] = event['seq']
+            elif kind == 'citation_review':
+                runs[ident].setdefault('citation_reviews',[]).append({**p,'reviewed_at':event['created_at']})
             elif kind == 'result_review':
                 if targets[ident]['status'] != 'adjudicated':
                     targets[ident].update(status='announced', result={**p['result'], 'verification_status': 'pending_second_review'})
@@ -410,5 +439,8 @@ class ArenaLedger:
                         'signature_verified': True, 'verification_method': receipt['verification_method'],
                         'manifest_sha256': receipt['manifest_sha256'],
                         'trust_note': 'Depends on the third-party TSA certificate authority; not legal notarization.'}
+        from .arena_citations import summaries
+        for run in runs.values():
+            run['citation_support_reviews']=summaries(run.get('citation_reviews',[]))
         return {'targets': list(targets.values()), 'runs': list(runs.values()), 'cohorts': cohorts,
                 'events': events, 'ledger_sha256': events[-1]['event_hash'] if events else None}

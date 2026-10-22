@@ -3,6 +3,7 @@ from collections import defaultdict
 import math
 import random
 from .arena_store import instant, sha
+from .arena_citations import aggregate_runs
 
 
 def _eligible(run, target):
@@ -100,7 +101,7 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'common_log_loss': common_score['log_loss'], 'common_tasks': len(common),
             'independent_projects': len({targets[i]['project_id'] for i in usable}),
             'cost_usd': sum(costs) if costs_complete else None,
-            'cost_complete': costs_complete})
+            'cost_complete': costs_complete,'citation_support': aggregate_runs(rows)})
     paired = []
     keys = sorted(groups)
     for i, a in enumerate(keys):
@@ -122,7 +123,7 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'adjudicated': len({r['target_id'] for r in runs if targets.get(r['target_id'],{}).get('status')=='adjudicated'}),
             'common_tasks': len(common), 'independent_projects': len({targets[i]['project_id'] for i in common}),
             'ranking_allowed': False, 'reason': '展示配对评分与覆盖率；小样本和未解决结果不支持冠军声明。',
-            'by_model': by_model, 'paired_differences': paired,
+            'by_model': by_model, 'paired_differences': paired,'citation_support':aggregate_runs(runs),
             'baseline': {'name': '预先固定 0.5 参考值', 'common_brier': .25 if common else None, 'common_tasks': len(common)},
             'clinical_prediction_validated': False}
 

@@ -9,7 +9,7 @@ import sys
 import uuid
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, sha
-from emeris_live import arena_providers
+from emeris_live import arena_providers, arena_agents
 from emeris_live.arena_providers import forecast, list_models
 
 
@@ -25,15 +25,30 @@ def read(path):
         parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite operator input')))
 
 
+def agent_configuration(slot, budget, models):
+    contract=arena_agents.freeze_agent_contract(slot.get('agent_spec'),slot['packet'],budget,models)
+    component_names={m['id']:m.get('name',m['id']) for m in models}
+    spec=contract['agent_spec']
+    snapshot={'id':contract['model_id'],'name':component_names[spec['reviewer_model_id']]+' 审查 → '+component_names[spec['forecaster_model_id']]+' 预测',
+        'provider':contract['provider'],'requested_model':contract['requested_model'],
+        'config_sha256':contract['config_sha256'],'components':contract['components'],
+        'adapter_version':arena_agents.VERSION,'tier':spec['tier']}
+    return contract,snapshot
+
+
 def execution_contract(slot, budget):
+    runner_hash=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     if slot['track'] == 'open_agent':
-        raise ValueError('Open systems require a separately audited runner')
+        contract,_=agent_configuration(slot,budget,list_models())
+        return {k:contract[k] for k in ('workflow_version','expected_provider_input_sha256',
+            'expected_prompt_sha256','provider_implementation_sha256','execution_budget_sha256')} | {'runner_implementation_sha256':runner_hash}
+
     workflow = 'evidence_review' if slot['track'] == 'shared_agent' else 'single_pass'
     version = arena_providers.VERSION + ':' + workflow
     if slot.get('workflow_version', version) != version:
         raise ValueError('Workflow version does not match this runner')
     prompts = ([arena_providers.REVIEW_PROMPT] if workflow == 'evidence_review' else []) + [arena_providers.SYSTEM_PROMPT]
-    return {'workflow_version': version,
+    return {'workflow_version': version,'runner_implementation_sha256':runner_hash,
         'expected_provider_input_sha256': sha(arena_providers._packet(slot['packet'])),
         'expected_prompt_sha256': sha([hashlib.sha256(p.encode()).hexdigest() for p in prompts]),
         'provider_implementation_sha256': hashlib.sha256(Path(arena_providers.__file__).read_bytes()).hexdigest(),
@@ -49,6 +64,10 @@ def validate_budget(budget):
 
 
 def verify_registered_model(row, model, budget):
+    if row['track']=='open_agent':
+        contract,model=agent_configuration(row,budget,list_models())
+        if contract!=row.get('agent_contract'):
+            raise ValueError('Agent contract changed since registration')
     expected = row.get('provider_config_snapshot', {})
     if (not expected.get('config_sha256') or model.get('requested_model') != row.get('requested_model')
             or model.get('provider') != row.get('provider')
@@ -63,10 +82,10 @@ RECEIPT_FIELDS = frozenset(('status probability reasoning evidence_ids supportin
     'opposing_evidence_ids key_assumptions key_unknowns returned_model usage cost_usd known_cost_usd '
     'cost_amount known_cost_amount cost_currency cost_basis cost_note latency_ms prompt_sha256 '
     'request_sha256 provider_response_sha256 error_code adapter_version workflow workflow_version '
-    'clinical_prediction_validated evidence_review provider requested_model config_sha256 '
+    'clinical_prediction_validated evidence_review provider requested_model config_sha256 stage_plan workflow_complete evidence_review_sha256 agent_trace agent_trace_sha256 agent_calls_dispatched cost_breakdown '
     'input_sha256 model_id budget preflight_cost_upper_estimate billing_status').split())
 ATTEMPT_FIELDS = frozenset(('stage requested_model returned_model prompt_sha256 request_sha256 '
-    'response_sha256 usage cost_usd cost_amount cost_currency cost_basis latency_ms status error_code').split())
+    'response_sha256 usage cost_usd cost_amount cost_currency cost_basis latency_ms status error_code input_sha256 input_chars input_bytes max_output_tokens timeout_seconds finish_reason visible_output_bytes response_bytes agent_step model_id').split())
 ACCOUNTING_FIELDS = frozenset(('attempts usage cost_usd known_cost_usd cost_amount known_cost_amount '
     'cost_currency cost_basis cost_note latency_ms returned_model request_sha256 provider_response_sha256').split())
 
@@ -135,9 +154,12 @@ def main():
     sub=p.add_subparsers(dest='command',required=True)
     r=sub.add_parser('register');r.add_argument('spec')
     x=sub.add_parser('execute');x.add_argument('--cohort',required=True);x.add_argument('--max-calls',type=int,required=True)
-    x.add_argument('--budget-file',required=True)
+    x.add_argument('--budget-file',required=True);x.add_argument('--model');x.add_argument('--target')
     v=sub.add_parser('review');v.add_argument('--target',required=True);v.add_argument('--reviewer',required=True)
     v.add_argument('--result',required=True);v.add_argument('--supersedes')
+    cr=sub.add_parser('citation-review');cr.add_argument('--run',required=True)
+    cr.add_argument('--reviewer',required=True);cr.add_argument('--kind',choices=('ai','human'),required=True)
+    cr.add_argument('--assessment',required=True);cr.add_argument('--supersedes')
     att=sub.add_parser('attest');att.add_argument('receipt')
     sub.add_parser('status')
     a=p.parse_args()
@@ -149,7 +171,13 @@ def main():
         validate_budget(budget)
         models={m['id']:m for m in list_models()}
         for slot in spec['slots']:
-            model=models.get(slot['model_id'])
+            if slot['track']=='open_agent':
+                contract,model=agent_configuration(slot,budget,list(models.values()))
+                if slot['model_id']!=contract['model_id']:
+                    raise ValueError('Agent slot identity differs from its spec')
+                slot['agent_contract']=contract
+            else:
+                model=models.get(slot['model_id'])
             if not model or not model.get('requested_model'):raise ValueError('Model requires an explicitly configured version')
             slot['requested_model']=model['requested_model']
             slot['provider']=model['provider']
@@ -166,7 +194,8 @@ def main():
         if cohort['protocol'].get('execution_budget')!=budget:
             raise ValueError('Execution budget must equal the pre-registered policy')
         models={m['id']:m for m in list_models()}
-        rows=[r for r in state['runs'] if r['cohort_id']==a.cohort and r['status']=='pending' and not r.get('started_at')]
+        rows=[r for r in state['runs'] if r['cohort_id']==a.cohort and r['status']=='pending' and not r.get('started_at')
+              and (not a.model or r['model_id']==a.model) and (not a.target or r['target_id']==a.target)]
         for row in rows[:a.max_calls]:
             verify_registered_model(row,models.get(row['model_id'],{}),budget)
         for row in rows[:a.max_calls]:
@@ -175,7 +204,11 @@ def main():
             slot=ledger.start(row['id'])
             workflow='evidence_review' if slot['track']=='shared_agent' else 'single_pass'
             try:
-                result=forecast(slot['model_id'],slot['packet'],workflow=workflow,budget=budget)
+                if slot['track']=='open_agent':
+                    result=arena_agents.run_agent(slot['agent_spec'],slot['packet'],budget=budget,
+                        models=list_models(),frozen_contract=slot['agent_contract'])
+                else:
+                    result=forecast(slot['model_id'],slot['packet'],workflow=workflow,budget=budget)
             except Exception:
                 # A crash may have happened after billing. Preserve a failed slot,
                 # never automatically repeat it or expose a raw provider exception.
@@ -190,6 +223,10 @@ def main():
                 'latency_ms':result.get('latency_ms'),'error_code':result.get('error_code')},ensure_ascii=False),flush=True)
     elif a.command=='review':
         print(ledger.record_result(a.target,read(a.result),reviewer_id=a.reviewer,supersedes=a.supersedes))
+    elif a.command=='citation-review':
+        event=ledger.record_citation_review(a.run,read(a.assessment),reviewer_id=a.reviewer,
+            reviewer_kind=a.kind,supersedes=a.supersedes)
+        print(json.dumps({'event_hash':event['event_hash'],'status':'citation_review_appended'}))
     elif a.command=='attest':
         event=ledger.attest(read(a.receipt))
         print(json.dumps({'event_hash':event['event_hash'],'status':'attestation_appended'}))

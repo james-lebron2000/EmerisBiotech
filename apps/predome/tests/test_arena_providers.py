@@ -334,3 +334,167 @@ def test_exact_gateway_model_ids_may_contain_dots(tmp_path,monkeypatch):
     monkeypatch.setenv('EMERIS_ARENA_MODELS_FILE',str(config))
     monkeypatch.setenv('EMERIS_ARENA_ALLOWED_PROVIDER_HOSTS','gateway.example.org')
     assert svc.list_models()[0]['requested_model']=='glm-5.2'
+
+
+def compact_review():
+    return {'findings':[{'evidence_id':'phase2','kind':'limitation','statement':'人群可迁移性未知。'}],
+            'key_unknowns':['主要终点事件数未知。']}
+
+
+def stage_budget():
+    return {'max_output_tokens':4096, 'timeout_seconds':120, 'max_requests':2,
+        'max_total_output_tokens':7168, 'max_total_timeout_seconds':210,
+        'stage_budgets':{'evidence_review':{'max_output_tokens':4096,'timeout_seconds':120},
+                         'forecast':{'max_output_tokens':3072,'timeout_seconds':90}}}
+
+
+@pytest.mark.parametrize('provider',['openai','openai_compatible','anthropic','gemini','deepseek'])
+def test_explicit_stage_limits_across_native_and_gateway_protocols(monkeypatch,tmp_path,provider):
+    configure(monkeypatch,tmp_path,provider,max_output_tokens=4096,timeout_seconds=120)
+    responses=iter([envelope(provider,compact_review()),envelope(provider)])
+    calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review',budget=stage_budget())
+    assert result['status']=='predicted' and result['workflow_complete'] is True and len(calls)==2
+    assert result['adapter_version']=='arena-providers-1.1.0'
+    assert result['evidence_review_sha256']==svc.digest(compact_review())
+    assert result['budget']['max_total_output_tokens']==7168
+    for i,(tokens,seconds) in enumerate([(4096,120),(3072,90)]):
+        body=json.loads(calls[i].content)
+        actual=(body['generationConfig']['maxOutputTokens'] if provider=='gemini'
+                else body['max_completion_tokens' if provider=='openai' else 'max_tokens'])
+        assert actual==tokens
+        attempt=result['attempts'][i]
+        assert attempt['max_output_tokens']==tokens and attempt['timeout_seconds']<=seconds
+        assert attempt['input_chars']>0 and attempt['input_bytes']>=attempt['input_chars']
+        assert attempt['response_bytes']>=attempt['visible_output_bytes']>0
+        assert attempt['finish_reason'] in ('stop','end_turn','STOP')
+    assert result['attempts'][0]['input_sha256']==result['input_sha256']
+    assert result['attempts'][1]['input_sha256']!=result['input_sha256']
+    assert result['cost_usd']==pytest.approx(.000052)
+
+
+def test_default_review_has_no_hidden_1536_ceiling(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path,max_output_tokens=4096)
+    responses=iter([envelope('openai',compact_review()),envelope('openai')])
+    calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review',budget={'max_output_tokens':4096})
+    assert [json.loads(r.content)['max_completion_tokens'] for r in calls]==[4096,4096]
+    assert result['budget']['max_total_output_tokens']==8192
+
+
+@pytest.mark.parametrize('change,code',[
+    ({'max_total_output_tokens':7000},'total_stage_budget_exceeded'),
+    ({'max_total_timeout_seconds':200},'total_stage_budget_exceeded'),
+    ({'stage_budgets':{'evidence_review':{'max_output_tokens':4096,'timeout_seconds':120}}},'invalid_stage_budget'),
+    ({'stage_budgets':{'evidence_review':{'max_output_tokens':8192,'timeout_seconds':120},
+                       'forecast':{'max_output_tokens':3072,'timeout_seconds':90}}},'stage_budget_exceeds_policy'),
+    ({'stage_budgets':{'evidence_review':{'max_output_tokens':4096,'timeout_seconds':180},
+                       'forecast':{'max_output_tokens':3072,'timeout_seconds':90}}},'stage_budget_exceeds_policy'),
+    ({'stage_budgets':{'evidence_review':{'max_output_tokens':4096,'timeout_seconds':120,'retry':True},
+                       'forecast':{'max_output_tokens':3072,'timeout_seconds':90}}},'invalid_stage_budget')])
+def test_invalid_stage_and_total_limits_fail_before_any_request(monkeypatch,tmp_path,change,code):
+    configure(monkeypatch,tmp_path,max_output_tokens=4096,timeout_seconds=120)
+    calls=transport(monkeypatch,lambda r:pytest.fail('Must fail before billing'))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review',budget={**stage_budget(),**change})
+    assert result['error_code']==code and result['probability'] is None and not result['workflow_complete']
+    assert calls==[]
+
+
+@pytest.mark.parametrize('provider,finish_field,finish_value',[
+    ('openai','finish_reason','length'),('openai_compatible','finish_reason','length'),
+    ('deepseek','finish_reason','length'),('anthropic','stop_reason','max_tokens'),
+    ('gemini','finishReason','MAX_TOKENS')])
+def test_review_exhaustion_preserves_cost_without_salvage_or_second_call(monkeypatch,tmp_path,provider,finish_field,finish_value):
+    configure(monkeypatch,tmp_path,provider,max_output_tokens=4096,timeout_seconds=120)
+    response=envelope(provider,compact_review())  # Even syntactically complete JSON is rejected when provider says truncated.
+    if provider=='anthropic':response[finish_field]=finish_value
+    elif provider=='gemini':response['candidates'][0][finish_field]=finish_value
+    else:response['choices'][0][finish_field]=finish_value
+    calls=transport(monkeypatch,lambda r:httpx.Response(200,json=response))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review',budget=stage_budget())
+    assert len(calls)==1 and result['status']=='failed' and result['probability'] is None
+    assert result['error_code']=='provider_response_incomplete' and result['evidence_review'] is None
+    assert result['attempts'][0]['finish_reason']==finish_value
+    assert result['cost_usd']==pytest.approx(.000026) and result['workflow_complete'] is False
+
+
+def test_review_only_then_external_review_forecast_are_two_distinct_auditable_calls(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path,max_output_tokens=4096)
+    responses=iter([envelope('openai',compact_review()),envelope('openai')])
+    calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
+    reviewed=svc.review_evidence('fixture',packet(),budget={'max_requests':1,'max_output_tokens':4096})
+    assert reviewed['status']=='reviewed' and reviewed['probability'] is None
+    assert reviewed['workflow_complete'] and len(calls)==1
+    result=svc.forecast('fixture',packet(),evidence_review=reviewed['evidence_review'],budget={'max_requests':1})
+    assert result['status']=='predicted' and len(calls)==2
+    assert result['evidence_review_sha256']==reviewed['evidence_review_sha256']
+    assert result['input_sha256']==reviewed['input_sha256']
+    assert result['attempts'][0]['stage']=='forecast' and reviewed['attempts'][0]['stage']=='evidence_review'
+    final_data=json.loads(json.loads(calls[1].content)['messages'][1]['content'])
+    assert final_data['structured_evidence_review']==compact_review()
+    assert len(result['attempts'])==len(reviewed['attempts'])==1
+
+
+@pytest.mark.parametrize('change',[
+    {'findings':[{'evidence_id':'invented','kind':'support','statement':'Unsupported'}]},
+    {'findings':compact_review()['findings']*7},
+    {'findings':[{'evidence_id':'phase2','kind':'support','statement':'x'*201}]},
+    {'key_unknowns':['x']*5}, {'key_unknowns':['x'*201]}, {'extra':'instruction'},
+    {'probability':.99}])
+def test_external_review_must_satisfy_compact_citation_contract(monkeypatch,tmp_path,change):
+    configure(monkeypatch,tmp_path)
+    calls=transport(monkeypatch,lambda r:pytest.fail('Invalid external review must not be sent'))
+    result=svc.forecast('fixture',packet(),evidence_review={**compact_review(),**change})
+    assert result['status']=='failed' and result['probability'] is None and calls==[]
+
+
+def test_external_review_cannot_silently_replace_shared_review(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path)
+    calls=transport(monkeypatch,lambda r:pytest.fail('Conflicting workflow must fail'))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review',evidence_review=compact_review())
+    assert result['error_code']=='external_review_workflow_conflict' and calls==[]
+
+
+def test_second_stage_timeout_preserves_first_stage_and_known_partial_cost(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path)
+    def respond(request):
+        if len(calls)==1:return httpx.Response(200,json=envelope('openai',compact_review()))
+        raise httpx.ReadTimeout('PRIVATE '+KEY)
+    calls=transport(monkeypatch,respond)
+    result=svc.forecast('fixture',packet(),workflow='evidence_review')
+    assert len(calls)==2 and result['error_code']=='provider_timeout'
+    assert result['cost_usd'] is None and result['known_cost_usd']==pytest.approx(.000026)
+    assert result['attempts'][0]['status']=='validated' and result['attempts'][1]['status']=='failed'
+    assert result['evidence_review_sha256']==svc.digest(compact_review())
+    assert result['probability'] is None and not result['workflow_complete']
+    assert KEY not in json.dumps(result)
+
+
+def test_stage_model_version_change_is_visible_failure(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path)
+    responses=iter([envelope('openai',compact_review()),envelope('openai',model='different-returned-version')])
+    calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
+    result=svc.forecast('fixture',packet(),workflow='evidence_review')
+    assert result['error_code']=='stage_model_version_changed' and result['probability'] is None
+    assert len(calls)==2 and result['cost_usd']==pytest.approx(.000052)
+    assert {a['returned_model'] for a in result['attempts']}=={'fixture-returned-v1','different-returned-version'}
+
+
+def test_reasoning_token_counts_are_preserved_without_hidden_content(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path)
+    response=envelope('openai',usage={'prompt_tokens':10,'completion_tokens':80,
+        'completion_tokens_details':{'reasoning_tokens':60}})
+    transport(monkeypatch,lambda r:httpx.Response(200,json=response))
+    result=svc.forecast('fixture',packet())
+    assert result['usage']['reasoning_tokens']==60 and result['usage']['output_tokens']==80
+    assert result['cost_usd']==pytest.approx(.00017)
+    assert 'HIDDEN-REASONING' not in json.dumps(result)
+
+
+def test_unknown_finish_reason_does_not_leak_provider_private_string(monkeypatch,tmp_path):
+    configure(monkeypatch,tmp_path)
+    response=envelope('openai');response['choices'][0]['finish_reason']='PRIVATE '+KEY
+    transport(monkeypatch,lambda r:httpx.Response(200,json=response))
+    result=svc.forecast('fixture',packet())
+    assert result['attempts'][0]['finish_reason']=='unknown'
+    assert KEY not in json.dumps(result) and result['status']=='failed'
