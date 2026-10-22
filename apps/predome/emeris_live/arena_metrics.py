@@ -93,6 +93,7 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'coverage': sum(r['status']=='predicted' for r in rows)/len(rows),
             'abstained': sum(r['status']=='abstained' for r in rows),
             'failed': sum(r['status'] in ('failed','unavailable','timed_out') for r in rows),
+            'pending': sum(r['status']=='pending' for r in rows),
             'scored_tasks': len(usable), **score, 'common_brier': common_score['brier'],
             'eligible_coverage': len(usable)/len(rows),
             'timestamp_basis': 'external_TSA_and_server_ledger' if usable and all(r.get('timestamp_proof',{}).get('status')=='attested' for r in usable.values()) else 'server_ledger_only_or_mixed',

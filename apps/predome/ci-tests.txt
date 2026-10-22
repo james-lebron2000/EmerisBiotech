@@ -13,3 +13,10 @@ tests/test_prospective_coverage.py
 tests/test_manual_outcome_source_integrity.py
 tests/test_evaluation_api_status_fields.py
 tests/test_evidence_install.py
+tests/test_arena_core.py
+tests/test_arena_providers.py
+tests/test_arena_api.py
+tests/test_patent_evidence.py
+tests/test_deploy_arena.py
+tests/test_arena_learning.py
+tests/test_arena_report.py
