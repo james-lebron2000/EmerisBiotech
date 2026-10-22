@@ -66,3 +66,4 @@ jobs:
           node tests/ui_arena_home.cjs
           node tests/ui_arena_public.cjs
           node tests/ui_arena_lab.cjs
+          node tests/ui_trials_readonly.cjs

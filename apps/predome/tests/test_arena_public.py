@@ -223,7 +223,7 @@ def test_download_equals_sanitized_detail_and_no_public_mutations(fixture):
     assert record.headers['cache-control']=='no-store'
     assert client.get('/api/arena/public/targets/absent').status_code==404
     assert client.get('/api/arena/public/targets/absent/record').status_code==404
-    for route in app.routes:
+    for route in api.router.routes:
         if route.path.startswith('/api/arena/public'):assert route.methods=={'GET'}
     assert client.post('/api/arena/public',json={}).status_code==405
 
@@ -259,8 +259,8 @@ def test_frozen_ledger_reader_never_constructs_or_writes_ledger(tmp_path,monkeyp
     assert not (tmp_path/'absent').exists()
 
 
-def test_actual_sqlite_archive_projection_is_query_only_and_retains_approved_result(tmp_path,monkeypatch):
-    """The synthetic adjudication below exists only in this isolated fixture DB."""
+def test_actual_sqlite_archive_projection_is_query_only_and_retains_approved_result(tmp_path,monkeypatch,verified_historical_product):
+    """Real frozen archive inputs with synthetic adjudication in an isolated DB."""
     monkeypatch.setattr(platform_store,'now',lambda:'2026-10-21T00:00:00+00:00')
     store=Store(tmp_path/'isolated');platform_store.import_legacy_archive(store)
     ledger=platform_store.PlatformStore(store)
@@ -323,6 +323,9 @@ def test_broken_ledger_symlink_does_not_silently_remove_assigned_denominator(tmp
 
 @pytest.fixture(scope='module')
 def verified_historical_product():
+    import os
+    if os.environ.get('EMERIS_SOURCE_ONLY_CI') == 'true':
+        pytest.skip('Frozen historical source integration runs in the evidence-enabled acceptance suite; source-only CI intentionally omits these files')
     from emeris_live.product import build_product
     return build_product(None)
 

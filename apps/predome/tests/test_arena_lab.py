@@ -181,7 +181,8 @@ def test_existing_reviewer_access_remains_compatible(workspace, monkeypatch):
 def test_no_internal_mutation_routes_or_billable_controls(workspace):
     client, app, calls, login = workspace
     login()
-    paths = [route for route in app.routes if route.path.startswith('/api/arena/lab')]
+    # Inspect our router contract, independent of FastAPI's deferred app wrappers.
+    paths = [route for route in arena_lab.router.routes if route.path.startswith('/api/arena/lab')]
     assert len(paths) == 3
     assert all(route.methods == {'GET'} for route in paths)
     for method in ('post', 'put', 'patch', 'delete'):
