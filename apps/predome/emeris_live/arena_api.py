@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TRACKS = [
     {'id':'same_evidence','name':'同证据 LLM','description':'同一目标与冻结证据，比较底层模型。'},
     {'id':'shared_agent','name':'统一 Agent','description':'固定证据审查和预测工作流，比较模型。'},
-    {'id':'open_agent','name':'开放 Agent','description':'规划中的完整系统比较；当前未启用外部 Agent 运行器。'},
+    {'id':'open_agent','name':'开放 Agent','description':'受控双模型证据审查与预测；固定证据查阅，分别登记系统组合和预算。'},
     {'id':'patent_ablation','name':'专利增益','description':'同模型同临床证据的配对实验；概率变化不等于改善。'},
     {'id':'archived','name':'既有冻结档案','description':'原始模型记录，保留原冻结时间，不计入新赛季。'},
 ]
@@ -145,6 +145,15 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
     for model in sorted({r['model_id'] for r in old_runs} - known):
         models.append({'id':model,'name':model,'provider':'DeepSeek','model_version':model,
                        'available':False,'archive_only':True,'reason':'原始冻结档案标识；本次未实测连接。'})
+    for run in ledger['runs']:
+        if run.get('track')=='open_agent' and run['model_id'] not in known:
+            frozen=run.get('provider_config_snapshot',{})
+            components=frozen.get('components',[])
+            models.append({'id':run['model_id'],'name':frozen.get('name',run['model_id']),
+                'provider':'multi_model_agent','model_version':run.get('requested_model'),
+                'available':bool(components) and all(next((m.get('available',False) for m in models if m['id']==c['id']),False) for c in components),
+                'components':components,'note':'受控双模型系统：固定证据查阅 → 模型审查 → 另一模型预测。组件返回版本见运行过程，组合哈希仅标识系统。'})
+            known.add(run['model_id'])
     new_runs = [_public_run(r) for r in ledger['runs']]
     for model in models:
         completed = [r for r in new_runs if r['model_id']==model['id'] and r.get('returned_model') and r.get('attempts')]
@@ -166,12 +175,16 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
     used_patents = {p for r in new_runs for p in r.get('patent_ids',[])}
     for patent in patents:
         patent['included_in_predictions'] = patent['id'] in used_patents
+    # Public labels are model IDs; transport adapters stay only in audit metadata.
+    for model in models:
+        components=model.get('components') or []
+        model['name']=' → '.join(c['id'] for c in components) if components else model['id']
     return {'version':VERSION,'capabilities':{'llm_available':any(m.get('available') for m in models),
-        'public_run_enabled':False,'operator_run_enabled':True,'open_agent_runner_enabled':False,'clinical_prediction_validated':False,
+        'public_run_enabled':False,'operator_run_enabled':True,'open_agent_runner_enabled':True,'clinical_prediction_validated':False,
         'notes':['公开页面展示真实档案；新赛季与既有记录分开。','配置可用不等于已经完成真实 API 验证。',
                  '凭据仅保存在服务端；公共访问不会触发付费调用。']},
         'models':models,'patents':patents,'patent_connectors':catalog.get('connectors',[]),
-        'challenge_summary':{'registered_tasks':len(new_runs),'independent_projects':len({t['project_id'] for t in ledger['targets']}),'prospective_targets':len(ledger['targets']),'complete_season_started':False},
+        'challenge_summary':{'registered_tasks':len(new_runs),'independent_projects':len({t['project_id'] for t in ledger['targets']}),'prospective_targets':len(ledger['targets']),'complete_season_started':any(c.get('protocol',{}).get('season_kind')=='registered_12_project_season' and c.get('execution_status')!='withdrawn_before_execution' for c in ledger['cohorts'])},
         'targets':ledger['targets']+old_targets,'runs':new_runs+old_runs,'evidence':list(evidence.values()),
         'metrics':build_metrics(ledger,cohort_id=cohort_id,track=track,condition=condition),
         'tracks':TRACKS,'cohorts':ledger['cohorts'],'patent_pairs':pairs,'ledger_sha256':ledger['ledger_sha256'],
@@ -198,9 +211,17 @@ def target_detail(target_id:str, request:Request):
     if target.get('scope') == 'prospective_challenge':
         frozen = ArenaLedger(request.app.state.store.path).snapshot()
         selected_evidence = list({(e['id'],e.get('source_sha256')):e for r in frozen['runs'] if r['target_id']==target_id for e in r['packet']['evidence']}.values())
+    try:
+        manifest=json.loads((ROOT/'arena_data/season_acquisition_manifest.json').read_text())
+        hashes={v['sha256'] for v in manifest.get('assets',[])}
+    except (OSError,ValueError,KeyError,TypeError):
+        hashes=set()
+    selected_evidence=[{**e,'source_snapshot_url':'/api/arena/sources/'+e['source_sha256']}
+                       if e.get('source_sha256') in hashes else e for e in selected_evidence]
     own_patents={p for r in runs for p in r.get('patent_ids',[])}
     return {'target':target,'runs':runs,'evidence':selected_evidence,
-            'patents':[{**p,'included_in_predictions':p['id'] in own_patents} for p in view['patents'] if p['id'] in target.get('patent_ids',[])], 'result':target.get('result')}
+            'patents':[{**p,'included_in_predictions':p['id'] in own_patents} for p in view['patents'] if p['id'] in target.get('patent_ids',[])], 'result':target.get('result'),
+            'related_targets':[{k:t.get(k) for k in ('id','trial_name','cohort_id','registered_at','scope')} for t in view['targets'] if t['nct_id']==target['nct_id'] and t['id']!=target_id]}
 
 
 @router.get('/api/arena/targets/{target_id}/report')
@@ -208,6 +229,40 @@ def target_report(target_id:str, request:Request):
     report = render_target_report(target_detail(target_id,request))
     return Response(report,media_type='text/markdown',
         headers={'Content-Disposition':'attachment; filename="predome-target-report.md"'})
+
+
+def _source_asset(identifier):
+    if not re.fullmatch(r'[a-f0-9]{64}',identifier):
+        raise HTTPException(404,'未找到公开来源快照。')
+    try:
+        manifest=json.loads((ROOT/'arena_data/season_acquisition_manifest.json').read_text())
+        if manifest.get('schema_version')!='arena-public-acquisition-v1':
+            raise ValueError('Unknown source manifest')
+        item=next((v for v in manifest['assets'] if v.get('sha256')==identifier),None)
+        if not item or not re.fullmatch(r'arena_data/source_snapshots/[A-Za-z0-9][A-Za-z0-9_.-]{0,160}\.(json|html|txt|pdf|xml)',item.get('path','')):
+            raise ValueError('Unknown source path')
+        folder=(ROOT/'arena_data/source_snapshots').resolve()
+        path=ROOT/item['path']
+        if (not folder.is_relative_to(ROOT.resolve()) or path.is_symlink()
+                or not path.resolve().is_relative_to(folder) or not path.is_file()
+                or type(item.get('bytes')) is not int or not 0<item['bytes']<=64*1024*1024
+                or path.stat().st_size!=item['bytes']):
+            raise ValueError('Invalid source object')
+        raw=path.read_bytes()
+        if hashlib.sha256(raw).hexdigest()!=identifier:
+            raise ValueError('Changed public source snapshot')
+        return item,raw
+    except (OSError,ValueError,KeyError,TypeError):
+        raise HTTPException(404,'来源快照不存在或未通过完整性检查。') from None
+
+
+@router.get('/api/arena/sources/{identifier}')
+def source_snapshot(identifier:str):
+    item,raw=_source_asset(identifier)
+    suffix=Path(item['path']).suffix
+    return Response(raw,media_type='application/octet-stream',
+        headers={'Content-Disposition':'attachment; filename="predome-source-'+identifier[:12]+suffix+'"',
+                 'X-Content-Type-Options':'nosniff'})
 
 
 @router.get('/api/arena/patents/{publication_number}')

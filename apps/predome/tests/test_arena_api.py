@@ -74,3 +74,56 @@ def test_report_download_uses_target_scoped_data(tmp_path,monkeypatch):
     assert 'attachment;' in response.headers['content-disposition']
     assert t['endpoint'] in response.text
     assert c.get('/api/arena/targets/missing/report').status_code==404
+
+
+def test_source_download_is_manifest_bound_hash_verified_attachment(tmp_path,monkeypatch):
+    c,_=client(tmp_path,monkeypatch)
+    monkeypatch.setattr(api,'ROOT',tmp_path)
+    folder=tmp_path/'arena_data/source_snapshots';folder.mkdir(parents=True)
+    raw=b'<article><p>Actual archived source bytes</p></article>'
+    source=folder/'paper.xml';source.write_bytes(raw)
+    h=hashlib.sha256(raw).hexdigest()
+    manifest=tmp_path/'arena_data/season_acquisition_manifest.json'
+    manifest.write_text(json.dumps({'schema_version':'arena-public-acquisition-v1','assets':[
+        {'path':'arena_data/source_snapshots/paper.xml','sha256':h,'bytes':len(raw)}]}))
+    r=c.get('/api/arena/sources/'+h)
+    assert r.status_code==200 and r.content==raw
+    assert r.headers['content-type']=='application/octet-stream'
+    assert r.headers['x-content-type-options']=='nosniff'
+    assert 'attachment;' in r.headers['content-disposition']
+    source.write_bytes(b'changed')
+    assert c.get('/api/arena/sources/'+h).status_code==404
+    assert c.get('/api/arena/sources/'+'a'*64).status_code==404
+
+
+def test_source_download_rejects_manifest_escape_or_symlink(tmp_path,monkeypatch):
+    c,_=client(tmp_path,monkeypatch);monkeypatch.setattr(api,'ROOT',tmp_path)
+    folder=tmp_path/'arena_data/source_snapshots';folder.mkdir(parents=True)
+    private=tmp_path/'private.txt';private.write_bytes(b'private')
+    h=hashlib.sha256(b'private').hexdigest();manifest=tmp_path/'arena_data/season_acquisition_manifest.json'
+    for name in ('../../private.txt','arena_data/source_snapshots/public.txt'):
+        if 'public.txt' in name:(folder/'public.txt').symlink_to(private)
+        manifest.write_text(json.dumps({'schema_version':'arena-public-acquisition-v1','assets':[
+            {'path':name,'sha256':h,'bytes':7}]}))
+        assert c.get('/api/arena/sources/'+h).status_code==404
+
+
+def test_withdrawn_formal_cohort_is_not_active_season(tmp_path,monkeypatch):
+    c,ledger=client(tmp_path,monkeypatch);t,slots=spec();t['scope']='prospective_challenge'
+    ledger.register('test',[t],[slots[0]],{'season_kind':'registered_12_project_season'})
+    ledger.withdraw_unstarted_cohort('test','Incorrect source excerpt; replacement must be newly registered.')
+    view=c.get('/api/arena').json()
+    assert view['challenge_summary']['complete_season_started'] is False
+    assert view['runs'][0]['status']=='withdrawn' and view['runs'][0]['probability'] is None
+    report=c.get('/api/arena/targets/'+t['id']+'/report').text
+    assert '任何模型调用前撤回' in report and '模型失败或临床阴性' in report
+
+
+def test_public_llm_name_is_exact_id_without_adapter_label(tmp_path,monkeypatch):
+    c,_=client(tmp_path,monkeypatch)
+    monkeypatch.setattr(api,'list_models',lambda:[{'id':'kimi-k3','name':'Kimi K3 · Semantix 网关',
+        'provider':'openai_compatible','available':True}])
+    m=c.get('/api/arena').json()['models'][0]
+    assert m['name']=='kimi-k3'
+    # Do not change the audited connection identity to rename a UI label.
+    assert m['provider']=='openai_compatible'

@@ -41,7 +41,7 @@ def verify_sources(catalog, root):
     for source in catalog['sources']:
         name = source['id']
         rel = source['path']
-        if name in sources or not re.fullmatch(r'arena_data/source_snapshots/[A-Za-z0-9_.-]+\.(?:json|html|txt|pdf)', rel):
+        if name in sources or not re.fullmatch(r'arena_data/source_snapshots/[A-Za-z0-9_.-]+\.(?:json|html|txt|pdf|xml)', rel):
             raise ValueError('Duplicate source or unsafe snapshot path')
         path = root / rel
         if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root):

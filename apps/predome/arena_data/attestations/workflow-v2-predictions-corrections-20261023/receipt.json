@@ -1,0 +1,25 @@
+{
+  "id": "workflow-v2-predictions-corrections-20261023",
+  "purpose": "predictions",
+  "ledger_sha256": "0e96d775c3c6723c52416b1f6ae0374d1791bdcec66c30a182199fabb9febaa3",
+  "covered_event_count": 135,
+  "tsa": "FreeTSA",
+  "generated_at_utc": "2026-10-22T17:02:53+00:00",
+  "verified_at_utc": "2026-10-22T17:02:53.712541+00:00",
+  "verification_method": "openssl_ts_verify",
+  "signature_verified": true,
+  "timestamp_response_sha256": "9e8272edd570cf60dba8f92adbc9a3a8128ba3135d551cc73f3ee2029fc5bc7f",
+  "manifest_sha256": "d2b6b8ad4306f8696196705505836459661a62ba77656518221eda7bcfee63e7",
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "public_url": "https://8.148.145.28/api/arena/attestations/workflow-v2-predictions-corrections-20261023",
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+  "files": {
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "manifest.json": "d2b6b8ad4306f8696196705505836459661a62ba77656518221eda7bcfee63e7",
+    "manifest.tsq": "6017255208998375a7246d45a39cbfae1024029f052a36f2358d86f0948f4d3d",
+    "manifest.tsr": "9e8272edd570cf60dba8f92adbc9a3a8128ba3135d551cc73f3ee2029fc5bc7f",
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "verification.txt": "418e4ab85720e99c86f1e78689e61c5603a7e6bfa241868aa9e879dbfe552ee4"
+  }
+}

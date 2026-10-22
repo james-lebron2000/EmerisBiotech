@@ -141,3 +141,13 @@ def test_actual_catalog_has_12_unique_projects_and_precise_scope():
     assert 'Week-24' in trials['VITALIZE']['success_definition']
     assert 'FAS' in trials['eVOLVE-Cervical']['success_definition']
     assert all(c['prediction'] is None and c['human_review_count']==0 for c in doc['candidates'])
+
+
+def test_original_xml_source_supported_without_execution(proposal):
+    doc,root,_=proposal
+    xml=root/'arena_data/source_snapshots/original.xml';raw=b'<article>Original XML</article>';xml.write_bytes(raw)
+    doc['sources'].append({**doc['sources'][0],'id':'xml','path':'arena_data/source_snapshots/original.xml',
+        'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)})
+    doc['candidates'][0]['evidence_cards'][1]['source_id']='xml'
+    spec,_=prepare(proposal)
+    assert spec['slots'][0]['packet']['evidence'][1]['source_path'].endswith('.xml')

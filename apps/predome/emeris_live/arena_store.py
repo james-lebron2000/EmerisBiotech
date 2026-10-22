@@ -23,7 +23,8 @@ FROZEN_RUN_FIELDS = {'id', 'target_id', 'cohort_id', 'track', 'condition', 'pack
     'registered_at', 'started_at', 'locked_at_utc', 'generated_at_utc', 'timestamp_proof',
     'execution_state', 'provider_config_snapshot', 'provider_implementation_sha256',
     'expected_provider_input_sha256', 'expected_prompt_sha256', 'execution_budget_sha256',
-    'agent_spec', 'agent_contract', 'runner_implementation_sha256', 'citation_reviews', 'citation_support_reviews'}
+    'agent_spec', 'agent_contract', 'runner_implementation_sha256', 'citation_reviews', 'citation_support_reviews',
+    'input_evidence_issues', 'withdrawn_before_execution', 'withdrawn_at'}
 
 
 def now():
@@ -237,6 +238,14 @@ class ArenaLedger:
             if not rows or rows[0]['kind'] != 'slot_registered' or any(r['kind'] in ('run_started', 'run_completed') for r in rows):
                 raise ValueError('Run is missing or has already started; never silently repeat a billed request')
             slot = json.loads(rows[0]['payload'])
+            if db.execute("SELECT 1 FROM arena_events WHERE kind='cohort_withdrawn' AND entity_id=?",(slot['cohort_id'],)).fetchone():
+                raise ValueError('Cohort was withdrawn before execution')
+            sources = {(e['id'], e['source_sha256']) for e in slot['packet']['evidence']}
+            issues = (json.loads(row['payload']) for row in db.execute(
+                "SELECT payload FROM arena_events WHERE kind='evidence_issue'"))
+            if any(issue['severity'] == 'blocking' and
+                   (issue['evidence_id'], issue['source_sha256']) in sources for issue in issues):
+                raise ValueError('A frozen source version has a blocking evidence issue')
             target = db.execute("SELECT payload FROM arena_events WHERE kind='target_registered' AND entity_id=?", (slot['target_id'],)).fetchone()
             target = json.loads(target['payload'])
             if db.execute("SELECT 1 FROM arena_events WHERE entity_id=? AND kind IN ('result_review','result_adjudicated')", (slot['target_id'],)).fetchone():
@@ -339,6 +348,43 @@ class ArenaLedger:
                 return 'adjudicated'
         return 'announced_pending_adjudication'
 
+    def withdraw_unstarted_cohort(self, cohort_id, reason):
+        """Close a preregistration before ANY component call; retain every slot."""
+        if not isinstance(reason,str) or not 10<=len(reason.strip())<=3000:
+            raise ValueError('A concrete withdrawal reason is required')
+        reason = reason.strip()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE');events=self._verified_events(db)
+            if not any(e['kind']=='cohort_registered' and e['entity_id']==cohort_id for e in events):
+                raise ValueError('Unknown cohort')
+            if any(e['kind']=='cohort_withdrawn' and e['entity_id']==cohort_id for e in events):
+                raise ValueError('Cohort already withdrawn')
+            ids={e['entity_id'] for e in events if e['kind']=='slot_registered' and e['payload']['cohort_id']==cohort_id}
+            if any(e['kind'] in ('run_started','run_completed') and e['entity_id'] in ids for e in events):
+                raise ValueError('An executed cohort cannot be withdrawn')
+            return self._append(db,'cohort_withdrawn',cohort_id,{'reason':reason,'assigned_slots':len(ids),
+                'model_calls':0,'clinical_prediction_validated':False})
+
+    def record_evidence_issue(self, evidence_id, source_sha256, *, note, reference_url, severity='blocking'):
+        """Record discovery without replacing source bytes or previous forecasts."""
+        if (not isinstance(evidence_id,str) or not evidence_id or not HASH.fullmatch(str(source_sha256))
+                or severity not in ('blocking','warning') or not https(reference_url)
+                or not isinstance(note,str) or not 10<=len(note.strip())<=3000):
+            raise ValueError('Source-bound issue, severity and public discovery reference required')
+        note = note.strip()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE');events=self._verified_events(db)
+            if not any(e['kind']=='slot_registered' and any(v['id']==evidence_id and v['source_sha256']==source_sha256
+                for v in e['payload']['packet']['evidence']) for e in events):
+                raise ValueError('Unknown frozen source version')
+            if any(e['kind']=='evidence_issue' and e['payload']['evidence_id']==evidence_id
+                and e['payload']['source_sha256']==source_sha256 and e['payload']['note']==note
+                and e['payload']['severity']==severity for e in events):
+                raise ValueError('This evidence issue is already recorded')
+            return self._append(db,'evidence_issue','source-'+sha([evidence_id,source_sha256])[:40],
+                {'evidence_id':evidence_id,'source_sha256':source_sha256,'note':note,
+                 'reference_url':reference_url,'severity':severity,'clinical_prediction_validated':False})
+
     def record_citation_review(self, run_id, assessment, *, reviewer_id, reviewer_kind, supersedes=None):
         """Append source-bound assessments; a declared AI role is never a human review."""
         from .arena_citations import validate_review
@@ -424,6 +470,23 @@ class ArenaLedger:
             elif kind == 'result_adjudicated':
                 targets[ident].update(status='adjudicated', result={**p['result'], 'verification_status': 'adjudicated',
                     'result_sha256': p['result_sha256'], 'verified_at': event['created_at']})
+        for event in events:
+            if event['kind']=='cohort_withdrawn':
+                for cohort in cohorts:
+                    if cohort['id']==event['entity_id']:
+                        cohort.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
+                for target in targets.values():
+                    if target['cohort_id']==event['entity_id']:
+                        target.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
+                for run in runs.values():
+                    if run['cohort_id']==event['entity_id']:
+                        run.update(status='withdrawn',probability=None,withdrawn_before_execution=True,
+                            execution_state='withdrawn',reason=event['payload']['reason'],withdrawn_at=event['created_at'])
+            if event['kind']=='evidence_issue':
+                issue=event['payload']
+                for run in runs.values():
+                    if any(e['id']==issue['evidence_id'] and e['source_sha256']==issue['source_sha256'] for e in run['packet']['evidence']):
+                        run.setdefault('input_evidence_issues',[]).append({**issue,'recorded_at':event['created_at'],'event_hash':event['event_hash']})
         for event in events:
             receipt = event['payload']
             if event['kind'] != 'timestamp_attested' or receipt.get('purpose') != 'predictions':

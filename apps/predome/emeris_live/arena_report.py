@@ -16,7 +16,7 @@ UNKNOWN = "未记录"
 STATUSES = {
     "predicted": "已输出预测", "abstained": "拒答", "abstain": "拒答",
     "failed": "失败", "unavailable": "不可用", "timed_out": "超时",
-    "pending": "等待执行", "registered": "已登记", "running": "执行中",
+    "withdrawn": "执行前撤回（输入待更正）", "pending": "等待执行", "registered": "已登记", "running": "执行中",
 }
 TRACKS = {
     "same_evidence": "同证据 LLM", "shared_agent": "统一 Agent",
@@ -179,6 +179,8 @@ def render_target_report(detail) -> str:
         lines.extend(["**记录范围：既有冻结档案，未纳入新赛季。历史记录不能自动视为新赛季的前瞻验证。**", ""])
     else:
         lines.extend([f"记录范围：{_text(target.get('scope'))}。登记、真实调用、时间证明与临床结果验证是不同状态。", ""])
+    if target.get("execution_status")=="withdrawn_before_execution":
+        lines.extend(["**该队列已在任何模型调用前撤回。原登记与时间凭证保留；不视为模型失败或临床阴性。**", "", _text(_dict(target.get("withdrawal")).get("reason")), ""])
     lines.append("## 1. 预测什么：确切目标与输入边界")
     _rows(lines, [(label, _text(target.get(key))) for label, key in [
         ("目标 ID", "id"), ("试验注册号", "nct_id"), ("独立开发项目", "project_id"),
@@ -209,10 +211,27 @@ def render_target_report(detail) -> str:
         lines.extend([f"### 运行 {index}：{_text(run.get('id'))}", "",
                       f"状态：{_text(STATUSES.get(run.get('status'), run.get('status')))}；概率：{_probability(run)}。", "",
                       f"简洁理由或执行说明：{_text(run.get('reason'))}", ""])
+        for issue in _list(run.get("input_evidence_issues")):
+            lines.extend(["**输入证据更正："+_text(_dict(issue).get("note"))+"**", "", "原始输出和哈希保持冻结；阻断级问题暂停正式评分。更正来源："+_link(_dict(issue).get("reference_url")), ""])
         _refs(lines, "支持证据", run.get("supporting_evidence"))
         _refs(lines, "反对或限制性证据", run.get("counter_evidence"))
         _items(lines, "关键假设", run.get("assumptions"))
         _items(lines, "尚不清楚的信息", run.get("unknowns"))
+        reviews=run.get("citation_support_reviews") or []
+        lines.extend(["#### 引用支持审核", ""])
+        if not reviews:
+            lines.extend(["尚无声明级引用审核；合法的引用 ID 不代表来源支持整段判断。", ""])
+        for review in reviews:
+            rate=review.get("support_fraction")
+            percent=f"{rate*100:.1f}%" if _number(rate) else "尚未记录"
+            lines.extend([f"{'登记为人工审核' if review.get('reviewer_kind')=='human' else 'AI 审核'}：{_text(review.get('reviewer_id'))}；{percent}（{_numeric(review.get('supported_pairs'))}/{_numeric(review.get('assessed_pairs'))} 个已审核声明—来源对）。", "",
+                "仅核对冻结输入的支持关系；当前声明集合的审核覆盖范围以 JSON 记录为准，不能外推为全文准确率、原始文献核实或临床效能。", ""])
+        if run.get("agent_trace"):
+            trace=run["agent_trace"]
+            lines.extend(["#### 受控多模型流程", "",f"固定证据工具调用数：{len(trace.get('tools',[]))}。组件版本与阶段：", ""])
+            for stage in trace.get("stages",[]):
+                lines.append(f"- {_text(stage.get('role'))} / {_text(stage.get('model_id'))} / 请求 {_text(stage.get('requested_model'))} / 返回 {_text(stage.get('returned_model'))} / 状态 {_text(stage.get('status'))}")
+            lines.extend(["", "工具只查阅冻结证据；阶段记录不包含隐藏推理。", ""])
         usage = _dict(run.get("token_usage") if run.get("token_usage") is not None else run.get("usage"))
         _rows(lines, [
             ("请求模型", _text(run.get("requested_model"))),
@@ -255,6 +274,7 @@ def render_target_report(detail) -> str:
         _rows(lines, [
             ("标题 / 类型", f"{_text(item.get('title'))} / {_text(item.get('kind'))}"),
             ("原始来源", _link(item.get("source_url") or item.get("url"))),
+            ("归档快照", _link(item.get("source_snapshot_url"), "下载校验后的来源快照")),
             ("公开日期（原样）", _text(item.get("available_at") or item.get("availability_date") or item.get("public_available_at"))),
             ("获取时间（原样）", _text(item.get("retrieved_at") or item.get("retrieved_at_utc"))),
             ("来源 SHA-256", _text(item.get("source_sha256") or item.get("sha256"))),

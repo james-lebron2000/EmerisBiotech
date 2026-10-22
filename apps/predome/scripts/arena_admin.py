@@ -160,6 +160,9 @@ def main():
     cr=sub.add_parser('citation-review');cr.add_argument('--run',required=True)
     cr.add_argument('--reviewer',required=True);cr.add_argument('--kind',choices=('ai','human'),required=True)
     cr.add_argument('--assessment',required=True);cr.add_argument('--supersedes')
+    w=sub.add_parser('withdraw');w.add_argument('--cohort',required=True);w.add_argument('--reason',required=True)
+    ei=sub.add_parser('evidence-issue');ei.add_argument('--evidence-id',required=True);ei.add_argument('--source-sha256',required=True)
+    ei.add_argument('--note',required=True);ei.add_argument('--reference-url',required=True);ei.add_argument('--severity',choices=('blocking','warning'),default='blocking')
     att=sub.add_parser('attest');att.add_argument('receipt')
     sub.add_parser('status')
     a=p.parse_args()
@@ -227,13 +230,20 @@ def main():
         event=ledger.record_citation_review(a.run,read(a.assessment),reviewer_id=a.reviewer,
             reviewer_kind=a.kind,supersedes=a.supersedes)
         print(json.dumps({'event_hash':event['event_hash'],'status':'citation_review_appended'}))
+    elif a.command=='withdraw':
+        event=ledger.withdraw_unstarted_cohort(a.cohort,a.reason)
+        print(json.dumps({'event_hash':event['event_hash'],'status':'withdrawn_before_execution'}))
+    elif a.command=='evidence-issue':
+        event=ledger.record_evidence_issue(a.evidence_id,a.source_sha256,note=a.note,reference_url=a.reference_url,severity=a.severity)
+        print(json.dumps({'event_hash':event['event_hash'],'status':'evidence_issue_appended'}))
     elif a.command=='attest':
         event=ledger.attest(read(a.receipt))
         print(json.dumps({'event_hash':event['event_hash'],'status':'attestation_appended'}))
     else:
         state=ledger.snapshot()
         print(json.dumps({'cohorts':len(state['cohorts']),'targets':len(state['targets']),
-            'registered_slots':len(state['runs']),'completed_slots':sum(r['status']!='pending' for r in state['runs']),
+            'registered_slots':len(state['runs']),'completed_slots':sum(r['status'] in ('predicted','failed','abstained','unavailable','timed_out') for r in state['runs']),
+            'withdrawn_before_execution':sum(r['status']=='withdrawn' for r in state['runs']),
             'ledger_sha256':state['ledger_sha256']},ensure_ascii=False))
 
 

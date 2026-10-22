@@ -19,6 +19,8 @@ HASH = re.compile(r'[a-f0-9]{64}')
 MODEL_FIELDS = ('cohort_id', 'track', 'condition', 'provider', 'model_id', 'requested_model',
                 'returned_model', 'workflow_version', 'config_sha256', 'execution_budget_sha256')
 ISSUES = {
+    'input_correction': '核对追加登记的来源更正；保留原始输出，仅以新截止、新证据包和新登记评估更正版本。',
+    'withdrawn_before_execution': '执行前撤回不表示模型或疗效失败；查阅原因及后继队列，保留原分配记录。',
     'source_missing': '核对原始公开来源、版本和内容哈希；仅在新证据包中补齐，经审核后重新封存。',
     'citation_invalid': '用离线固定样例复现引用校验；保留原失败记录，不进行语义重试或替换。',
     'evidence_time_invalid': '核对证据可用时间与截止时间，排除目标结果；不得回填旧预测输入。',
@@ -59,6 +61,8 @@ def read_snapshot(ledger_path):
 
 def _engineering(run):
     issues = set()
+    if run.get('input_evidence_issues'):issues.add('input_correction')
+    if run.get('withdrawn_before_execution'):issues.add('withdrawn_before_execution')
     packet = run.get('packet') or {}
     target = packet.get('target') or {}
     if any(not target.get(k) for k in ('endpoint', 'population', 'comparison', 'success_definition')):
@@ -137,6 +141,8 @@ def _engineering(run):
 
 
 def _exclusion(run, target, engineering):
+    if run.get('withdrawn_before_execution'):return 'withdrawn_before_execution'
+    if any(i.get('severity')=='blocking' for i in run.get('input_evidence_issues',[])):return 'blocking_input_correction'
     if run.get('status') != 'predicted':
         return 'no_probability_prediction'
     result = target.get('result') or {}

@@ -6,7 +6,7 @@
   const date = value => {if(!value)return '未提供';if(/^\d{4}-\d{2}-\d{2}$/.test(String(value)))return String(value);const d=new Date(value);return Number.isNaN(d.valueOf())?String(value):new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);};
   const prob = value => typeof value === 'number' && Number.isFinite(value) && value>=0 && value<=1;
   const pct = value => prob(value) ? `${Math.round(value*1000)/10}%` : '未预测';
-  const modelName = id => id==='deepseek-flash'?'DeepSeek Flash':id==='deepseek-v4-pro'?'DeepSeek Pro':id;
+  const modelName = id => id;
   const comparisonIds=new Set();let comparisonOpen=false;
   let data, months=[], selectedMonth='', visible=[], currentView='calendar',metricRequest=0;
   const day = d => d.toISOString().slice(0,10);

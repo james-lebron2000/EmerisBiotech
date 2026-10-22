@@ -20,3 +20,9 @@ tests/test_patent_evidence.py
 tests/test_deploy_arena.py
 tests/test_arena_learning.py
 tests/test_arena_report.py
+tests/test_arena_citations.py
+tests/test_arena_agents.py
+tests/test_arena_admin_agents.py
+tests/test_upgrade_arena.py
+tests/test_arena_evidence_corrections.py
+tests/test_prepare_arena_season.py

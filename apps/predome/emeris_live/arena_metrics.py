@@ -6,7 +6,13 @@ from .arena_store import instant, sha
 from .arena_citations import aggregate_runs
 
 
+def _input_blocked(run):
+    return any(i.get('severity') == 'blocking' for i in run.get('input_evidence_issues', []))
+
+
 def _eligible(run, target):
+    if _input_blocked(run):
+        return False
     result = target.get('result') or {}
     if (target.get('status') != 'adjudicated' or result.get('label') not in ('success', 'failure')
             or run.get('status') != 'predicted' or run.get('submission_on_time') is not True
@@ -95,6 +101,8 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'abstained': sum(r['status']=='abstained' for r in rows),
             'failed': sum(r['status'] in ('failed','unavailable','timed_out') for r in rows),
             'pending': sum(r['status']=='pending' for r in rows),
+            'withdrawn':sum(r['status']=='withdrawn' for r in rows),
+            'input_blocked':sum(_input_blocked(r) for r in rows),
             'scored_tasks': len(usable), **score, 'common_brier': common_score['brier'],
             'eligible_coverage': len(usable)/len(rows),
             'timestamp_basis': 'external_TSA_and_server_ledger' if usable and all(r.get('timestamp_proof',{}).get('status')=='attested' for r in usable.values()) else 'server_ledger_only_or_mixed',
@@ -120,6 +128,8 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'abstained': sum(r['status']=='abstained' for r in runs),
             'failed': sum(r['status'] in ('failed','unavailable','timed_out') for r in runs),
             'pending': sum(r['status']=='pending' for r in runs),
+            'withdrawn':sum(r['status']=='withdrawn' for r in runs),
+            'input_blocked':sum(_input_blocked(r) for r in runs),
             'adjudicated': len({r['target_id'] for r in runs if targets.get(r['target_id'],{}).get('status')=='adjudicated'}),
             'common_tasks': len(common), 'independent_projects': len({targets[i]['project_id'] for i in common}),
             'ranking_allowed': False, 'reason': '展示配对评分与覆盖率；小样本和未解决结果不支持冠军声明。',
