@@ -107,3 +107,12 @@ def test_existing_output_never_overwritten_or_triggers_fetch(tmp_path,monkeypatc
     monkeypatch.setattr(export,'fetch_public',lambda *a:pytest.fail('No request on existing output'))
     with pytest.raises(ValueError,match='never overwritten'):export.main()
     assert out.read_bytes()==b'existing'
+
+
+def test_readable_report_escapes_untrusted_html_links_and_table_cells(records):
+    _,data,_,_=records
+    record=deepcopy(data['fixture-0'])
+    record['target']['trial_name']='<img src=x onerror=alert(1)> | [click](javascript:alert(1))\n# heading'
+    text=export.report_text(record).decode()
+    assert '<img' not in text and '[click](' not in text
+    assert '&lt;img' in text and '\\|' in text and '\n# heading' not in text

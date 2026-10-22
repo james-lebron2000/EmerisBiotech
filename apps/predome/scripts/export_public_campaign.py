@@ -6,6 +6,7 @@ The ZIP is a dated public snapshot, not an immutable prediction or new TSA proof
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import html
 import io
 import json
 import math
@@ -124,7 +125,8 @@ def validate_record(record, selected):
 
 
 def cell(value):
-    return str(value if value is not None else 'N/A').replace('|','\\|').replace('\n',' ').replace('\r',' ')
+    text=str(value if value is not None else 'N/A').replace('\n',' ').replace('\r',' ')
+    return re.sub(r'([\\`*_{}\[\]()#+!|])',r'\\\1',html.escape(text,quote=False))
 
 
 def report_text(record):
