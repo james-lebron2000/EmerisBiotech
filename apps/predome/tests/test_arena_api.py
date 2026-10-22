@@ -127,3 +127,13 @@ def test_public_llm_name_is_exact_id_without_adapter_label(tmp_path,monkeypatch)
     assert m['name']=='kimi-k3'
     # Do not change the audited connection identity to rename a UI label.
     assert m['provider']=='openai_compatible'
+
+
+def test_default_metrics_prefers_active_formal_season_over_newer_workflow(tmp_path,monkeypatch):
+    c,ledger=client(tmp_path,monkeypatch);t,slots=spec();t['scope']='prospective_challenge'
+    ledger.register('formal',[t],slots,{'season_kind':'registered_12_project_season'})
+    other,ss=spec();other.update(id='workflow-target',scope='prospective_challenge')
+    for row in ss:row['target_id']=other['id']
+    ledger.register('newer-workflow',[other],ss,{})
+    assert c.get('/api/arena').json()['metrics']['cohort_id']=='formal'
+    assert c.get('/api/arena?cohort_id=newer-workflow').json()['metrics']['cohort_id']=='newer-workflow'

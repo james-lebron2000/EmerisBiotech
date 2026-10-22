@@ -31,8 +31,8 @@ def _source(source, ident):
             'availability_date':source.get('source_date'), 'retrieved_at':source.get('retrieved_at')}
 
 
-def archived_views(store):
-    product = build_product(store)
+def archived_views(store, *, product=None):
+    product = build_product(store) if product is None else product
     prior = json.loads((ROOT/'predome_data/continuous_v4/prospective/prior_effect_records.json').read_text())['records']
     targets, runs, evidence = [], [], {}
     for trial in product['upcoming'] + product.get('resolved_trials', []):
@@ -154,6 +154,12 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
                 'available':bool(components) and all(next((m.get('available',False) for m in models if m['id']==c['id']),False) for c in components),
                 'components':components,'note':'受控双模型系统：固定证据查阅 → 模型审查 → 另一模型预测。组件返回版本见运行过程，组合哈希仅标识系统。'})
             known.add(run['model_id'])
+    if cohort_id is None:
+        eligible_cohorts=[c for c in ledger['cohorts'] if c.get('execution_status')!='withdrawn_before_execution'
+            and any(r['cohort_id']==c['id'] and r['track']==track and r['condition']==condition for r in ledger['runs'])]
+        formal=[c for c in eligible_cohorts if c.get('protocol',{}).get('season_kind')=='registered_12_project_season']
+        choice=(formal if track in ('same_evidence','patent_ablation') else []) or eligible_cohorts
+        if choice:cohort_id=choice[-1]['id']
     new_runs = [_public_run(r) for r in ledger['runs']]
     for model in models:
         completed = [r for r in new_runs if r['model_id']==model['id'] and r.get('returned_model') and r.get('attempts')]

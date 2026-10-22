@@ -69,33 +69,34 @@ def test_missing_append_only_trigger_fails_closed(tmp_path):
         upgrade.append_events(live.path,upgrade.read_events(incoming.path),upgrade.head(before))
 
 
-def acquisition(raw=b'<html>Official public fixture</html>'):
-    name='arena_data/source_snapshots/public-fixture.html'
+def acquisition(raw=b'<html>Official public fixture</html>', suffix='html'):
+    name='arena_data/source_snapshots/public-fixture.'+suffix
     manifest={'schema_version':'arena-public-acquisition-v1','assets':[{'path':name,
         'sha256':upgrade.digest(raw),'bytes':len(raw),'source_url':'https://example.org/official',
         'retrieved_at':datetime.now(timezone.utc).isoformat(),'public_date':'2026-01-01','public_date_basis':'fixture'}]}
     return json.dumps(manifest).encode(),{name:raw}
 
 
-def proof():
-    base='arena_data/attestations/isolated-proof/'
+def proof(identifier='isolated-proof'):
+    base='arena_data/attestations/'+identifier+'/'
     cert=b'-----BEGIN CERTIFICATE-----\nQUJD\n-----END CERTIFICATE-----\n'
     values={'manifest.json':b'{}','manifest.tsq':b'query','manifest.tsr':b'response',
         'tsa.crt':cert,'cacert.pem':cert,'verification.txt':b'Verification: OK'}
     hashes={name:upgrade.digest(raw) for name,raw in values.items()}
-    values['receipt.json']=json.dumps({'id':'isolated-proof','files':hashes,
+    values['receipt.json']=json.dumps({'id':identifier,'files':hashes,
         'manifest_sha256':hashes['manifest.json'],'timestamp_response_sha256':hashes['manifest.tsr'],
         'authority_cert_sha256':hashes['tsa.crt'],'ca_cert_sha256':hashes['cacert.pem']}).encode()
     return {base+name:raw for name,raw in values.items()}
 
 
-def archive(tmp_path,source,receipts,database,events):
+def archive(tmp_path,source,receipts,database,events, **metadata):
     commit='a'*40
     meta={'version':upgrade.VERSION,'git_commit':commit,'base_commit':upgrade.BASE_COMMIT,
         'files':{n:upgrade.digest(raw) for n,raw in source.items()},
         'receipt_files':{n:upgrade.digest(raw) for n,raw in receipts.items()},
+        'attestation_ids':sorted({n.split('/')[2] for n in source if n.startswith('arena_data/attestations/')}),
         'arena_database_sha256':upgrade.digest(database),'arena_ledger_sha256':upgrade.head(events),
-        'arena_event_count':len(events)}
+        'arena_event_count':len(events), **metadata}
     path=tmp_path/'upgrade.tar.gz'
     with tarfile.open(path,'w:gz') as tar:
         for name,raw in {**source,**receipts,'UPGRADE.json':json.dumps(meta).encode(),'arena-transport.sqlite3':database}.items():
@@ -121,7 +122,7 @@ def server(tmp_path,monkeypatch):
     env=tmp_path/'fixture.env';env.write_text('ISOLATED=fixture\n');env.chmod(0o600)
     dropin=tmp_path/'arena.conf';dropin.write_bytes(upgrade.DROPIN_BYTES)
     for name,value in {'BASE':base,'TARGET':home/'releases/new','CURRENT':current,'DATA':data,
-                       'DROPIN':dropin,'ENV_FILE':env,'ATTESTATION_COUNT':1}.items():monkeypatch.setattr(upgrade,name,value)
+                       'DROPIN':dropin,'ENV_FILE':env,'HISTORICAL_ATTESTATIONS':frozenset({'isolated-proof'})}.items():monkeypatch.setattr(upgrade,name,value)
     original_stat=Path.stat
     def fake_stat(path,*a,**kw):
         result=original_stat(path,*a,**kw)
@@ -252,9 +253,9 @@ def test_existing_receipt_mutation_is_detected(tmp_path):
     with pytest.raises(ValueError,match='receipt changed'):upgrade.preserve_receipts(before,folder)
 
 
-def test_missing_tsa_bundle_blocks_before_any_server_mutation(server,monkeypatch):
-    monkeypatch.setattr(upgrade,'ATTESTATION_COUNT',7)
-    with pytest.raises(ValueError,match='Missing TSA'):upgrade.remote(*server.args)
+def test_missing_historical_tsa_bundle_blocks_before_any_server_mutation(server,monkeypatch):
+    monkeypatch.setattr(upgrade,'HISTORICAL_ATTESTATIONS',frozenset({'isolated-proof','required-history-proof'}))
+    with pytest.raises(ValueError,match='Missing historical TSA'):upgrade.remote(*server.args)
     assert not upgrade.TARGET.exists() and upgrade.read_events(server.ledger.path)==server.original_events
 
 
@@ -298,3 +299,109 @@ def test_manifest_unlisted_raw_asset_is_rejected(server,tmp_path):
     args=archive(tmp_path,{**server.source,'arena_data/source_snapshots/unlisted.json':b'{}'},server.receipts,database.read_bytes(),server.incoming)
     with pytest.raises(ValueError,match='Unlisted acquisition'):upgrade.remote(*args)
     assert not upgrade.TARGET.exists()
+
+
+def transport_bytes(server, folder):
+    folder.mkdir()
+    path=folder/'arena.sqlite3'
+    upgrade.d.backup_sqlite(server.ledger.path,path)
+    upgrade.append_events(path,server.incoming,upgrade.head(server.original_events))
+    return path
+
+
+def test_manifest_bound_xml_survives_remote_unpack_and_deployment(server,tmp_path):
+    raw=b'<?xml version="1.0"?><clinical-study>Isolated public source</clinical-study>'
+    manifest,assets=acquisition(raw,suffix='xml')
+    source={k:v for k,v in server.source.items() if not k.startswith('arena_data/source_snapshots/')}
+    source.update({upgrade.MANIFEST:manifest,**assets})
+    assert not upgrade.d.allowed(next(iter(assets)))  # The original helper remains strict.
+    database=transport_bytes(server,tmp_path/'xml-transport')
+    args=archive(tmp_path,source,server.receipts,database.read_bytes(),server.incoming)
+    upgrade.remote(*args)
+    name=next(iter(assets))
+    assert (upgrade.TARGET/name).read_bytes()==raw
+    release=json.loads((upgrade.TARGET/'RELEASE_MANIFEST.json').read_text())
+    entry=next(v for v in release['files'] if v['path']==name)
+    assert entry['sha256']==upgrade.digest(raw) and entry['bytes']==len(raw)
+
+
+@pytest.mark.parametrize('name,message',[
+    ('arena_data/source_snapshots/unlisted.xml','Unlisted acquisition'),
+    ('arena_data/arbitrary.xml','Unsafe archive member'),
+    ('static/arbitrary.xml','Unsafe archive member'),
+])
+def test_arbitrary_xml_fails_before_server_mutation(server,tmp_path,name,message):
+    database=transport_bytes(server,tmp_path/'xml-denied')
+    args=archive(tmp_path,{**server.source,name:b'<unlisted/>'},server.receipts,database.read_bytes(),server.incoming)
+    with pytest.raises(ValueError,match=message):upgrade.remote(*args)
+    assert not upgrade.TARGET.exists()
+    assert upgrade.read_events(server.ledger.path)==server.original_events
+
+
+def test_dynamic_tsa_set_accepts_eight_complete_pinned_bundles(server,tmp_path):
+    source=dict(server.source)
+    for index in range(7):source.update(proof('additional-proof-'+str(index)))
+    database=transport_bytes(server,tmp_path/'eight-proofs')
+    args=archive(tmp_path,source,server.receipts,database.read_bytes(),server.incoming)
+    upgrade.remote(*args)
+    receipt=json.loads((server.home/'openforecast02-release.json').read_text())
+    assert receipt['tsa_bundles']==8
+    assert receipt['attestation_ids']==sorted(['isolated-proof']+['additional-proof-'+str(i) for i in range(7)])
+    for name,raw in source.items():
+        if name.startswith('arena_data/attestations/'):
+            assert (upgrade.TARGET/name).read_bytes()==raw
+
+
+@pytest.mark.parametrize('ids',[[],['different-proof'],['isolated-proof','isolated-proof'],None])
+def test_tsa_manifest_id_set_must_match_actual_bundles(server,tmp_path,ids):
+    database=transport_bytes(server,tmp_path/'pinned-proofs')
+    args=archive(tmp_path,server.source,server.receipts,database.read_bytes(),server.incoming,attestation_ids=ids)
+    with pytest.raises(ValueError,match='TSA bundle set'):upgrade.remote(*args)
+    assert not upgrade.TARGET.exists()
+
+
+def test_incomplete_extra_tsa_bundle_cannot_be_silently_skipped(server,tmp_path):
+    source={**server.source,**proof('additional-proof')}
+    del source['arena_data/attestations/additional-proof/verification.txt']
+    database=transport_bytes(server,tmp_path/'incomplete-proof')
+    args=archive(tmp_path,source,server.receipts,database.read_bytes(),server.incoming)
+    with pytest.raises(ValueError,match='Incomplete attestation'):upgrade.remote(*args)
+    assert not upgrade.TARGET.exists()
+
+
+def test_uncommitted_release_file_is_rejected(tmp_path,monkeypatch):
+    monkeypatch.setattr(upgrade,'ROOT',tmp_path)
+    source=tmp_path/'static/arena.js';source.parent.mkdir();source.write_bytes(b'uncommitted source edit')
+    monkeypatch.setattr(upgrade.subprocess,'check_output',lambda *a,**kw:b'committed source bytes')
+    with pytest.raises(ValueError,match='Uncommitted release source'):
+        upgrade.git_bytes('a'*40,'static/arena.js')
+
+
+@pytest.mark.parametrize('case',['missing','changed'])
+def test_ledger_proof_missing_or_different_blocks_before_backup(server,tmp_path,case):
+    source=dict(server.source)
+    extra=proof('new-ledger-proof')
+    payload=json.loads(extra['arena_data/attestations/new-ledger-proof/receipt.json'])
+    if case=='changed':
+        source.update(extra)
+        payload['manifest_sha256']='f'*64
+    database=transport_bytes(server,tmp_path/'ledger-proof')
+    ledger=ArenaLedger(database.parent)
+    with ledger.connect() as db:ledger._append(db,'timestamp_attested','attestation-fixture',payload)
+    events=upgrade.read_events(database)
+    args=archive(tmp_path,source,server.receipts,database.read_bytes(),events)
+    with pytest.raises(ValueError,match='Ledger timestamp receipt'):upgrade.remote(*args)
+    assert not upgrade.TARGET.exists() and not (server.home/'backups').exists()
+    assert upgrade.read_events(server.ledger.path)==server.original_events
+
+
+def test_identical_ledger_proof_bundle_is_included(server,tmp_path):
+    extra=proof('new-ledger-proof')
+    payload=json.loads(extra['arena_data/attestations/new-ledger-proof/receipt.json'])
+    database=transport_bytes(server,tmp_path/'valid-ledger-proof')
+    ledger=ArenaLedger(database.parent)
+    with ledger.connect() as db:ledger._append(db,'timestamp_attested','attestation-fixture',payload)
+    events=upgrade.read_events(database)
+    args=archive(tmp_path,{**server.source,**extra},server.receipts,database.read_bytes(),events)
+    upgrade.remote(*args)
+    assert upgrade.read_events(server.ledger.path)==events

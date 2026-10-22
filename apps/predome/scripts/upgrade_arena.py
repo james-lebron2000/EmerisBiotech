@@ -35,7 +35,8 @@ ENV_FILE = Path('/etc/emeris-arena.env')
 PYTHON = '/opt/emeris-live/venv/bin/python'
 VERSION = '1.2.1'
 MANIFEST = 'arena_data/season_acquisition_manifest.json'
-ATTESTATION_COUNT = 7
+HISTORICAL_ATTESTATIONS = frozenset(('pilot-registration-20261022', 'pilot-predictions-20261022',
+                                   'ablation-registration-20261022', 'ablation-predictions-20261022'))
 REMOTE_ARCHIVE = '/opt/emeris-live/openforecast02.tar.gz'
 REMOTE_OPERATOR = '/opt/emeris-live/upgrade-openforecast02.py'
 REMOTE_HELPER = '/opt/emeris-live/upgrade-openforecast02-helper.py'
@@ -161,6 +162,30 @@ def manifest_assets(manifest_raw, get_bytes):
     return assets
 
 
+def validated_attestations(files, expected_ids=...):
+    """All committed bundles travel together; the original four cannot disappear."""
+    groups = d.validate_attestations(files)
+    if not HISTORICAL_ATTESTATIONS <= set(groups):
+        raise ValueError('Missing historical TSA bundle')
+    if expected_ids is not ... and (not isinstance(expected_ids, list)
+            or any(not isinstance(value, str) for value in expected_ids)
+            or expected_ids != sorted(groups)):
+        raise ValueError('TSA bundle set differs from pinned upgrade manifest')
+    return groups
+
+
+def verify_ledger_attestations(events, files):
+    """No appended timestamp may point at an omitted/uncommitted proof bundle."""
+    groups = validated_attestations(files)
+    receipts = {identifier: json.loads(content['receipt.json']) for identifier, content in groups.items()}
+    for event in events:
+        if event['kind'] != 'timestamp_attested':
+            continue
+        payload = json.loads(event['payload'])
+        if payload.get('id') not in receipts or payload != receipts[payload['id']]:
+            raise ValueError('Ledger timestamp receipt is absent from or differs from committed TSA bundle')
+
+
 def git_bytes(commit,name):
     raw = subprocess.check_output(['git','show',commit+':apps/predome/'+name],cwd=ROOT)
     if d.regular(ROOT/name).read_bytes()!=raw:raise ValueError('Uncommitted release source: '+name)
@@ -188,7 +213,7 @@ def committed_overlay(commit):
         name = full.removeprefix('apps/predome/')
         if not d.allowed(name):raise ValueError('Unsafe committed TSA path')
         files[name] = git_bytes(commit,name)
-    if len(d.validate_attestations(files))!=ATTESTATION_COUNT:raise ValueError('All seven committed TSA bundles are required')
+    validated_attestations(files)
     files.update(manifest_assets(files[MANIFEST],lambda name:d.regular(ROOT/name).read_bytes()))
     return files
 
@@ -219,6 +244,9 @@ def load_archive(path,expected,commit):
         if len({m.name for m in members})!=len(members):raise ValueError('Duplicate archive member')
         for m in members:
             if (not m.isfile() or not 0<=m.size<=d.MAX_MEMBER or not (d.allowed(m.name)
+                    # XML is only provisionally read here; below it must be an
+                    # exact hash/size-bound acquisition-manifest entry.
+                    or re.fullmatch(r'arena_data/source_snapshots/[A-Za-z0-9][A-Za-z0-9_.-]{0,160}\.xml',m.name)
                     or re.fullmatch(r'arena_receipts/[a-f0-9]{32}\.json',m.name)
                     or m.name in ('UPGRADE.json','arena-transport.sqlite3'))):raise ValueError('Unsafe archive member')
         all_files={m.name:d.public_bytes(m.name,tar.extractfile(m).read()) for m in members}
@@ -236,7 +264,8 @@ def load_archive(path,expected,commit):
     assets=manifest_assets(source[MANIFEST],lambda name:source[name])
     if {name for name in source if name.startswith('arena_data/source_snapshots/')}!=set(assets):
         raise ValueError('Unlisted acquisition assets rejected')
-    if len(d.validate_attestations(source))!=ATTESTATION_COUNT:raise ValueError('Missing TSA bundles')
+    if 'attestation_ids' not in meta:raise ValueError('Pinned TSA bundle set required')
+    validated_attestations(source, meta['attestation_ids'])
     return meta,source,receipts,database
 
 
@@ -296,6 +325,7 @@ def remote(archive,expected,commit):
             incoming=read_events(staged);require_prefix(original_events,incoming)
             if head(incoming)!=meta.get('arena_ledger_sha256') or len(incoming)!=meta.get('arena_event_count'):
                 raise ValueError('Transport ledger manifest mismatch')
+            verify_ledger_attestations(incoming, files)
             # Validate receipt identities from their event references before canonical writes.
             reference={json.loads(e['payload']).get('receipt_path'):json.loads(e['payload']).get('receipt_sha256')
                        for e in incoming if e['kind']=='run_completed' and json.loads(e['payload']).get('receipt_path')}
@@ -372,7 +402,8 @@ def remote(archive,expected,commit):
                 'base_manifest_sha256':base_hash,'arena_previous_ledger_sha256':head(original_events),
                 'arena_ledger_sha256':head(live),'appended_events':appended,'old_arena_events_preserved':True,
                 'old_clinical_rows_preserved':True,'existing_receipts_preserved':len(prior_receipts),
-                'transport_receipts':len(receipts),'tsa_bundles':ATTESTATION_COUNT,'overlay_files':len(files),
+                'transport_receipts':len(receipts),'tsa_bundles':len(meta['attestation_ids']),
+                'attestation_ids':meta['attestation_ids'],'overlay_files':len(files),
                 'before':before,'after':after,'checked_at_utc':datetime.now(timezone.utc).isoformat()}
             d.exclusive_write(CURRENT.parent/'openforecast02-release.json',(json.dumps(receipt,indent=2)+'\n').encode())
             print(json.dumps(receipt))
@@ -407,8 +438,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix='predome-upgrade-') as temporary:
         temp=Path(temporary);database=temp/'arena.sqlite3';d.backup_sqlite(args.data_dir/'arena.sqlite3',database)
         events=read_events(database);receipts=referenced_receipts(events,args.data_dir)
+        verify_ledger_attestations(events, files)
         meta={'version':VERSION,'git_commit':commit,'base_commit':BASE_COMMIT,
             'files':{n:digest(raw) for n,raw in files.items()},'receipt_files':{n:digest(raw) for n,raw in receipts.items()},
+            'attestation_ids':sorted(validated_attestations(files)),
             'arena_database_sha256':d.sha(database),'arena_ledger_sha256':head(events),'arena_event_count':len(events)}
         archive=temp/'openforecast02.tar.gz'
         with tarfile.open(archive,'w:gz') as tar:

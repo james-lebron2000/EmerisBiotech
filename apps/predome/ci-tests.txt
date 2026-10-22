@@ -26,3 +26,6 @@ tests/test_arena_admin_agents.py
 tests/test_upgrade_arena.py
 tests/test_arena_evidence_corrections.py
 tests/test_prepare_arena_season.py
+tests/test_arena_lab.py
+tests/test_arena_public.py
+tests/test_arena_frontend_config.py

@@ -31,6 +31,9 @@ from .predict_api import router as predict_router
 from .intake_api import router as intake_router
 from .readout_updates_api import router as readout_updates_router
 from .arena_api import router as arena_router
+from .arena_lab import router as arena_lab_router
+from .arena_lab import lab_user, access_shell
+from .arena_public import router as arena_public_router
 from .predome_api import read_release
 from .historical_api import read_historical
 from .expanded_api import read_expanded, expanded_report_path
@@ -295,9 +298,16 @@ def create_app(path=None):
         with store.connect() as db:value=visible(dataset(db,u['owner'],id))
         return Response(json.dumps(value,ensure_ascii=False,indent=2),media_type='application/json',headers={'Content-Disposition':'attachment; filename="emeris-research-report.json"'})
     @app.get('/')
-    def index():return FileResponse(ROOT/'static/dashboard.html')
+    def index():return FileResponse(ROOT/'static/arena-public.html')
+    @app.get('/arena/lab/calendar')
+    def internal_calendar(request:Request):
+        try:lab_user(request)
+        except HTTPException as exc:
+            if exc.status_code in (401,403):return access_shell(exc.status_code)
+            raise
+        return FileResponse(ROOT/'static/dashboard.html')
     @app.get('/arena')
-    def arena_page():return FileResponse(ROOT/'static/arena.html')
+    def arena_page():return FileResponse(ROOT/'static/arena-public.html')
     @app.get('/track-record')
     def track_record_page():return FileResponse(ROOT/'static/track-record.html')
     @app.get('/reviews')
@@ -454,5 +464,7 @@ def create_app(path=None):
     app.include_router(intake_router)
     app.include_router(readout_updates_router)
     app.include_router(arena_router)
+    app.include_router(arena_lab_router)
+    app.include_router(arena_public_router)
     app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
     return app

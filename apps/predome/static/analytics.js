@@ -2,7 +2,7 @@
 (()=>{
  const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const num=(v,d=3)=>typeof v==='number'&&Number.isFinite(v)?v.toFixed(d):'—',pct=v=>typeof v==='number'&&Number.isFinite(v)?`${(v*100).toFixed(1)}%`:'—';
- const modelNames={'deepseek-v4-pro':'DeepSeek Pro','deepseek-flash':'DeepSeek Flash',beta_pooled:'归档训练集基础率',beta_area:'归档分领域基础率',constant_0_5:'固定 50% 基线',fixed_0_5:'固定 50% 无信息参照',design_logistic:'归档设计逻辑回归'};
+ const modelNames={'deepseek-v4-pro':'deepseek-v4-pro','deepseek-flash':'deepseek-flash',beta_pooled:'归档训练集基础率',beta_area:'归档分领域基础率',constant_0_5:'固定 50% 基线',fixed_0_5:'固定 50% 无信息参照',design_logistic:'归档设计逻辑回归'};
  const names={oncology:'肿瘤',immunology:'免疫',neurology:'神经',metabolic:'代谢',unknown:'未知',randomized:'随机分组',retrospective_no_forward_horizon:'回测 · 无事前提前时间'};
  let data=null,requestId=0,registryRequest=0,registryOffset=0,registryNext=null;
  function theme(value){document.documentElement.dataset.theme=value;$('theme-toggle').textContent=value==='dark'?'浅色模式':'深色模式';try{localStorage.setItem('predome-theme',value);}catch{}}
