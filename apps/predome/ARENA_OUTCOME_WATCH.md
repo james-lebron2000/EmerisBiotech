@@ -4,6 +4,10 @@ The daily intake now prioritizes the current active `registered_12_project_seaso
 
 The existing downloader collects ClinicalTrials.gov registry updates and bounded Europe PMC discovery records. Official-source collection remains confined to its configured domains and trial/source pairs. Its report explicitly lists trials without configured official coverage. Registry availability, text matching, completion dates and literature discovery are not an exact primary-endpoint result or clinical efficacy label.
 
+Version 1.2.5 also derives official watch seeds from the current verified formal registrations. All twelve current targets have an approved registered readout-source URL; this closes the former configuration gap of ten targets. The collector reads the existing Arena chain without initializing or altering it, prioritizes the requested formal NCT order, and retains compatible legacy sources. A changed identity never inherits a conflicting legacy drug's sources. Host approvals are exact TLS destinations, including named sponsor document hosts and SEC filings; arbitrary subdomains, credentials, other ports and off-list redirects remain rejected. Publication guidance remains guidance, including VITALIZE's program-level qualification.
+
+The 16-document bound is unchanged. `scheduled_document_urls` and `deferred_document_urls` expose the complete discovered queue. `checked_document_urls` records successful fetch and parse only; `trials_with_retrieved_configured_source` requires at least one configured document to have actually been retrieved and parsed. Its complement exposes missing acquisition. Neither field claims every sponsor release was covered or that an exact endpoint result was found. First-level news listings for Roche, Pfizer, BMS, Biogen and Sanofi supplement the earlier listings. An index can omit articles, be delayed or deny access; failures are reported without bypassing access controls or assigning efficacy labels. See `docs/OPEN_FORECAST_RESULT_SOURCE_AUDIT_20261023.md` for excluded related-trial announcements.
+
 ## Read acquired sources without new downloads
 
 ```sh

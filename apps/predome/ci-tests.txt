@@ -37,3 +37,4 @@ tests/test_arena_result_reviews.py
 tests/test_deploy_result_reviews.py
 
 tests/test_arena_watch_inbox.py
+tests/test_formal_official_watch.py

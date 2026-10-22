@@ -56,7 +56,7 @@ def test_verified_readonly_routes_and_scientific_boundaries(bundle):
         for method in ['post', 'put', 'delete']:
             assert getattr(client, method)('/api/predome/expanded' + suffix).status_code == 405
     health = client.get('/api/health').json()
-    assert health['version'] == '1.2.4'
+    assert health['version'] == '1.2.5'
     for field in ['clinical_use', 'clinical_prediction_validated', 'formal_training_completed', 'weight_training']:
         assert health[field] is False
     assert 'expanded_historical_development_replay' in health['research_workflows']
