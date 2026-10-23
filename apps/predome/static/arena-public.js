@@ -32,7 +32,10 @@
     strip.hidden=!available.length;
     const nctCounts=new Map();available.forEach(t=>nctCounts.set(t.nct_id,(nctCounts.get(t.nct_id)||0)+1));
     strip.innerHTML=`<span class="arena-schedule-label">${state.period==='reported'?'RESULTS DESK':'TRIAL MATCHES'}</span><div class="arena-schedule-track">${available.map(t=>`<button type="button" class="arena-match-chip" data-arena-target="${esc(t.id)}" aria-label="${esc([t.trial_name,t.drug,t.nct_id,t.endpoint].filter(Boolean).join(' · '))}" aria-pressed="${t.id===state.targetId}"><strong>${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,40)):''}</strong><span>${esc(short(t.drug,45)||'Drug unavailable')} · ${esc(t.readout?.label||'Readout not specified')}</span></button>`).join('')}</div>`;
-    const active=strip.querySelector('[aria-pressed="true"]');if(active)requestAnimationFrame(()=>{const track=strip.querySelector('.arena-schedule-track');track.scrollLeft=Math.max(0,active.offsetLeft-track.offsetLeft-track.clientWidth/2+active.clientWidth/2);});
+    centerSchedule();
+  }
+  function centerSchedule(){
+    requestAnimationFrame(()=>{const track=$('arena-fixtures')?.querySelector('.arena-schedule-track'),active=track?.querySelector('[aria-pressed="true"]');if(track&&active)track.scrollLeft=Math.max(0,active.offsetLeft-track.offsetLeft-track.clientWidth/2+active.clientWidth/2);});
   }
   function controls(){
     $('public-controls').hidden=false;let available=availableTargets();const explicit=arr(state.data?.targets).find(t=>t.id===state.targetId);
@@ -116,5 +119,6 @@
   }
   $('public-trial').addEventListener('change',()=>{state.targetId=$('public-trial').value;load(false);});
   document.addEventListener('click',e=>{const match=e.target.closest('[data-arena-target]');if(match){state.targetId=match.dataset.arenaTarget;load(false);}const period=e.target.closest('[data-public-period]');if(period){state.period=period.dataset.publicPeriod;state.targetId='';load(false);}const toggle=e.target.closest('[data-reason-id]');if(toggle){const row=$(toggle.dataset.reasonId);row.hidden=!row.hidden;toggle.setAttribute('aria-expanded',String(!row.hidden));}if(e.target.id==='public-retry')load(true);});
+  window.addEventListener('resize',centerSchedule,{passive:true});
   load();
 })();

@@ -29,6 +29,7 @@ const out=path.join(root,'verification/arena-competition-ui',local?'preview':'pr
    if(t.trial_name==='MEVPRO-1')await p.screenshot({path:path.join(out,'mevpro-desktop.png')});
   }
   const mevpro=targets.find(t=>t.trial_name==='MEVPRO-1');assert(mevpro);await p.locator(`[data-arena-target="${mevpro.id}"]`).click();await settled();await p.setViewportSize({width:375,height:812});
+  await p.waitForFunction(()=>{const t=document.querySelector('.arena-schedule-track'),a=t?.querySelector('[aria-pressed="true"]');if(!t||!a)return false;const x=a.getBoundingClientRect(),y=t.getBoundingClientRect();return x.left>=y.left-1&&x.right<=y.right+1;});
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert(await p.locator('.public-model-id').evaluateAll(es=>es.every(e=>parseFloat(getComputedStyle(e).fontSize)>=13)));
   await p.screenshot({path:path.join(out,'mevpro-mobile.png'),fullPage:true});
   assert.deepStrictEqual(errors,[]);assert(requests.every(r=>r.method==='GET'));assert(requests.filter(r=>r.path.startsWith('/api/')).every(r=>r.path.startsWith('/api/arena/public')));

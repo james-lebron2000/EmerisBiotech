@@ -67,7 +67,7 @@ def test_code_only_success_preserves_database_and_sealed_files(tmp_path,isolated
     assert result['database_imports']==0 and result['old_arena_events_preserved']
     assert ledger.events()==events and calls==['restart']
     assert (home/'current/arena_data/sealed.json').read_bytes()==b'original frozen data'
-    assert (home/'backups/20261024-arena07/arena.sqlite3').is_file()
+    assert (home/'backups/20261024-arena07b/arena.sqlite3').is_file()
     assert (home/'current').resolve()==release.TARGET
 
 
