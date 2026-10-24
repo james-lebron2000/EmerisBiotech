@@ -5,7 +5,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=(process.env.ARENA_PUBLIC_LIVE_BASE||'').replace(/\/$/,'');
 if(!base.startsWith('https://'))throw Error('Explicit HTTPS public base required');
 const root=path.resolve(__dirname,'..'),local=process.env.ARENA_PUBLIC_LOCAL_ASSETS==='true';
-const out=path.join(root,'verification/arena-competition-ui',local?'preview':'production');
+const out=path.join(root,'verification/arena-faceoff-ui',local?'preview':'production');
 (async()=>{
  fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
  try{
@@ -22,16 +22,24 @@ const out=path.join(root,'verification/arena-competition-ui',local?'preview':'pr
    assert.strictEqual(await p.locator('#arena-fixtures [aria-pressed="true"]').getAttribute('data-arena-target'),t.id);
    assert.deepStrictEqual((await p.locator('.public-model-row').evaluateAll(es=>es.map(e=>e.dataset.runId))).sort(),expected.map(r=>r.id).sort());
    assert((await p.locator('.public-probability,.public-confidence').allTextContents()).every(x=>x.trim()==='N/A'));
+   for(const direction of ['Success','Failure','Uncertain']){
+    const count=expected.filter(r=>(['failed','timed_out','abstained','abstain','pending','withdrawn','unavailable'].includes(r.status)?'Uncertain':['Success','Failure','Uncertain'].includes(r.predicted_outcome)?r.predicted_outcome:'Uncertain')===direction).length;
+    assert.strictEqual(Number(await p.locator(`.arena-position[data-direction="${direction}"]`).getAttribute('data-count')),count);
+   }
+   assert.strictEqual(await p.locator('[data-reveal-stage="pending"]').count(),1);assert.strictEqual(await p.locator('.public-match').count(),0);
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const bottom=await p.locator('.public-module').evaluateAll(es=>Math.max(...es.map(e=>e.getBoundingClientRect().bottom)));
    assert(bottom<=1000,'More than minimal desktop scroll: '+t.trial_name+' '+bottom);
    cases.push({id:t.id,trial:t.trial_name,model_rows:expected.length,core_bottom:bottom});
-   if(t.trial_name==='MEVPRO-1')await p.screenshot({path:path.join(out,'mevpro-desktop.png')});
+   if(t.trial_name==='MEVPRO-1')await p.screenshot({path:path.join(out,'mevpro-desktop.png'),fullPage:true});
   }
   const mevpro=targets.find(t=>t.trial_name==='MEVPRO-1');assert(mevpro);await p.locator(`[data-arena-target="${mevpro.id}"]`).click();await settled();await p.setViewportSize({width:375,height:812});
   await p.waitForFunction(()=>{const t=document.querySelector('.arena-schedule-track'),a=t?.querySelector('[aria-pressed="true"]');if(!t||!a)return false;const x=a.getBoundingClientRect(),y=t.getBoundingClientRect();return x.left>=y.left-1&&x.right<=y.right+1;});
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert(await p.locator('.public-model-id').evaluateAll(es=>es.every(e=>parseFloat(getComputedStyle(e).fontSize)>=13)));
   await p.screenshot({path:path.join(out,'mevpro-mobile.png'),fullPage:true});
+  await p.setViewportSize({width:1440,height:900});await p.locator('[data-public-period="reported"]').click();await settled();
+  assert((await p.locator('.public-record-banner').innerText()).includes('Historical replay'));assert.strictEqual(await p.locator('.public-match').count(),0);
+  assert.strictEqual(await p.locator('[data-reveal-stage="resolved"]').count(),1);await p.screenshot({path:path.join(out,'reported-desktop.png'),fullPage:true});
   assert.deepStrictEqual(errors,[]);assert(requests.every(r=>r.method==='GET'));assert(requests.filter(r=>r.path.startsWith('/api/')).every(r=>r.path.startsWith('/api/arena/public')));
   const receipt={at:new Date().toISOString(),base,local_assets:local,ordinary_tls:true,formal_match_cases:cases,mobile_width:375,page_errors:errors,only_public_get:true,provider_calls:0,ledger_writes:0,scope:'Frontend and existing recorded-output correspondence; not clinical validation'};
   fs.writeFileSync(path.join(out,'receipt.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify({status:'passed',cases:cases.length,max_core_bottom:Math.max(...cases.map(c=>c.core_bottom)),local_assets:local,receipt:path.join(out,'receipt.json')}));await ctx.close();

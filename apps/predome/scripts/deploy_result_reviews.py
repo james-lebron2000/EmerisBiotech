@@ -1,4 +1,4 @@
-"""Fixed code-only 1.2.6 Arena viewport-selection correction. No ledger imports or database restores."""
+"""Fixed code-only 1.2.7 Arena face-off presentation. No ledger imports or database restores."""
 import argparse
 from datetime import datetime, timezone
 import fcntl
@@ -14,17 +14,17 @@ import tarfile
 import time
 import urllib.request
 
-BASE=Path('/opt/emeris-live/releases/20261024-arena07')
-TARGET=Path('/opt/emeris-live/releases/20261024-arena07b')
+BASE=Path('/opt/emeris-live/releases/20261024-arena07b')
+TARGET=Path('/opt/emeris-live/releases/20261024-arena08')
 CURRENT=Path('/opt/emeris-live/current')
 DATA=Path('/var/lib/emeris-live')
 HOME=Path('/opt/emeris-live')
 PYTHON='/opt/emeris-live/venv/bin/python'
-BASE_COMMIT='b2a0f398f9dfb8c1fc098af5db16cff4dd01780d'
+BASE_COMMIT='a5773fae389679a19ca7f43faa850f1cac03847c'
 BASE_VERSION='1.2.6'
-VERSION='1.2.6'
+VERSION='1.2.7'
 FILES=frozenset(('emeris_live/main.py','static/arena-public.html','static/arena-public.css',
-    'static/arena-public.js','docs/ARENA_PRESENTATION_1_2_6.md','scripts/deploy_result_reviews.py'))
+    'static/arena-public.js','docs/ARENA_PRESENTATION_1_2_7.md','scripts/deploy_result_reviews.py'))
 CONFIGS=(Path('/etc/nginx/sites-available/emeris-live'),Path('/etc/emeris-arena.env'),
     Path('/etc/emeris-arena-models-v2.json'),Path('/etc/systemd/system/emeris-live.service.d/arena.conf'))
 
@@ -55,7 +55,7 @@ def helpers():
 
 
 def switch(destination):
-    marker=CURRENT.with_name('current-arena07b-next')
+    marker=CURRENT.with_name('current-arena08-next')
     if marker.exists() or marker.is_symlink():raise ValueError('Concurrent release marker')
     marker.symlink_to(destination);marker.replace(CURRENT)
 
@@ -84,7 +84,7 @@ def deploy(archive,expected_hash,commit):
         config_hashes={str(p):d.sha(d.regular(p)) for p in CONFIGS}
         base_hash=d.sha(BASE/'RELEASE_MANIFEST.json')
         events=h.read_events(DATA/'arena.sqlite3');rows=d.sealed_rows(DATA/'workbench.sqlite3')
-        backup=HOME/'backups/20261024-arena07b';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
+        backup=HOME/'backups/20261024-arena08';backup.mkdir(parents=True,mode=0o700,exist_ok=False)
         for name in ('arena.sqlite3','workbench.sqlite3'):d.backup_sqlite(DATA/name,backup/name)
         d.exclusive_write(backup/'base-manifest.json',(BASE/'RELEASE_MANIFEST.json').read_bytes())
         shutil.copytree(BASE,TARGET,ignore=shutil.ignore_patterns('__pycache__','.pytest_cache'))
@@ -107,7 +107,7 @@ def deploy(archive,expected_hash,commit):
             preserved()
             if CURRENT.resolve()!=BASE or d.sha(BASE/'RELEASE_MANIFEST.json')!=base_hash:raise ValueError('Current release changed before switch')
             switch(TARGET);switched=True;restart();await_health()
-            verify=HOME/'arena07b-operational.json'
+            verify=HOME/'arena08-operational.json'
             subprocess.run([PYTHON,str(TARGET/'deploy/verify_server_state.py'),str(verify)],check=True,stdout=subprocess.DEVNULL)
             preserved()
             receipt={'status':'deployed','version':VERSION,'git_commit':commit,'release':str(TARGET),
@@ -116,7 +116,7 @@ def deploy(archive,expected_hash,commit):
                 'arena_current_head':h.head(h.read_events(DATA/'arena.sqlite3')),'database_imports':0,
                 'old_arena_events_preserved':True,'old_sealed_rows_preserved':True,'configurations_unchanged':True,
                 'code_transport_sha256':expected_hash,'at':datetime.now(timezone.utc).isoformat()}
-            d.exclusive_write(HOME/'arena07b-receipt.json',json.dumps(receipt,indent=2).encode())
+            d.exclusive_write(HOME/'arena08-receipt.json',json.dumps(receipt,indent=2).encode())
             return receipt
         except BaseException:
             # Roll back only code; never overwrite new data written by users.
