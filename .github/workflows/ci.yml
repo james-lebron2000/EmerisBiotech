@@ -39,6 +39,7 @@ jobs:
     env:
       EMERIS_MODE: local
       EMERIS_ENABLE_USER_LLM: 'false'
+      EMERIS_ENABLE_ARENA_LLM: 'false'
       OMP_NUM_THREADS: '1'
       OPENBLAS_NUM_THREADS: '1'
     steps:
@@ -61,3 +62,8 @@ jobs:
         run: |
           node tests/ui_predict_context.cjs
           node tests/ui_prospective_coverage.cjs
+          node tests/ui_arena.cjs
+          node tests/ui_arena_home.cjs
+          node tests/ui_arena_public.cjs
+          node tests/ui_arena_lab.cjs
+          node tests/ui_trials_readonly.cjs

@@ -1,5 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
+const scenarioReadOnly=location.port==='18443';
+const scenarioReadOnlyText='内测端口仅供查看，情景计算请使用已登录研究工作台';
 let catalogEnvelope=null,lastResult=null,revision=0;
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const show=v=>typeof v==='string'?v:JSON.stringify(v,null,2);
@@ -25,15 +27,24 @@ function bar(label,value){const width=Math.max(0,Math.min(1,value))*100;return `
 function renderResult(r){const s=r.summary||{},evidence=r.mode==='evidence_conditioned';
 $('scenarioResult').innerHTML=`<span class="tag amber">${evidence?'真实公开效应 + 假设设计 · 非 PACIFIC-9 成功率':'人为设定的效应分布 · 非药物预测'}</span><h3>假设分布下的设计成功概率</h3>${bar('效应固定在中位数时的功效',s.conditional_power_at_median)}${bar('考虑效应不确定性后的 assurance',s.assurance)}<div class="result-metrics"><div class="metric"><strong>${pct(s.probability_hr_below_1)}</strong><span>假设分布中 HR＜1 的比例</span></div><div class="metric"><strong>${pct(s.probability_hr_below_clinical_threshold)}</strong><span>假设分布中达到所设临床阈值的比例</span></div></div><p class="muted">${evidence?'计算使用单个 COAST 比较更新先验；研究间差异、迁移误差和事件数仍是假设。不覆盖 PACIFIC-9 双比较、多重性或完整 SAP。':'这些数值由下列假设产生，不是从候选药数据拟合。'} 增加事件数可能提高功效，但不会使假设本身更可信。</p><p class="hash">内容哈希 · ${escapeHTML(r.result_sha256||'见完整记录')}</p>`;
 $('rawResult').textContent=JSON.stringify(r,null,2);$('resultDownload').disabled=false;$('reportDownload').disabled=false;}
-async function runScenario(){const submittedRevision=revision;const request={mode:'scenario',prior_log_hr_mean:Math.log(Number($('hr').value)),prior_log_hr_sd:Number($('sd').value),event_count:Number($('events').value),allocation:Number($('allocation').value),alpha:Number($('alpha').value),clinical_hr_threshold:Number($('threshold').value)};
+async function runScenario(){if(scenarioReadOnly)return;const submittedRevision=revision;const request={mode:'scenario',prior_log_hr_mean:Math.log(Number($('hr').value)),prior_log_hr_sd:Number($('sd').value),event_count:Number($('events').value),allocation:Number($('allocation').value),alpha:Number($('alpha').value),clinical_hr_threshold:Number($('threshold').value)};
 if($('calculationMode').value!=='scenario'){const candidate=catalogEnvelope?.catalog.candidates.find(c=>c.id==='pacific-9');if(!candidate)throw Error('真实证据尚未加载，不能运行该模式。');const item=candidate.prior_evidence[Number($('calculationMode').value.split('-')[1])],source=catalogEnvelope.catalog.sources.find(s=>s.id===item.source_id);Object.assign(request,{mode:'evidence_conditioned',endpoint:'PFS',candidate_id:'pacific-9',target_trial_id:candidate.nct_id,cutoff_date:catalogEnvelope.catalog.as_of,between_study_sd:Number($('heterogeneity').value),transport_sd:Number($('transport').value),historical_effects:[{trial_id:item.nct_id,endpoint:'PFS',log_hr:Math.log(item.estimate),log_hr_se:(Math.log(item.ci95[1])-Math.log(item.ci95[0]))/(2*1.959963984540054),source_url:source.url,source_note:item.arm+'; '+item.endpoint+'; approximate log-SE reconstructed from published CI. '+item.notes,published_date:item.published_at,matching_rationale:'同为放化疗后III期NSCLC组合治疗；但COAST为开放标签研究者评估次要PFS，PACIFIC9为双盲BICR主要PFS。可迁移性未经验证，仅作假设敏感性。',reviewed:true}]});}
 $('calculate').disabled=true;try{const result=await api('/api/trials/execute',request);if(revision!==submittedRevision){invalidate();return;}lastResult=result;renderResult(lastResult);$('inputStatus').textContent='结果对应当前已提交参数。';$('scenarioResult').classList.remove('stale');message('');}finally{$('calculate').disabled=false;}}
-function invalidate(){revision++;$('inputStatus').textContent='输入已修改，请重新计算；下方仍为上一次运行结果。';$('resultDownload').disabled=true;$('reportDownload').disabled=true;$('scenarioResult').classList.add('stale');}
+function invalidate(){if(scenarioReadOnly)return;revision++;$('inputStatus').textContent='输入已修改，请重新计算；下方仍为上一次运行结果。';$('resultDownload').disabled=true;$('reportDownload').disabled=true;$('scenarioResult').classList.add('stale');}
+if(scenarioReadOnly){
+const form=$('scenarioForm');form.setAttribute('aria-disabled','true');form.setAttribute('aria-describedby','scenarioReadOnlyNotice');
+for(const control of form.elements)control.disabled=true;
+const notice=document.createElement('p');notice.id='scenarioReadOnlyNotice';notice.className='assessment';notice.setAttribute('role','note');
+notice.append(document.createTextNode(scenarioReadOnlyText+'。 '));
+const link=document.createElement('a');link.href='https://8.148.145.28/research';link.textContent='前往研究工作台 →';notice.append(link);form.prepend(notice);
+$('calculate').textContent='内测端口只读';$('inputStatus').textContent=scenarioReadOnlyText+'。';
+$('scenarioResult').textContent='当前端口不计算默认示例，也不提交情景参数。';
+}
 $('scenarioForm').addEventListener('input',invalidate);$('scenarioForm').addEventListener('change',invalidate);
-$('scenarioForm').addEventListener('submit',event=>{event.preventDefault();runScenario().catch(e=>message(e.message));});
-$('calculationMode').addEventListener('change',()=>{const evidence=$('calculationMode').value!=='scenario';$('transportControls').hidden=!evidence;$('hr').value=evidence?'1':'0.75';$('sd').value=evidence?'0.5':'0.15';$('modeNote').textContent=evidence?'真实COAST效应及CI更新宽先验（初始HR中位数1）。计划400事件仅为演示假设，非PACIFIC-9事件数。每次只分析一个比较，不能推导整体试验成功率。':'默认使用人为假设，不是真实药物预测。';});
+$('scenarioForm').addEventListener('submit',event=>{event.preventDefault();if(scenarioReadOnly)return;runScenario().catch(e=>message(e.message));});
+$('calculationMode').addEventListener('change',()=>{if(scenarioReadOnly)return;const evidence=$('calculationMode').value!=='scenario';$('transportControls').hidden=!evidence;$('hr').value=evidence?'1':'0.75';$('sd').value=evidence?'0.5':'0.15';$('modeNote').textContent=evidence?'真实COAST效应及CI更新宽先验（初始HR中位数1）。计划400事件仅为演示假设，非PACIFIC-9事件数。每次只分析一个比较，不能推导整体试验成功率。':'默认使用人为假设，不是真实药物预测。';});
 $('search').addEventListener('input',renderCards);$('recordType').addEventListener('change',renderCards);
 $('catalogDownload').addEventListener('click',()=>download('emeris-trial-evidence-20261009.json',JSON.stringify(catalogEnvelope,null,2)));
 $('resultDownload').addEventListener('click',()=>download('emeris-trial-scenario.json',JSON.stringify(lastResult,null,2)));
 $('reportDownload').addEventListener('click',()=>{const body=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>Emeris 试验设计情景报告</title><style>body{font:16px/1.7 sans-serif;max-width:900px;margin:40px auto;padding:20px;color:#173b37}pre{white-space:pre-wrap;overflow-wrap:anywhere}svg{max-width:600px}h1{font-size:28px}</style><h1>Emeris · 试验设计情景报告</h1><p>假设设计下的研究情景；若使用公开证据，其异质性、可迁移性和事件数仍需另行验证。模型尚未经临床验证；不得将本报告计入前瞻预测命中记录。</p>${$('scenarioResult').innerHTML}<h2>完整参数、方法与计算记录</h2><pre>${escapeHTML(JSON.stringify(lastResult,null,2))}</pre></html>`;download('emeris-trial-scenario-report.html',body,'text/html;charset=utf-8');});
-Promise.allSettled([loadCatalog(),runScenario()]).then(results=>{const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason.message);if(errors.length)message(errors.join('；'));if(!catalogEnvelope)$('freshness').textContent='证据目录加载失败，无法确认来源日期。';});
+Promise.allSettled([loadCatalog(),...(scenarioReadOnly?[]:[runScenario()])]).then(results=>{const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason.message);if(errors.length)message(errors.join('；'));if(!catalogEnvelope)$('freshness').textContent='证据目录加载失败，无法确认来源日期。';});

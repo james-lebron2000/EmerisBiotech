@@ -30,6 +30,10 @@ from .platform_api import router as platform_router
 from .predict_api import router as predict_router
 from .intake_api import router as intake_router
 from .readout_updates_api import router as readout_updates_router
+from .arena_api import router as arena_router
+from .arena_lab import router as arena_lab_router
+from .arena_lab import lab_user, access_shell
+from .arena_public import router as arena_public_router
 from .predome_api import read_release
 from .historical_api import read_historical
 from .expanded_api import read_expanded, expanded_report_path
@@ -145,7 +149,7 @@ def create_app(path=None):
             event(db,owner,'dataset_imported',{'dataset_id':id,'sha256':sha,'source':source})
             return visible(dataset(db,owner,id),True)
     @app.get('/api/health')
-    def health():return {'status':'ok','version':'1.1.8','mode':'server_research_pilot' if public_mode else 'local_research_pilot','clinical_use':False,'learning':'confirmed_schema_aliases_only','weight_training':False,'offline_weight_training':True,'offline_training_scope':'exploratory_historical_pilot_only','formal_training_completed':False,'research_workflows':['public_cohort','pdo_simulation','trial_design_scenario','trial_evidence_catalog','registered_candidate_forecasts','predome_comparison','historical_temporal_benchmark','expanded_historical_development_replay','continuous_window_backtest_and_frozen_forecasts'],'synthetic_baseline_fitting':True,'clinical_prediction_validated':False}
+    def health():return {'status':'ok','version':'1.2.7','mode':'server_research_pilot' if public_mode else 'local_research_pilot','clinical_use':False,'learning':'confirmed_schema_aliases_only','weight_training':False,'offline_weight_training':True,'offline_training_scope':'exploratory_historical_pilot_only','formal_training_completed':False,'research_workflows':['public_cohort','pdo_simulation','trial_design_scenario','trial_evidence_catalog','registered_candidate_forecasts','predome_comparison','historical_temporal_benchmark','expanded_historical_development_replay','continuous_window_backtest_and_frozen_forecasts','open_forecast_challenge','patent_evidence'],'synthetic_baseline_fitting':True,'clinical_prediction_validated':False}
     @app.get('/api/config')
     def config():return {'public_mode':public_mode,'max_datasets':max_datasets,'backup_retention_days':14 if public_mode else None}
     @app.post('/api/auth/{action}')
@@ -294,7 +298,16 @@ def create_app(path=None):
         with store.connect() as db:value=visible(dataset(db,u['owner'],id))
         return Response(json.dumps(value,ensure_ascii=False,indent=2),media_type='application/json',headers={'Content-Disposition':'attachment; filename="emeris-research-report.json"'})
     @app.get('/')
-    def index():return FileResponse(ROOT/'static/dashboard.html')
+    def index():return FileResponse(ROOT/'static/arena-public.html')
+    @app.get('/arena/lab/calendar')
+    def internal_calendar(request:Request):
+        try:lab_user(request)
+        except HTTPException as exc:
+            if exc.status_code in (401,403):return access_shell(exc.status_code)
+            raise
+        return FileResponse(ROOT/'static/dashboard.html')
+    @app.get('/arena')
+    def arena_page():return FileResponse(ROOT/'static/arena-public.html')
     @app.get('/track-record')
     def track_record_page():return FileResponse(ROOT/'static/track-record.html')
     @app.get('/reviews')
@@ -450,5 +463,8 @@ def create_app(path=None):
     app.include_router(predict_router)
     app.include_router(intake_router)
     app.include_router(readout_updates_router)
+    app.include_router(arena_router)
+    app.include_router(arena_lab_router)
+    app.include_router(arena_public_router)
     app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
     return app

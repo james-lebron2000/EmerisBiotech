@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Predome Open Forecast：在相同证据下比较 AI 的临床试验预测，追溯专利来源，锁定后等待公开结果与独立核验。">
+<title>Open Forecast · Predome</title>
+<link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/arena.css"><link rel="stylesheet" href="/static/design-system.css?v=editorial-01">
+</head>
+<body class="design-system arena-page">
+<a class="skip" href="#arena-content">跳到公开预测内容</a>
+<header><a class="brand" href="/">Predome <span>Open Forecast</span></a><nav aria-label="主导航"><a href="/">读出日历</a><a href="/arena" aria-current="page">公开挑战</a><a href="/track-record">预测记录</a><a href="/analytics">模型分析</a><a href="/predict">提交试验</a><button id="theme-toggle" type="button" aria-label="切换深浅色模式">深色模式</button></nav></header>
+<main id="arena-content">
+<section class="arena-hero"><div><p class="eyebrow">PREDOME / OPEN FORECAST</p><h1>同一试验，多种 AI。<br>事前锁定，结果见证。</h1><p class="arena-lead">比较模型判断、证据与未知。公开结果尚未揭晓时，先看分歧；独立核验后，再看表现。</p></div><aside class="arena-promise"><span>01 / EVIDENCE</span><span>02 / FORECAST</span><span>03 / VERIFICATION</span><p>研究用途。模型概率不是患者获益率，也不是药品获批率。</p></aside></section>
+<nav class="arena-tabs" aria-label="挑战页面"><a href="/arena" data-view="overview">试验与预测</a><a href="/arena?view=leaderboard" data-view="leaderboard">结果与比较</a><a href="/arena?view=patents" data-view="patents">专利证据库</a><a href="/arena?view=methodology" data-view="methodology">方法与规则</a><a href="/api/arena/ledger" class="ledger-download">下载公开记录 JSON ↓</a></nav>
+<p id="arena-status" class="arena-status" role="status" aria-live="polite">正在读取公开挑战记录…</p>
+<section id="arena-summary" class="arena-summary" aria-label="公开挑战覆盖范围"></section>
+<div id="arena-body"></div>
+<noscript><p class="arena-notice">此页面需要 JavaScript 展示比较。你仍可通过上方链接下载公开记录。</p></noscript>
+</main>
+<footer><span>Predome Open Forecast · Emeris</span><span>证据、生成、锁定、公布与裁定分别记录</span><a href="/arena?view=methodology">查看比较规则</a></footer>
+<script src="/static/theme.js"></script><script src="/static/arena.js"></script>
+</body></html>

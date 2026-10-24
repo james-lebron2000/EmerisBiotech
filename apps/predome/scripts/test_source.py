@@ -21,10 +21,10 @@ def main():
     # These tests use synthetic fixtures and HTTP stubs. Never enable paid
     # providers or background collection in a public pull-request check.
     env = os.environ.copy()
-    env.update(EMERIS_MODE="local", EMERIS_ENABLE_USER_LLM="false",
+    env.update(EMERIS_MODE="local", EMERIS_SOURCE_ONLY_CI="true", EMERIS_ENABLE_USER_LLM="false", EMERIS_ENABLE_ARENA_LLM="false",
                OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1")
     for key in tuple(env):
-        if key.startswith(("DEEPSEEK_", "OPENAI_")):
+        if key.endswith(("API_KEY", "APIKEY", "API_TOKEN", "API_SECRET")) or key.startswith(("DEEPSEEK_", "OPENAI_", "ANTHROPIC_", "GEMINI_", "ENSUREOK_")):
             env.pop(key)
     return subprocess.call([sys.executable, "-m", "pytest", "-q", *selected], cwd=ROOT, env=env)
 

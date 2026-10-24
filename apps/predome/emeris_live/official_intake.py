@@ -10,11 +10,18 @@ from . import intake
 
 ROOT=Path(__file__).resolve().parents[1]
 HOSTS={'www.novartis.com','www.gsk.com','www.astrazeneca.com','investor.lilly.com','www.lilly.com','www.daiichisankyo.com'}
+HOSTS.update({'www.roche.com','assets.roche.com','www.pfizer.com','cdn.pfizer.com',
+              'www.bms.com','news.bms.com','investors.biogen.com','www.sanofi.com','www.sec.gov'})
 LISTINGS=[
  'https://www.novartis.com/news/newsroom?type=media_release',
  'https://www.gsk.com/en-gb/media/press-releases/',
  'https://www.astrazeneca.com/media-centre.html?type=pressrelease',
  'https://investor.lilly.com/rss-news-feeds',
+ 'https://www.roche.com/media/releases',
+ 'https://www.pfizer.com/news/press-releases',
+ 'https://news.bms.com/news/default.aspx',
+ 'https://investors.biogen.com/news/news-releases',
+ 'https://www.sanofi.com/en/media-room/press-releases',
 ]
 MAX_BYTES=6*1024*1024
 PARSER_VERSION="official-document-v3"
@@ -231,6 +238,40 @@ def identity(text,record):
     if drug:matches.append('drug_name')
     return matches
 
+def watch_config(store):
+    """Current verified formal registrations precede legacy source configuration.
+
+    Readout URLs are watch seeds, not outcome evidence or frozen-input updates.
+    A newly fetched response gets its own byte hash and acquisition time.
+    """
+    from .arena_watch import current_targets
+    from .arena_public import read_frozen
+    records=[]
+    for target in current_targets(read_frozen(store)):
+        readout=target.get('readout',{})
+        url=readout.get('source_url')
+        if not allowed(url or '') or not re.fullmatch('[a-f0-9]{64}',str(readout.get('source_sha256',''))):
+            raise ValueError('Formal watch requires an approved, registered source identity')
+        date=readout.get('guidance_as_of')
+        if date is not None:
+            if not isinstance(date,str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}',date):
+                raise ValueError('Invalid formal guidance date')
+            if datetime.strptime(date,'%Y-%m-%d').date()>datetime.now(timezone.utc).date():
+                raise ValueError('Future formal guidance date')
+        if not all(isinstance(target.get(k),str) and target[k].strip() for k in ('trial_name','drug')):
+            raise ValueError('Missing formal trial identity')
+        records.append({'nct_id':target['nct_id'],'trial':target['trial_name'],'drug':target['drug'],
+                        'sources':[{'url':url,'source_date':date}], 'configuration_basis':'verified_formal_registration'})
+    index={r['nct_id']:r for r in records}
+    for legacy in tracked_config():
+        formal=index.get(legacy['nct_id'])
+        if formal is None:
+            records.append(legacy);continue
+        if any(formal[k]!=legacy[k] for k in ('trial','drug')):continue
+        for source in legacy['sources']:
+            if not any(source['url']==s['url'] for s in formal['sources']):formal['sources'].append(source)
+    return records
+
 def collect_official(store,ncts,fetcher=fetch_official,config=None,listings=None):
     initialize_cache(store)
     report={'sources_checked':0,'new_candidates':0,'failures':[],
@@ -238,10 +279,15 @@ def collect_official(store,ncts,fetcher=fetch_official,config=None,listings=None
             'parser_version':PARSER_VERSION,
             'coverage':'Configured official guidance plus first-level matching news links; no whole-web or full-archive claim.',
             'matching_is_not_result_verification':True}
-    try:records=[r for r in (config if config is not None else tracked_config()) if r['nct_id'] in ncts]
+    try:
+        selected={r['nct_id']:r for r in (config if config is not None else watch_config(store)) if r['nct_id'] in ncts}
+        records=[selected[n] for n in dict.fromkeys(ncts) if n in selected]
     except (OSError,ValueError,TypeError,KeyError) as error:
         report['failures'].append(failure_details('official_source_configuration',None,error)|{'category':'integrity_error'})
         return report
+    report['requested_trial_ids']=list(dict.fromkeys(ncts))
+    report['configured_trial_ids']=list(dict.fromkeys(r['nct_id'] for r in records))
+    report['unconfigured_trial_ids']=[n for n in report['requested_trial_ids'] if n not in report['configured_trial_ids']]
     queue={};dates={}
     for r in records:
         for source in r['sources']:
@@ -259,11 +305,18 @@ def collect_official(store,ncts,fetcher=fetch_official,config=None,listings=None
                 if not any(r['drug'].lower().replace(' ','-') in slug or r['trial'].lower() in slug for r in records):continue
                 if '/news/' in slug or '/news-release' in slug or '/press-releases/' in slug:queue.setdefault(url,True)
         except Exception as e:report['failures'].append(failure_details('official_listing',listing,e))
-    for url in list(queue)[:16]:
+    scheduled=list(queue)[:16]
+    report['scheduled_document_urls']=scheduled
+    report['deferred_document_urls']=list(queue)[16:]
+    report['all_discovered_documents_scheduled']=not report['deferred_document_urls']
+    report['configured_source_urls']={r['nct_id']:[s['url'] for s in r['sources'] if allowed(s['url'])] for r in records}
+    checked=[]
+    for url in scheduled:
         try:
             if not allowed(url):raise ValueError('Unapproved official URL')
             raw=fetcher(url);checked_at=intake.now()
             doc,hit,sha=cached_document(store,url,raw,report);report['sources_checked']+=1
+            checked.append(url)
             report['source_checks'].append({'url':url,'checked_at':checked_at,'sha256':sha,'cache_hit':hit})
             if not doc['text'].strip():raise ValueError('No source text extracted')
             for r in records:
@@ -278,4 +331,7 @@ def collect_official(store,ncts,fetcher=fetch_official,config=None,listings=None
                     source_key=url+'#predome-trial='+r['nct_id'],hash_scope='source_response_bytes')
                 report['new_candidates']+=int(created)
         except Exception as e:report['failures'].append(failure_details('official_document',url,e))
+    report['checked_document_urls']=checked
+    report['trials_with_retrieved_configured_source']=[r['nct_id'] for r in records if any(s['url'] in checked for s in r['sources'])]
+    report['trials_without_retrieved_configured_source']=[r['nct_id'] for r in records if not any(s['url'] in checked for s in r['sources'])]
     return report
