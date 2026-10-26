@@ -30,7 +30,11 @@ def check_runtime(root=ROOT):
     if not files:
         raise ValueError('No Python source files')
     for path in files:
-        tree = ast.parse(path.read_bytes(), filename=str(path.relative_to(root)))
+        filename = str(path.relative_to(root))
+        tree = ast.parse(path.read_bytes(), filename=filename)
+        # AST parsing alone accepts invalid contexts such as a module-level
+        # return. Compile without executing code or creating bytecode files.
+        compile(tree, filename, 'exec')
         for node in ast.walk(tree):
             if isinstance(node, ast.Assert):
                 raise ValueError(f'Production assert disappears under Python -O: {path.relative_to(root)}:{node.lineno}; use an explicit exception')

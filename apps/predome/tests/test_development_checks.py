@@ -186,6 +186,35 @@ def test_python_and_javascript_syntax_errors_fail_real_static_entry(package):
     assert invoke(package, 'check.py', '--suite', 'static').returncode != 0
 
 
+@pytest.mark.parametrize('name,statement', [
+    ('emeris_live/service.py', 'return "compile-only-secret"\n'),
+    ('scripts/release.py', 'break  # compile-only-secret\n'),
+    ('deploy/verify.py', 'nonlocal compile_only_secret\n'),
+    ('emeris_live/service.py', 'f(secret="compile-only-secret", secret=2)\n'),
+])
+def test_compile_level_syntax_errors_fail_real_static_entry_without_source_echo(package, name, statement):
+    path = package / name
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(statement)
+    # These errors survive AST parsing; the actual Python compiler rejects them.
+    result = invoke(package, 'check.py', '--suite', 'static', env=source.test_environment())
+    assert result.returncode != 0
+    assert f'Python syntax check failed: {name}:1' in result.stderr
+    assert 'compile-only-secret' not in result.stdout + result.stderr
+    assert 'compile_only_secret' not in result.stdout + result.stderr
+    assert not list(package.rglob('*.pyc'))
+
+
+@pytest.mark.parametrize('name', ['emeris_live/service.py', 'scripts/release.py', 'deploy/verify.py'])
+def test_compiler_check_does_not_execute_or_write_bytecode(package, name):
+    path = package / name
+    path.parent.mkdir(exist_ok=True)
+    path.write_text('raise RuntimeError("static compilation must never execute this")\n')
+    result = invoke(package, 'check.py', '--suite', 'static', env=source.test_environment())
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not list(package.rglob('*.pyc'))
+
+
 def test_browser_environment_keeps_runtime_paths_but_never_live_opt_ins(monkeypatch):
     monkeypatch.setenv('PLAYWRIGHT_MODULE', '/authorized/runtime/playwright')
     monkeypatch.setenv('CHROMIUM_EXECUTABLE', '/authorized/runtime/chromium')
