@@ -16,7 +16,7 @@
 - Keep reusable application code in its runtime package and command execution in `scripts/`, behind `main()`. Runtime libraries must not import CLI scripts. Imports must not start jobs, make network calls or write state.
 - Validate untrusted inputs at the boundary that owns the contract. Pass checked structures inward; preserve verification at distinct trust boundaries such as stored-byte integrity, permissions and publication eligibility.
 - Test production implementations rather than copying their logic into tests. Use real temporary files, SQLite and Git repositories where relevant; replace external network/provider boundaries when tests must be offline.
-- Extract helpers for reused logic or meaningful boundaries. Prefer explicit failure paths and required runtime checks that remain active under optimized Python.
+- Extract helpers for reused logic or meaningful boundaries. Prefer explicit failure paths and required runtime checks that remain active under optimized Python. Predome production Python (`emeris_live/`, `scripts/`, `deploy/`) uses explicit exceptions rather than `assert`; test assertions remain appropriate.
 
 ## Checks and scope
 

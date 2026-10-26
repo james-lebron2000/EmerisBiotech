@@ -46,6 +46,12 @@ MAX_ARCHIVE = 256 * 1024 * 1024
 ATTESTATION_FILES = frozenset(('manifest.json', 'manifest.tsq', 'manifest.tsr', 'tsa.crt',
                                'cacert.pem', 'verification.txt', 'receipt.json'))
 SECRET = re.compile(rb'-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----|\bsk-[A-Za-z0-9_-]{20,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bgithub_pat_[A-Za-z0-9_]{30,}')
+STAGED_LEDGER_CHECK = '''import sys
+sys.path.insert(0, sys.argv[1])
+from emeris_live.arena_store import ArenaLedger
+if ArenaLedger(sys.argv[2]).snapshot()["ledger_sha256"] != sys.argv[3]:
+    raise ValueError("Staged Arena ledger SHA-256 differs")
+'''
 
 
 def sha(path):
@@ -306,9 +312,7 @@ def remote(archive, expected, commit):
             for item in manifest['files']:
                 if sha(TARGET / item['path']) != item['sha256']:
                     raise ValueError('Staged inherited file integrity mismatch')
-            command = ('import sys;sys.path.insert(0,sys.argv[1]);from emeris_live.arena_store import ArenaLedger;'
-                       'assert ArenaLedger(sys.argv[2]).snapshot()["ledger_sha256"]==sys.argv[3]')
-            subprocess.run([PYTHON, '-c', command, str(TARGET), str(stage), overlay['arena_ledger_sha256']], check=True)
+            subprocess.run([PYTHON, '-c', STAGED_LEDGER_CHECK, str(TARGET), str(stage), overlay['arena_ledger_sha256']], check=True)
         # Recheck state immediately before making application-visible changes.
         if CURRENT.resolve() != BASE or sha(BASE / 'RELEASE_MANIFEST.json') != base_manifest_hash:
             raise ValueError('Base release changed while preparing deployment')

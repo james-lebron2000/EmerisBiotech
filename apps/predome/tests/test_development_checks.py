@@ -150,6 +150,33 @@ def test_static_checks_parse_actual_code_without_executing_it(package):
     assert invoke(package, 'check.py', '--suite', 'static').returncode == 0
 
 
+@pytest.mark.parametrize('name', ['emeris_live/service.py', 'scripts/release.py', 'deploy/verify.py'])
+def test_production_assert_rejected_but_test_assert_remains_allowed(package, name):
+    path = package / name
+    path.parent.mkdir(exist_ok=True)
+    path.write_text('assert False, "required integrity check"\n')
+    result = invoke(package, 'check.py', '--suite', 'static')
+    assert result.returncode != 0
+    assert 'Production assert disappears under Python -O' in result.stderr
+    assert name in result.stderr
+
+
+def test_deploy_syntax_checked_without_running_commands(package):
+    folder = package / 'deploy'
+    folder.mkdir()
+    script = folder / 'verify.py'
+    script.write_text('raise RuntimeError("must not run during syntax checking")\n')
+    assert invoke(package, 'check.py', '--suite', 'static').returncode == 0
+    script.write_text('def invalid(:\n')
+    result = invoke(package, 'check.py', '--suite', 'static')
+    assert result.returncode != 0 and 'deploy/verify.py' in result.stderr
+
+
+def test_assert_text_is_not_executable_assert(package):
+    (package / 'emeris_live' / 'service.py').write_text('"""Do not use assert for validation."""\nTEXT = "assert False"\n')
+    assert invoke(package, 'check.py', '--suite', 'static').returncode == 0
+
+
 def test_python_and_javascript_syntax_errors_fail_real_static_entry(package):
     (package / 'emeris_live' / 'broken.py').write_text('def invalid(:\n')
     result = invoke(package, 'check.py', '--suite', 'static')

@@ -12,11 +12,13 @@ def main():
     current=datetime.now(timezone.utc)
     source=ROOT/'arena_data/sources/NCT05687266-20261022.json'
     raw=source.read_bytes();registry=json.loads(raw);p=registry['protocolSection']
-    assert p['identificationModule']['nctId']=='NCT05687266' and registry.get('hasResults') is False
+    if p['identificationModule']['nctId']!='NCT05687266' or registry.get('hasResults') is not False:
+        raise ValueError('Pilot registry must match NCT05687266 without posted results')
     prior=json.loads((ROOT/'predome_data/continuous_v4/prospective/prior_effect_records.json').read_text())['records']
     prior=next(i for i in prior if i['record_id']=='tropion_lung01_nsq_pfs')
     archived=(ROOT/prior['source']['path']).read_bytes()
-    assert hashlib.sha256(archived).hexdigest()==prior['source']['sha256']
+    if hashlib.sha256(archived).hexdigest()!=prior['source']['sha256']:
+        raise ValueError('Pilot clinical prior source SHA-256 differs')
     cutoff=(current-timedelta(minutes=2)).isoformat()
     deadline=(current+timedelta(hours=3)).isoformat()
     target={'id':'of-pilot-20261022-avanzar-pfs','project_id':'datopotamab-deruxtecan','nct_id':'NCT05687266',

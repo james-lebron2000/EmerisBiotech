@@ -14,7 +14,8 @@ def main():
     t=deepcopy(prior['targets'][0]);t.update(id='of-ablation-20261022-avanzar-pfs',trial_name='AVANZAR · 专利与 Agent 对照',
         information_cutoff_utc=cutoff,data_cutoff=cutoff,submission_deadline_utc=(now+timedelta(hours=4)).isoformat())
     raw=Path('/tmp/predome-avanzar-ablation-screen.json').read_bytes();source=json.loads(raw)
-    assert source['hasResults'] is False and source['protocolSection']['identificationModule']['nctId']=='NCT05687266'
+    if source['hasResults'] is not False or source['protocolSection']['identificationModule']['nctId']!='NCT05687266':
+        raise ValueError('Ablation registry must match NCT05687266 without posted results')
     (ROOT/'arena_data/sources/NCT05687266-ablation-20261022.json').write_bytes(raw)
     t['readout_screen'].update(checked_at_utc=now.isoformat(),
         finding='2026-10-22 repeat bounded sponsor-domain English/Chinese query found TROPION-Breast02 and other-trial releases; no decisive AVANZAR primary result found. Registry hasResults=false. This does not prove the absence of unindexed or nonsearched disclosures.')

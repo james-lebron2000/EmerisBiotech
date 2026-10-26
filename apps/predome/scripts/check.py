@@ -25,11 +25,15 @@ def check_runtime(root=ROOT):
     if not runtime.is_dir():
         raise ValueError('Missing emeris_live package')
     commands = {p.stem for p in (root / 'scripts').glob('*.py')}
-    files = sorted(runtime.rglob('*.py')) + sorted((root / 'scripts').glob('*.py'))
+    files = (sorted(runtime.rglob('*.py')) + sorted((root / 'scripts').glob('*.py'))
+             + sorted((root / 'deploy').rglob('*.py')))
     if not files:
         raise ValueError('No Python source files')
     for path in files:
         tree = ast.parse(path.read_bytes(), filename=str(path.relative_to(root)))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assert):
+                raise ValueError(f'Production assert disappears under Python -O: {path.relative_to(root)}:{node.lineno}; use an explicit exception')
         if not path.is_relative_to(runtime):
             continue
         for node in ast.walk(tree):
@@ -71,7 +75,7 @@ def main(argv=None):
         if isinstance(exc, SyntaxError):
             parser.exit(1, f'Python syntax check failed: {exc.filename}:{exc.lineno}\n')
         parser.exit(1, str(exc) + '\n')
-    print(f'[static] {count} Python files; direct runtime-to-CLI imports rejected', flush=True)
+    print(f'[static] {count} Python files; production asserts and direct runtime-to-CLI imports rejected', flush=True)
     node = shutil.which('node')
     if not node:
         parser.exit(1, 'Node.js is required for JavaScript syntax checks; install the documented runtime first.\n')
