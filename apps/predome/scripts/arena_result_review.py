@@ -42,7 +42,10 @@ def outcome_version(target):
 
 
 def latest_review(snapshot,target_id,reviewer_id,version):
+    rounds=[e['seq'] for e in snapshot['events'] if e['kind']=='result_adjudicated' and e['entity_id']==target_id]
+    round_start=rounds[-1] if rounds else 0
     values=[e for e in snapshot['events'] if e['kind']=='result_review' and e['entity_id']==target_id
+        and e['seq']>round_start and not e['payload'].get('reviewer_authentication')
         and e['payload']['reviewer_id'].casefold()==reviewer_id.casefold() and e['payload'].get('supersedes')==version]
     return values[-1]['payload'].get('vote_sha256',values[-1]['event_hash']) if values else None
 

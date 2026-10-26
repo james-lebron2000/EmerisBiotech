@@ -84,6 +84,44 @@ limit_conn_zone $binary_remote_addr zone=emeris_conn:10m;
     return (zones+public+internal).encode()
 
 
+def upgrade_review_routes(old):
+    """Insert the scoped review exception; preserve published proofs and old bytes.
+
+    render() remains the historical 1.2.1 baseline used by its pinned publication
+    workflow. It must not replace a later site's public proof aliases or changes.
+    """
+    if not isinstance(old,bytes) or not 0<len(old)<=262144:
+        raise ValueError('An existing bounded frontend configuration is required')
+    separator=b'server {\n    listen 18443 ssl http2;\n'
+    public_anchor=b'    location ^~ /arena/lab/ { return 404; }\n'
+    auth_anchor=b'    location = /_lab_auth {\n'
+    api_anchor=b'    location = /api/arena {\n'
+    if (old.count(separator)!=1 or old.count(b'server {\n    listen 443 ssl http2;\n')!=1
+            or any(marker in old for marker in (b'/_review_auth',b'/api/arena/review/',b'/static/arena-review.'))):
+        raise ValueError('Frontend is not an unmodified review-upgrade baseline')
+    public,internal=old.split(separator,1)
+    if (public.count(public_anchor)!=1 or internal.count(auth_anchor)!=1 or internal.count(api_anchor)!=1
+            or b'    location ^~ /api/arena/ { return 404; }\n' not in public):
+        raise ValueError('Expected public/internal access boundaries are missing')
+    blockers=b''.join(('    location = /static/'+name+' { return 404; }\n').encode()
+                      for name in ('arena-review.html','arena-review.js','arena-review.css'))
+    review_auth=b'''    location = /_review_auth {
+        internal;
+        proxy_pass http://127.0.0.1:19320/api/arena/review/access;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+'''
+    routes=b''
+    for path,methods in (('^~ /api/arena/review/','GET HEAD POST'),('= /static/arena-review.html','GET HEAD')):
+        routes+=('    location '+path+' {\n        auth_request /_review_auth;\n        limit_except '+methods+' { deny all; }\n'+PROXY+'    }\n').encode()
+    return (public.replace(public_anchor,public_anchor+blockers,1)+separator
+            +internal.replace(auth_anchor,review_auth+auth_anchor,1).replace(api_anchor,routes+api_anchor,1))
+
+
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 
 

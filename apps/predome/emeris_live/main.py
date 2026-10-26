@@ -34,6 +34,7 @@ from .arena_api import router as arena_router
 from .arena_lab import router as arena_lab_router
 from .arena_lab import lab_user, access_shell
 from .arena_public import router as arena_public_router
+from .arena_review_api import router as arena_review_router
 from .predome_api import read_release
 from .historical_api import read_historical
 from .expanded_api import read_expanded, expanded_report_path
@@ -74,7 +75,12 @@ def create_app(path=None):
     @app.middleware('http')
     async def boundaries(request,call_next):
         if request.method not in ('GET','HEAD','OPTIONS'):
-            if request.headers.get('origin')!=(public_origin if public_mode else str(request.base_url).rstrip('/')):
+            origins={public_origin if public_mode else str(request.base_url).rstrip('/')}
+            if (public_mode and request.method=='POST'
+                    and re.fullmatch(r'/api/arena/review/targets/[A-Za-z0-9_-]{1,100}/reviews',request.url.path)):
+                host=urlsplit(public_origin).hostname
+                origins.add('https://'+('['+host+']' if ':' in host else host)+':18443')
+            if request.headers.get('origin') not in origins:
                 return JSONResponse({'detail':'请从工作台页面提交操作。'},403)
             try:
                 if int(request.headers.get('content-length','0'))>5*1024*1024+65536:
@@ -149,7 +155,7 @@ def create_app(path=None):
             event(db,owner,'dataset_imported',{'dataset_id':id,'sha256':sha,'source':source})
             return visible(dataset(db,owner,id),True)
     @app.get('/api/health')
-    def health():return {'status':'ok','version':'1.2.8','mode':'server_research_pilot' if public_mode else 'local_research_pilot','clinical_use':False,'learning':'confirmed_schema_aliases_only','weight_training':False,'offline_weight_training':True,'offline_training_scope':'exploratory_historical_pilot_only','formal_training_completed':False,'research_workflows':['public_cohort','pdo_simulation','trial_design_scenario','trial_evidence_catalog','registered_candidate_forecasts','predome_comparison','historical_temporal_benchmark','expanded_historical_development_replay','continuous_window_backtest_and_frozen_forecasts','open_forecast_challenge','patent_evidence'],'synthetic_baseline_fitting':True,'clinical_prediction_validated':False}
+    def health():return {'status':'ok','version':'1.2.9','mode':'server_research_pilot' if public_mode else 'local_research_pilot','clinical_use':False,'learning':'confirmed_schema_aliases_only','weight_training':False,'offline_weight_training':True,'offline_training_scope':'exploratory_historical_pilot_only','formal_training_completed':False,'research_workflows':['public_cohort','pdo_simulation','trial_design_scenario','trial_evidence_catalog','registered_candidate_forecasts','predome_comparison','historical_temporal_benchmark','expanded_historical_development_replay','continuous_window_backtest_and_frozen_forecasts','open_forecast_challenge','patent_evidence'],'synthetic_baseline_fitting':True,'clinical_prediction_validated':False}
     @app.get('/api/config')
     def config():return {'public_mode':public_mode,'max_datasets':max_datasets,'backup_retention_days':14 if public_mode else None}
     @app.post('/api/auth/{action}')
@@ -191,6 +197,13 @@ def create_app(path=None):
             exists=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='platform_prediction_runs'").fetchone()
             if exists and (db.execute('SELECT 1 FROM platform_prediction_runs WHERE owner=? LIMIT 1',(u['owner'],)).fetchone() or db.execute('SELECT 1 FROM platform_actual_outcomes WHERE submitted_by=? LIMIT 1',(u['owner'],)).fetchone() or db.execute('SELECT 1 FROM platform_outcome_verifications WHERE reviewer=? LIMIT 1',(u['owner'],)).fetchone()):
                 raise HTTPException(409,'账号包含不可覆盖的预测或核验记录，当前不支持自动删除这些记录。账号和资料均未删除；请先联系管理员处理保留与删除要求。')
+            from .arena_public import read_frozen
+            try:arena_events=read_frozen(store).get('events',[])
+            except (ValueError,OSError,sqlite3.Error):
+                raise HTTPException(409,'Arena审核档案未通过检查，暂不自动删除账号。') from None
+            if any(e['kind']=='result_review' and
+                   (e['payload'].get('reviewer_authentication') or {}).get('account_id')==u['owner'] for e in arena_events):
+                raise HTTPException(409,'账号包含不可覆盖的Arena来源审核，需先处理记录保留要求。账号和资料均未删除。')
             for table in ('sessions','datasets','policies','active','confirmations','events','research_runs'):
                 db.execute(f'DELETE FROM {table} WHERE owner=?',(u['owner'],))
             db.execute('DELETE FROM users WHERE id=?',(u['owner'],))
@@ -466,5 +479,6 @@ def create_app(path=None):
     app.include_router(arena_router)
     app.include_router(arena_lab_router)
     app.include_router(arena_public_router)
+    app.include_router(arena_review_router)
     app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
     return app

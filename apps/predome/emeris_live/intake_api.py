@@ -100,7 +100,7 @@ def official_outcome_source(store,candidate_id,body):
     if saved_doc_date and doc_date!=saved_doc_date:
         raise ValueError('保存的文档公开日期与原始字节元数据不一致。')
     if doc_date:
-        published=instant(doc_date).date()
+        published=date.fromisoformat(doc_date)
         if body.source_publication_date and body.source_publication_date!=published:
             raise ValueError('人工公开日期与文档元数据冲突。')
         basis='document_metadata'
@@ -108,6 +108,8 @@ def official_outcome_source(store,candidate_id,body):
         if not body.source_publication_date:raise ValueError('文档无已核对公开日期，须明确填写；历史指引日期不能自动作为结果公告日期。')
         published=body.source_publication_date;basis='reviewer_provided_not_independently_verified'
     today=datetime.now(timezone.utc).date()
+    if document.get('published_at_utc') and instant(body.readout_date)>instant(document['published_at_utc']):
+        raise ValueError('首次公开时间不能晚于原件中已知的带时区发布时间。')
     if published>today or instant(body.readout_date).date()>today:raise ValueError('结果日期或来源公开日期不能在未来。')
     if instant(body.readout_date).date()>published:raise ValueError('结果首次读出日期不能晚于本来源公开日期。')
     if source.get('retrieved_at') and published>instant(source['retrieved_at']).date():
@@ -116,6 +118,8 @@ def official_outcome_source(store,candidate_id,body):
             'hash_scope':'source_response_bytes','candidate_id':candidate_id,'candidate_kind':candidate['kind'],
             'excerpt':quote,'excerpt_sha256':hashlib.sha256(quote.encode()).hexdigest(),
             'publication_date_basis':basis,'quote_validation':'continuous_normalized_excerpt_reextracted_from_verified_source_bytes',
+            'source_publication_timestamp_utc':document.get('published_at_utc'),
+            'first_public_time_validation':'bounded_by_source_metadata_timestamp' if document.get('published_at_utc') else 'manual_time_not_independently_verified',
             'trial_identity_match':['nct'] if exact_nct else ['trial_alias','drug_name']}
 
 

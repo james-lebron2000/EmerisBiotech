@@ -77,6 +77,48 @@ def test_success_keeps_backup_and_pins_public_private_routes(staged):
         assert 'location ^~ '+path+' { return 404; }' not in public
 
 
+def test_review_access_is_a_narrow_internal_exception_not_global_write_access():
+    public,private=ports.upgrade_review_routes(ports.render()).decode().split('    listen 18443 ssl http2;',1)
+    for name in ('arena-review.html','arena-review.js','arena-review.css'):
+        assert 'location = /static/'+name+' { return 404; }' in public
+    assert 'location ^~ /arena/lab/ { return 404; }' in public
+    assert 'location ^~ /api/arena/ { return 404; }' in public
+    auth=private.split('location = /_review_auth {',1)[1].split('}',1)[0]
+    assert 'internal;' in auth and '/api/arena/review/access;' in auth
+    assert 'proxy_pass_request_body off;' in auth and 'proxy_set_header Cookie $http_cookie;' in auth
+    route=private.split('location ^~ /api/arena/review/ {',1)[1].split('proxy_pass',1)[0]
+    assert 'auth_request /_review_auth;' in route and 'limit_except GET HEAD POST { deny all; }' in route
+    for prefix in ('location ^~ /api/arena/ {','location /api/ {','location = /api/arena {'):
+        block=private.split(prefix,1)[1].split('proxy_pass',1)[0]
+        assert 'auth_request /_lab_auth;' in block
+        assert 'limit_except GET HEAD { deny all; }' in block
+        assert 'GET HEAD POST' not in block
+
+
+def test_upgrade_preserves_public_proof_aliases_and_every_existing_line():
+    import difflib
+    import sys
+    sys.path.insert(0,str(Path(__file__).parents[1]/'scripts'))
+    import publish_public_proof as publication
+    baseline=ports.render()
+    assert publication.digest(baseline)==publication.EXPECTED_SITE
+    published=publication.render(baseline)
+    upgraded=ports.upgrade_review_routes(published)
+    for name in publication.proof.PUBLIC_FILES:
+        assert ('alias '+str(publication.DEST/name)+';').encode() in upgraded
+    changes=difflib.SequenceMatcher(None,published.splitlines(keepends=True),upgraded.splitlines(keepends=True)).get_opcodes()
+    assert all(change[0] in ('equal','insert') for change in changes)
+    with pytest.raises(ValueError,match='baseline'):
+        ports.upgrade_review_routes(upgraded)
+
+
+@pytest.mark.parametrize('change',[b'    listen 18443 ssl http2;\n',b'    location = /_lab_auth {\n',
+                                 b'    location ^~ /api/arena/ { return 404; }\n'])
+def test_incomplete_or_changed_review_upgrade_boundaries_are_rejected(change):
+    with pytest.raises(ValueError):
+        ports.upgrade_review_routes(ports.render().replace(change,b'',1))
+
+
 def test_wrong_app_version_does_not_touch_server_site(staged,monkeypatch):
     site,expected,calls=staged
     monkeypatch.setattr(ports.urllib.request,'urlopen',lambda *a,**kw:io.BytesIO(b'{"version":"1.2.0"}'))

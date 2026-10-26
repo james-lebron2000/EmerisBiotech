@@ -16,7 +16,7 @@ concurrency:
 jobs:
   workbench:
     name: Existing workbench (macOS sandbox)
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
 
   predome:
     name: Predome public source and browser fixtures
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     defaults:
       run:
@@ -55,8 +55,21 @@ jobs:
       - name: Check syntax, runtime import boundaries and source fixtures
         run: python scripts/check.py
       - name: Install browser test runtime
+        timeout-minutes: 8
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm install --no-save --package-lock=false --no-audit --no-fund --fetch-timeout=60000 --fetch-retries=2 playwright@1.56.1
+          sudo python3 - <<'PY'
+          from pathlib import Path
+          settings=Path('/etc/apt/apt.conf.d/99-predome-network-bounds')
+          settings.write_text('Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "2";\n')
+          # The prior run spent its 20-minute limit on the Azure HTTP mirror.
+          # Keep Ubuntu signatures/TLS verification and use official HTTPS mirrors.
+          for source in [Path('/etc/apt/apt-mirrors.txt'),Path('/etc/apt/sources.list'),*Path('/etc/apt/sources.list.d').glob('*.sources')]:
+              if source.is_file():
+                  original=source.read_text()
+                  updated=original.replace('http://azure.archive.ubuntu.com/ubuntu','https://archive.ubuntu.com/ubuntu').replace('http://archive.ubuntu.com/ubuntu','https://archive.ubuntu.com/ubuntu').replace('http://security.ubuntu.com/ubuntu','https://security.ubuntu.com/ubuntu')
+                  if updated!=original:source.write_text(updated)
+          PY
           npx playwright install --with-deps chromium
       - name: Check fully intercepted input and analytics interfaces
         run: python scripts/check.py --suite static --browser

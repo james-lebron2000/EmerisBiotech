@@ -1,6 +1,8 @@
 # Predome
 
-本分支提供 **1.2.8候选版本**，修复专利原响应追溯、原币费用比较及Agent阶段故障复盘；实际运行版本与提交以健康接口、部署清单及收据为准。公开入口是[单试验预测对比页](https://8.148.145.28/arena)，内测工作区使用同主机18443端口及既有登录权限。公开版本展示真实模型运行记录，未校准的概率和Confidence保持N/A。
+本分支提供 **1.2.9候选版本**，新增账号认证的结果核验工作区，并保留1.2.8的来源、费用及Agent故障追溯修复；实际运行版本与提交以健康接口、部署清单及收据为准。公开入口是[单试验预测对比页](https://8.148.145.28/arena)，内测工作区使用同主机18443端口及既有登录权限。公开版本展示真实模型运行记录，未校准的概率和Confidence保持N/A。
+
+[1.2.9核验工作区](docs/RESULT_REVIEW_WORKSPACE_1_2_9.md)记录授权、原件、时间与更正轮次。
 
 [1.2.8数据链路说明](docs/OPEN_FORECAST_RELIABILITY_1_2_8.md)记录本轮行为、测试与未关闭的科学／授权条件。已部署的1.2.7前端与本分支代码版本分别核对，不以源码更新代替上线验收。
 
@@ -30,7 +32,7 @@ python3.11 -m venv .venv
 .venv/bin/python scripts/check.py --browser
 ```
 
-`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加7份完全拦截API的浏览器fixture，需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这7份浏览器测试。测试数量与范围以实际Actions结果为准。
+`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加8份完全拦截API的浏览器fixture，需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这8份浏览器测试。测试数量与范围以实际Actions结果为准。
 
 完整命令、前置条件和工程／科学验证的边界见[开发与验证工作流](docs/AGENT_WORKFLOW.md)。原工作台仍从仓库根目录运行`uv run pytest -q tests`，与Predome包内检查分开记录。
 

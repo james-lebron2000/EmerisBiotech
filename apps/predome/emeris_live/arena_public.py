@@ -296,6 +296,8 @@ def result_view(target):
             'unspecified_only':'Reviewer types were not specified; human review is unverified.',
             'legacy_unspecified':'Legacy review identities have no recorded AI/human type; human review is unverified.'}.get(basis,
                 'Review provenance is incomplete; human review is unverified.')
+        if provenance.get('identity_assurance')=='authenticated_account_operator_enrolled':
+            scope='Session-authenticated accounts linked to operator-enrolled principals; clinical credentials and scientific independence remain unverified.'
         note=('Conflicting reviews remain unresolved. ' if provenance.get('typed_conflict') else '')+scope
         if status!='adjudicated':
             label=None

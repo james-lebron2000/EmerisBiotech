@@ -5,7 +5,7 @@ from urllib.parse import urlsplit,urljoin
 from urllib.request import Request,build_opener,HTTPRedirectHandler,HTTPSHandler
 from urllib.error import HTTPError,URLError
 from pathlib import Path
-import base64,hashlib,json,re,ssl,subprocess,sys
+import base64,hashlib,json,os,re,ssl,subprocess,sys
 from . import intake
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -24,7 +24,7 @@ LISTINGS=[
  'https://www.sanofi.com/en/media-room/press-releases',
 ]
 MAX_BYTES=6*1024*1024
-PARSER_VERSION="official-document-v3"
+PARSER_VERSION="official-document-v4"
 PDF_WALL_TIMEOUT=60  # 12 CPU seconds may require 48 wall seconds at a 25% CPU quota.
 
 def failure_details(source,url,error):
@@ -103,21 +103,28 @@ for page in r.pages:
  parts.append(t)
 print(json.dumps({"text":"\\n".join(parts),"title":str((r.metadata or {}).get("/Title", "Official guidance PDF"))}))
 '''
-        p=subprocess.run([sys.executable,'-c',script],input=raw,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=PDF_WALL_TIMEOUT,check=True)
-        data=json.loads(p.stdout);data.update(published_at=None,links=[],content_type='application/pdf');return data
+        p=subprocess.run([sys.executable,'-c',script],input=raw,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,
+                         timeout=PDF_WALL_TIMEOUT,check=True,
+                         env={'PATH':os.defpath,'LANG':'C.UTF-8','OMP_NUM_THREADS':'1','PYTHONDONTWRITEBYTECODE':'1'})
+        data=json.loads(p.stdout);data.update(published_at=None,published_at_utc=None,publication_time_precision='unknown',links=[],content_type='application/pdf');return data
     text=raw.decode('utf-8',errors='replace');doc=Document();doc.feed(text)
     published=next((doc.meta[k] for k in ('article:published_time','datepublished','date','pubdate','dc.date.issued') if doc.meta.get(k)),None)
     if not published:
         match=re.search(r'"datePublished"\s*:\s*"([^"<>]+)"',text)
         if match:published=match.group(1)
     # Dates are metadata only; unknown or ambiguous remains null.
+    publication_time=None
     if published:
         try:
             stamp=datetime.fromisoformat(published.replace('Z','+00:00'))
+            if stamp.tzinfo is not None and stamp<=datetime.now(timezone.utc):
+                publication_time=stamp.astimezone(timezone.utc).isoformat()
             published=stamp.date().isoformat() if stamp.date()<=datetime.now(timezone.utc).date() else None
         except ValueError:published=None
     return {'text':normalize(' '.join(doc.parts))[:500000],'title':normalize(doc.title)[:500],
-            'published_at':published,'links':doc.links,'content_type':'text/html'}
+            'published_at':published,'published_at_utc':publication_time,
+            'publication_time_precision':'timestamp' if publication_time else 'date' if published else 'unknown',
+            'links':doc.links,'content_type':'text/html'}
 
 def initialize_cache(store):
     intake.initialize(store)

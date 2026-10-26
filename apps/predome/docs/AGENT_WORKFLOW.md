@@ -23,7 +23,7 @@
 | `python scripts/check.py` | 默认 `source`：静态检查及 `ci-tests.txt` 中的源码 fixture 测试 | 源码检出、Python 3.11及测试依赖、Node 22；受控本地冻结路径不存在 |
 | `python scripts/check.py --suite static` | 仅静态检查 | Python 3.11、Node 22；不运行 pytest 或浏览器 |
 | `python scripts/check.py --suite full` | 静态检查及完整应用 pytest | Python 3.11、Node 22及已获授权、保持原件不变的现有证据；不会下载或生成缺失证据 |
-| `python scripts/check.py --browser` | 默认检查后，追加7份完全拦截的浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
+| `python scripts/check.py --browser` | 默认检查后，追加8份完全拦截的浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
 | `python scripts/test_source.py` | 保留兼容的源码 fixture 入口 | 与源码测试相同的隔离条件 |
 
 源码测试守卫针对本地冻结材料的具体路径，不把 Git 中公开的 Arena／专利配置一并认作禁入证据。现有证据不满足源码测试条件时，应使用干净源码检出，或在具有相应授权的环境运行完整测试；不能为通过检查移除守卫、覆盖原件或重新生成预测。
@@ -41,6 +41,7 @@
 - `tests/ui_arena_public.cjs`
 - `tests/ui_arena_lab.cjs`
 - `tests/ui_trials_readonly.cjs`
+- `tests/ui_arena_review.cjs`
 
 模型服务的 HTTP 传输层替身和浏览器 API fixture 可继续使用；测试不应为减少 mock 而访问付费模型、真实患者数据或生产数据库。界面验证使用生产组件与实际静态资产，避免另写一份只供截图使用的页面。
 

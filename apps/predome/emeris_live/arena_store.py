@@ -1,10 +1,11 @@
 """Append-only public challenge ledger, isolated from existing sealed forecasts.
 
-Only the operator CLI mutates this ledger. Public HTTP routes are read-only.
+The operator CLI and session-bound internal source reviews mutate this ledger.
+Public HTTP routes are read-only.
 Registration precedes execution, and a response cannot replace a prior response.
 """
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import hashlib
 import json
 import math
@@ -21,6 +22,7 @@ TERMINAL = ('predicted', 'abstained', 'failed', 'unavailable', 'timed_out')
 HASH = re.compile(r'[a-f0-9]{64}')
 RESULT_LABELS = ('success','failure','mixed','inconclusive','not_adjudicable')
 REVIEW_KINDS = ('ai','human','unspecified')
+AUTHENTICATED_REVIEW_PREFIX = 'account-principal-'
 RESULT_BINDING_FIELDS = ('id','nct_id','endpoint','population','comparison','success_definition','analysis_timepoint')
 
 
@@ -28,14 +30,22 @@ def result_target_binding(target):
     return {key:target[key] for key in RESULT_BINDING_FIELDS}
 
 
-def result_review_provenance(votes):
-    """Declared operator identities/types; never automatic proof of real people."""
+def result_review_provenance(votes, *, authenticated=None):
+    """Account enrollment and scientific independence are different assurances."""
+    if authenticated is None:
+        authenticated = bool(votes) and all(v.get('reviewer_authentication') for v in votes)
+    excluded = sum(bool(v.get('reviewer_authentication')) != authenticated for v in votes)
+    votes = [v for v in votes if bool(v.get('reviewer_authentication')) == authenticated]
     counts={kind:sum(v.get('reviewer_kind','unspecified')==kind for v in votes) for kind in REVIEW_KINDS}
     present=[kind for kind,count in counts.items() if count]
     basis=present[0]+'_only' if len(present)==1 else 'mixed' if present else 'unspecified'
     typed={v['result_sha256'] for v in votes if v.get('reviewer_kind','unspecified')!='unspecified'}
-    return {'policy_version':'explicit-review-kind-1','basis':basis,'review_counts':counts,
-        'typed_conflict':len(typed)>1,'identity_assurance':'operator_declared_not_independently_authenticated',
+    return {'policy_version':'account-principal-review-1' if authenticated else 'explicit-review-kind-1',
+        'basis':basis,'review_counts':counts,'excluded_other_assurance_reviews':excluded,
+        'typed_conflict':len(typed)>1,'identity_assurance':'authenticated_account_operator_enrolled'
+            if authenticated else 'operator_declared_not_independently_authenticated',
+        'distinct_authenticated_principals':len({v['reviewer_authentication']['principal_id'] for v in votes}) if authenticated else 0,
+        'scientific_credentials_verified':False,
         'independent_human_review_verified':False}
 
 
@@ -353,28 +363,78 @@ class ArenaLedger:
 
     def record_result(self, target_id, result, *, reviewer_id, supersedes=None,
                       reviewer_kind='unspecified', review_note=None, review_supersedes=None):
+        """Legacy operator declarations never impersonate account-bound reviews."""
+        if isinstance(reviewer_id, str) and reviewer_id.casefold().startswith(AUTHENTICATED_REVIEW_PREFIX):
+            raise ValueError('Authenticated principal identities are reserved for the session-bound review service')
+        return self._record_result(target_id, result, reviewer_id=reviewer_id, supersedes=supersedes,
+            reviewer_kind=reviewer_kind, review_note=review_note, review_supersedes=review_supersedes)
+
+    def record_authenticated_result(self, target_id, result, *, account_id, enrollment_sha256,
+                                    review_note, review_context, supersedes=None, review_supersedes=None):
+        """Trusted HTTP service supplies an authenticated session owner, never a body ID.
+
+        Enrollment is rechecked under the same write lock as the review. This is
+        server-account assurance, not a person's signature or clinical credentials.
+        """
+        return self._record_result(target_id, result, reviewer_id=None, reviewer_kind='human',
+            review_note=review_note, supersedes=supersedes, review_supersedes=review_supersedes,
+            authenticated_account_id=account_id, enrollment_sha256=enrollment_sha256,
+            review_context=review_context)
+
+    def _record_result(self, target_id, result, *, reviewer_id, supersedes=None,
+                       reviewer_kind='unspecified', review_note=None, review_supersedes=None,
+                       authenticated_account_id=None, enrollment_sha256=None, review_context=None):
         """Two distinct reviewer identities must confirm the identical source-bound result."""
-        reviewer_id=validate_result_review_input(result,reviewer_id,reviewer_kind,review_note)
+        authenticated = authenticated_account_id is not None
+        if not authenticated:
+            reviewer_id=validate_result_review_input(result,reviewer_id,reviewer_kind,review_note)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            self._verified_events(db)
+            events=self._verified_events(db)
+            authentication=None
+            if authenticated:
+                from .arena_review_auth import resolve_enrollment
+                grant=resolve_enrollment(events,authenticated_account_id,target_id,enrollment_sha256)
+                reviewer_id=validate_result_review_input(result,AUTHENTICATED_REVIEW_PREFIX+sha(grant['principal_id']),'human',review_note)
+                if (not isinstance(review_context,dict) or set(review_context)!={'candidate_id','source_sha256','excerpt','source_publication_date','publication_date_basis','confirmations'}
+                        or review_context.get('source_sha256')!=result.get('source_sha256')
+                        or not isinstance(review_context.get('candidate_id'),str) or not 1<=len(review_context['candidate_id'])<=160
+                        or not isinstance(review_context.get('excerpt'),str) or not 20<=len(review_context['excerpt'])<=6000
+                        or not isinstance(review_context.get('source_publication_date'),str)
+                        or not re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}',review_context['source_publication_date'])
+                        or review_context.get('publication_date_basis') not in ('document_metadata','reviewer_provided_not_independently_verified','registry_results_post_date')
+                        or review_context.get('confirmations')!={k:True for k in ('exact_trial','primary_endpoint','prespecified_analysis','first_public_release','source_inspected')}):
+                    raise ValueError('Source-bound individual review confirmations required')
+                try:
+                    source_day=date.fromisoformat(review_context['source_publication_date'])
+                except ValueError:
+                    raise ValueError('A valid source publication date is required') from None
+                if source_day>datetime.now(timezone.utc).date():
+                    raise ValueError('Source publication date cannot be in the future')
+                if re.search(r'(?<![A-Za-z])sk-[A-Za-z0-9_-]{24,}|-----BEGIN .*PRIVATE KEY-----',canonical(review_context)):
+                    raise ValueError('Credential-like review content rejected')
+                authentication={k:grant[k] for k in ('account_id','principal_id','identity_evidence_sha256','identity_assurance')}
+                authentication['enrollment_event_sha256']=grant['event_hash']
             target_row=db.execute("SELECT payload FROM arena_events WHERE kind='target_registered' AND entity_id=?", (target_id,)).fetchone()
             if not target_row:
                 raise ValueError('Unknown target')
             expected=result_target_binding(json.loads(target_row['payload']))
             if ('target_binding' in result or reviewer_kind!='unspecified') and result.get('target_binding')!=expected:
                 raise ValueError('Outcome must bind the exact registered trial, population, comparator and analysis')
+            previous_events=[e for e in events if e['kind']=='result_adjudicated' and e['entity_id']==target_id]
+            round_start=previous_events[-1]['seq'] if previous_events else 0
             votes=[]
-            for row in db.execute("SELECT payload,event_hash FROM arena_events WHERE kind='result_review' AND entity_id=? ORDER BY seq",(target_id,)):
+            for row in db.execute("SELECT payload,event_hash FROM arena_events WHERE kind='result_review' AND entity_id=? AND seq>? ORDER BY seq",(target_id,round_start)):
                 vote=json.loads(row['payload']);vote.setdefault('vote_sha256',row['event_hash']);votes.append(vote)
-            active={v['reviewer_id'].casefold():v for v in votes if v.get('supersedes')==supersedes}
+            active={v['reviewer_id'].casefold():v for v in votes if v.get('supersedes')==supersedes
+                and bool(v.get('reviewer_authentication'))==authenticated}
             prior=active.get(reviewer_id)
             if ((prior and review_supersedes!=prior['vote_sha256']) or (not prior and review_supersedes is not None)):
                 raise ValueError('Reviewer already voted; a correction must identify the latest own review')
             if (prior and prior.get('reviewer_kind','unspecified')!='unspecified'
                     and reviewer_kind!=prior['reviewer_kind']):
                 raise ValueError('A declared reviewer kind cannot change within an outcome version')
-            previous = [json.loads(r['payload']) for r in db.execute("SELECT payload FROM arena_events WHERE kind='result_adjudicated' AND entity_id=? ORDER BY seq", (target_id,))]
+            previous = [e['payload'] for e in previous_events]
             if previous and supersedes != previous[-1]['result_sha256']:
                 raise ValueError('Correction must identify the previous adjudicated result')
             if not previous and supersedes is not None:
@@ -382,11 +442,14 @@ class ArenaLedger:
             content_hash = sha(result)
             vote = {'reviewer_id': reviewer_id, 'reviewer_kind':reviewer_kind,'review_note':review_note,
                 'result': result, 'result_sha256': content_hash, 'supersedes': supersedes,'review_supersedes':review_supersedes}
+            if authenticated:
+                vote.update(reviewer_authentication=authentication,review_context=review_context)
             vote['vote_sha256']=sha(vote)
             self._append(db, 'result_review', target_id, vote)
             active[reviewer_id]=vote
             typed=reviewer_kind!='unspecified'
-            eligible=[v for v in active.values() if (v.get('reviewer_kind','unspecified')!='unspecified')==typed]
+            eligible=[v for v in active.values() if (v.get('reviewer_kind','unspecified')!='unspecified')==typed
+                and bool(v.get('reviewer_authentication'))==authenticated]
             matching=[v for v in eligible if v['result_sha256']==content_hash]
             conflict=typed and len({v['result_sha256'] for v in eligible})>1
             if len(matching)>=2 and not conflict:
@@ -515,14 +578,17 @@ class ArenaLedger:
                 runs[ident].setdefault('citation_reviews',[]).append({**p,'reviewed_at':event['created_at']})
             elif kind == 'result_review':
                 key=(ident,p.get('supersedes'))
-                result_reviews.setdefault(key,{})[p['reviewer_id'].casefold()]=p
-                provenance=result_review_provenance(list(result_reviews[key].values()))
+                result_reviews.setdefault(key,{})[(p['reviewer_id'].casefold(),bool(p.get('reviewer_authentication')))]=p
+                provenance=result_review_provenance(list(result_reviews[key].values()),authenticated=bool(p.get('reviewer_authentication')))
                 if targets[ident]['status']!='adjudicated' or p.get('supersedes'):
                     if targets[ident]['status']=='adjudicated':targets[ident]['previous_adjudicated_result']=targets[ident].get('result')
                     targets[ident].update(status='announced',result={**p['result'],
                         'verification_status':'conflicting_reviews' if provenance['typed_conflict'] else 'pending_second_review',
                         'review_provenance':provenance})
             elif kind == 'result_adjudicated':
+                # Equal result bytes can recur after corrections. A new round
+                # cannot revive reviews from an earlier adjudication event.
+                result_reviews={key:value for key,value in result_reviews.items() if key[0]!=ident}
                 targets[ident].update(status='adjudicated', result={**p['result'], 'verification_status': 'adjudicated',
                     'result_sha256': p['result_sha256'], 'verified_at': event['created_at'],
                     'review_provenance':p.get('review_provenance',{'basis':'legacy_unspecified',
