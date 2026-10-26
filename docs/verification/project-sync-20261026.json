@@ -1,0 +1,57 @@
+{
+  "checked_at_utc": "2026-10-26T12:42:45.156281+00:00",
+  "scope": "Read-only public endpoint and GitHub checks; no model calls, training, adjudication or deployment performed.",
+  "health": {
+    "url": "https://8.148.145.28/api/health",
+    "response_sha256": "816ed9da3a23f98addd14dd4159622c53352ad5e7b4a2be3d07319f42ed2c1eb",
+    "status": "ok",
+    "version": "1.2.7",
+    "clinical_use": false,
+    "formal_training_completed": false,
+    "clinical_prediction_validated": false
+  },
+  "public_records": {
+    "url": "https://8.148.145.28/api/arena/public",
+    "response_sha256": "39b2824449992882c8147070dec0520ffff5be475db611508d0c0b397f77266b",
+    "counting_rule": "targets whose cohort_id equals current_cohort_id; archived seasons, pilot/ablation and historical replay excluded",
+    "current_cohort_id": "of-season-20261023-corrected-v1",
+    "formal_targets": 12,
+    "formal_adjudicated_records": 0
+  },
+  "github": {
+    "base_commit": "d17518bc0456e2d24845a7cc3e1c6e4e6bad1416",
+    "arena_pull_request": {
+      "headRefName": "codex/predome-open-forecast",
+      "headRefOid": "4369a32e87b837a1e09a73e367540cf11a5ba872",
+      "state": "OPEN",
+      "statusCheckRollup": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-24T03:52:08Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/james-lebron2000/EmerisBiotech/actions/runs/40059855977/job/120770805602",
+          "name": "Existing workbench (macOS sandbox)",
+          "startedAt": "2026-10-24T03:49:17Z",
+          "status": "COMPLETED",
+          "workflowName": "Test workbench and Predome"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-24T03:51:02Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/james-lebron2000/EmerisBiotech/actions/runs/40059855977/job/120770805756",
+          "name": "Predome public source and browser fixtures",
+          "startedAt": "2026-10-24T03:49:17Z",
+          "status": "COMPLETED",
+          "workflowName": "Test workbench and Predome"
+        }
+      ],
+      "url": "https://github.com/james-lebron2000/EmerisBiotech/pull/3"
+    }
+  },
+  "limits": [
+    "Public endpoint observation is not independent scientific review.",
+    "Zero formal adjudications does not establish absence of announcements elsewhere.",
+    "Historical acceptance counts are not tests rerun for this documentation update."
+  ]
+}

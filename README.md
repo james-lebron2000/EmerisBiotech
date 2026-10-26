@@ -2,7 +2,9 @@
 
 面向临床资产研究的本地工作台与私有云部署准备版本。支持研究历史浏览、问题与笔记、证据追溯、快照校验及临床预测记录准入。
 
-**状态：** 可运行的研究软件；尚未建立经过验证的二期/三期预测能力或投资收益优势。本地容器已完成隔离运行验收，远端 HTTPS、客户账号与上线验收尚未完成。
+**状态（2026-10-26，Asia/Taipei）：** 本仓库包含本地研究工作台与 Predome 临床读出产品。公开 [Predome Arena](https://8.148.145.28/arena) 健康接口本次读取为 **1.2.7**；当前正式赛季有 **12 项目标、0 项正式裁定**。对应 Arena 代码仍在 [PR #3](https://github.com/james-lebron2000/EmerisBiotech/pull/3)，尚未合并到主分支。临床预测能力和投资收益优势尚未验证；原工作台私有云的客户账号及上线验收仍待完成。
+
+版本、来源、工程验收范围和后续研发见[项目进展与代码位置](docs/PROJECT_STATUS_2026-10-26.md)。公开服务、主分支源码与私有工作台部署分别记录。
 
 ## 安装与启动
 
@@ -91,7 +93,7 @@ uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 
 ## Predome 临床读出产品
 
-[apps/predome](apps/predome/README.md) 纳入 Predome 1.1.8 的应用源码、日历与预测界面、锁定/核验账本和测试。原 `src/vbt` 功能及CLI保持不变，两套应用使用独立环境和状态目录。第三方证据与实际运行档案通过哈希清单管理，不随源码公开复制。
+[apps/predome](apps/predome/README.md) 在主分支保留 Predome 1.1.8 基础应用源码、日历与预测界面、锁定/核验账本和测试。Arena 1.2.7 的新增实现位于 [PR #3](https://github.com/james-lebron2000/EmerisBiotech/pull/3)，部署观察不代表该 PR 已合并。原 `src/vbt` 功能及CLI保持不变，两套应用使用独立环境和状态目录。第三方证据与实际运行档案通过哈希清单管理，不随源码公开复制。
 
 - [Predome 产品与启动](apps/predome/README.md)
 - [经过版本和哈希检查的部署流程](apps/predome/DEPLOYMENT.md)
