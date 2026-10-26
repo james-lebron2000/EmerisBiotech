@@ -35,7 +35,7 @@ PRIVATE_CONFIGS = frozenset((Path('/etc/emeris-live.env'), Path('/etc/emeris-are
 FILES = frozenset((
     'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/patent_identity.py', 'emeris_live/arena_metrics.py',
     'emeris_live/arena_providers.py',
-    'emeris_live/arena_api.py', 'emeris_live/arena_public.py', 'emeris_live/arena_store.py', 'emeris_live/arena_report.py',
+    'emeris_live/arena_api.py', 'emeris_live/arena_public.py', 'emeris_live/arena_public_brief.py', 'emeris_live/arena_store.py', 'emeris_live/arena_report.py',
     'emeris_live/arena_review_auth.py', 'emeris_live/arena_review_api.py', 'emeris_live/arena_acquired.py',
     'emeris_live/arena_imports.py', 'emeris_live/arena_records.py', 'scripts/sync_arena_records.py',
     'emeris_live/arena_result_assurance.py', 'scripts/arena_scientific_acceptance.py',
@@ -45,6 +45,7 @@ FILES = frozenset((
     'scripts/prepare_patent_pair.py', 'docs/PATENT_PAIR_PILOT.md',
     'docs/records/triumph5-patent-pair-20261027/run-summary.json',
     'docs/SEALED_RECORD_SYNC.md',
+    'docs/PUBLIC_CLINICAL_BRIEF.md',
     'scripts/arena_reviewers.py', 'scripts/configure_arena_frontends.py', 'scripts/deploy_result_reviews.py',
     'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-home.js', 'static/arena-review.html',
     'static/arena-review.js', 'static/arena-review.css', 'docs/OPEN_FORECAST_RELIABILITY_1_2_8.md',

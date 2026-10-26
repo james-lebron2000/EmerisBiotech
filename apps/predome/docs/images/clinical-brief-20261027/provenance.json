@@ -1,0 +1,85 @@
+{
+  "schema_version": "predome-actual-clinical-brief-visual-1",
+  "scope": "Actual API public DTO in a temporary host copy, rendered with shipped assets; local candidate, not deployed or clinically validated.",
+  "public_api_record_sha256": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249",
+  "artifact_zip_sha256": "b778d1500af41cd2f7818d46da6484820ce2890d1a0c227cda57e68526d01d40",
+  "producer_and_ui_sha256": {
+    "emeris_live/arena_public_brief.py": "ceb857232d5e1cd2a0a0f19e76c3eada6e9822fa1a86e1525f0e46e266fb095c",
+    "emeris_live/arena_public.py": "d928de4e281cd1b39de924e96da2884c03f1dfd00e3edad1e7e8d6bd79ef0294",
+    "static/arena-public.js": "9b2d3d29a42130cbd9968b2219184eb93ae528a0bcc8432c5c58acce171b9239",
+    "static/arena-public.html": "df675c45948283b4d5c2b931721665c9e3c223f4fee703ca651d02c894434d58",
+    "static/arena-public.css": "2d5f167c249ddb082ef5be53d83cfc33d97f22796057e4de1d3a1f6e6e91b089",
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3"
+  },
+  "images": [
+    {
+      "file": "public-desktop-revision.png",
+      "sha256": "0e66aa9d56e79c8d499be1f4a5317d9a351837ad693fafb530ab5a3b0b1c6d2b",
+      "image_dimensions_px": [
+        1440,
+        900
+      ],
+      "recommended": true
+    },
+    {
+      "file": "public-mobile.png",
+      "sha256": "72e6e6e63121496f026c9a8be10b56291650fed811016b5cfeeb9d7962718bc1",
+      "image_dimensions_px": [
+        375,
+        2526
+      ],
+      "recommended": true
+    },
+    {
+      "file": "brief-desktop.png",
+      "sha256": "0ccf58e96c6c59aab4ea35cd9f1e87abd962b21351dd90a4f5a28bf1c1e962f8",
+      "image_dimensions_px": [
+        1440,
+        1667
+      ],
+      "recommended": true
+    },
+    {
+      "file": "brief-mobile.png",
+      "sha256": "a585d1385d8917728f8390b974039fa71b9c9bc17a8c5a2e7f73e02e1c1ebd05",
+      "image_dimensions_px": [
+        375,
+        2844
+      ],
+      "recommended": true
+    },
+    {
+      "file": "public-desktop.png",
+      "sha256": "bc89286813fab6fccd74425b8be72aad36b47873a3b2e37632bc8bb3bf046ad0",
+      "image_dimensions_px": [
+        1440,
+        900
+      ],
+      "recommended": false
+    }
+  ],
+  "visual_review": {
+    "root_opened_all_four_recommended_images": true,
+    "public_desktop_three_modules_bottom_px": 889.1,
+    "public_mobile": "375px document, no horizontal overflow; full-page scrolling capture",
+    "standalone_html": "Offline document, JavaScript disabled, no external resources or page errors; model table scrolls inside its own container on mobile",
+    "earlier_desktop_capture": "Initial flow banner image retained; recommended revision places capture-only annotation in unused header space without changing product layout"
+  },
+  "actual_browser_download": {
+    "scope": "Separate real loopback HTTP application test, not the intercepted screenshot transport",
+    "failure": null,
+    "suggested_filename": "predome-clinical-brief-NCT06662383.zip",
+    "zip_sha256": "8e903092e4ae88468ba949891a772d406ec4949812ca018f2fd06e4872e33558",
+    "downloaded_record_equals_actual_api_snapshot": true,
+    "different_export_times_produce_different_zip_hashes": true,
+    "unexpected_requests": 0,
+    "page_errors": 0
+  },
+  "provider_calls": 0,
+  "new_forecasts": 0,
+  "human_user_acceptance_created": false,
+  "clinical_prediction_validated": false,
+  "deployment_completed": false
+}

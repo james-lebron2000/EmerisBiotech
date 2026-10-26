@@ -71,5 +71,5 @@ jobs:
                   if updated!=original:source.write_text(updated)
           PY
           npx playwright install --with-deps chromium
-      - name: Check fully intercepted input and analytics interfaces
+      - name: Check controlled offline interfaces and loopback download transport
         run: python scripts/check.py --suite static --browser

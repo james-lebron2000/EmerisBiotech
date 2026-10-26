@@ -1,0 +1,44 @@
+{
+  "assigned_records": 2,
+  "clinical_prediction_validated": false,
+  "cohort_id": "of-retatrutide-pair-20261027-v1",
+  "comparison_scope": "same_evidence_clinical_only",
+  "export_time_scope": "public_brief_export_only",
+  "exported_at_utc": "2026-10-26T20:03:07.152275+00:00",
+  "files": {
+    "clinical-brief.html": {
+      "bytes": 6757,
+      "sha256": "cb72c21e301f1ba561d63e384596a3d2a582751b30c08d0650f4b8d9dca99bff"
+    },
+    "clinical-brief.md": {
+      "bytes": 4400,
+      "sha256": "1e43556c273e5aa834f5068e7a0de30df1be9c3fcd2f4b0859cbce8cef54bf3f"
+    },
+    "clinical-record.json": {
+      "bytes": 12294,
+      "sha256": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249"
+    }
+  },
+  "independent_timestamp_attestation": false,
+  "ledger_writes": 0,
+  "nct_id": "NCT06662383",
+  "original_model_time_note": "Export time describes this public brief only. Original model-generation and lock times above are unchanged stored timestamps; this export does not independently prove those earlier times, expand a TSA proof, or generate a new prediction.",
+  "original_model_times": [
+    {
+      "generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "id": "run-609621f37ca3480b916128224492de98",
+      "locked_at_utc": "2026-10-26T17:53:28.016692+00:00"
+    },
+    {
+      "generated_at_utc": "2026-10-26T17:55:11.481075+00:00",
+      "id": "run-b58d38210ec24ce7b40cb9f019c5f5d0",
+      "locked_at_utc": "2026-10-26T17:55:11.481075+00:00"
+    }
+  ],
+  "page_url": "https://8.148.145.28/arena?target=of-retatrutide-pair-20261027-v1-target",
+  "provider_calls": 0,
+  "record_kind": "independent_research_pilot",
+  "record_version": "arena-clinical-public-1.1",
+  "schema_version": "predome-public-clinical-brief-1",
+  "target_id": "of-retatrutide-pair-20261027-v1-target"
+}

@@ -33,12 +33,16 @@ python3.11 -m venv .venv
 
 独立账本中的既有预测可按[已完成预测的可核验同步](docs/SEALED_RECORD_SYNC.md)接入当前服务：保留原时间、失败和签名，在宿主仅追加一条导入事件；公开与内部视图使用不同权限及字段。
 
+公开页面的 [Clinical Brief 下载](docs/PUBLIC_CLINICAL_BRIEF.md)将所选试验的同条件记录、公开来源及结果状态保存为可离线阅读的报告和机器可读快照。资料生成时间与原预测时间分开，下载不会调用模型、写入账本或产生结果裁定。
+
+[2026-10-27 结果来源检查](docs/records/outcome-source-check-20261027.json)记录五项试验的官方登记响应及有限公告检索范围。登记库未贴结果、未找到确切公告及试验失败分别记录；新监测资料不回填原冻结预测输入。
+
 ```sh
 .venv/bin/python scripts/check.py --suite static
 .venv/bin/python scripts/check.py --browser
 ```
 
-`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加8份完全拦截API的浏览器fixture，需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这8份浏览器测试。测试数量与范围以实际Actions结果为准。
+`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加8份受控离线浏览器fixture：页面/API使用拦截样例，附件点击另用临时loopback HTTP传输样例，不访问生产、模型或外部服务。需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这8份浏览器测试。测试数量与范围以实际Actions结果为准。
 
 完整命令、前置条件和工程／科学验证的边界见[开发与验证工作流](docs/AGENT_WORKFLOW.md)。原工作台仍从仓库根目录运行`uv run pytest -q tests`，与Predome包内检查分开记录。
 

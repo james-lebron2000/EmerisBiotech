@@ -65,7 +65,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--suite', choices=('static', 'source', 'full'), default='source',
                         help='full requires an authorized, separately verified local evidence bundle')
-    parser.add_argument('--browser', action='store_true', help='also run the intercepted browser fixture suites')
+    parser.add_argument('--browser', action='store_true', help='also run controlled offline browser fixtures, including loopback download transport')
     args = parser.parse_args(argv)
     try:
         selected = source_tests() if args.suite == 'source' else []

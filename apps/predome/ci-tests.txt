@@ -39,6 +39,7 @@ tests/test_prepare_arena_season.py
 tests/test_prepare_patent_pair.py
 tests/test_arena_lab.py
 tests/test_arena_public.py
+tests/test_arena_public_brief.py
 tests/test_arena_frontend_config.py
 tests/test_public_campaign_export.py
 tests/test_public_snapshot_proof.py

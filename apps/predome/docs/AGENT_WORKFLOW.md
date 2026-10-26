@@ -33,7 +33,7 @@
 | `python scripts/check.py` | 默认 `source`：静态检查及 `ci-tests.txt` 中的源码 fixture 测试 | 源码检出、Python 3.11及测试依赖、Node 22；受控本地冻结路径不存在 |
 | `python scripts/check.py --suite static` | 仅静态检查 | Python 3.11、Node 22；不运行 pytest 或浏览器 |
 | `python scripts/check.py --suite full` | 静态检查及完整应用 pytest | Python 3.11、Node 22及已获授权、保持原件不变的现有证据；不会下载或生成缺失证据 |
-| `python scripts/check.py --browser` | 默认检查后，追加8份完全拦截的浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
+| `python scripts/check.py --browser` | 默认检查后，追加8份受控离线浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
 | `python scripts/test_source.py` | 保留兼容的源码 fixture 入口 | 与源码测试相同的隔离条件 |
 
 源码测试守卫针对本地冻结材料的具体路径，不把 Git 中公开的 Arena／专利配置一并认作禁入证据。现有证据不满足源码测试条件时，应使用干净源码检出，或在具有相应授权的环境运行完整测试；不能为通过检查移除守卫、覆盖原件或重新生成预测。
@@ -42,7 +42,7 @@
 
 已有来源读取逻辑从 `scripts/arena_outcome_inbox.py` 移入 `emeris_live/arena_acquired.py`，CLI保留原有同名入口。这使后续API能够复用同一原件校验实现，不需要导入命令脚本或再写一套校验。此次移动不改变来源、标签或冻结记录。
 
-浏览器检查执行以下实际脚本，所有页面请求由 fixture 拦截：
+浏览器检查执行以下实际脚本，页面和 API 请求由 fixture 拦截。公开下载测试另在 `127.0.0.1` 的临时随机端口提供固定 ZIP，服务只处理已知下载路径、结束后关闭。浏览器下载通道不经过普通页面拦截，因此点击附件的传输须使用这个隔离的本机 HTTP 边界；它不连接应用数据库、生产或外部服务。实际产品 ZIP 内容仍由真实 API 测试验证，不能用该传输样例代替：
 
 - `tests/ui_predict_context.cjs`
 - `tests/ui_prospective_coverage.cjs`

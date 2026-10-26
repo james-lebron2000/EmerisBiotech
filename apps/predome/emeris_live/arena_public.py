@@ -10,7 +10,7 @@ import sqlite3
 from urllib.parse import parse_qsl, urlsplit
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from . import arena_api
 from .arena_store import ArenaLedger
@@ -501,7 +501,11 @@ def overview(request: Request):
 
 @router.get('/api/arena/public/targets/{target_id}')
 def target_detail(target_id: str, request: Request):
-    view = overview(request)
+    return detail_from_view(overview(request), target_id)
+
+
+def detail_from_view(view, target_id):
+    """One sanitized snapshot supplies both its detail DTO and export scope."""
     target = next((t for t in view['targets'] if t['id'] == target_id), None)
     if target is None: raise HTTPException(404, '未找到该临床研究记录。')
     return {'version': VERSION, 'target': target, 'runs': [r for r in view['runs'] if r['target_id'] == target_id],
@@ -513,4 +517,19 @@ def target_detail(target_id: str, request: Request):
 def record(target_id: str, request: Request):
     return JSONResponse(target_detail(target_id, request), headers={
         'Content-Disposition': 'attachment; filename=predome-clinical-record.json',
+        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
+
+
+@router.get('/api/arena/public/targets/{target_id}/brief/download')
+def clinical_brief(target_id: str, request: Request):
+    from .arena_public_brief import build_brief
+    view = overview(request)
+    selected = detail_from_view(view, target_id)
+    try:
+        cohort = next((c for c in view['cohorts'] if c['id'] == selected['target'].get('cohort_id')), {})
+        raw, manifest = build_brief(selected, cohort_kind=cohort.get('kind'))
+    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error):
+        raise HTTPException(503, '公开临床简报暂不可用；不会以示例结果替代。') from None
+    return Response(raw, media_type='application/zip', headers={
+        'Content-Disposition': 'attachment; filename=predome-clinical-brief-'+manifest['nct_id']+'.zip',
         'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
