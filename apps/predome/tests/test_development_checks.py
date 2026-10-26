@@ -120,8 +120,9 @@ def test_same_named_runtime_module_cannot_hide_absolute_cli_execution(package):
     (package / 'emeris_live' / 'entry.py').write_text('VALUE = 1\n')
     (package / 'emeris_live' / 'service.py').write_text('import entry\n')
     runner = package / 'scripts' / 'runner.py'
-    runner.write_text('import sys\nfrom pathlib import Path\nsys.path.append(str(Path(__file__).parents[1]))\nimport emeris_live.service\n')
-    actual = subprocess.run([sys.executable, str(runner)], capture_output=True, text=True, timeout=10)
+    runner.write_text('import sys\nfrom pathlib import Path\nsys.path.insert(1, str(Path(__file__).parents[1]))\nimport emeris_live.service\n')
+    actual = subprocess.run([sys.executable, str(runner)], cwd=package, env=source.test_environment(),
+                            capture_output=True, text=True, timeout=10)
     assert actual.returncode != 0 and 'CLI must never be imported' in actual.stderr
     with pytest.raises(ValueError, match='Runtime imports CLI'):
         checks.check_runtime(package)
@@ -136,7 +137,7 @@ def test_legitimate_vendor_scripts_and_nested_runtime_imports_are_allowed(packag
     (sub / 'entry.py').write_text('VALUE = 1\n')
     (sub / 'service.py').write_text('from .entry import VALUE\nfrom vendor.scripts import constants\n')
     actual = subprocess.run([sys.executable, '-c', 'from emeris_live.sub.service import VALUE, constants; assert (VALUE, constants) == (1, 42)'],
-                            cwd=package, capture_output=True, text=True, timeout=10)
+                            cwd=package, env=source.test_environment(), capture_output=True, text=True, timeout=10)
     assert actual.returncode == 0, actual.stderr
     checks.check_runtime(package)
 
