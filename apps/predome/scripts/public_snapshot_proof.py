@@ -128,6 +128,14 @@ def verified_fields(directory,openssl='openssl'):
         if 'Verification: OK' not in openssl_run(['ts','-verify',*basis,*common],openssl):
             raise ValueError('Timestamp signature, message imprint or query nonce verification failed')
     reply=openssl_run(['ts','-reply','-in',directory/'timestamp.tsr','-text'],openssl)
+    query=openssl_run(['ts','-query','-in',directory/'request.tsq','-text'],openssl)
+    for document in (query,reply):
+        if not re.search(r'^Hash Algorithm:\s*sha256\s*$',document,re.M):
+            raise ValueError('Public timestamp message imprint must use SHA-256')
+    query_nonce=re.search(r'^Nonce:\s*(0x[0-9A-Fa-f]+)\s*$',query,re.M)
+    reply_nonce=re.search(r'^Nonce:\s*(0x[0-9A-Fa-f]+)\s*$',reply,re.M)
+    if not query_nonce or not reply_nonce or int(query_nonce.group(1),16)!=int(reply_nonce.group(1),16):
+        raise ValueError('Public timestamp query and signed response require the same explicit nonce')
     match=re.search(r'^Time stamp: (.+)$',reply,re.M)
     if not match:raise ValueError('Missing authenticated timestamp generation time')
     stamp=datetime.strptime(match.group(1).strip(),'%b %d %H:%M:%S %Y GMT').replace(tzinfo=timezone.utc)

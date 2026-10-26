@@ -1,14 +1,17 @@
 """Offline public proof tamper tests; no providers, private ledger or TSA calls."""
+from datetime import datetime, timezone
 import io
 import json
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 
 import pytest
 from test_public_campaign_export import records, real_public_record
+from test_arena_imports import signed
 
 SCRIPTS=Path(__file__).parents[1]/'scripts'
 sys.path.insert(0,str(SCRIPTS))
@@ -96,7 +99,9 @@ def actual_proof(tmp_path):
 
 def test_actual_freetsa_signature_data_and_query_verify_without_network(actual_proof,monkeypatch):
     monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('Offline verification must not call the authority'))
+    before={p.name:p.read_bytes() for p in actual_proof.iterdir()}
     fields=proof.verify(actual_proof,require_outer=True)
+    assert {p.name:p.read_bytes() for p in actual_proof.iterdir()}==before
     assert fields['formal_trials']==12 and fields['historical_replays']==8
     assert fields['time_scope']=='public_export_existence_only'
     assert fields['original_prediction_time_proven'] is False
@@ -159,3 +164,91 @@ def test_current_bundle_still_rejects_existing_proof_directory_before_timestamp_
     with pytest.raises(ValueError,match='never overwritten'):
         proof.attest(source,proof.digest(raw),existing,tmp_path/'missing-certs')
     assert (existing/'untouched').read_bytes()==b'original'
+
+
+@pytest.fixture
+def signed_public_fixture(tmp_path, records, signed, monkeypatch):
+    """Actual synthetic export and local test-CA signature, without network.
+
+    The same existing offline authority fixture is used by sealed record tests.
+    Only test pins are replaced; callers cannot select a production trust anchor.
+    """
+    monkeypatch.setattr(proof,'PINS',signed['pins'])
+    monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('Offline signatures must not call the authority'))
+    index,_,_,fetch=records
+    raw,manifest=proof.campaign.bundle(index,fetch)
+    directory=tmp_path/'normal-proof';directory.mkdir()
+    (directory/'clinical-records.zip').write_bytes(raw)
+    for name in signed['pins']:
+        (directory/name).write_bytes((signed['root']/name).read_bytes())
+    config=tmp_path/'tsa.cnf'
+    config.write_text((signed['root']/'ts.cnf').read_text().replace('digests=sha256\n','digests=sha256,sha384\n'))
+
+    def timestamp(path,*,with_nonce=True,algorithm='sha256'):
+        args=['ts','-query','-data',path/'clinical-records.zip','-'+algorithm,'-cert','-out',path/'request.tsq']
+        if not with_nonce:args.append('-no_nonce')
+        proof.openssl_run(args)
+        # OpenSSL emits a second-precision genTime. Wait for a real later second
+        # instead of backdating the export or fabricating its signature time.
+        while datetime.now(timezone.utc).replace(microsecond=0)<=proof.instant(manifest['exported_at_utc']):
+            time.sleep(.02)
+        proof.openssl_run(['ts','-reply','-config',config,'-section','testing',
+            '-queryfile',path/'request.tsq','-out',path/'timestamp.tsr'])
+        reply=proof.openssl_run(['ts','-reply','-in',path/'timestamp.tsr','-text'])
+        text=next(line.split(': ',1)[1] for line in reply.splitlines() if line.startswith('Time stamp: '))
+        return datetime.strptime(text,'%b %d %H:%M:%S %Y GMT').replace(tzinfo=timezone.utc).isoformat()
+
+    def write_unsigned(path,fields):
+        (path/'receipt.json').write_bytes(proof.campaign.canonical(fields))
+        (path/'verification.txt').write_bytes(proof.verification_text(fields))
+        (path/'README.md').write_bytes(proof.readme(fields))
+
+    timestamp(directory)
+    fields=proof.verified_fields(directory)
+    write_unsigned(directory,fields)
+
+    def altered(name,*,with_nonce=True,algorithm='sha256',retain_response=False):
+        case=tmp_path/name;shutil.copytree(directory,case)
+        if retain_response:
+            proof.openssl_run(['ts','-query','-data',case/'clinical-records.zip','-'+algorithm,
+                '-cert','-no_nonce','-out',case/'request.tsq'])
+        else:
+            generated=timestamp(case,with_nonce=with_nonce,algorithm=algorithm)
+            changed={**fields,'generated_at_utc':generated,
+                'timestamp_response_sha256':proof.digest((case/'timestamp.tsr').read_bytes())}
+            # Preserve the existing unsigned contract. The verification gate,
+            # rather than an unrelated receipt mismatch, must reject this case.
+            write_unsigned(case,changed)
+        return case
+    return directory,altered
+
+
+def test_actual_test_ca_signature_with_explicit_matching_nonces_passes_without_rewriting(signed_public_fixture):
+    directory,_=signed_public_fixture
+    before={p.name:p.read_bytes() for p in directory.iterdir()}
+    value=proof.verify(directory)
+    assert value['verification_method']=='openssl_ts_verify_data_and_query'
+    assert value['original_prediction_time_proven'] is False
+    assert {p.name:p.read_bytes() for p in directory.iterdir()}==before
+
+
+def test_nonce_free_query_and_signed_response_are_rejected_by_full_verifier(signed_public_fixture):
+    _,altered=signed_public_fixture
+    directory=altered('no-nonces',with_nonce=False)
+    with pytest.raises(ValueError,match='explicit nonce'):
+        proof.verify(directory)
+
+
+def test_nonce_free_query_cannot_borrow_unchanged_response_with_nonce(signed_public_fixture):
+    original,altered=signed_public_fixture
+    directory=altered('removed-query-nonce',retain_response=True)
+    assert (directory/'timestamp.tsr').read_bytes()==(original/'timestamp.tsr').read_bytes()
+    with pytest.raises(ValueError,match='explicit nonce'):
+        proof.verify(directory)
+
+
+def test_non_sha256_message_imprint_is_rejected_after_actual_signature_checks(signed_public_fixture):
+    _,altered=signed_public_fixture
+    directory=altered('sha384-imprint',algorithm='sha384')
+    with pytest.raises(ValueError,match='SHA-256'):
+        proof.verify(directory)
