@@ -1,0 +1,114 @@
+{
+  "schema_version": "predome-patent-experiment-cards-1.0",
+  "analysis_id": "retatrutide-example12-20261027-v1",
+  "experiment_cards": [
+    {
+      "evidence_id": "WO2019125938A1-example12-table3-camp-v1",
+      "publication_number": "WO2019125938A1",
+      "public_available_at": "2019-06-27",
+      "title": "Example 12 / SEQ17: receptor cAMP potency under FBS/BSA conditions",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=29",
+      "pdf_page_1_based": 29,
+      "supporting_pdf_pages": [
+        22,
+        28,
+        29,
+        30,
+        37
+      ],
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "text_sha256": "04798e8d77de498fdd6c04858b103347e93f11e216e1fbafd0f4b61189186739",
+      "example_id": "12",
+      "sequence_id": "SEQ ID NO:17",
+      "section_type": "completed_experiment",
+      "experiment_system": "Functional cAMP response in HEK-293 clonal cell lines overexpressing human GcgR, GIPR or GLP-1R; separate receptor cell lines",
+      "species_or_cell": "Engineered HEK-293 cells expressing human receptors; no patient samples",
+      "sample_size": {
+        "reported_n_per_receptor": 6,
+        "independent_biological_units": null,
+        "unit_definition": "Biological versus technical repeats and independent days/preparations not specified on the reviewed pages"
+      },
+      "dose": {
+        "concentration_response_points": 20,
+        "dilution_fold": 2.75,
+        "example_range": {
+          "minimum": 51.5,
+          "minimum_unit": "fM",
+          "maximum": 11.4,
+          "maximum_unit": "uM"
+        },
+        "native_control_range_as_printed": {
+          "minimum": 448,
+          "minimum_unit": "pM",
+          "maximum": 99.5,
+          "maximum_unit": "nM"
+        },
+        "peptide_exposure_minutes": 60,
+        "temperature": "room temperature",
+        "post_detection_reagent_incubation_minimum_minutes": 60,
+        "route": "in vitro"
+      },
+      "assay_conditions": {
+        "FBS_percent": 0.25,
+        "BSA_percent": 0.05,
+        "medium": "DMEM with 1X GlutaMAX, 250 uM IBMX and 20 mM HEPES",
+        "volume_uL": 20,
+        "quantification": "cAMP standard curve followed by normalization to native ligand maximal response; relative EC50 from four-parameter logistic regression"
+      },
+      "comparator": "Native human glucagon, GIP(1-42)NH2 and GLP-1(7-36)NH2; summary control measurements are not a randomized clinical comparator",
+      "endpoint": "Relative functional cAMP EC50 in each separately overexpressed receptor cell line",
+      "result": {
+        "groups": [
+          {
+            "receptor": "GcgR",
+            "mean_ec50_nM": 6.61,
+            "sem_nM": 0.512,
+            "reported_n": 6
+          },
+          {
+            "receptor": "GIPR",
+            "mean_ec50_nM": 2.24,
+            "sem_nM": 0.303,
+            "reported_n": 6
+          },
+          {
+            "receptor": "GLP-1R",
+            "mean_ec50_nM": 12.4,
+            "sem_nM": 1.41,
+            "reported_n": 6
+          }
+        ]
+      },
+      "unit": "nM for EC50 and SEM; n is reported assay repeats with independent unit unspecified",
+      "missing_fields": [
+        "Per-repeat raw concentration-response curves",
+        "Definition of independent biological versus technical n",
+        "Human clinical endpoint and clinical effect estimate"
+      ],
+      "source_location": "PDF29/printed28, Table3 Example12 row; method PDF28; Table3 continuation and concentration-range note PDF30. Compound definition PDF22 and SEQ17 PDF37.",
+      "source_discrepancies": [
+        {
+          "location": "PDF29 Example12 GLP-1R SEM",
+          "archived_ocr": "141",
+          "original_page": "1.41",
+          "action": "Use original page value; archived OCR is retained unchanged"
+        },
+        {
+          "location": "PDF29 native controls and PDF30 Table3 note",
+          "status": "unresolved_source_relationship",
+          "detail": "Reported native-control EC50 values 0.0125/0.133/0.0591 nM are below the printed native range lower bound 448 pM (0.448 nM). Cause is unexplained; printed units are not repaired. Example12 values lie within its separately stated example range."
+        }
+      ],
+      "interpretation_limit": "Reported engineered-cell potency supports a mechanism hypothesis only. It does not establish clinical efficacy, patient exposure, safety, trial success probability or patent rights. Table4 casein-condition values, Table2 binding Ki and Example1 mouse values are excluded from this card.",
+      "extraction_method": "Original PDF page visual checks by same-base AI roles, with unchanged OCR provenance",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "human_review_count": 0,
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false
+    }
+  ]
+}

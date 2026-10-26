@@ -20,6 +20,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, time as daytime, timezone
 from pathlib import Path
+from .patent_identity import structure_review_errors
 
 SCHEMA_VERSION = "predome-patent-evidence-1.0"
 CONNECTOR_RECEIPT_VERSION = "predome-patent-connector-response-1"
@@ -98,6 +99,8 @@ def research_review_errors(item, cutoff=None):
     """Validate an explicit two-AI source check; it is never a human review."""
     receipt = item.get("research_review", {})
     errors = []
+    if receipt.get("schema_version") not in {"predome-patent-ai-source-review-1.0", "predome-patent-ai-source-review-1.1"}:
+        errors.append("ai_research_review_schema_unsupported")
     if receipt.get("review_type") != "two_agent_visual_source_check":
         return ["ai_research_review_missing"]
     if receipt.get("receipt_sha256") != canonical_sha256({k: v for k, v in receipt.items() if k != "receipt_sha256"}):
@@ -111,9 +114,21 @@ def research_review_errors(item, cutoff=None):
     if (receipt.get("human_review_count") != 0 or receipt.get("clinical_prediction_validated") is not False
             or receipt.get("same_base_model_correlation_disclosed") is not True):
         errors.append("ai_review_disclosure_incomplete")
-    if receipt.get("identity_decision") != "supported_by_explicit_development_code_and_trial_id":
+    decision = receipt.get("identity_decision")
+    sources = receipt.get("drug_mapping", {}).get("sources", [])
+    structural = (receipt.get("schema_version") == "predome-patent-ai-source-review-1.1"
+        or "identity_analysis" in receipt or "experiment_cards_source" in receipt
+        or any(s.get("role") == "official_inn_modified_peptide_identity" for s in sources))
+    if structural:
+        if (receipt.get("drug_mapping", {}).get("status") != "ai_verified_modified_peptide_structure"
+                or decision != "supported_by_ai_modified_peptide_structure_check"):
+            errors.append("modified_peptide_identity_decision_required")
+        errors.extend(structure_review_errors(item, receipt))
+    elif decision != "supported_by_explicit_development_code_and_trial_id":
         errors.append("ai_identity_source_check_incomplete")
-    if (item.get("drug_mapping", {}).get("status") == "ai_verified_explicit_code_and_trial_identity"
+    elif not {"official_canonical_drug_and_development_aliases", "official_trial_id_program_id_and_intervention_aliases"}.issubset({s.get("role") for s in sources}):
+        errors.append("explicit_code_and_trial_identity_sources_missing")
+    if (item.get("drug_mapping", {}).get("status") in {"ai_verified_explicit_code_and_trial_identity", "ai_verified_modified_peptide_structure"}
             and item["drug_mapping"] != receipt.get("drug_mapping")):
         errors.append("ai_review_mapping_mismatch")
     checked = {c.get("evidence_id"): c for c in receipt.get("experiment_card_checks", [])}
@@ -166,9 +181,9 @@ def evidence_eligibility(item, cutoff=None):
             except ValueError:
                 reasons.append("experiment_source_availability_unknown")
                 temporal = False
-    uses_ai_review = mapping.get("status") == "ai_verified_explicit_code_and_trial_identity"
+    uses_ai_review = mapping.get("status") in {"ai_verified_explicit_code_and_trial_identity", "ai_verified_modified_peptide_structure"}
     ai_errors = research_review_errors(item, cutoff) if uses_ai_review else []
-    if (mapping.get("status") not in {"verified_exact_identity", "ai_verified_explicit_code_and_trial_identity"}
+    if (mapping.get("status") not in {"verified_exact_identity", "ai_verified_explicit_code_and_trial_identity", "ai_verified_modified_peptide_structure"}
             or not mapping.get("sources")):
         reasons.append("drug_identity_not_verified")
     reasons.extend(ai_errors)

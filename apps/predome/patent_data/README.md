@@ -80,8 +80,26 @@ unreviewed examples are excluded. Full sequence alignment to a regulatory INN
 record has not been performed; the explicit codes and trial identifiers, rather
 than a guessed structural similarity, support this research identity mapping.
 
-Retatrutide remains blocked: the extracted Example 1 analog's identity has not
-been established as retatrutide. Its values must not enter a retatrutide forecast.
+Retatrutide has a new, separate AI structure-review record:
+`sources/WO2019125938A1.identity-review.json` selects the versioned
+`WO2019125938A1.retatrutide-ex12-v1.json` card. Original patent PDF22/37 identifies
+Example12 as SEQ17. Its complete modified peptide features agree with the WHO
+proposed INN definition at PDF123/printed1051, including Aib2/20, alpha-methyl-L-Leu13,
+Lys17 N6 conjugation through one AEEA and L-gamma-Glu to a C20 diacid, free carboxyl
+groups and the Ser39 amide. The exact-feature comparison does not automatically
+read chemical drawings or establish formulation/batch equivalence. Two same-base
+AI roles checked the originals; human review remains zero.
+
+WHO's [publication notice](https://cdn.who.int/media/docs/default-source/international-nonproprietary-names-(inn)/pl128.pdf#page=2)
+dates publication to **2023-01-20**, although the volume is labelled 2022. Review
+completed at **2026-10-26T16:55:51.222863+00:00** (2026-10-27 in Asia/Taipei).
+Earlier cutoffs remain blocked. This new research input does not amend any prior
+prediction, clinical evidence pack or timestamp proof. Only the source-verified
+name `retatrutide` is enabled; unverified development-code aliases are not inferred.
+
+The original Example1/SEQ7 mouse card remains unchanged in its old curated file
+and is retained as `excluded_experiment_cards` in the catalogue. It differs at
+residues20/28/29 and has two AEEA units. It must not enter a retatrutide packet.
 
 The public date, data cutoff, priority date and retrieval date are separate facts.
 Date-only publication availability is conservatively interpreted as the end of
@@ -103,8 +121,42 @@ The two structured experiment cards demonstrate actual extractable content:
 - WO2020240467A1, PDF p. 93, Example 7/Table 2: investigator-assessed unconfirmed
   phase 1 ORR. The absence of a randomized comparator and the response-evaluable
   denominator are explicit. PDF p. 87 contains the DS-1062a development code.
-- WO2019125938A1, PDF p. 34/Table 7: an Example 1 analog in obese mice. Its numbers
-  are not assigned to retatrutide; exact compound identity remains unresolved.
+- WO2019125938A1, PDF29/Table3, Example12/SEQ17: relative cAMP EC50 in separately
+  receptor-overexpressing HEK-293 cells under 0.25%FBS/0.05%BSA. GcgR, GIPR and
+  GLP-1R values are 6.61/2.24/12.4nM; SEM 0.512/0.303/1.41nM, reported n=6 each.
+  PDF30 supplies concentration ranges. Biological versus technical independence
+  and raw curves remain unknown. Native-control EC50 values lie below the printed
+  native-control concentration range; the unexplained source relationship and
+  original units are retained. Table4 casein values and Table2 binding Ki are not
+  mixed into this card. The archived OCR's `141` is preserved; the selected card
+  uses the original-page SEM `1.41` with an explicit discrepancy record.
+- Excluded WO2019125938A1 PDF34/Table7: Example1 analog mouse measurements remain
+  visible for audit and are not assigned to retatrutide.
 
 These records do not establish clinical efficacy, patent freedom to operate, a
 prospective prediction, or improvement in model accuracy.
+
+## Original-evidence deployment
+
+The new structure review names original source files, selected page previews and
+the AI observation record under `receipts/review/retatrutide-20261027/`. They remain
+outside Git. A separate, SHA-256-pinned review-originals archive accompanies the
+commit-pinned catalogue and selected-card metadata. `install_patent_review_bundle.py`
+stages only that exact referenced file set into a new release, checks every digest,
+and rejects links, unexpected members, oversized archives and conflicting existing
+bytes. It never acquires data, reads a patient/runtime database or grants a review.
+The cumulative deployer requires this archive before activating the new metadata;
+its release manifest includes the staged originals. Rollback remains code-only.
+
+Provider input projection now preserves explicitly supplied structured review
+scope, including AI basis, human count, receipt hash and research/validation flags.
+Absent fields stay absent and explicit null stays unknown. These disclosures do
+not grant eligibility. A fresh execution of an older packet that already carried
+previously omitted metadata has a new actual input hash and requires a new run;
+it cannot replace the original request, forecast or timestamp.
+
+[Local internal-page result view](../docs/images/retatrutide-patent-review/result-viewport.png)
+and [mobile view](../docs/images/retatrutide-patent-review/mobile.png) render the
+actual patent metadata with the current candidate assets. Unrelated application
+bootstrap is an isolated fixture; these are not screenshots of a deployed update
+or evidence of a real forecast using the new card. [Image provenance](../docs/images/retatrutide-patent-review/provenance.json).

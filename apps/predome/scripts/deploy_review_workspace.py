@@ -33,17 +33,21 @@ CONFIGS = (Path('/etc/emeris-live.env'), Path('/etc/systemd/system/emeris-live.s
            Path('/etc/systemd/system/emeris-live.service.d/arena.conf'))
 PRIVATE_CONFIGS = frozenset((Path('/etc/emeris-live.env'), Path('/etc/emeris-arena.env')))
 FILES = frozenset((
-    'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/arena_metrics.py',
+    'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/patent_identity.py', 'emeris_live/arena_metrics.py',
+    'emeris_live/arena_providers.py',
     'emeris_live/arena_api.py', 'emeris_live/arena_public.py', 'emeris_live/arena_store.py', 'emeris_live/arena_report.py',
     'emeris_live/arena_review_auth.py', 'emeris_live/arena_review_api.py', 'emeris_live/arena_acquired.py',
     'emeris_live/arena_result_assurance.py', 'scripts/arena_scientific_acceptance.py',
     'emeris_live/official_intake.py', 'emeris_live/intake_api.py', 'scripts/ingest_patents.py',
     'scripts/arena_learning_report.py', 'scripts/arena_outcome_inbox.py', 'scripts/arena_result_review.py',
-    'scripts/export_public_campaign.py', 'scripts/public_snapshot_proof.py',
+    'scripts/export_public_campaign.py', 'scripts/public_snapshot_proof.py', 'scripts/install_patent_review_bundle.py',
     'scripts/arena_reviewers.py', 'scripts/configure_arena_frontends.py', 'scripts/deploy_result_reviews.py',
     'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-home.js', 'static/arena-review.html',
     'static/arena-review.js', 'static/arena-review.css', 'docs/OPEN_FORECAST_RELIABILITY_1_2_8.md',
-    'docs/RESULT_REVIEW_WORKSPACE_1_2_9.md', 'docs/SCIENTIFIC_RESULT_ACCEPTANCE.md'))
+    'docs/RESULT_REVIEW_WORKSPACE_1_2_9.md', 'docs/SCIENTIFIC_RESULT_ACCEPTANCE.md',
+    'patent_data/catalog.json', 'patent_data/README.md',
+    'patent_data/sources/WO2019125938A1.identity-review.json',
+    'patent_data/sources/WO2019125938A1.retatrutide-ex12-v1.json'))
 MAX_ARCHIVE = 8 * 1024 * 1024
 MAX_MEMBER = 2 * 1024 * 1024
 MAX_EXPANDED = 16 * 1024 * 1024
@@ -258,12 +262,20 @@ def await_health(version):
     raise RuntimeError('Expected release health did not become ready')
 
 
-def deploy(archive, expected_hash, commit, expected_nginx_sha256):
+def deploy(archive, expected_hash, commit, expected_nginx_sha256,
+           patent_evidence_archive=None, patent_evidence_sha256=None):
     files = read_archive(archive, expected_hash, commit)
     if files['scripts/deploy_review_workspace.py'] != regular(Path(__file__)).read_bytes():
         raise ValueError('Transported deployment entry point differs')
     if not re.fullmatch(r'[a-f0-9]{64}', expected_nginx_sha256):
         raise ValueError('Explicit pinned Nginx digest required')
+    catalog = strict_json(files['patent_data/catalog.json'])
+    needs_originals = any(source.get('original_relative_path')
+        for item in catalog.get('items', []) for source in
+        item.get('research_review', {}).get('drug_mapping', {}).get('sources', []))
+    if needs_originals and (patent_evidence_archive is None
+            or not re.fullmatch(r'[a-f0-9]{64}', str(patent_evidence_sha256 or ''))):
+        raise ValueError('The new patent review requires its separately pinned original-evidence archive')
     lock_path = INSTALL_ROOT / '.openforecast-deploy.lock'
     lock_fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW, 0o600)
     with os.fdopen(lock_fd, 'w') as lock:
@@ -307,6 +319,15 @@ def deploy(archive, expected_hash, commit, expected_nginx_sha256):
             path.write_bytes(raw)
             path.chmod(0o644)
             records[name] = {'path': name, 'sha256': digest(raw), 'bytes': len(raw)}
+        source = TARGET / 'scripts/install_patent_review_bundle.py'
+        if digest(regular(source).read_bytes()) != digest(files['scripts/install_patent_review_bundle.py']):
+            raise ValueError('Patent evidence installer changed')
+        spec = importlib.util.spec_from_file_location('verified_patent_evidence_installer', source)
+        installer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(installer)
+        evidence_records = installer.stage(TARGET, patent_evidence_archive, patent_evidence_sha256)
+        for entry in evidence_records:
+            records[entry['path']] = entry
         updated = {**manifest, 'version': VERSION, 'git_commit': commit, 'parent_release': str(BASE),
                    'created_at_utc': datetime.now(timezone.utc).isoformat(),
                    'files': [records[name] for name in sorted(records)]}
@@ -353,6 +374,8 @@ def deploy(archive, expected_hash, commit, expected_nginx_sha256):
                        'old_arena_events_preserved': True, 'old_sealed_rows_preserved': True,
                        'external_configurations_unchanged': True, 'nginx_before_sha256': expected_nginx_sha256,
                        'nginx_after_sha256': new_site_state['sha256'], 'code_transport_sha256': expected_hash,
+                       'patent_evidence_transport_sha256': patent_evidence_sha256,
+                       'patent_original_files_checked': len(evidence_records),
                        'import_smoke': 'passed_without_app_construction',
                        'scope': 'engineering deployment only; no reviewer enrollment or scientific validation',
                        'at': datetime.now(timezone.utc).isoformat()}
@@ -404,9 +427,12 @@ def main():
     parser.add_argument('--sha256', required=True)
     parser.add_argument('--commit', required=True)
     parser.add_argument('--expected-nginx-sha256', required=True)
+    parser.add_argument('--patent-evidence-archive', type=Path)
+    parser.add_argument('--patent-evidence-sha256')
     args = parser.parse_args()
     try:
-        receipt = deploy(args.archive, args.sha256, args.commit, args.expected_nginx_sha256)
+        receipt = deploy(args.archive, args.sha256, args.commit, args.expected_nginx_sha256,
+                         args.patent_evidence_archive, args.patent_evidence_sha256)
     except (Exception, KeyboardInterrupt):
         parser.exit(1, 'Deployment failed; inspect local deployment state before retrying. No database restore was performed.\n')
     print(json.dumps(receipt))

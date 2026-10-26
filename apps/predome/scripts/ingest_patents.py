@@ -185,6 +185,31 @@ def build_catalog(root):
             # Promotion requires a content-bound, explicit review receipt. Merely
             # adding machine-extracted observations cannot pass the research gate.
             receipt = json.loads(review_path.read_text())
+            selection = receipt.get("experiment_cards_source")
+            if selection is not None:
+                if not isinstance(selection, dict) or set(selection) != {"filename", "sha256"}:
+                    raise ValueError("Invalid versioned experiment-card source metadata")
+                name = selection.get("filename", "")
+                if not re.fullmatch(re.escape(number) + r"\.[A-Za-z0-9_-]{1,100}\.json", name):
+                    raise ValueError("Invalid versioned experiment-card source")
+                selected_path = root / "sources" / name
+                if selected_path.is_symlink() or not selected_path.is_file() or selected_path.stat().st_size > 1024 * 1024:
+                    raise ValueError("A bounded regular experiment-card source is required")
+                selected_raw = selected_path.read_bytes()
+                if hashlib.sha256(selected_raw).hexdigest() != selection.get("sha256"):
+                    raise ValueError("Versioned experiment-card source hash mismatch")
+                selected = json.loads(selected_raw)
+                cards = selected.get("experiment_cards")
+                if (selected.get("schema_version") != "predome-patent-experiment-cards-1.0"
+                        or not isinstance(cards, list) or not 1 <= len(cards) <= 20
+                        or any(not isinstance(c, dict) or c.get("publication_number") != number
+                               or c.get("source_sha256") != item["raw_sha256"]
+                               or type(c.get("pdf_page_1_based")) is not int
+                               or not 1 <= c["pdf_page_1_based"] <= item["page_count"] for c in cards)):
+                    raise ValueError("Invalid selected experiment cards")
+                record["excluded_experiment_cards"] = record["experiment_cards"]
+                record["card_selection_reason"] = receipt.get("card_selection_reason")
+                record["experiment_cards"] = cards
             record["research_review"] = receipt
             if research_review_errors(record):
                 raise ValueError("AI source review does not match the evidence: " + number)

@@ -19,6 +19,8 @@ tests/test_arena_core.py
 tests/test_arena_providers.py
 tests/test_arena_api.py
 tests/test_patent_evidence.py
+tests/test_patent_identity.py
+tests/test_install_patent_review_bundle.py
 tests/test_deploy_arena.py
 tests/test_arena_learning.py
 tests/test_arena_report.py

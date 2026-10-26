@@ -38,6 +38,8 @@ def create_app():
         b'def upgrade_review_routes(original):\n    assert original == ' + repr(OLD_SITE).encode()
         + b'\n    return ' + repr(NEW_SITE).encode() + b'\n')
     files['scripts/deploy_review_workspace.py'] = (ROOT / 'scripts/deploy_review_workspace.py').read_bytes()
+    files['scripts/install_patent_review_bundle.py'] = (ROOT / 'scripts/install_patent_review_bundle.py').read_bytes()
+    files['patent_data/catalog.json'] = b'{"items":[]}\n'
     return files
 
 
@@ -114,6 +116,37 @@ def test_transport_exact_full_file_manifest(tmp_path):
     assert set(release.read_archive(*transport(tmp_path))) == release.FILES
     assert release.BASE.name == '20261024-arena08' and release.TARGET.name == '20261026-arena10'
     assert release.BASE_VERSION == '1.2.7' and release.VERSION == '1.2.9'
+
+
+def test_new_patent_metadata_requires_originals_before_backup_or_switch(isolated,tmp_path):
+    files = source_files()
+    files['patent_data/catalog.json'] = json.dumps({'items': [{'research_review': {
+        'drug_mapping': {'sources': [{'original_relative_path': 'receipts/review/new/source.pdf',
+                                     'raw_sha256': 'a' * 64}]}}}]}).encode()
+    before = isolated.ledger.events()
+    with pytest.raises(ValueError, match='separately pinned original-evidence'):
+        release.deploy(*transport(tmp_path, files=files), release.digest(OLD_SITE))
+    assert release.CURRENT.resolve() == isolated.base
+    assert not release.TARGET.exists()
+    assert isolated.ledger.events() == before and isolated.calls == []
+
+
+def test_complete_deployment_stages_pinned_originals_into_release_manifest(isolated,tmp_path):
+    raw = b'Isolated public-source bytes, not clinical evidence'
+    name = 'receipts/review/new/source.pdf'
+    files = source_files()
+    files['patent_data/catalog.json'] = json.dumps({'items': [{'research_review': {
+        'drug_mapping': {'sources': [{'original_relative_path': name,
+                                     'raw_sha256': release.digest(raw)}]}}}]}).encode()
+    archive = tmp_path / 'review-originals.tar.gz'
+    with tarfile.open(archive, 'w:gz', format=tarfile.USTAR_FORMAT) as tar:
+        info = tarfile.TarInfo(name);info.size = len(raw);tar.addfile(info, io.BytesIO(raw))
+    receipt = release.deploy(*transport(tmp_path, files=files), release.digest(OLD_SITE),
+                             archive, release.digest(archive.read_bytes()))
+    assert receipt['patent_original_files_checked'] == 1
+    assert (release.TARGET / 'patent_data' / name).read_bytes() == raw
+    manifest = release.verify_manifest(release.TARGET)
+    assert {'path': 'patent_data/' + name, 'sha256': release.digest(raw), 'bytes': len(raw)} in manifest['files']
 
 
 @pytest.mark.parametrize('name', ['arena.sqlite3', 'arena_data/receipt.json', '../escape.py',

@@ -28,6 +28,12 @@ MAX_REVIEW_CHARS = 4096
 MAX_REVIEW_FINDINGS = 6
 MAX_REVIEW_UNKNOWNS = 4
 MAX_REVIEW_ITEM_CHARS = 200
+MAX_HUMAN_REVIEW_COUNT = 100
+EVIDENCE_REVIEW_ENUMS = {
+    'review_basis': ('two_agent_visual_source_check', 'scientific_review_required'),
+    'review_status': ('verified', 'scientifically_reviewed', 'two_agent_visual_source_check',
+                      'needs_review', 'not_reviewed', 'pending'),
+}
 DEFAULTS = {
     'openai': ('OpenAI', 'https://api.openai.com/v1', 'OPENAI_API_KEY'),
     'anthropic': ('Anthropic', 'https://api.anthropic.com/v1', 'ANTHROPIC_API_KEY'),
@@ -236,6 +242,38 @@ def _instant(value):
         raise ProviderError('invalid_evidence_date') from None
 
 
+def _evidence_review_metadata(item):
+    """Project explicit disclosures, not evidence eligibility or review proof.
+
+    Missing fields remain absent and explicit null remains unknown. Upstream
+    source/receipt verification and the existing forecast gates stay separate.
+    """
+    result = {}
+    for key, choices in EVIDENCE_REVIEW_ENUMS.items():
+        if key in item:
+            value = item[key]
+            if value is not None and (not isinstance(value, str) or value not in choices):
+                raise ProviderError('invalid_evidence_review_metadata')
+            result[key] = value
+    if 'human_review_count' in item:
+        value = item['human_review_count']
+        if value is not None and (type(value) is not int or not 0 <= value <= MAX_HUMAN_REVIEW_COUNT):
+            raise ProviderError('invalid_evidence_review_metadata')
+        result['human_review_count'] = value
+    if 'review_receipt' in item:
+        value = item['review_receipt']
+        if value is not None and (not isinstance(value, str) or not re.fullmatch(r'[a-f0-9]{64}', value)):
+            raise ProviderError('invalid_evidence_review_metadata')
+        result['review_receipt'] = value
+    for key in ('research_use_only', 'clinical_prediction_validated', 'same_base_model_correlation_disclosed'):
+        if key in item:
+            value = item[key]
+            if value is not None and type(value) is not bool:
+                raise ProviderError('invalid_evidence_review_metadata')
+            result[key] = value
+    return result
+
+
 def _packet(packet):
     if not isinstance(packet, dict):
         raise ProviderError('invalid_packet')
@@ -267,9 +305,11 @@ def _packet(packet):
         if item.get('eligible_for_forecast') is False:
             raise ProviderError('evidence_not_eligible')
         seen.add(eid)
-        projected.append({k: item[k] for k in ('id', 'text', 'source_url', 'availability_date', 'available_at',
-                                             'publication_date', 'evidence_kind', 'section_type', 'publication_number',
-                                             'pdf_page_1_based', 'example_id', 'source_sha256', 'review_status') if k in item})
+        value = {k: item[k] for k in ('id', 'text', 'source_url', 'availability_date', 'available_at',
+                                    'publication_date', 'evidence_kind', 'section_type', 'publication_number',
+                                    'pdf_page_1_based', 'example_id', 'source_sha256') if k in item}
+        value.update(_evidence_review_metadata(item))
+        projected.append(value)
     result = {'target': {k: target[k] for k in required}, 'evidence': projected, 'data_cutoff': cutoff_text}
     if len(canonical(result).encode()) > MAX_PACKET_BYTES:
         raise ProviderError('packet_too_large')
