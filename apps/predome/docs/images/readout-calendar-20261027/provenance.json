@@ -1,0 +1,430 @@
+{
+  "scope": "Actual HTTP GET to loopback app using a temporary copied runtime; shipped assets and real public records, not synthetic UI fixtures; local candidate not deployed or clinically validated",
+  "captured_at": "2026-10-26T21:26:57.514Z",
+  "public_overview_sha256": "168455f57d3232c83e7ef363c27a3b05d09d6cf35a636a5f1a4ea17afef027e9",
+  "shots": [
+    {
+      "name": "desktop-disagreement",
+      "target": "of-season-20261023-corrected-mevpro1",
+      "width": 1440,
+      "height": 900,
+      "file": "/Users/lijinming/Library/Application Support/VirtualBiotech/github-sync/EmerisBiotech-predome-1.1.8/apps/predome/docs/images/readout-calendar-20261027/desktop-disagreement.png",
+      "metrics": {
+        "groups": [
+          {
+            "key": "2026",
+            "label": "2026 sponsor windows 5",
+            "count": 5
+          },
+          {
+            "key": "2027",
+            "label": "2027 sponsor windows 6",
+            "count": 6
+          },
+          {
+            "key": "program",
+            "label": "Program guidance 1",
+            "count": 1
+          },
+          {
+            "key": "unconfirmed",
+            "label": "Readout unconfirmed 1",
+            "count": 1
+          }
+        ],
+        "modules": [
+          {
+            "top": 250.375,
+            "bottom": 423.859375
+          },
+          {
+            "top": 430.859375,
+            "bottom": 790.9375
+          },
+          {
+            "top": 797.9375,
+            "bottom": 945.90625
+          }
+        ],
+        "selected": "of-season-20261023-corrected-mevpro1",
+        "overflow": false,
+        "models": [
+          "D+deepseek-v4-proRecorded: 2026-10-22 17:07:36 UTCRationale & sourcesUncertainAbstainedN/AN/A",
+          "Ddeepseek-v4.1-flashPrediction time: 2026-10-22 17:08:00 UTCRationale & sourcesFailureN/AN/A",
+          "Gglm-5.2Recorded: 2026-10-22 17:10:27 UTCRationale & sourcesUncertainNo usable responseN/AN/A",
+          "Kkimi-k3Prediction time: 2026-10-22 17:08:26 UTCRationale & sourcesSuccessN/AN/A"
+        ],
+        "minCalendarFont": 10
+      },
+      "sha256": "f0c170d0ee386829f9ade8e878cd553a4cd40080baf3de4150c9935b3547be9e"
+    },
+    {
+      "name": "desktop-program-guidance",
+      "target": "of-season-20261023-corrected-vitalize",
+      "width": 1440,
+      "height": 900,
+      "file": "/Users/lijinming/Library/Application Support/VirtualBiotech/github-sync/EmerisBiotech-predome-1.1.8/apps/predome/docs/images/readout-calendar-20261027/desktop-program-guidance.png",
+      "metrics": {
+        "groups": [
+          {
+            "key": "2026",
+            "label": "2026 sponsor windows 5",
+            "count": 5
+          },
+          {
+            "key": "2027",
+            "label": "2027 sponsor windows 6",
+            "count": 6
+          },
+          {
+            "key": "program",
+            "label": "Program guidance 1",
+            "count": 1
+          },
+          {
+            "key": "unconfirmed",
+            "label": "Readout unconfirmed 1",
+            "count": 1
+          }
+        ],
+        "modules": [
+          {
+            "top": 250.375,
+            "bottom": 440.359375
+          },
+          {
+            "top": 447.359375,
+            "bottom": 797.9375
+          },
+          {
+            "top": 804.9375,
+            "bottom": 951.40625
+          }
+        ],
+        "selected": "of-season-20261023-corrected-vitalize",
+        "overflow": false,
+        "models": [
+          "D+deepseek-v4-proPrediction time: 2026-10-22 17:12:16 UTCRationale & sourcesFailureN/AN/A",
+          "Ddeepseek-v4.1-flashPrediction time: 2026-10-22 17:11:52 UTCRationale & sourcesFailureN/AN/A",
+          "Gglm-5.2Recorded: 2026-10-22 17:17:48 UTCRationale & sourcesUncertainNo usable responseN/AN/A",
+          "Kkimi-k3Prediction time: 2026-10-22 17:12:24 UTCRationale & sourcesFailureN/AN/A"
+        ],
+        "minCalendarFont": 10
+      },
+      "sha256": "73b0d527dfe123fa55138efc627c87640718a739985b9ade26a1f0c2170a920f"
+    },
+    {
+      "name": "desktop-unconfirmed-pilot",
+      "target": "of-retatrutide-pair-20261027-v1-target",
+      "width": 1440,
+      "height": 900,
+      "file": "/Users/lijinming/Library/Application Support/VirtualBiotech/github-sync/EmerisBiotech-predome-1.1.8/apps/predome/docs/images/readout-calendar-20261027/desktop-unconfirmed-pilot.png",
+      "metrics": {
+        "groups": [
+          {
+            "key": "2026",
+            "label": "2026 sponsor windows 5",
+            "count": 5
+          },
+          {
+            "key": "2027",
+            "label": "2027 sponsor windows 6",
+            "count": 6
+          },
+          {
+            "key": "program",
+            "label": "Program guidance 1",
+            "count": 1
+          },
+          {
+            "key": "unconfirmed",
+            "label": "Readout unconfirmed 1",
+            "count": 1
+          }
+        ],
+        "modules": [
+          {
+            "top": 301.375,
+            "bottom": 474.859375
+          },
+          {
+            "top": 481.859375,
+            "bottom": 746.4375
+          },
+          {
+            "top": 753.4375,
+            "bottom": 899.90625
+          }
+        ],
+        "selected": "of-retatrutide-pair-20261027-v1-target",
+        "overflow": false,
+        "models": [
+          "Ddeepseek-v4.1-flashPrediction time: 2026-10-26 17:55:11 UTCRationale & sourcesSuccessN/AN/A",
+          "Kkimi-k3Recorded: 2026-10-26 17:53:28 UTCRationale & sourcesUncertainNo usable responseN/AN/A"
+        ],
+        "minCalendarFont": 10
+      },
+      "sha256": "6c0139115943ce928651cf0a3b20850139aa1ce35c0381fa533db84ef305e3be"
+    },
+    {
+      "name": "desktop-reported-replay",
+      "target": "history-replay-case-001",
+      "period": "reported",
+      "width": 1440,
+      "height": 900,
+      "file": "/Users/lijinming/Library/Application Support/VirtualBiotech/github-sync/EmerisBiotech-predome-1.1.8/apps/predome/docs/images/readout-calendar-20261027/desktop-reported-replay.png",
+      "metrics": {
+        "groups": [
+          {
+            "key": "reported",
+            "label": "Published result records 8",
+            "count": 8
+          }
+        ],
+        "modules": [
+          {
+            "top": 301.375,
+            "bottom": 507.859375
+          },
+          {
+            "top": 514.859375,
+            "bottom": 769.4375
+          },
+          {
+            "top": 776.4375,
+            "bottom": 927.734375
+          }
+        ],
+        "selected": "history-replay-case-001",
+        "overflow": false,
+        "models": [
+          "Ddeepseek-flashPrediction time: 2026-10-17 07:36:18 UTCRationale & sourcesSuccessN/AN/A",
+          "D+deepseek-v4-proPrediction time: 2026-10-17 07:36:29 UTCRationale & sourcesFailureN/AN/A"
+        ],
+        "minCalendarFont": 10
+      },
+      "sha256": "2864fd6dc9e7c7f440f78729aa7b38e8c076fc2b39102772fedd346df7df0291"
+    },
+    {
+      "name": "mobile-disagreement",
+      "target": "of-season-20261023-corrected-mevpro1",
+      "width": 375,
+      "height": 812,
+      "file": "/Users/lijinming/Library/Application Support/VirtualBiotech/github-sync/EmerisBiotech-predome-1.1.8/apps/predome/docs/images/readout-calendar-20261027/mobile-disagreement.png",
+      "metrics": {
+        "groups": [
+          {
+            "key": "2026",
+            "label": "2026 sponsor windows 5",
+            "count": 5
+          },
+          {
+            "key": "2027",
+            "label": "2027 sponsor windows 6",
+            "count": 6
+          },
+          {
+            "key": "program",
+            "label": "Program guidance 1",
+            "count": 1
+          },
+          {
+            "key": "unconfirmed",
+            "label": "Readout unconfirmed 1",
+            "count": 1
+          }
+        ],
+        "modules": [
+          {
+            "top": 440.28125,
+            "bottom": 958.765625
+          },
+          {
+            "top": 970.765625,
+            "bottom": 2318.890625
+          },
+          {
+            "top": 2330.890625,
+            "bottom": 2862.453125
+          }
+        ],
+        "selected": "of-season-20261023-corrected-mevpro1",
+        "overflow": false,
+        "models": [
+          "D+deepseek-v4-proRecorded: 2026-10-22 17:07:36 UTCRationale & sourcesUncertainAbstainedN/AN/A",
+          "Ddeepseek-v4.1-flashPrediction time: 2026-10-22 17:08:00 UTCRationale & sourcesFailureN/AN/A",
+          "Gglm-5.2Recorded: 2026-10-22 17:10:27 UTCRationale & sourcesUncertainNo usable responseN/AN/A",
+          "Kkimi-k3Prediction time: 2026-10-22 17:08:26 UTCRationale & sourcesSuccessN/AN/A"
+        ],
+        "minCalendarFont": 10
+      },
+      "sha256": "7374dfd168b6becc18fd1254e219c825e3832121bdfe5b66b147505860f6de12"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/arena?target=of-season-20261023-corrected-mevpro1"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/design-system.css?v=editorial-01"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.css?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.js?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public/targets/of-season-20261023-corrected-mevpro1"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/arena?target=of-season-20261023-corrected-vitalize"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/design-system.css?v=editorial-01"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.css?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.js?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public/targets/of-season-20261023-corrected-vitalize"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/arena?target=of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/design-system.css?v=editorial-01"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.css?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.js?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/arena?target=history-replay-case-001&period=reported"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/design-system.css?v=editorial-01"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.css?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.js?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public/targets/history-replay-case-001"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/arena?target=of-season-20261023-corrected-mevpro1"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/design-system.css?v=editorial-01"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.css?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/arena-public.js?v=arena-calendar-03"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:51156/api/arena/public/targets/of-season-20261023-corrected-mevpro1"
+    }
+  ],
+  "unexpected": [],
+  "errors": [],
+  "provider_calls": 0,
+  "production_mutations": 0
+}

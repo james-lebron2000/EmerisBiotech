@@ -34,15 +34,52 @@
     const ranked=data.targets.filter(t=>isReported(t)&&!inactive(t)).sort((a,b)=>Number(state.current.some(c=>c.id===b.id))-Number(state.current.some(c=>c.id===a.id))||(Date.parse(b.registered_at)||0)-(Date.parse(a.registered_at)||0));
     const groups=new Map();ranked.forEach(t=>{const key=JSON.stringify([t.nct_id,t.endpoint,t.population,t.comparison,t.success_definition,pilot(t)?t.cohort_id:null]);if(!groups.has(key))groups.set(key,t);});state.reported=[...groups.values()];
   }
+  // Validate calendar dates without allowing Date.parse to normalize invalid days.
+  function calendarDay(value){
+    const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(str(value));if(!match)return null;
+    const [year,month,date]=match.slice(1).map(Number);if(year<1000||month<1||month>12||date<1)return null;
+    const days=new Date(Date.UTC(year,month,0)).getUTCDate();return date<=days?{year,month,date,key:value}:null;
+  }
+  function readoutWindow(t){
+    const r=t.readout||{},start=calendarDay(r.start),end=calendarDay(r.end),unknown={valid:false,label:'Readout unconfirmed',original:str(r.label),end:'',year:null};
+    if(!start||!end||start.key>end.key||start.year!==end.year)return unknown;
+    const monthEnd=end.date===new Date(Date.UTC(end.year,end.month,0)).getUTCDate();let label='';
+    if(r.precision==='day'&&start.key===end.key)label=start.key;
+    else if(r.precision==='month'&&start.date===1&&start.month===end.month&&monthEnd)label=start.key.slice(0,7);
+    else if(r.precision==='quarter'&&start.date===1&&[1,4,7,10].includes(start.month)&&end.month===start.month+2&&monthEnd)label=`${start.year} Q${(start.month+2)/3}`;
+    else if(r.precision==='half_year'&&start.date===1&&[1,7].includes(start.month)&&end.month===start.month+5&&monthEnd)label=`H${start.month===1?1:2} ${start.year}`;
+    else if(r.precision==='year'&&start.month===1&&start.date===1&&end.month===12&&end.date===31)label=String(start.year);
+    return label?{valid:true,label,original:str(r.label),end:end.key,year:start.year}:unknown;
+  }
+  function targetRuns(t){
+    return arr(state.data?.runs).filter(r=>r.target_id===t.id&&r.condition==='clinical_only'&&(r.track==='same_evidence'||(historical(t)&&r.track==='archived'&&r.scope==='archived_research')));
+  }
+  function storedLock(runs){
+    const values=runs.map(r=>str(r.locked_at_utc)).filter(v=>/^\d{4}-\d{2}-\d{2}T/.test(v)&&calendarDay(v.slice(0,10))&&Number.isFinite(Date.parse(v))).map(v=>new Date(v).toISOString()).sort();
+    if(!values.length)return 'No lock recorded';
+    const first=values[0],last=values[values.length-1],shortDate=v=>v.slice(0,10),time=v=>v.slice(11,16);
+    const range=first===last?`${shortDate(first)} ${time(first)}`:shortDate(first)===shortDate(last)?`${shortDate(first)} ${time(first)}–${time(last)}`:`${shortDate(first)}–${shortDate(last)}`;
+    return `Recorded lock ${range} UTC${values.length<runs.length?' · incomplete':''}`;
+  }
+  function reportedTime(t){const value=str(t.result?.first_public_at);return calendarDay(value.slice(0,10))&&Number.isFinite(Date.parse(value))?Date.parse(value):0;}
+  function calendarGroups(available){
+    if(state.period==='reported')return [{key:'reported',label:'Published result records',targets:[...available].sort((a,b)=>reportedTime(b)-reportedTime(a)||str(a.trial_name).localeCompare(str(b.trial_name)))}];
+    const groups=new Map();
+    available.forEach(t=>{const window=readoutWindow(t),program=t.readout?.source_granularity==='drug_program',key=!window.valid?'unconfirmed':program?'program':String(window.year);if(!groups.has(key))groups.set(key,{key,label:key==='unconfirmed'?'Readout unconfirmed':key==='program'?'Program guidance':`${window.year} sponsor windows`,targets:[]});groups.get(key).targets.push(t);});
+    return [...groups.values()].sort((a,b)=>{const rank=k=>k==='unconfirmed'?Infinity:k==='program'?9999:Number(k);return rank(a.key)-rank(b.key);}).map(group=>({...group,targets:group.targets.sort((a,b)=>readoutWindow(a).end.localeCompare(readoutWindow(b).end)||str(a.trial_name).localeCompare(str(b.trial_name))||str(a.id).localeCompare(str(b.id)))}));
+  }
   function schedule(available){
     const strip=$('arena-fixtures');if(!strip)return;
     strip.hidden=!available.length;
     const nctCounts=new Map();available.forEach(t=>nctCounts.set(t.nct_id,(nctCounts.get(t.nct_id)||0)+1));
-    strip.innerHTML=`<span class="arena-schedule-label">${state.period==='reported'?'RESULTS DESK':'TRIAL MATCHES'}</span><div class="arena-schedule-track">${available.map(t=>`<button type="button" class="arena-match-chip" data-arena-target="${esc(t.id)}" aria-label="${esc([t.trial_name,t.drug,t.nct_id,t.endpoint].filter(Boolean).join(' · '))}" aria-pressed="${t.id===state.targetId}"><span class="arena-fixture-stage">${pilot(t)?'INDEPENDENT RESEARCH PILOT · ':''}${isReported(t)?agreementPending(t)?'INDEPENDENT REVIEW PENDING':historical(t)?'HISTORICAL RECORD':'RESULT RECORDED':'AWAITING READOUT'}</span><strong>${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,40)):''}</strong><span>${esc(short(t.drug,45)||'Drug unavailable')} · ${esc(t.readout?.label||'Readout not specified')}</span></button>`).join('')}</div>`;
+    const card=t=>{const window=readoutWindow(t),runs=targetRuns(t),counts={Success:0,Failure:0,Uncertain:0};runs.forEach(r=>counts[safeDirection(r)]++);const reported=isReported(t),date=calendarDay(day(t.result?.first_public_at)),label=reported?(date?date.key:'Announcement date unconfirmed'):window.label,stage=pilot(t)?'Independent pilot':reported?historical(t)?'Historical replay':agreementPending(t)?'Review pending':'Result recorded':t.readout?.source_granularity==='drug_program'?'Program guidance':'Recorded guidance',votes=runs.length?`Success ${counts.Success} · Failure ${counts.Failure} · Uncertain ${counts.Uncertain} / ${runs.length} assigned`:'No assigned model records';
+      return `<article class="arena-calendar-card" data-calendar-target="${esc(t.id)}" data-window-kind="${esc(reported?'reported':!window.valid?'unconfirmed':t.readout?.source_granularity==='drug_program'?'program':str(t.readout?.precision))}"${window.valid?` data-window-end="${esc(window.end)}"`:''}><button type="button" class="arena-match-chip" data-arena-target="${esc(t.id)}" aria-label="${esc([t.trial_name,t.drug,t.nct_id,t.endpoint,label,votes,storedLock(runs)].filter(Boolean).join(' · '))}" aria-pressed="${t.id===state.targetId}"><span class="arena-calendar-window">${esc(label)}<small>${esc(stage)}</small></span><span class="arena-calendar-trial"><strong>${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,40)):''}</strong><span class="arena-calendar-drug" title="${esc(t.drug||'Drug unavailable')}">${esc(t.drug||'Drug unavailable')}</span></span><span class="arena-calendar-votes" aria-label="${esc(votes)}">${runs.length?['Success','Failure','Uncertain'].map(k=>`<span class="arena-vote-${k.toLowerCase()}" data-vote="${k}" data-count="${counts[k]}">${k[0]} ${counts[k]}</span>`).join('')+`<small> / ${runs.length}${counts.Success===0&&counts.Failure===0?' · No directional call':counts.Success&&counts.Failure?' · Directions differ':''}</small>`:'No assigned models'}</span><span class="arena-calendar-lock">${esc(storedLock(runs))}</span></button><div class="arena-calendar-source">${reported?link(t.result?.source_url,'Result source'):link(t.readout?.source_url,window.valid?'Guidance source':'Timing source')}<span title="${esc(reported?(historical(t)?'Historical replay; not a prospective hit':accepted(t)?'Independently accepted outcome':'Independent review pending'):window.original)}">${esc(reported?(historical(t)?'Historical replay; not a prospective hit':accepted(t)?'Independently accepted outcome':'Independent review pending'):short(window.original||'No guidance label recorded',90))}</span></div></article>`;
+    };
+    strip.innerHTML=`<div class="arena-calendar-caption"><strong>${state.period==='reported'?'RESULTS DESK':'READOUT CALENDAR'}</strong><span>${state.period==='reported'?'Official announcement dates · historical records stay separate':'Recorded guidance · overlapping windows are not exact readout order'}</span></div><div class="arena-schedule-track">${calendarGroups(available).map(group=>`<section class="arena-window-group" data-window-group="${esc(group.key)}"><h2>${esc(group.label)} <span>${group.targets.length}</span></h2><div class="arena-window-cards">${group.targets.map(card).join('')}</div></section>`).join('')}</div>`;
     centerSchedule();
   }
   function centerSchedule(){
-    requestAnimationFrame(()=>{const track=$('arena-fixtures')?.querySelector('.arena-schedule-track'),active=track?.querySelector('[aria-pressed="true"]');if(track&&active)track.scrollLeft=Math.max(0,active.offsetLeft-track.offsetLeft-track.clientWidth/2+active.clientWidth/2);});
+    requestAnimationFrame(()=>{const track=$('arena-fixtures')?.querySelector('.arena-schedule-track'),active=track?.querySelector('[aria-pressed="true"]');if(track&&active)track.scrollLeft=Math.max(0,track.scrollLeft+active.getBoundingClientRect().left-track.getBoundingClientRect().left-track.clientWidth/2+active.clientWidth/2);});
   }
   function controls(){
     $('public-controls').hidden=false;let available=availableTargets();const explicit=arr(state.data?.targets).find(t=>t.id===state.targetId);
@@ -55,7 +92,7 @@
   }
   function banner(t){
     const current=state.current.some(c=>c.id===t.id),latest=state.current.find(c=>c.nct_id&&c.nct_id===t.nct_id&&c.id!==t.id);
-    if(pilot(t))return '<aside class="public-record-banner" data-research-pilot="true"><strong>Independent research pilot · Separate from the formal season</strong><span>Clinical-only assignments are compared here. The patent-added arm remains a separate research condition. Original prediction times are preserved; adding this record to the service is not a new prediction. Uncalibrated research judgments; no ranking before an independently accepted outcome.</span></aside>';
+    if(pilot(t))return '<aside class="public-record-banner" data-research-pilot="true"><strong>Independent research pilot · Separate from the formal season</strong><span>Clinical-only controls; patent-added research remains separate. Original times preserved. Uncalibrated judgments; no ranking before an independently accepted outcome.</span></aside>';
     const replay=t.scope==='archived_research'||t.scope==='retrospective';if(current)return '';
     const label=inactive(t)?'Original record · Withdrawn before execution':replay?'Historical replay · Not a prospective prediction':'Earlier record · Original target preserved';
     return `<aside class="public-record-banner" data-original-record="true"><strong>${label}</strong><span>${replay?'This analysis may postdate the public result and is not evidence of a prospective hit.':inactive(t)?'Registration did not result in model execution.':'This is the exact record in the selected link; it has not been replaced by a later prediction.'}</span>${latest?`<br><a class="public-latest-link" href="${esc(urlFor(latest.id))}">View the latest formal record for this trial →</a>`:''}</aside>`;

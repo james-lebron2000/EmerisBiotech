@@ -48,7 +48,7 @@ FILES = frozenset((
     'docs/SEALED_RECORD_SYNC.md',
     'docs/PUBLIC_CLINICAL_BRIEF.md',
     'scripts/arena_reviewers.py', 'scripts/configure_arena_frontends.py', 'scripts/deploy_result_reviews.py',
-    'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-public.css',
+    'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-public.css', 'static/arena-public.html',
     'static/arena-home.js', 'static/arena-review.html',
     'static/arena-review.js', 'static/arena-review.css', 'docs/OPEN_FORECAST_RELIABILITY_1_2_8.md',
     'docs/RESULT_REVIEW_WORKSPACE_1_2_9.md', 'docs/SCIENTIFIC_RESULT_ACCEPTANCE.md',
