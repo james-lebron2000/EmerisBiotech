@@ -7,3 +7,9 @@
 .arena-page>header nav{min-width:0;max-width:100%}.arena-page main,.arena-page .panel{min-width:0}.arena-page #arena-body{overflow-wrap:anywhere}.arena-experiment+.arena-experiment{border-top:1px solid var(--line);margin-top:20px;padding-top:15px}.arena-page-references ul{padding-left:18px;font-size:11px}.arena-page-references summary{cursor:pointer;color:var(--teal)}
 
 .arena-source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.arena-source{border:1px solid var(--line);padding:18px;border-radius:4px;min-width:0}.arena-source h3{font-size:16px;margin:0 0 8px}.arena-source p{font-size:12px}.arena-source .arena-facts{font-size:12px;grid-template-columns:90px minmax(0,1fr)}.arena-source summary{font-size:12px;cursor:pointer;color:var(--teal);margin-top:15px}.arena-source pre{white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.8 ui-monospace,monospace;background:var(--soft);padding:12px;max-height:420px;overflow:auto}@media(max-width:700px){.arena-source-grid{grid-template-columns:1fr}}
+
+/* Source-reported assay tables must fit their evidence card under the unchanged
+   style-src self policy. Keep every printed value and unit readable on mobile. */
+.arena-experiment-results{min-width:0;width:100%;table-layout:fixed}
+.arena-experiment-results th,.arena-experiment-results td{padding:8px 6px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:700px){.arena-experiment-result-label,.arena-experiment-result{grid-column:1/-1}}

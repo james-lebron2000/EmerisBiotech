@@ -1,0 +1,181 @@
+{
+  "schema_version": "predome-versioned-patent-real-http-qa-1",
+  "captured_at_utc": "2026-10-26T22:41:34.832149+00:00",
+  "scope": "Actual loopback HTTP internal patent page on a fresh copied runtime; separate synthetic local QA account authenticated by real register/login HTTP; no fixture substitution or access-control bypass.",
+  "base_url": "http://127.0.0.1:51159",
+  "internal_url": "http://127.0.0.1:51159/arena/lab?view=patents",
+  "git_head_at_capture": "8f44316ee83cf1226ecb67ab8ee05567424add38",
+  "candidate_assets_verified_by_actual_http_bytes": [
+    {
+      "path": "static/arena.js",
+      "sha256": "63a42c48f101652d7fef400659a895812933bb06b5acc76731eb2cfe0d3e299e",
+      "bytes": 54568
+    },
+    {
+      "path": "static/arena.css",
+      "sha256": "9e84a178d4007e08c039c6cb39bb6dca13f7b2ae58b4125b4cc21ae3038014fe",
+      "bytes": 14802
+    },
+    {
+      "path": "static/arena-lab.html",
+      "sha256": "fc46763c0dbb49d1395c4d5cac4afc826a3ae3733f72dbcec75234736bc4cedc",
+      "bytes": 3198
+    },
+    {
+      "path": "static/design-system.css",
+      "sha256": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+      "bytes": 13004
+    }
+  ],
+  "catalog_file_bytes_sha256": "24aafc077eaf77d23735e92e17366a789f5f9f15db78efa702efde76f0cbd4ca",
+  "catalog_canonical_sha256": "fc547886a87943136eb726b419eeeea0a3e7f5424a7354a0ccef1920f032c4e9",
+  "hash_scope_note": "File-byte SHA-256 hashes the saved catalog.json bytes; catalog_canonical_sha256 is the existing NFC canonical JSON digest excluding its own digest field. Neither is a patent original-file hash.",
+  "patents": [
+    {
+      "publication": "WO2019125938A1",
+      "cards": [
+        "WO2019125938A1-example12-table3-camp-v1",
+        "WO2019125938A1-example12-table4-casein-camp-v1"
+      ],
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "review_receipt": "4073252133b7cc56995145666efcc895d94e5eb3e23802ba59aa2d8708945c20",
+      "human_review_count": 0
+    },
+    {
+      "publication": "WO2020240467A1",
+      "cards": [
+        "WO2020240467A1-example7-orr",
+        "WO2020240467A1-example7-observed-human-pk-v1"
+      ],
+      "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "review_receipt": "e0206168848e6bb84f1a1304c0e2390ebc1a357650dccae76fcbe5ae1c9a3400",
+      "human_review_count": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "dato-observed-pk-desktop.png",
+      "sha256": "4107ba547709792b64e79aced4ddb5148bee897736fb2d33f3b4ff29653308f9",
+      "bytes": 301406,
+      "layout": {
+        "documentWidth": 1440,
+        "viewportWidth": 1440,
+        "tableWidth": 427,
+        "containerWidth": 427,
+        "containerScrollWidth": 427,
+        "tableMinWidth": "0px",
+        "tableInlineStyle": null,
+        "allCellsInViewport": true
+      },
+      "actual_image_opened_for_visual_review": true
+    },
+    {
+      "file": "dato-observed-pk-mobile.png",
+      "sha256": "c74de3cebe9ee9db87fc6a070728bcbcc2e8d53311228e29d03897f403700c84",
+      "bytes": 70934,
+      "layout": {
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "tableWidth": 265,
+        "containerWidth": 265,
+        "containerScrollWidth": 265,
+        "tableMinWidth": "0px",
+        "tableInlineStyle": null,
+        "allCellsInViewport": true
+      },
+      "actual_image_opened_for_visual_review": true
+    },
+    {
+      "file": "retatrutide-casein-mobile.png",
+      "sha256": "5e812f6a51e0709a21e9e2c441f5726613df27a5c368698e01ba69daa80e939b",
+      "bytes": 64955,
+      "layout": {
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "tableWidth": 265,
+        "containerWidth": 265,
+        "containerScrollWidth": 265,
+        "tableMinWidth": "0px",
+        "tableInlineStyle": null,
+        "allCellsInViewport": true
+      },
+      "actual_image_opened_for_visual_review": true
+    }
+  ],
+  "page_errors": [],
+  "console_errors_including_csp": [],
+  "external_requests": [],
+  "blocked_requests": [],
+  "actual_http_request_count": 37,
+  "actual_http_methods": {
+    "GET": 35,
+    "POST": 2
+  },
+  "permitted_posts": [
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 200,
+      "allowed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "allowed": true
+    }
+  ],
+  "auth_assurance": "Normal same-origin register and login; existing session cookie accepted by actual lab access route (204). QA account is not a scientific reviewer and has no reviewer enrollment.",
+  "account_scope": "Synthetic local QA only; not Jake and not a real scientific reviewer.",
+  "review_writes": 0,
+  "forecast_writes": 0,
+  "provider_calls": 0,
+  "model_switches_enabled": false,
+  "copied_arena_before": {
+    "event_rows": 331,
+    "head_sha256": "0ec9fb20841e5aba43aaa09e40573f862c34efe4c1d2391b331806077b36c79b"
+  },
+  "copied_arena_after": {
+    "event_rows": 331,
+    "head_sha256": "0ec9fb20841e5aba43aaa09e40573f862c34efe4c1d2391b331806077b36c79b"
+  },
+  "original_source_runtime_unchanged": true,
+  "only_auth_related_workbench_tables_changed": true,
+  "auth_related_changed_tables": {
+    "users": {
+      "rows_before": 1,
+      "rows_after": 2
+    },
+    "sessions": {
+      "rows_before": 1,
+      "rows_after": 2
+    },
+    "active": {
+      "rows_before": 0,
+      "rows_after": 1
+    },
+    "policies": {
+      "rows_before": 0,
+      "rows_after": 1
+    },
+    "auth_limits": {
+      "rows_before": 0,
+      "rows_after": 3
+    }
+  },
+  "auth_mutation_note": "Registration creates a synthetic user, mapping policy and active-policy row. Normal authentication also maintains sessions and rate-limit tables, including cleanup of expired sessions in this new copy only.",
+  "public_original_runs_unchanged": 144,
+  "public_before_file_bytes_sha256": "de32711d4636fccf34afbfa22ca1c1e5f353295436cefce184d965a34cd58ef3",
+  "public_after_file_bytes_sha256": "b685e789621f5e21f20bff7256f002e1d5d84a22538c6f87f3242a8ebf654f56",
+  "canonical_public_json_equal": true,
+  "private_browser_cookie_state_included": false,
+  "credentials_printed_or_published": false,
+  "initial_csp_failure_evidence_preserved": "attempt-1/browser-receipt.json; original screenshots retained. Actual app CSP blocked inline PK/cAMP styles. The final implementation uses semantic CSS classes; CSP was not relaxed.",
+  "production_deployment_completed": false,
+  "clinical_prediction_validated": false,
+  "limits": [
+    "This is a local authenticated UI/API acceptance, not a production deployment or clinical validation.",
+    "New cards are a versioned evidence catalogue; original forecasts and their historical frozen packets remain unchanged.",
+    "Local account/session mutations were confined to the new QA runtime. No scientific review approval was submitted."
+  ]
+}

@@ -252,3 +252,94 @@ def test_cli_stages_only_offline_originals_and_reports_no_scientific_acceptance(
     output = json.loads(result.stdout)
     assert output['offline'] is True and output['scientific_acceptance_granted'] is False
     assert len(output['files']) == 3
+
+
+def test_explicit_version_stages_its_catalog_without_changing_default_files(release, tmp_path):
+    root, files, _ = release
+    path, expected = archive(tmp_path, files)
+    installer.stage(root, path, expected)
+    default_paths = [root / 'patent_data/catalog.json', *(root / 'patent_data' / name for name in files)]
+    before = {p: (p.read_bytes(), p.stat().st_ino, p.stat().st_mtime_ns) for p in default_paths}
+    directory = 'patent_data/versions/assays-20261027-v2'
+    selected = root / directory; selected.mkdir(parents=True)
+    version_files = {name: raw + b'\nSYNTHETIC version-two bytes' for name, raw in files.items()}
+    (selected / 'catalog.json').write_text(json.dumps(catalog(version_files)))
+    path, expected = archive(tmp_path, version_files)
+    records = installer.stage(root, path, expected, patent_directory=directory)
+    assert records == [{'path': directory + '/' + name, 'sha256': sha(version_files[name]),
+                        'bytes': len(version_files[name])} for name in sorted(version_files)]
+    assert all((selected / name).read_bytes() == raw for name, raw in version_files.items())
+    assert all((p.read_bytes(), p.stat().st_ino, p.stat().st_mtime_ns) == before[p] for p in default_paths)
+    assert installer.stage(root, path, expected, patent_directory=directory) == records
+
+
+@pytest.mark.parametrize('directory', [None, 'other_data', '/patent_data', 'patent_data/versions',
+    'patent_data/versions/../escape', 'patent_data/versions/.hidden', 'patent_data/versions/v2/nested',
+    'patent_data//versions/v2', 'patent_data/versions/' + 'x' * 101])
+def test_invalid_patent_directory_rejected_before_release_writes(release, tmp_path, directory):
+    root, files, _ = release
+    path, expected = archive(tmp_path, files)
+    original = (root / 'patent_data/catalog.json').read_bytes()
+    with pytest.raises(ValueError, match='Patent directory must be'):
+        installer.stage(root, path, expected, patent_directory=directory)
+    assert_not_staged(root, files)
+    assert (root / 'patent_data/catalog.json').read_bytes() == original
+    assert not (root / 'patent_data/versions').exists()
+
+
+def test_missing_version_neither_creates_directory_nor_uses_default_catalog(release):
+    root, files, _ = release
+    with pytest.raises(ValueError, match='directory is missing'):
+        installer.stage(root, patent_directory='patent_data/versions/missing-v2')
+    assert not (root / 'patent_data/versions').exists()
+    assert_not_staged(root, files)
+
+
+@pytest.mark.parametrize('kind', ['versions', 'version', 'catalog', 'receipts', 'file', 'conflict'])
+def test_version_links_and_conflicts_prevent_all_new_writes(release, tmp_path, kind):
+    root, files, metadata = release
+    directory = 'patent_data/versions/assays-v2'
+    selected = root / directory; selected.mkdir(parents=True)
+    (selected / 'catalog.json').write_text(json.dumps(metadata))
+    default_before = (root / 'patent_data/catalog.json').read_bytes()
+    outside = tmp_path / 'outside'; outside.mkdir()
+    sentinel = outside / 'original'; sentinel.write_bytes(b'untouched outside bytes')
+    if kind in ['versions', 'version']:
+        original = selected.parent if kind == 'versions' else selected
+        moved = outside / 'moved'; original.rename(moved)
+        original.symlink_to(moved, target_is_directory=True)
+    elif kind == 'catalog':
+        original = selected / 'catalog.json'; moved = outside / 'catalog.json'
+        original.rename(moved); original.symlink_to(moved)
+    elif kind == 'receipts':
+        (selected / 'receipts').symlink_to(outside, target_is_directory=True)
+    else:
+        original = selected / ORIGINAL; original.parent.mkdir(parents=True)
+        if kind == 'file': original.symlink_to(sentinel)
+        else: original.write_bytes(b'existing conflicting version-two bytes')
+    path, expected = archive(tmp_path, files)
+    with pytest.raises((ValueError, OSError)):
+        installer.stage(root, path, expected, patent_directory=directory)
+    assert not (selected / PREVIEW).exists()
+    assert not (selected / OBSERVATION).exists()
+    assert_not_staged(root, files)
+    assert sentinel.read_bytes() == b'untouched outside bytes'
+    assert (root / 'patent_data/catalog.json').read_bytes() == default_before
+    if kind == 'conflict':
+        assert (selected / ORIGINAL).read_bytes() == b'existing conflicting version-two bytes'
+
+
+def test_cli_explicit_version_reports_selected_prefix_only(release, tmp_path):
+    root, files, metadata = release
+    directory = 'patent_data/versions/assays_20261027-v2'
+    selected = root / directory; selected.mkdir(parents=True)
+    (selected / 'catalog.json').write_text(json.dumps(metadata))
+    path, expected = archive(tmp_path, files)
+    result = subprocess.run([sys.executable, '-B', installer.__file__, '--release-root', str(root),
+        '--archive', str(path), '--sha256', expected, '--patent-directory', directory],
+        capture_output=True, text=True, check=True)
+    output = json.loads(result.stdout)
+    assert output['offline'] is True and output['scientific_acceptance_granted'] is False
+    assert [item['path'] for item in output['files']] == [directory + '/' + name for name in sorted(files)]
+    assert all((selected / name).read_bytes() == raw for name, raw in files.items())
+    assert_not_staged(root, files)

@@ -40,6 +40,7 @@ def create_app():
     files['scripts/deploy_review_workspace.py'] = (ROOT / 'scripts/deploy_review_workspace.py').read_bytes()
     files['scripts/install_patent_review_bundle.py'] = (ROOT / 'scripts/install_patent_review_bundle.py').read_bytes()
     files['patent_data/catalog.json'] = b'{"items":[]}\n'
+    files[release.ASSAY_DATA_DIRECTORY + '/catalog.json'] = b'{"items":[]}\n'
     return files
 
 
@@ -150,7 +151,7 @@ def test_complete_deployment_stages_pinned_originals_into_release_manifest(isola
 
 
 @pytest.mark.parametrize('name', ['arena.sqlite3', 'arena_data/receipt.json', '../escape.py',
-                                  'static/arena.css', 'emeris_live/new.py', 'CODE_RELEASE.json/evil'])
+                                  'static/unlisted.css', 'emeris_live/new.py', 'CODE_RELEASE.json/evil'])
 def test_unlisted_members_fail_closed(tmp_path, name):
     with pytest.raises(ValueError, match='Unexpected code transport'):
         release.read_archive(*transport(tmp_path, extra={name: b'forbidden'}))
@@ -376,3 +377,82 @@ def test_cli_requires_operator_pinned_nginx_hash(tmp_path):
                              '--archive', str(path), '--sha256', sha, '--commit', commit],
                             cwd=tmp_path, env=release.child_environment(), capture_output=True, text=True)
     assert result.returncode != 0 and '--expected-nginx-sha256' in result.stderr
+
+
+def synthetic_reference_catalog(name,raw):
+    return json.dumps({'items':[{'research_review':{'drug_mapping':{'sources':[
+        {'original_relative_path':name,'raw_sha256':release.digest(raw)}]}}}]}).encode()
+
+
+def evidence_archive(path,name,raw):
+    with tarfile.open(path,'w:gz',format=tarfile.USTAR_FORMAT) as archive:
+        member=tarfile.TarInfo(name);member.size=len(raw);archive.addfile(member,io.BytesIO(raw))
+    return path,release.digest(path.read_bytes())
+
+
+@pytest.mark.parametrize('provided',['neither','default_only','assay_archive_only','assay_hash_only','invalid_hash'])
+def test_versioned_assay_originals_are_required_before_backup_or_switch(isolated,tmp_path,provided):
+    raw=b'Synthetic versioned assay original, not clinical evidence'
+    name='receipts/review/assay/source.pdf';files=source_files()
+    files[release.ASSAY_DATA_DIRECTORY+'/catalog.json']=synthetic_reference_catalog(name,raw)
+    archive,pinned=evidence_archive(tmp_path/'assay.tar.gz',name,raw)
+    options={}
+    if provided=='default_only':options={'patent_evidence_archive':archive,'patent_evidence_sha256':pinned}
+    elif provided=='assay_archive_only':options={'assay_evidence_archive':archive}
+    elif provided=='assay_hash_only':options={'assay_evidence_sha256':pinned}
+    elif provided=='invalid_hash':options={'assay_evidence_archive':archive,'assay_evidence_sha256':'not-a-sha256'}
+    before=isolated.ledger.events()
+    with pytest.raises(ValueError,match='separately pinned assay-evidence'):
+        release.deploy(*transport(tmp_path,files=files),release.digest(OLD_SITE),**options)
+    assert release.CURRENT.resolve()==isolated.base and not release.TARGET.exists()
+    assert not (isolated.install/'backups').exists() and isolated.calls==[]
+    assert not (isolated.install/'.openforecast-deploy.lock').exists()
+    assert isolated.ledger.events()==before and isolated.site.read_bytes()==OLD_SITE
+
+
+def test_assay_archive_stages_only_selected_version_and_preserves_default_configuration(isolated,tmp_path):
+    raw=b'Synthetic assay source bytes; not a pharmacology result'
+    name='receipts/review/assay/source.pdf';files=source_files()
+    files[release.ASSAY_DATA_DIRECTORY+'/catalog.json']=synthetic_reference_catalog(name,raw)
+    original=b'Independent existing default patent original'
+    (isolated.base/'patent_data').mkdir();(isolated.base/'patent_data/previous-original.txt').write_bytes(original)
+    manifest=json.loads((isolated.base/'RELEASE_MANIFEST.json').read_text())
+    manifest['files'].append({'path':'patent_data/previous-original.txt','sha256':release.digest(original),'bytes':len(original)})
+    (isolated.base/'RELEASE_MANIFEST.json').write_text(json.dumps(manifest))
+    before_events=isolated.ledger.events();configs={p:p.read_bytes() for p in isolated.configs}
+    archive,pinned=evidence_archive(tmp_path/'assay.tar.gz',name,raw)
+    receipt=release.deploy(*transport(tmp_path,files=files),release.digest(OLD_SITE),
+        assay_evidence_archive=archive,assay_evidence_sha256=pinned)
+    version_path=release.TARGET/release.ASSAY_DATA_DIRECTORY/name
+    assert version_path.read_bytes()==raw
+    assert not (release.TARGET/'patent_data'/name).exists()
+    assert (release.TARGET/'patent_data/previous-original.txt').read_bytes()==original
+    assert (isolated.base/'patent_data/previous-original.txt').read_bytes()==original
+    assert (release.TARGET/'patent_data/catalog.json').read_bytes()==files['patent_data/catalog.json']
+    assert receipt['assay_original_files_checked']==1 and receipt['patent_original_files_checked']==0
+    assert receipt['assay_evidence_transport_sha256']==pinned and receipt['assay_evidence_activated'] is False
+    updated=release.verify_manifest(release.TARGET)
+    assert {'path':release.ASSAY_DATA_DIRECTORY+'/'+name,'sha256':release.digest(raw),'bytes':len(raw)} in updated['files']
+    assert updated['assay_data_directory']==release.ASSAY_DATA_DIRECTORY
+    assert updated['assay_evidence_transport_sha256']==pinned and updated['assay_evidence_activated'] is False
+    assert {p:p.read_bytes() for p in isolated.configs}==configs
+    assert isolated.ledger.events()==before_events and receipt['database_imports']==0
+
+
+def test_default_and_assay_archives_are_independent_and_never_substituted(isolated,tmp_path):
+    default_raw=b'Synthetic default mapping original';assay_raw=b'Different synthetic assay original'
+    default_name='receipts/review/default/source.pdf';assay_name='receipts/review/assay/source.pdf'
+    files=source_files();files['patent_data/catalog.json']=synthetic_reference_catalog(default_name,default_raw)
+    files[release.ASSAY_DATA_DIRECTORY+'/catalog.json']=synthetic_reference_catalog(assay_name,assay_raw)
+    default_archive,default_sha=evidence_archive(tmp_path/'default.tar.gz',default_name,default_raw)
+    assay_archive,assay_sha=evidence_archive(tmp_path/'assay.tar.gz',assay_name,assay_raw)
+    receipt=release.deploy(*transport(tmp_path,files=files),release.digest(OLD_SITE),
+        patent_evidence_archive=default_archive,patent_evidence_sha256=default_sha,
+        assay_evidence_archive=assay_archive,assay_evidence_sha256=assay_sha)
+    assert (release.TARGET/'patent_data'/default_name).read_bytes()==default_raw
+    assert (release.TARGET/release.ASSAY_DATA_DIRECTORY/assay_name).read_bytes()==assay_raw
+    assert not (release.TARGET/'patent_data'/assay_name).exists()
+    assert not (release.TARGET/release.ASSAY_DATA_DIRECTORY/default_name).exists()
+    assert receipt['patent_evidence_transport_sha256']==default_sha
+    assert receipt['assay_evidence_transport_sha256']==assay_sha
+    assert receipt['patent_original_files_checked']==receipt['assay_original_files_checked']==1

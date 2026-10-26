@@ -1,0 +1,250 @@
+{
+  "schema_version": "predome-patent-experiment-cards-1.0",
+  "analysis_id": "retatrutide-example12-table3-table4-20261027-v2",
+  "experiment_cards": [
+    {
+      "evidence_id": "WO2019125938A1-example12-table3-camp-v1",
+      "publication_number": "WO2019125938A1",
+      "public_available_at": "2019-06-27",
+      "title": "Example 12 / SEQ17: receptor cAMP potency under FBS/BSA conditions",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=29",
+      "pdf_page_1_based": 29,
+      "supporting_pdf_pages": [
+        22,
+        28,
+        29,
+        30,
+        37
+      ],
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "text_sha256": "04798e8d77de498fdd6c04858b103347e93f11e216e1fbafd0f4b61189186739",
+      "example_id": "12",
+      "sequence_id": "SEQ ID NO:17",
+      "section_type": "completed_experiment",
+      "experiment_system": "Functional cAMP response in HEK-293 clonal cell lines overexpressing human GcgR, GIPR or GLP-1R; separate receptor cell lines",
+      "species_or_cell": "Engineered HEK-293 cells expressing human receptors; no patient samples",
+      "sample_size": {
+        "reported_n_per_receptor": 6,
+        "independent_biological_units": null,
+        "unit_definition": "Biological versus technical repeats and independent days/preparations not specified on the reviewed pages"
+      },
+      "dose": {
+        "concentration_response_points": 20,
+        "dilution_fold": 2.75,
+        "example_range": {
+          "minimum": 51.5,
+          "minimum_unit": "fM",
+          "maximum": 11.4,
+          "maximum_unit": "uM"
+        },
+        "native_control_range_as_printed": {
+          "minimum": 448,
+          "minimum_unit": "pM",
+          "maximum": 99.5,
+          "maximum_unit": "nM"
+        },
+        "peptide_exposure_minutes": 60,
+        "temperature": "room temperature",
+        "post_detection_reagent_incubation_minimum_minutes": 60,
+        "route": "in vitro"
+      },
+      "assay_conditions": {
+        "FBS_percent": 0.25,
+        "BSA_percent": 0.05,
+        "medium": "DMEM with 1X GlutaMAX, 250 uM IBMX and 20 mM HEPES",
+        "volume_uL": 20,
+        "quantification": "cAMP standard curve followed by normalization to native ligand maximal response; relative EC50 from four-parameter logistic regression"
+      },
+      "comparator": "Native human glucagon, GIP(1-42)NH2 and GLP-1(7-36)NH2; summary control measurements are not a randomized clinical comparator",
+      "endpoint": "Relative functional cAMP EC50 in each separately overexpressed receptor cell line",
+      "result": {
+        "groups": [
+          {
+            "receptor": "GcgR",
+            "mean_ec50_nM": 6.61,
+            "sem_nM": 0.512,
+            "reported_n": 6
+          },
+          {
+            "receptor": "GIPR",
+            "mean_ec50_nM": 2.24,
+            "sem_nM": 0.303,
+            "reported_n": 6
+          },
+          {
+            "receptor": "GLP-1R",
+            "mean_ec50_nM": 12.4,
+            "sem_nM": 1.41,
+            "reported_n": 6
+          }
+        ]
+      },
+      "unit": "nM for EC50 and SEM; n is reported assay repeats with independent unit unspecified",
+      "missing_fields": [
+        "Per-repeat raw concentration-response curves",
+        "Definition of independent biological versus technical n",
+        "Human clinical endpoint and clinical effect estimate"
+      ],
+      "source_location": "PDF29/printed28, Table3 Example12 row; method PDF28; Table3 continuation and concentration-range note PDF30. Compound definition PDF22 and SEQ17 PDF37.",
+      "source_discrepancies": [
+        {
+          "location": "PDF29 Example12 GLP-1R SEM",
+          "archived_ocr": "141",
+          "original_page": "1.41",
+          "action": "Use original page value; archived OCR is retained unchanged"
+        },
+        {
+          "location": "PDF29 native controls and PDF30 Table3 note",
+          "status": "unresolved_source_relationship",
+          "detail": "Reported native-control EC50 values 0.0125/0.133/0.0591 nM are below the printed native range lower bound 448 pM (0.448 nM). Cause is unexplained; printed units are not repaired. Example12 values lie within its separately stated example range."
+        }
+      ],
+      "interpretation_limit": "Reported engineered-cell potency supports a mechanism hypothesis only. It does not establish clinical efficacy, patient exposure, safety, trial success probability or patent rights. Table4 casein-condition values, Table2 binding Ki and Example1 mouse values are excluded from this card.",
+      "extraction_method": "Original PDF page visual checks by same-base AI roles, with unchanged OCR provenance",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "human_review_count": 0,
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false
+    },
+    {
+      "publication_number": "WO2019125938A1",
+      "public_available_at": "2019-06-27",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "example_id": "12",
+      "sequence_id": "SEQ ID NO:17",
+      "evidence_id": "WO2019125938A1-example12-table4-casein-camp-v1",
+      "title": "Example 12 / SEQ17: functional cAMP potency in 0.1% casein (Table 4)",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=31",
+      "pdf_page_1_based": 31,
+      "supporting_pdf_pages": [
+        22,
+        30,
+        31,
+        37
+      ],
+      "text_sha256": "93696a0b1677230335ce7347112f1cdbb312af45b63a832be9eaf9c23f612f47",
+      "text_sha256_scope": "Existing patent_evidence.canonical_sha256(OCR text): NFC-normalized JSON string, not raw text bytes",
+      "section_type": "completed_experiment",
+      "experiment_system": "Functional cAMP response measured by homogeneous time-resolved fluorescence in HEK293 cells expressing human GLP-1, GIP and glucagon receptors, using 0.1% casein as nonspecific blocker instead of serum albumin.",
+      "species_or_cell": "HEK293 human-receptor cell assays; no patient samples or clinical outcome.",
+      "sample_size": {
+        "reported_n_by_receptor": {
+          "GcgR": 15,
+          "GIPR": 18,
+          "GLP-1R": 18
+        },
+        "independent_biological_units": null,
+        "unit_definition": "The table reports n; independent biological versus technical repeats, independent days and preparations are not specified for this additional assay."
+      },
+      "dose": {
+        "route": "in vitro",
+        "concentration_response_points": null,
+        "dilution_fold": null,
+        "example_concentration_range": null,
+        "control_concentration_range": null,
+        "peptide_exposure_minutes": null,
+        "temperature": null,
+        "assay_volume_uL": null,
+        "missingness_basis": "The additional Table 4 methods do not explicitly report these values. Table 3 values are not inherited."
+      },
+      "assay_conditions": {
+        "casein_percent": 0.1,
+        "serum_albumin_replaced_by_casein": true,
+        "FBS_percent": null,
+        "quantification": "Intracellular cAMP extrapolated from standard curve; percent stimulation normalized to minimum buffer-only and maximum concentration of each control ligand; four-parameter nonlinear fit with variable slope (Genedata Screener 13).",
+        "patent_stated_blocker_rationale": "Patent states that casein does not interact with fatty acid moieties. This is an author explanation, not a separately verified interaction experiment in this card."
+      },
+      "comparator": "Buffer-only minimum and maximal concentration of each control ligand for normalization. Table 4 rows are labeled hGcg, hGIP amide and gGLP-1 amide as printed; gGLP-1 is retained as an unresolved source naming ambiguity. Control summaries are not established as contemporaneous paired comparisons to Example 12.",
+      "endpoint": "Functional cAMP EC50 per human receptor assay under the 0.1% casein condition.",
+      "result": {
+        "groups": [
+          {
+            "receptor": "GcgR",
+            "mean_ec50_nM": 0.122,
+            "sem_nM": 0.00931,
+            "reported_n": 15
+          },
+          {
+            "receptor": "GIPR",
+            "mean_ec50_nM": 0.0529,
+            "sem_nM": 0.00394,
+            "reported_n": 18
+          },
+          {
+            "receptor": "GLP-1R",
+            "mean_ec50_nM": 0.162,
+            "sem_nM": 0.01,
+            "reported_n": 18
+          }
+        ],
+        "control_rows_as_printed": [
+          {
+            "ligand_label_as_printed": "hGcg",
+            "receptor": "GcgR",
+            "mean_ec50_nM": 0.0119,
+            "sem_nM": 0.00356,
+            "reported_n": 163
+          },
+          {
+            "ligand_label_as_printed": "hGIP amide",
+            "receptor": "GIPR",
+            "mean_ec50_nM": 0.154,
+            "sem_nM": 0.037,
+            "reported_n": 118
+          },
+          {
+            "ligand_label_as_printed": "gGLP-1 amide",
+            "receptor": "GLP-1R",
+            "mean_ec50_nM": 0.063,
+            "sem_nM": 0.022,
+            "reported_n": 197,
+            "identity_status": "source_label_ambiguity_not_normalized"
+          }
+        ]
+      },
+      "unit": "nM for EC50 and SEM; percent for casein; n is reported assay count with independent unit unspecified.",
+      "missing_fields": [
+        "Table 4 concentration-response range, point count and dilution series",
+        "Table 4 peptide exposure time, temperature, assay volume and exact medium composition",
+        "Exact control-ligand identity behind printed gGLP-1 amide label",
+        "Per-repeat raw curves and independent biological/technical unit definition",
+        "Contemporaneous paired design linking Example 12 and control summaries or Table 3",
+        "Independent human scientific review",
+        "Human clinical endpoint, exposure, safety and trial effect estimate"
+      ],
+      "source_location": "PDF31/printed30, Table4 continuation, Example12 row; receptor column order, controls, 0.1% casein heading and additional assay method on PDF30/printed29. Example12/SEQ17 identity locations PDF22 and PDF37 are referenced from the existing identity receipt, not re-reviewed here.",
+      "source_discrepancies": [
+        {
+          "location": "PDF30/printed29 Table4 GLP-1R control label",
+          "archived_ocr": "‘@GLP-1 amide",
+          "original_page": "gGLP-1 amide",
+          "action": "Retain printed label and mark identity unresolved; do not silently relabel as human GLP-1."
+        },
+        {
+          "location": "PDF30 before Table4 additional method",
+          "status": "different_assay_context",
+          "detail": "Concentration ranges in the preceding NOTE belong to Table3 FBS/BSA assays. Table4 begins with an additional assay set; missing parameters stay null."
+        },
+        {
+          "location": "Fresh offline PSM6 OCR table extraction",
+          "status": "ocr_layout_artifacts",
+          "detail": "Fresh OCR merges some headings and drops parentheses. Values and receptor column order are transcribed from the viewed PDF page images; original and fresh OCR remain unchanged."
+        }
+      ],
+      "interpretation_limit": "This is a separate engineered-cell assay condition for Example12, not a new independent drug project or a paired trial of the two assay conditions. Different Table3/Table4 EC50s do not by themselves establish albumin binding, clinical potency, weight-loss efficacy, safety or trial success probability. Table2 binding Ki, Table5 rat pharmacokinetics and Example1 mouse effects are excluded.",
+      "extraction_method": "Read-only original-page AI visual transcription with archived canonical OCR hash checks and a fresh offline Tesseract cross-check; no model API call.",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "human_review_count": 0,
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false
+    }
+  ]
+}

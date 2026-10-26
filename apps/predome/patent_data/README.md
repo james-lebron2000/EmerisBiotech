@@ -179,3 +179,13 @@ and [mobile view](../docs/images/retatrutide-patent-review/mobile.png) render th
 actual patent metadata with the current candidate assets. Unrelated application
 bootstrap is an isolated fixture; these are not screenshots of a deployed update
 or evidence of a real forecast using the new card. [Image provenance](../docs/images/retatrutide-patent-review/provenance.json).
+
+## Explicit additional-assay version
+
+The separately selected [assays-20261027-v2](versions/assays-20261027-v2/README.md)
+directory adds Example12 Table4 casein cAMP and DS-1062a observed human PK while
+retaining both previous experiments. It uses the existing `data_dir` and
+`--patent-root` interfaces. Adding this directory does not select it by default
+or amend a frozen forecast. [Version and original-installation details](../docs/PATENT_EVIDENCE_VERSIONS.md)
+keep new source checks, inherited identity checks, unknown parameters and zero
+human scientific review explicit.

@@ -31,6 +31,7 @@ NGINX_SITE = Path('/etc/nginx/sites-available/emeris-live')
 CONFIGS = (Path('/etc/emeris-live.env'), Path('/etc/systemd/system/emeris-live.service'),
            Path('/etc/emeris-arena.env'), Path('/etc/emeris-arena-models-v2.json'),
            Path('/etc/systemd/system/emeris-live.service.d/arena.conf'))
+ASSAY_DATA_DIRECTORY = 'patent_data/versions/assays-20261027-v2'
 PRIVATE_CONFIGS = frozenset((Path('/etc/emeris-live.env'), Path('/etc/emeris-arena.env')))
 FILES = frozenset((
     'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/patent_identity.py', 'emeris_live/arena_metrics.py',
@@ -49,14 +50,23 @@ FILES = frozenset((
     'docs/SEALED_RECORD_SYNC.md',
     'docs/PUBLIC_CLINICAL_BRIEF.md',
     'scripts/arena_reviewers.py', 'scripts/configure_arena_frontends.py', 'scripts/deploy_result_reviews.py',
-    'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-public.css', 'static/arena-public.html',
+    'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena.css', 'static/arena-public.js', 'static/arena-public.css', 'static/arena-public.html',
     'static/arena-home.js', 'static/arena-review.html',
     'static/arena-review.js', 'static/arena-review.css', 'docs/OPEN_FORECAST_RELIABILITY_1_2_8.md',
     'static/reviews.js', 'static/reviews.html',
     'docs/RESULT_REVIEW_WORKSPACE_1_2_9.md', 'docs/SCIENTIFIC_RESULT_ACCEPTANCE.md',
     'patent_data/catalog.json', 'patent_data/README.md',
     'patent_data/sources/WO2019125938A1.identity-review.json',
-    'patent_data/sources/WO2019125938A1.retatrutide-ex12-v1.json'))
+    'patent_data/sources/WO2019125938A1.retatrutide-ex12-v1.json',
+    'docs/PATENT_EVIDENCE_VERSIONS.md',
+    'patent_data/versions/assays-20261027-v2/catalog.json', 'patent_data/versions/assays-20261027-v2/README.md',
+    'patent_data/versions/assays-20261027-v2/sources/WO2019125938A1.curated.json',
+    'patent_data/versions/assays-20261027-v2/sources/WO2019125938A1.identity-review.json',
+    'patent_data/versions/assays-20261027-v2/sources/WO2019125938A1.retatrutide-ex12-v2.json',
+    'patent_data/versions/assays-20261027-v2/sources/WO2020240467A1.curated.json',
+    'patent_data/versions/assays-20261027-v2/sources/WO2020240467A1.identity-review.json',
+    'patent_data/versions/assays-20261027-v2/sources/mapping_public_dates.json',
+    'patent_data/versions/assays-20261027-v2/sources/pilot_manifest.json'))
 MAX_ARCHIVE = 8 * 1024 * 1024
 MAX_MEMBER = 2 * 1024 * 1024
 MAX_EXPANDED = 16 * 1024 * 1024
@@ -272,7 +282,8 @@ def await_health(version):
 
 
 def deploy(archive, expected_hash, commit, expected_nginx_sha256,
-           patent_evidence_archive=None, patent_evidence_sha256=None):
+           patent_evidence_archive=None, patent_evidence_sha256=None,
+           assay_evidence_archive=None, assay_evidence_sha256=None):
     files = read_archive(archive, expected_hash, commit)
     if files['scripts/deploy_review_workspace.py'] != regular(Path(__file__)).read_bytes():
         raise ValueError('Transported deployment entry point differs')
@@ -285,6 +296,13 @@ def deploy(archive, expected_hash, commit, expected_nginx_sha256,
     if needs_originals and (patent_evidence_archive is None
             or not re.fullmatch(r'[a-f0-9]{64}', str(patent_evidence_sha256 or ''))):
         raise ValueError('The new patent review requires its separately pinned original-evidence archive')
+    assay_catalog = strict_json(files[ASSAY_DATA_DIRECTORY + '/catalog.json'])
+    needs_assay_originals = any(source.get('original_relative_path')
+        for item in assay_catalog.get('items', []) for source in
+        item.get('research_review', {}).get('drug_mapping', {}).get('sources', []))
+    if needs_assay_originals and (assay_evidence_archive is None
+            or not re.fullmatch(r'[a-f0-9]{64}', str(assay_evidence_sha256 or ''))):
+        raise ValueError('The versioned assay review requires its separately pinned assay-evidence archive')
     lock_path = INSTALL_ROOT / '.openforecast-deploy.lock'
     lock_fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW, 0o600)
     with os.fdopen(lock_fd, 'w') as lock:
@@ -335,10 +353,15 @@ def deploy(archive, expected_hash, commit, expected_nginx_sha256,
         installer = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(installer)
         evidence_records = installer.stage(TARGET, patent_evidence_archive, patent_evidence_sha256)
-        for entry in evidence_records:
+        assay_records = installer.stage(TARGET, assay_evidence_archive, assay_evidence_sha256,
+                                        patent_directory=ASSAY_DATA_DIRECTORY)
+        for entry in evidence_records + assay_records:
             records[entry['path']] = entry
         updated = {**manifest, 'version': VERSION, 'git_commit': commit, 'parent_release': str(BASE),
                    'created_at_utc': datetime.now(timezone.utc).isoformat(),
+                   'assay_evidence_transport_sha256': assay_evidence_sha256,
+                   'assay_data_directory': ASSAY_DATA_DIRECTORY,
+                   'assay_evidence_activated': False,
                    'files': [records[name] for name in sorted(records)]}
         (TARGET / 'RELEASE_MANIFEST.json').write_text(json.dumps(updated, indent=2) + '\n')
         verify_manifest(TARGET)
@@ -385,6 +408,10 @@ def deploy(archive, expected_hash, commit, expected_nginx_sha256,
                        'nginx_after_sha256': new_site_state['sha256'], 'code_transport_sha256': expected_hash,
                        'patent_evidence_transport_sha256': patent_evidence_sha256,
                        'patent_original_files_checked': len(evidence_records),
+                       'assay_evidence_transport_sha256': assay_evidence_sha256,
+                       'assay_original_files_checked': len(assay_records),
+                       'assay_data_directory': ASSAY_DATA_DIRECTORY,
+                       'assay_evidence_activated': False,
                        'import_smoke': 'passed_without_app_construction',
                        'scope': 'engineering deployment only; no reviewer enrollment or scientific validation',
                        'at': datetime.now(timezone.utc).isoformat()}
@@ -438,10 +465,13 @@ def main():
     parser.add_argument('--expected-nginx-sha256', required=True)
     parser.add_argument('--patent-evidence-archive', type=Path)
     parser.add_argument('--patent-evidence-sha256')
+    parser.add_argument('--assay-evidence-archive', type=Path)
+    parser.add_argument('--assay-evidence-sha256')
     args = parser.parse_args()
     try:
         receipt = deploy(args.archive, args.sha256, args.commit, args.expected_nginx_sha256,
-                         args.patent_evidence_archive, args.patent_evidence_sha256)
+                         args.patent_evidence_archive, args.patent_evidence_sha256,
+                         args.assay_evidence_archive, args.assay_evidence_sha256)
     except (Exception, KeyboardInterrupt):
         parser.exit(1, 'Deployment failed; inspect local deployment state before retrying. No database restore was performed.\n')
     print(json.dumps(receipt))

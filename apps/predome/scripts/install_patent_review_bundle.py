@@ -3,7 +3,8 @@
 The commit-pinned catalog identifies required bytes. Installing those bytes is
 an integrity check, not scientific acceptance, and never reads runtime state.
 Tar members use catalog-relative ``receipts/review/...`` names; returned manifest
-paths are relative to release_root and include the ``patent_data/`` prefix.
+paths are relative to release_root and include the explicitly selected patent
+directory prefix (``patent_data/`` by default).
 """
 import argparse
 from contextlib import contextmanager
@@ -47,6 +48,13 @@ def _path(value):
             or len(parsed.parts) < 3 or parsed.parts[:2] != ('receipts', 'review')):
         raise ValueError('Patent review originals must stay under receipts/review')
     return value
+
+
+def _patent_directory(value):
+    if (not isinstance(value, str)
+            or not re.fullmatch(r'patent_data(?:/versions/[A-Za-z0-9_-]{1,100})?', value)):
+        raise ValueError('Patent directory must be patent_data or patent_data/versions/<version-id>')
+    return PurePosixPath(value).parts
 
 
 def _json(raw):
@@ -222,18 +230,21 @@ def _existing(parent_fd, name, expected):
         return True
 
 
-def stage(release_root, archive_path=None, expected_sha256=None):
+def stage(release_root, archive_path=None, expected_sha256=None, *, patent_directory='patent_data'):
     """Verify all references and existing targets before exclusively copying.
 
     The caller supplies a new release directory, never a runtime data directory.
     There is no network, model or database access, or existing-file overwrite.
+    A version directory must already contain its own catalog; it is never
+    selected automatically and a missing version never falls back to defaults.
     """
+    directory_parts = _patent_directory(patent_directory)
     with _parent(release_root) as (parent, name):
         root = os.open(name, DIR_FLAGS, dir_fd=parent)
     try:
-        with _directory(root, ('patent_data',)) as patent_data:
+        with _directory(root, directory_parts) as patent_data:
             if patent_data is None:
-                raise ValueError('Release patent_data directory is missing')
+                raise ValueError(f'Release {patent_directory} directory is missing')
             references = _references(_json(_read('catalog.json', MAX_CATALOG_BYTES, directory=patent_data)))
             if not references:
                 return []
@@ -260,7 +271,7 @@ def stage(release_root, archive_path=None, expected_sha256=None):
                         stream.write(files[name])
                         stream.flush()
                         os.fsync(stream.fileno())
-            return [{'path': 'patent_data/' + name, 'sha256': references[name], 'bytes': len(files[name])}
+            return [{'path': patent_directory + '/' + name, 'sha256': references[name], 'bytes': len(files[name])}
                     for name in sorted(files)]
     finally:
         os.close(root)
@@ -271,9 +282,11 @@ def main():
     parser.add_argument('--release-root', type=Path, required=True)
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--sha256')
+    parser.add_argument('--patent-directory', default='patent_data',
+                        help='Explicit patent_data or patent_data/versions/<version-id>; no automatic selection')
     args = parser.parse_args()
     try:
-        files = stage(args.release_root, args.archive, args.sha256)
+        files = stage(args.release_root, args.archive, args.sha256, patent_directory=args.patent_directory)
     except (OSError, ValueError, TypeError, KeyError) as error:
         parser.exit(1, 'Patent review originals were not staged: ' + str(error) + '\n')
     print(json.dumps({'files': files, 'offline': True, 'scientific_acceptance_granted': False}, indent=2))
