@@ -6,6 +6,7 @@ The repository-root evidence, credential and sandbox requirements also apply to 
 
 - `emeris_live/` contains reusable runtime implementations. `scripts/` contains command entry points, and `static/` contains the shipped browser interface. Scripts may import runtime code; runtime code must not import scripts.
 - Keep command execution behind `main()`. Importing a library must not collect evidence, invoke a model, start a task or create runtime state.
+- Shared public-content rules belong in `arena_public_contract.py`, which uses only the standard library. HTTP projections and offline brief builders consume it; the brief builder must remain usable without importing FastAPI, provider or database modules.
 - Static checks parse Python in `emeris_live/`, `scripts/` and `deploy/`, rejecting production `assert` statements, and detect direct Python imports that reverse the runtime-to-CLI boundary. They do not execute the modules or interpret Python embedded in strings; the shipped remote deployment programs have separate normal/optimized subprocess tests. This is not a sandbox for arbitrary dynamic imports or executable code.
 - Validate incoming API/provider/file data at its owning boundary. Do not remove later checks that enforce another boundary, such as source-byte hashes, authenticated access, frozen-target identity or result-publication eligibility.
 - Keep exact clinical target, source time, forecast time, model version and original result distinguishable. Missing calibration remains unknown; model confidence must not become a fabricated success probability.
@@ -34,6 +35,7 @@ python scripts/check.py --browser
 - Exercise the actual ledger, API, source validator and browser assets. Use temporary files/databases and HTTP transport fixtures rather than replacing the whole implementation or duplicating its algorithm in tests.
 - Test a real failure mode or contract change. Do not add tests that merely restate a low-impact edit.
 - When a public API field or output contract changes, update the runtime projection, static consumer, relevant tests and documentation together. Keep public projections free of internal prompts, credentials, raw reasoning and private review details.
+- For publication filtering changes, test overview, selected detail, JSON and brief downloads against the same actual producer. Withhold unsafe summaries without changing the original model record, direction or generation time; avoid silently repairing the frozen input.
 - Keep helpers close to their owning code and extract them when they express a reused operation or a real boundary. Required runtime checks use explicit exceptions, not bare `assert`.
 - Preserve semantic visual roles: outcome colors communicate outcome/status, and pending or unreviewed results must not acquire a winner through styling. Validate the actual interface at desktop and mobile sizes when changing it.
 - PR verification states the suite and its limits. Synthetic fixtures establish engineering behavior; real-record checks establish only the checked record properties. Neither establishes independent adjudication, prospective predictive validity or clinical benefit.

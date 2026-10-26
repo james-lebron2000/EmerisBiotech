@@ -13,6 +13,8 @@ import re
 from urllib.parse import quote
 import zipfile
 
+from .arena_public_contract import credential_like, public_url
+
 
 SCHEMA_VERSION = 'predome-public-clinical-brief-1'
 RECORD_VERSION = 'arena-clinical-public-1.1'
@@ -62,7 +64,7 @@ def _scalars(value):
         for item in value:
             _scalars(item)
     elif isinstance(value, str):
-        if re.search(r'(?<![A-Za-z])sk-[A-Za-z0-9_-]{24,}|-----BEGIN .*PRIVATE KEY-----', value):
+        if credential_like(value):
             raise ValueError('Credential-like content is not public brief material')
     elif isinstance(value, float) and not math.isfinite(value):
         raise ValueError('Nonfinite public clinical value')
@@ -187,7 +189,6 @@ def _md(value):
 
 
 def _safe_url(value):
-    from .arena_public import public_url
     if not isinstance(value, str) or any(ord(char) < 33 for char in value):
         return None
     checked = public_url(value)

@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from emeris_live import arena_public as api, platform_store
+from emeris_live import arena_public_contract as public_contract
 from emeris_live.arena_store import ArenaLedger, instant
 from emeris_live.store import Store
 from test_arena_core import finish, outcome, registered, spec
@@ -105,6 +106,30 @@ def test_nonanswers_stay_uncertain_with_no_error_details(status):
     result=api.run_view(row(status=status,reasoning='PRIVATE provider stack trace with key'),target(),[])
     assert result['predicted_outcome']=='Uncertain'
     if status not in ('abstain','abstained'):assert 'PRIVATE' not in result['brief_reason']
+
+
+@pytest.mark.parametrize('field', ['reasoning', 'reason'])
+@pytest.mark.parametrize('prefix', ['', 'Ordinary summary. ' * 150])
+@pytest.mark.parametrize('credential', ['sk-' + 'X' * 32, '-----BEGIN OPENSSH PRIVATE KEY-----'])
+def test_credential_like_summary_is_withheld_before_truncation(field, prefix, credential):
+    original = row(reasoning=None)
+    original[field] = prefix + credential
+    before = deepcopy(original)
+    result = api.run_view(original, target(), [])
+    assert result['brief_reason'] is None and result['reason'] is None
+    assert result['predicted_outcome'] == 'Success' and result['status'] == 'predicted'
+    assert result['generated_at_utc'] == original['generated_at_utc']
+    assert result['locked_at_utc'] == original['locked_at_utc']
+    assert result['probability'] is None and result['confidence'] is None
+    assert credential not in json.dumps(result)
+    assert original == before
+
+
+def test_public_url_compatibility_entry_uses_the_shared_pure_contract():
+    assert api.public_url is public_contract.public_url
+    source = '/api/arena/sources/' + 'a' * 64
+    assert api.public_url(source) == source
+    assert api.public_url('https://example.org/frozen-source?paper=one') == 'https://example.org/frozen-source?paper=one'
 
 
 def test_blocking_evidence_suppresses_direction_and_reason_but_warning_does_not():

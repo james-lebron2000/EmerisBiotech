@@ -7,7 +7,6 @@ import math
 from pathlib import Path
 import re
 import sqlite3
-from urllib.parse import parse_qsl, urlsplit
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
@@ -15,6 +14,7 @@ from fastapi.responses import JSONResponse, Response
 from . import arena_api
 from .arena_store import ArenaLedger
 from .arena_result_assurance import result_assurance
+from .arena_public_contract import credential_like, public_url
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
@@ -31,21 +31,6 @@ POLICY = {
 
 def text(value, limit=2000):
     return value[:limit] if isinstance(value, str) and value.strip() else None
-
-
-def public_url(value):
-    if not isinstance(value, str): return None
-    if re.fullmatch(r'/api/arena/sources/[a-f0-9]{64}', value): return value
-    try:
-        parsed = urlsplit(value)
-        if (parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password
-                or any(re.search(r'token|secret|password|api.?key|authorization', key, re.I)
-                       for key, _ in parse_qsl(parsed.query))):
-            return None
-        parsed.port
-        return value
-    except ValueError:
-        return None
 
 
 def source_view(value, snapshot_urls=None):
@@ -374,7 +359,11 @@ def brief_reason(run):
         return '输入证据需要更正，暂不作公开方向判断。'
     if run.get('status') not in ('predicted', 'abstained', 'abstain'):
         return {'withdrawn': '执行前撤回，未产生预测。', 'pending': '等待生成研究判断。'}.get(run.get('status'), '本次未产生可用研究判断。')
-    value = text(run.get('reasoning') or run.get('reason'), 1600)
+    raw = run.get('reasoning') or run.get('reason')
+    # Check the original summary before truncating it. Do not echo part of an
+    # unsafe response or change the immutable stored result to make it public.
+    if credential_like(raw): return None
+    value = text(raw, 1600)
     if not value: return None
     # Omit numerical self-assessments as whole clauses; do not convert them
     # into invented calibrated values. Clinical HR/OR/CI and p values in other
@@ -400,9 +389,10 @@ def run_view(run, target, sources, snapshot_urls=None):
               ('id', 'target_id', 'cohort_id', 'model_id', 'requested_model', 'scope', 'track', 'condition',
                'generated_at_utc', 'locked_at_utc')}
     version = run.get('returned_model') or run.get('model_version') or run.get('requested_model')
+    reason = brief_reason(run)
     fields.update(model_version=text(version, 200), status=text(run.get('status'), 80),
         predicted_outcome=predicted, probability=None, confidence=None, calibration_status='not_established',
-        brief_reason=brief_reason(run), reason=brief_reason(run), sources=refs, match=match,
+        brief_reason=reason, reason=reason, sources=refs, match=match,
         match_status='historical_replay' if target.get('record_kind') == 'historical_replay' else 'matched' if match is True else 'mismatched' if match is False else 'not_evaluable')
     return fields
 
