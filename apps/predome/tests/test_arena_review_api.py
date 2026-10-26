@@ -40,6 +40,14 @@ def workspace(tmp_path, monkeypatch):
     raw = ('<html><head><meta property="article:published_time" content="2025-01-01T09:00:00Z"></head>'
            '<body><p>' + quote + '</p></body></html>').encode()
     url = 'https://www.roche.com/media/releases/isolated-outcome'
+    # The real source validator also reads tracked trial identity configuration.
+    # Keep that input isolated rather than borrowing local frozen dashboard data.
+    source_root = tmp_path / 'isolated-source-configuration'
+    (source_root / 'dashboard_data').mkdir(parents=True)
+    source_config = source_root / 'dashboard_data/evidence_updates.json'
+    source_config.write_text(json.dumps({'trials': [{'nct_id': target['nct_id'],
+        'trial': 'Isolated trial', 'drug': 'Isolated drug', 'sources': [{'url': url}]}]}))
+    monkeypatch.setattr(official_intake, 'ROOT', source_root)
     structured = {**official_intake.extract(raw), 'trial_name': 'Isolated trial',
                   'drug': 'Isolated drug', 'publication_date_basis': 'document_metadata'}
     cid, _ = intake.save_candidate(store, target['nct_id'], 'official_announcement_candidate', url, raw,
@@ -53,7 +61,7 @@ def workspace(tmp_path, monkeypatch):
             'confirmations': {k: True for k in api.CONFIRMATIONS},
             'supersedes_result_sha256': None, 'supersedes_review_sha256': None}
     return SimpleNamespace(app=app, client=client, store=store, ledger=ledger, target=target, other=other,
-                           grants=grants, cid=cid, raw=raw, quote=quote, body=body,
+                           grants=grants, cid=cid, raw=raw, quote=quote, body=body, source_config=source_config,
                            route='/api/arena/review/targets/' + target['id'])
 
 
@@ -130,6 +138,14 @@ def test_csrf_origin_and_confirmation_fail_closed(workspace):
         body = deepcopy(w.body)
         body['confirmations']['source_inspected'] = value
         assert submit(w, body).status_code == 422
+    assert w.ledger.events() == before
+
+
+def test_missing_official_configuration_still_fails_closed(workspace):
+    w = workspace
+    before = w.ledger.events()
+    w.source_config.unlink()
+    assert submit(w).status_code == 422
     assert w.ledger.events() == before
 
 
