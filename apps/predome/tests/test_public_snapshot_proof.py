@@ -8,7 +8,7 @@ import sys
 import zipfile
 
 import pytest
-from test_public_campaign_export import records
+from test_public_campaign_export import records, real_public_record
 
 SCRIPTS=Path(__file__).parents[1]/'scripts'
 sys.path.insert(0,str(SCRIPTS))
@@ -26,6 +26,31 @@ def test_public_bundle_can_be_independently_rebuilt_after_json_roundtrip(records
     index,_,_,fetch=records
     raw,m=proof.campaign.bundle(index,fetch)
     assert proof.validate_bundle(raw)==m
+
+
+@pytest.mark.parametrize('state,label',[('pending','success'),('agreement','success'),
+    ('accepted','success'),('accepted','mixed')])
+def test_new_schema_proof_validation_uses_actual_ledger_projection(tmp_path,monkeypatch,state,label):
+    ledger,before,index,_,client=real_public_record(tmp_path,monkeypatch,state,label)
+    raw,m=proof.campaign.bundle(index,lambda path:client.get(path).json())
+    assert m['schema_version']=='predome-public-launch-bundle-2'
+    assert proof.validate_bundle(raw)==m
+    assert ledger.events()==before
+
+
+@pytest.mark.parametrize('version',['predome-public-launch-bundle-1','unknown'])
+def test_new_bundle_cannot_be_downgraded_to_legacy_or_unknown_version(records,version):
+    index,_,_,fetch=records
+    raw,_=proof.campaign.bundle(index,fetch);files=proof.zip_members(raw)
+    m=proof.decode(files['manifest.json']);m['schema_version']=version
+    if version=='predome-public-launch-bundle-1':
+        # Correct legacy README does not authorize 1.1 records in a 1.0 export.
+        files['README.md']=files['README.md'].replace(
+            b'Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.\n',b'')
+        assert proof.digest(files['README.md'])==proof.README_PINS[version]
+        m['files']['README.md']={'sha256':proof.digest(files['README.md']),'bytes':len(files['README.md'])}
+    files['manifest.json']=proof.campaign.canonical(m)
+    with pytest.raises(ValueError):proof.validate_bundle(packed(files))
 
 
 @pytest.mark.parametrize('fault',['extra','hash','report','private','denominator','index','models','readme','false_attestation'])
@@ -108,6 +133,29 @@ def test_openssl_child_receives_no_model_credentials(monkeypatch):
 def test_existing_proof_directory_is_not_overwritten_or_reissued(actual_proof,monkeypatch):
     monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('No duplicate timestamp call'))
     before=(actual_proof/'receipt.json').read_bytes()
-    with pytest.raises(ValueError,match='never overwritten'):
+    with pytest.raises(ValueError,match='verification-only'):
         proof.attest(actual_proof/'clinical-records.zip',proof.digest((actual_proof/'clinical-records.zip').read_bytes()),actual_proof,actual_proof)
     assert (actual_proof/'receipt.json').read_bytes()==before
+
+
+def test_legacy_signed_bundle_cannot_start_a_new_attestation(actual_proof,tmp_path,monkeypatch):
+    source=actual_proof/'clinical-records.zip';before=source.read_bytes()
+    assert proof.verify(actual_proof,require_outer=True)['clinical_prediction_validated'] is False
+    output=tmp_path/'new-proof'
+    monkeypatch.setattr(proof,'openssl_run',lambda *a,**kw:pytest.fail('No new timestamp query'))
+    monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('No authority request'))
+    with pytest.raises(ValueError,match='verification-only'):
+        proof.attest(source,proof.digest(before),output,actual_proof)
+    assert not output.exists() and source.read_bytes()==before
+
+
+def test_current_bundle_still_rejects_existing_proof_directory_before_timestamp_io(records,tmp_path,monkeypatch):
+    index,_,_,fetch=records
+    raw,_=proof.campaign.bundle(index,fetch)
+    source=tmp_path/'current.zip';source.write_bytes(raw)
+    existing=tmp_path/'existing';existing.mkdir();(existing/'untouched').write_bytes(b'original')
+    monkeypatch.setattr(proof,'openssl_run',lambda *a,**kw:pytest.fail('No new timestamp query'))
+    monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('No authority request'))
+    with pytest.raises(ValueError,match='never overwritten'):
+        proof.attest(source,proof.digest(raw),existing,tmp_path/'missing-certs')
+    assert (existing/'untouched').read_bytes()==b'original'

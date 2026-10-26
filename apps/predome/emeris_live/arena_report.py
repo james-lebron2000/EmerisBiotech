@@ -11,6 +11,8 @@ import re
 from collections.abc import Mapping
 from urllib.parse import parse_qsl, quote, urlsplit
 
+from .arena_result_assurance import result_assurance
+
 
 UNKNOWN = "未记录"
 STATUSES = {
@@ -305,15 +307,32 @@ def render_target_report(detail) -> str:
             ("人工审查人数", _numeric(_dict(patent.get("research_review")).get("human_review_count"))),
         ])
     lines.extend(["AI 来源复核不能替代独立人工科学审查；未记录人工复核时不宣称已经完成人工审查。", "", "## 5. 实际公布结果与验证状态", ""])
-    adjudicated = target.get("status") == "adjudicated" and result.get("verification_status") == "adjudicated" and result.get("label") in {"success", "failure"}
-    if adjudicated:
-        lines.append("实际结果（已按预定义目标裁定）：" + ("达到成功判据。" if result["label"] == "success" else "未达到成功判据。"))
+    # Reuse the ledger's scientific qualification policy over the exact result
+    # being rendered. Raw adjudication and API booleans cannot issue acceptance.
+    assurance = result_assurance({**target, "result": result})
+    label = {"success": "达到成功判据", "failure": "未达到成功判据",
+             "mixed": "混合结果（Mixed）", "inconclusive": "结论不明确（Inconclusive）",
+             "not_adjudicable": "无法按目标裁定（Not adjudicable）"}.get(result.get("label"), "未记录可解释的结局标签")
+    if assurance["status"] == "historical_replay":
+        lines.extend(["归档结果（历史回放）：" + label + "。", "",
+                      "保留归档标签、公开来源和原始时间；历史回放不代表独立人类科学接纳，不计作前瞻命中或正式概率评分。", ""])
+    elif assurance["status"] == "accepted":
+        lines.extend(["实际结果（科学审核已接纳）：" + label + "。", "",
+                      "负责人已人工接纳针对本结果的独立来源审核资料；系统未自动核实专业资质、科学独立性或临床预测效度。", ""])
+        lines.extend(["二元参考结果已通过科学接纳门槛；每次预测仍需满足既有时间、输入与评分条件。本报告不计算命中或 Brier。"
+                      if assurance["scoring_eligible"] else
+                      "该结局不是可计分的二元结果，不生成命中、对错或 Brier 评分。", ""])
+    elif assurance["status"] == "agreement_pending_independent_review":
+        lines.extend(["来源审核已记录一致意见，待独立科学审核接纳；原始 adjudicated 仅表示来源意见一致，不作为已核验的实际结局或正式参考标签。", "",
+                      "暂不用于判定模型命中、Brier 或排名。", ""])
     elif result or target.get("status") == "announced":
         lines.append("已有结果记录或公布提示，尚未完成与本目标成功判据一致的裁定；暂不用于判定模型命中或排名。")
     else:
         lines.append("尚无已核实并裁定的实际结果；本目标的预测能力仍待未来结果验证。")
     _rows(lines, [
-        ("目标状态 / 结果核验状态", f"{_text(target.get('status'))} / {_text(result.get('verification_status'))}"),
+        ("原始目标状态 / 来源审核状态", f"{_text(target.get('status'))} / {_text(result.get('verification_status'))}"),
+        ("科学审核接纳状态", _text(assurance["status"])),
+        ("正式二元参考结果资格", "已通过科学接纳门槛；预测是否可计分仍须另行核对" if assurance["scoring_eligible"] else "不具备；不据此计分"),
         ("首次公开时间（原样）", _text(result.get("first_public_at"))),
         ("结果原始来源", _link(result.get("source_url"))),
         ("来源 SHA-256", _text(result.get("source_sha256"))),
@@ -321,7 +340,7 @@ def render_target_report(detail) -> str:
         ("来源记录的效应值", _text(result.get("effect_size"))),
         ("来源记录的置信区间", _text(result.get("confidence_interval"))),
         ("来源记录的 P 值", _text(result.get("p_value"))),
-        ("核验时间（原样）", _text(result.get("verified_at"))),
+        ("来源审核时间（原样）", _text(result.get("verified_at"))),
     ])
     lines.extend(["## 6. 如何解读", "",
                   "本报告展示可追溯的研究输入、模型输出与结果核验状态。真实 API 调用或模型之间出现差异，只证明系统运行和输出存在，不能证明任何模型已具有可靠的临床预测能力。", "",

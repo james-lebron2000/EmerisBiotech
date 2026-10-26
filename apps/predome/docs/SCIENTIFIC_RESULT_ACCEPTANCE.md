@@ -51,6 +51,14 @@ python scripts/arena_scientific_acceptance.py --data-dir /absolute/existing/runt
 
 账号审核原有`scientific_credentials_verified`与`independent_human_review_verified`仍保持false。新增接纳对象记录的是人工材料核查的信任依据，不能把工程通过或团队接纳外推成独立临床验证、准确率提升、药物有效性或训练完成。
 
+## 报告和公开资料导出
+
+内部Markdown报告复用同一资格策略，显示来源一致与科学接纳的区别。报告保留原始来源和结果核验信息；尚未接纳时不宣称正式裁定，已接纳Mixed／Inconclusive也不授予二元成绩。历史回放继续明确不计前瞻成绩。
+
+`scripts/export_public_campaign.py`新生成`predome-public-launch-bundle-2`，只接收`arena-clinical-public-1.1`，保留`review_status`与`scoring_eligible`。导出会拒绝待审核结果带命中标记、Mixed被标成二元可计分、结果与目标状态不一致等数据。公开报告仅展示安全的审核状态，不含审核身份或私有材料。
+
+`scripts/public_snapshot_proof.py`按资料包版本选择验证合同。已有版本1／公开结果1.0的冻结ZIP及其报告仍可按原字节离线核验；这不追认旧记录获得新的科学接纳，也不把旧格式用于新活动导出。新版本验证同样不会重新调用模型、修改账本或自动申请时间凭证。生产API尚为旧版时，新导出会明确拒绝；应先完成代码部署，再生成新快照。
+
 ## 页面验收
 
 以下AVANZAR截图使用2026-10-26 16:01 UTC只读取得的线上公开记录，在本地候选前端渲染；不是1.2.9已部署截图。当前真实记录为两条Failure方向判断、一条运行失败和一条拒答，实际临床结果仍待揭晓。概率／置信度保持N/A，运行失败没有转换为疗效失败。

@@ -5,10 +5,15 @@ import io
 import json
 from pathlib import Path
 import zipfile
+from datetime import datetime, timezone
 
 import pytest
 from emeris_live import arena_public as api
 from test_arena_public import row, target
+from emeris_live.arena_store import ArenaLedger, result_target_binding
+from test_arena_core import spec as trial_spec, finish
+from test_arena_scientific_consumers import public_client
+from arena_scientific_fixture import scientifically_accept
 
 spec=importlib.util.spec_from_file_location('public_campaign',Path(__file__).parents[1]/'scripts/export_public_campaign.py')
 export=importlib.util.module_from_spec(spec);spec.loader.exec_module(export)
@@ -124,3 +129,78 @@ def test_report_rebuild_is_stable_after_canonical_json_sorts_registry_fields(rec
     record['target']['design']={'masking':'NONE','allocation':'RANDOMIZED',
         'enrollment':{'type':'ACTUAL','count':100},'intervention_model':'PARALLEL'}
     assert export.report_text(record)==export.report_text(json.loads(export.canonical(record)))
+
+
+def real_public_record(tmp_path, monkeypatch, state, label='success'):
+    """Actual four-model ledger and public API; no provider or live-state access."""
+    raw,slots=trial_spec()
+    for model in ('C','D'):
+        slot=deepcopy(slots[0]);slot.update(model_id=model,requested_model=model+'-fixed')
+        slots.append(slot)
+    ledger=ArenaLedger(tmp_path/'runtime')
+    ids=ledger.register('c1',[raw],slots,{'season_kind':'registered_12_project_season'})
+    for ident,probability in zip(ids,(.8,.2,.6,.4)):
+        finish(ledger,ident,probability,returned_model='fixture-version')
+    if state!='pending':
+        result={'target_binding':result_target_binding(raw),'label':label,
+            'source_url':'https://example.org/isolated-source','source_sha256':'b'*64,
+            'first_public_at':datetime.now(timezone.utc).isoformat(),
+            'endpoint_match_note':'Synthetic exact-primary-endpoint source agreement for isolated export tests.'}
+        for reviewer in ('isolated-one','isolated-two'):
+            ledger.record_result(raw['id'],result,reviewer_id=reviewer,reviewer_kind='ai',
+                review_note='Synthetic source inspection; no real scientific reviewer exists.')
+    if state=='accepted':scientifically_accept(ledger,raw)
+    client=public_client(ledger,monkeypatch)
+    index=client.get('/api/arena/public').json()
+    response=client.get('/api/arena/public/targets/'+raw['id']+'/record')
+    assert response.status_code==200, response.text
+    before=ledger.events()
+    return ledger,before,index,response.json(),client
+
+
+@pytest.mark.parametrize('state,label',[('pending','success'),('agreement','success'),
+    ('accepted','success'),('accepted','failure'),('accepted','mixed'),('accepted','inconclusive')])
+def test_actual_ledger_public_record_exports_exact_review_state_without_writes(tmp_path,monkeypatch,state,label):
+    ledger,before,index,record,client=real_public_record(tmp_path,monkeypatch,state,label)
+    raw,manifest=export.bundle(index,lambda path:client.get(path).json())
+    assert manifest['schema_version']==export.BUNDLE_VERSION
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        assert json.loads(archive.read('records/target-test.json'))==record
+        report=archive.read('reports/target-test.md').decode()
+        if state=='pending':assert 'Awaiting results' in report
+        elif state=='agreement':
+            assert 'pending independent scientific review' in report
+            assert record['result']['label'] is None and all(r['match'] is None for r in record['runs'])
+            assert 'Formal binary scoring eligibility: Yes' not in report
+        else:
+            assert 'accepted by the responsible operator' in report
+            assert ('Formal binary scoring eligibility: Yes.' in report)==(label in ('success','failure'))
+            assert record['result']['label']==label
+    assert ledger.events()==before
+
+
+@pytest.mark.parametrize('fault',['false_eligibility','raw_adjudicated','leaked_label','fake_hit',
+    'string_bool','unknown_review','hit_text','wrong_hit','wrong_match_status','mixed_binary'])
+def test_new_export_rejects_inconsistent_assurance_and_hit_fields(tmp_path,monkeypatch,fault):
+    accepted=fault in ('wrong_hit','wrong_match_status','mixed_binary')
+    _,_,_,record,_=real_public_record(tmp_path,monkeypatch,'accepted' if accepted else 'agreement',
+        'mixed' if fault=='mixed_binary' else 'success')
+    result=record['target']['result']
+    if fault=='false_eligibility':result['scoring_eligible']=True
+    elif fault=='raw_adjudicated':result['status']=record['target']['status']='adjudicated'
+    elif fault=='leaked_label':result['label']='success'
+    elif fault=='fake_hit':record['runs'][0].update(match=True,match_status='matched')
+    elif fault=='string_bool':result['scoring_eligible']='false'
+    elif fault=='unknown_review':result['review_status']='automatic_scientific_approval'
+    elif fault=='hit_text':record['runs'][0]['match_status']='matched'
+    elif fault=='wrong_hit':record['runs'][0].update(match=False,match_status='mismatched')
+    elif fault=='wrong_match_status':record['runs'][0]['match_status']='mismatched'
+    elif fault=='mixed_binary':result['scoring_eligible']=True
+    record['result']=deepcopy(result)
+    with pytest.raises(ValueError):export.validate_record(record,record['target'])
+
+
+def test_live_export_rejects_legacy_version_even_without_results(records):
+    index,data,_,fetch=records
+    data['fixture-0']['version']=export.LEGACY_VERSION
+    with pytest.raises(ValueError,match='verification-only'):export.bundle(index,fetch)

@@ -2,8 +2,14 @@
 from copy import deepcopy
 
 import pytest
+from starlette.requests import Request
 
+from arena_scientific_fixture import scientific_acceptance_document, scientifically_accept
+from emeris_live import arena_api
 from emeris_live.arena_report import render_target_report
+from test_arena_api import client
+from test_arena_core import spec, finish
+from test_arena_result_reviews import result, vote
 
 
 def detail():
@@ -117,7 +123,9 @@ def test_announced_result_is_not_adjudication():
     value["target"]["status"] = "adjudicated"
     value["result"]["verification_status"] = "adjudicated"
     report = render_target_report(value)
-    assert "实际结果（已按预定义目标裁定）：达到成功判据" in report
+    assert "待独立科学审核接纳" in report
+    assert "实际结果（已按预定义目标裁定）" not in report
+    assert "实际结果（科学审核已接纳）" not in report
 
 
 def test_archive_stays_separate_and_has_no_new_packet_link():
@@ -151,3 +159,114 @@ def test_minimal_or_malformed_optional_data_is_renderable():
     for value in [{}, None, {"target": None, "runs": None, "evidence": None, "patents": None}]:
         report = render_target_report(value)
         assert "尚无运行记录" in report and "未记录" in report
+
+
+@pytest.fixture
+def report_ledger(tmp_path, monkeypatch):
+    """Exercise real report routes over a temporary ledger, not copied scoring."""
+    http, ledger = client(tmp_path, monkeypatch)
+    monkeypatch.setattr(arena_api, "ROOT", tmp_path)
+    target, slots = spec()
+    target.update(scope="prospective_challenge", trial_name="Synthetic report qualification target")
+    ids = ledger.register("report-test", [target], slots, {"season_kind": "registered_12_project_season"})
+    for ident, slot in zip(ids, slots):
+        finish(ledger, ident, returned_model=slot["requested_model"])
+    yield http, ledger, target
+    http.close()
+
+
+def agree_report_result(state, *, label="success", kind="ai"):
+    _, ledger, target = state
+    outcome = result(target, label)
+    for reviewer in ("synthetic-source-reviewer-one", "synthetic-source-reviewer-two"):
+        vote(ledger, target, deepcopy(outcome), reviewer, kind)
+
+
+@pytest.mark.parametrize("kind", ["ai", "human", "unspecified", "authenticated"])
+def test_real_report_route_does_not_promote_source_agreement(report_ledger, kind):
+    http, ledger, target = report_ledger
+    agree_report_result(report_ledger, kind="ai" if kind == "authenticated" else kind)
+    if kind == "authenticated":
+        # Draft preparation adds genuine temporary session-authenticated source
+        # reviews, but does not append scientific acceptance.
+        scientific_acceptance_document(ledger, target)
+    before = ledger.events()
+    view = http.get("/api/arena/targets/" + target["id"]).json()
+    assert view["target"]["status"] == "adjudicated"
+    assert view["result"]["review_status"] == "agreement_pending_independent_review"
+    assert view["result"]["scoring_eligible"] is False
+    response = http.get("/api/arena/targets/" + target["id"] + "/report")
+    assert response.status_code == 200
+    report = response.text
+    assert "待独立科学审核接纳" in report and "暂不用于判定模型命中、Brier 或排名" in report
+    assert "实际结果（已按预定义目标裁定）" not in report
+    assert "实际结果（科学审核已接纳）" not in report
+    assert "来源审核时间（原样）" in report
+    assert "synthetic-source-reviewer" not in report
+    assert ledger.events() == before
+
+
+@pytest.mark.parametrize("label,display,binary", [
+    ("success", "达到成功判据", True), ("failure", "未达到成功判据", True),
+    ("mixed", "混合结果（Mixed）", False),
+    ("inconclusive", "结论不明确（Inconclusive）", False),
+    ("not_adjudicable", "无法按目标裁定（Not adjudicable）", False),
+])
+def test_real_report_route_displays_only_policy_accepted_results(report_ledger, tmp_path, label, display, binary):
+    http, ledger, target = report_ledger
+    agree_report_result(report_ledger, label=label)
+    scientifically_accept(ledger, target, tmp_path)
+    before = ledger.events()
+    view = http.get("/api/arena/targets/" + target["id"]).json()
+    assert view["result"]["review_status"] == "accepted"
+    assert view["result"]["scoring_eligible"] is binary
+    report = http.get("/api/arena/targets/" + target["id"] + "/report").text
+    assert "实际结果（科学审核已接纳）：" + display + "。" in report
+    assert "系统未自动核实专业资质、科学独立性或临床预测效度" in report
+    if binary:
+        assert "二元参考结果已通过科学接纳门槛" in report
+        assert "每次预测仍需满足既有时间、输入与评分条件" in report
+    else:
+        assert "不生成命中、对错或 Brier 评分" in report
+        assert "二元参考结果已通过科学接纳门槛" not in report
+    for private in ("PRIVATE SYNTHETIC", "Synthetic responsible operator", "sci-principal-",
+                    "qualification_evidence", "independence_statement", "acceptance_event_sha256"):
+        assert private not in report
+    assert ledger.events() == before
+
+
+def test_report_cannot_accept_plain_json_flags_or_a_different_top_level_result(report_ledger, tmp_path):
+    http, ledger, target = report_ledger
+    agree_report_result(report_ledger)
+    scientifically_accept(ledger, target, tmp_path)
+    # JSON metadata is informative; it cannot issue the ledger policy's seal.
+    value = http.get("/api/arena/targets/" + target["id"]).json()
+    assert value["result"]["scoring_eligible"] is True
+    report = render_target_report(value)
+    assert "待独立科学审核接纳" in report and "实际结果（科学审核已接纳）" not in report
+    # The server-side API projection retains the verified policy object. The
+    # report must nevertheless bind its selected result to that exact object.
+    projected = arena_api.target_detail(target["id"], Request({"type": "http", "app": http.app}))
+    assert "实际结果（科学审核已接纳）" in render_target_report(projected)
+    projected["result"] = {**projected["result"], "label": "failure"}
+    report = render_target_report(projected)
+    assert "待独立科学审核接纳" in report and "实际结果（科学审核已接纳）" not in report
+
+
+def test_real_api_archive_projection_keeps_historical_label_without_acceptance(report_ledger, monkeypatch):
+    http, ledger, target = report_ledger
+    agree_report_result(report_ledger)
+    archived = deepcopy(ledger.snapshot()["targets"][0])
+    archived.update(id="archive-" + target["id"], record_kind="historical_replay", scope="archived_research")
+    monkeypatch.setattr(arena_api, "archived_views", lambda store: ([archived], [], {}))
+    before = ledger.events()
+    view = http.get("/api/arena/targets/" + archived["id"]).json()
+    assert view["result"]["review_status"] == "historical_replay"
+    assert view["result"]["scoring_eligible"] is False
+    report = http.get("/api/arena/targets/" + archived["id"] + "/report").text
+    assert "归档结果（历史回放）：达到成功判据。" in report
+    assert "不计作前瞻命中或正式概率评分" in report
+    assert archived["result"]["source_url"] in report
+    assert archived["result"]["first_public_at"] in report
+    assert "实际结果（科学审核已接纳）" not in report
+    assert ledger.events() == before

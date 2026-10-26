@@ -38,8 +38,12 @@ POLICY_KEYS = {'calibration_status','probability','confidence','direction_rule',
     'comparison_scope','clinical_prediction_validated'}
 CONSENSUS_KEYS = {'predicted_outcome','assigned','counts','agreement','agreement_denominator',
     'average_probability','confidence','calibration_status'}
-RESULT_KEYS = {'status','label','first_public_at','source_url','summary','effect_size',
+LEGACY_RESULT_KEYS = {'status','label','first_public_at','source_url','summary','effect_size',
     'confidence_interval','p_value','numeric_source_url','verification_note'}
+RESULT_KEYS = LEGACY_RESULT_KEYS | {'review_status','scoring_eligible'}
+VERSION = 'arena-clinical-public-1.1'
+LEGACY_VERSION = 'arena-clinical-public-1.0'
+BUNDLE_VERSION = 'predome-public-launch-bundle-2'
 READOUT_KEYS = {'label','start','end','precision','source_url','source_title','source_granularity','source_note'}
 
 
@@ -80,9 +84,12 @@ def check_public(value):
         raise ValueError('Credential-like text rejected')
 
 
-def validate_record(record, selected):
+def validate_record(record, selected, *, allow_legacy=False):
     check_public(record)
     if not isinstance(record,dict) or set(record)!=ROOT_KEYS:raise ValueError('Unexpected public record schema')
+    legacy = record['version'] == LEGACY_VERSION
+    if record['version'] != VERSION and not (legacy and allow_legacy):
+        raise ValueError('Unsupported public record version; legacy records are verification-only')
     target=record['target'];runs=record['runs']
     if set(target)-TARGET_KEYS or target!=selected:raise ValueError('Target changed during export; start a new snapshot')
     if (set(record['public_policy'])!=POLICY_KEYS or set(record['consensus'])!=CONSENSUS_KEYS
@@ -96,10 +103,27 @@ def validate_record(record, selected):
         enrollment=design.get('enrollment')
         if enrollment is not None and (not isinstance(enrollment,dict) or set(enrollment)-{'count','type'}):
             raise ValueError('Unknown enrollment metadata')
-    if target['result'] is not None and set(target['result'])!=RESULT_KEYS:raise ValueError('Unexpected result metadata')
+    result = target['result']
+    historical=target.get('record_kind')=='historical_replay'
+    if result is not None:
+        if not isinstance(result,dict) or set(result)!=(LEGACY_RESULT_KEYS if legacy else RESULT_KEYS):
+            raise ValueError('Unexpected result metadata')
+        if not legacy:
+            review = result['review_status']
+            if (review not in ('awaiting_source_agreement','agreement_pending_independent_review','accepted','historical_replay')
+                    or type(result['scoring_eligible']) is not bool
+                    or result['scoring_eligible'] != (not historical and review=='accepted' and result['label'] in ('success','failure'))):
+                raise ValueError('Inconsistent result review eligibility')
+            if historical != (review=='historical_replay'):
+                raise ValueError('Historical review status does not match the record')
+            if target['status'] != result['status']:
+                raise ValueError('Result status does not match the exact target')
+            if (review=='accepted' and (result['status']!='adjudicated' or result['label'] not in ('success','failure','mixed','inconclusive'))
+                    or review=='agreement_pending_independent_review' and (result['status']!=review or result['label'] is not None)
+                    or review=='awaiting_source_agreement' and result['status'] not in ('pending','announced')):
+                raise ValueError('Inconsistent result review state')
     if not isinstance(runs,list) or not runs or len({r['id'] for r in runs})!=len(runs):
         raise ValueError('Missing or duplicate assigned records')
-    historical=target.get('record_kind')=='historical_replay'
     for run in runs:
         if set(run)-RUN_KEYS:raise ValueError('Unknown model metadata')
         if (run['target_id']!=target['id'] or run['condition']!='clinical_only'
@@ -109,6 +133,14 @@ def validate_record(record, selected):
             raise ValueError('Model records do not share the exact public question')
         if run.get('match') is not None and (historical or target['status']!='adjudicated'):
             raise ValueError('Historical or unresolved records cannot earn prospective matches')
+        if not legacy and run.get('match') is not None:
+            if (not result or result['scoring_eligible'] is not True or run['status']!='predicted'
+                    or run['predicted_outcome']=='Uncertain' or type(run['match']) is not bool
+                    or run['match'] != (run['predicted_outcome']==('Success' if result['label']=='success' else 'Failure'))
+                    or run['match_status'] != ('matched' if run['match'] else 'mismatched')):
+                raise ValueError('Unaccepted or inconsistent prediction match')
+        if not legacy and run.get('match') is None and run.get('match_status') != ('historical_replay' if historical else 'not_evaluable'):
+            raise ValueError('Missing prediction match cannot be presented as a hit or miss')
         if run['predicted_outcome'] not in ('Success','Failure','Uncertain'):raise ValueError('Unknown direction')
         if run['status']!='predicted' and run['predicted_outcome']!='Uncertain':raise ValueError('Missing outputs are not directional predictions')
     if len({r['model_id'] for r in runs})!=len(runs):raise ValueError('Duplicate model assignments')
@@ -152,7 +184,23 @@ def report_text(record):
         '## Consensus and actual result','',f"Majority prediction: {cell(record['consensus']['predicted_outcome'])}.",
         f"Assigned model records: {record['consensus']['assigned']}."]
     result=t.get('result')
-    lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}." if result else 'Actual result: Awaiting results. No correctness score is available.']
+    if result and record['version']==VERSION:
+        review=result['review_status']
+        if review=='accepted':
+            lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}.",
+                'Scientific review: documented independent source review accepted by the responsible operator. This does not establish clinical predictive validity.',
+                'Formal binary scoring eligibility: '+('Yes.' if result['scoring_eligible'] else 'No; the accepted outcome is not binary.')]
+        elif historical:
+            lines += [f"Archived actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}.",
+                'Historical replay; no prospective correctness score is available.']
+        else:
+            lines += ['Actual result: reported, pending independent scientific review. No correctness score is available.' if review=='agreement_pending_independent_review'
+                else 'Actual result: source agreement is not yet recorded. No correctness score is available.',
+                f"Public date: {cell(result.get('first_public_at'))}."]
+    else:
+        # Frozen 1.0 reports must rebuild byte-for-byte for existing timestamp
+        # proofs. New bundle creation rejects this verification-only version.
+        lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}." if result else 'Actual result: Awaiting results. No correctness score is available.']
     if result:
         lines += [cell(result.get('verification_note')),f"Official result source: {cell(result.get('source_url'))}"]
     if historical:lines += ['Historical replay does not earn prospective hits; no accuracy claim is made.']
@@ -194,12 +242,13 @@ Each records/ file preserves the public API object; each reports/ file is a read
 Use the exact page URLs in manifest.json when sharing. Model versions, record times, official result links and missing responses remain visible.
 Success probability and confidence are N/A because clinical calibration is not established.
 Historical replays are separate from current formal predictions and do not earn prospective hits.
+Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.
 The snapshot creation time is an export time, not a model prediction time or an independent timestamp proof.
 SHA-256 entries verify the ZIP's files; they do not prove clinical validity or third-party timestamp attestation.
 This bundle does not include private data, prompts, tokens, cost, internal metrics, or admin access.
 No marketing messages have been sent and no sales conversion or clinical performance is claimed.
 ''').encode()
-    manifest={'schema_version':'predome-public-launch-bundle-1','exported_at_utc':datetime.now(timezone.utc).isoformat(),
+    manifest={'schema_version':BUNDLE_VERSION,'exported_at_utc':datetime.now(timezone.utc).isoformat(),
         'source_origin':BASE,'cohort_id':cohort,'formal_trials':len(formal),'formal_assigned_records':sum(s['assigned_records'] for s in summary if s['kind']=='current_formal'),
         'historical_replays':len(historical),'models':sorted(formal_models or []),'provider_calls':0,'ledger_writes':0,
         'clinical_prediction_validated':False,'independent_timestamp_attestation':False,'records':summary,

@@ -16,7 +16,9 @@ import export_public_campaign as campaign
 
 PINS={'tsa.crt':'8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467',
       'cacert.pem':'2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438'}
-README_PIN='99d0bfa9c299419abb94dfc969f28a29d67263b63ba67f0e319559d9eb7cb584'
+README_PINS={
+    'predome-public-launch-bundle-1':'99d0bfa9c299419abb94dfc969f28a29d67263b63ba67f0e319559d9eb7cb584',
+    'predome-public-launch-bundle-2':'a0439c566f87f66af68e911216743650f57394f5bf4d4df13609dc888da3eb62'}
 FILES=frozenset(('clinical-records.zip','request.tsq','timestamp.tsr','cacert.pem','tsa.crt',
                  'receipt.json','verification.txt','README.md'))
 PUBLIC_FILES=FILES|{'verification-kit.zip'}
@@ -62,7 +64,7 @@ def validate_bundle(raw):
     required={'schema_version','exported_at_utc','source_origin','cohort_id','formal_trials',
         'formal_assigned_records','historical_replays','models','provider_calls','ledger_writes',
         'clinical_prediction_validated','independent_timestamp_attestation','records','files'}
-    if (set(m)!=required or m['schema_version']!='predome-public-launch-bundle-1'
+    if (set(m)!=required or m['schema_version'] not in README_PINS
             or m['source_origin']!=campaign.BASE or not m['cohort_id']):raise ValueError('Unsupported public export')
     if (m['provider_calls']!=0 or m['ledger_writes']!=0 or m['clinical_prediction_validated'] is not False
             or m['independent_timestamp_attestation'] is not False):raise ValueError('Unsupported execution or clinical claim')
@@ -70,7 +72,7 @@ def validate_bundle(raw):
     for name,entry in m['files'].items():
         if set(entry)!={'sha256','bytes'} or entry!={'sha256':digest(files[name]),'bytes':len(files[name])}:
             raise ValueError('Export member hash or size mismatch')
-    if digest(files.get('README.md',b''))!=README_PIN:raise ValueError('Unknown public export explanatory text')
+    if digest(files.get('README.md',b''))!=README_PINS[m['schema_version']]:raise ValueError('Unknown public export explanatory text')
     expected={'README.md','manifest.json'};formal=[];history=[];models=None;ids=set()
     for item in m['records']:
         if set(item)!={'target_id','trial_name','kind','assigned_records','page_url'}:raise ValueError('Unknown record index metadata')
@@ -79,7 +81,10 @@ def validate_bundle(raw):
         ids.add(ident);json_name='records/'+ident+'.json';report_name='reports/'+ident+'.md'
         if json_name not in files or report_name not in files:raise ValueError('Missing clinical record/report')
         record=decode(files[json_name]);target=record['target']
-        replay=campaign.validate_record(record,target)
+        legacy=m['schema_version']=='predome-public-launch-bundle-1'
+        expected_version=campaign.LEGACY_VERSION if legacy else campaign.VERSION
+        if record['version']!=expected_version:raise ValueError('Public export and record versions differ')
+        replay=campaign.validate_record(record,target,allow_legacy=legacy)
         if target['id']!=ident or files[report_name]!=campaign.report_text(record):raise ValueError('Report differs from public clinical object')
         expected.add(json_name);expected.add(report_name)
         derived={'target_id':ident,'trial_name':target['trial_name'],
@@ -205,7 +210,9 @@ def exclusive(path,raw,mode=0o600):
 def attest(bundle_path,expected_sha256,directory,cert_dir,openssl='openssl'):
     raw=regular(bundle_path)
     if digest(raw)!=expected_sha256:raise ValueError('Selected public ZIP changed')
-    validate_bundle(raw)
+    manifest=validate_bundle(raw)
+    if manifest['schema_version']!=campaign.BUNDLE_VERSION:
+        raise ValueError('Legacy public bundles are verification-only; new attestations require the current schema')
     directory=Path(directory)
     if directory.exists() or directory.is_symlink():raise ValueError('Proof directories are never overwritten')
     certs={name:regular(Path(cert_dir)/name,65536) for name in PINS}
