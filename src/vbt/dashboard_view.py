@@ -28,6 +28,7 @@ def render(app,records,record_table):
     for label,value,detail,url in metrics:
         body+='<a class="card metric-card" href="'+url+'"><span class="metric-label">'+label+'</span><strong class="metric">'+format(value,',')+'</strong><span class="metric-detail">'+detail+'</span></a>'
     body+='</div><div class="data-note"><span class="status-dot"></span>市场与登记 · 当前本机采集：'+('自动检查已开启' if market.setting('enabled')=='1' else '自动检查未开启')+' · 排队 '+str(jobs.get('queued',0))+' · 执行中 '+str(jobs.get('running',0))+' · 待重试 '+str(jobs.get('retry_wait',0))+' · <a href="/coverage">查看任务与缺口 →</a><p class="ref">最近一次成功登记查询：'+(_timestamp(last) if last else '尚无成功查询记录')+'。查询完成不代表公司完整管线已核验。</p></div>'
+    body+='<section class="card"><span class="eyebrow">R&amp;D DECISIONS</span><h2>把研究线索推进为可验证的药物项目</h2><p>定义目标患者、对照与差异化，关联证据和反证，记录下一项验证的预算、期限及停止条件。</p><a class="button" href="/programs">进入研发项目决策</a></section>'
     body+='<div class="section-head"><h2>开始本次研究</h2><span>市场线索 → 来源核对 → 研究记录</span></div><div class="case-grid workflow-links">'
     flows=[('01','选择公司与登记用药','搜索公司，筛选用药名称、适应症与阶段，逐项展开试验依据。','/assets','进入资产工作台'),('02','核对官方披露','对照公司披露与登记名称，查看日期、缺失信息和反证线索。','/disclosures','查看披露与缺口'),('03','复查过往研究','打开分析、研究循环与冻结快照，核对依据和历史判断。','/records','浏览研究历史')]
     for step,title,description,url,action in flows:

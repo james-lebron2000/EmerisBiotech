@@ -7,6 +7,7 @@ from .io import ensure_storage,now,write,within
 from .mission import MISSION,MILESTONES,STATES,validate_update
 from .product_views import CASES,ACTIONS,home_intro,case_page,guide,record_summary,record_gates
 from .sqlite_connections import ClosingConnection
+from .programs import Conflict
 
 def esc(x):return html.escape(str(x if x is not None else '未记录'),quote=True)
 def read(path):
@@ -122,6 +123,9 @@ def page(app,path,q):
     elif path=='/market':
         from .market_view import render
         body=render(app,q)
+    elif path=='/programs':
+        from .program_view import render
+        body=render(app,q)
     elif path=='/case':
         body=case_page(app,q.get('id',''))
     elif path=='/guide':
@@ -183,6 +187,19 @@ def handler(app, public_origin=None):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/program/research-packet':
+                    from .ai_research import packet
+                    from .programs import Programs
+                    self.send(200,json.dumps(packet(Programs(app.state),q.get('id','')),ensure_ascii=False,indent=2),'application/json; charset=utf-8',True);return
+                if u.path in ('/program/export','/program/attachment'):
+                    from .programs import Programs
+                    programs=Programs(app.state)
+                    if u.path=='/program/export':
+                        self.send_bytes(200,programs.export(q.get('id','')),'application/json; charset=utf-8',True);return
+                    name=q.get('file','')
+                    raw,_=programs.attachment(q.get('id',''),name)
+                    mime='text/html; charset=utf-8' if name.endswith('.html') else 'text/csv; charset=utf-8' if name.endswith('.csv') else 'application/json; charset=utf-8'
+                    self.send_bytes(200,raw,mime,True);return
                 if u.path=='/market/disclosure-evidence':
                     from .market import Market
                     from .disclosures import evidence_file
@@ -218,10 +235,17 @@ def handler(app, public_origin=None):
             if not self.safehost() or self.headers.get('Origin')!=origin:self.send(403,'Origin rejected');return
             try:
                 n=int(self.headers.get('Content-Length','0'))
-                if not 0<n<=65536:raise ValueError('Request too large or empty')
-                q={k:v[0] for k,v in parse_qs(self.rfile.read(n).decode()).items()}
+                maximum=262144 if self.path=='/program/action' else 65536
+                if not 0<n<=maximum:raise ValueError('Request too large or empty')
+                parsed=parse_qs(self.rfile.read(n).decode())
+                q={k:v[0] for k,v in parsed.items()}
                 if not secrets.compare_digest(q.get('token',''),app.token):self.send(403,'Token rejected');return
-                if self.path.startswith('/market/'):
+                if self.path=='/program/action':
+                    from .program_view import submit
+                    q['evidence_ids']=parsed.get('evidence_ids',[])
+                    q['result_ids']=parsed.get('result_ids',[])
+                    dest=submit(app,q)
+                elif self.path.startswith('/market/'):
                     from .market import Market
                     market=Market(app.workspace,app.state)
                     if self.path=='/market/export':
@@ -277,6 +301,8 @@ def handler(app, public_origin=None):
                 elif self.path=='/verify':app.start(q.get('kind'),q.get('id'));dest='/jobs'
                 else:raise ValueError('Unknown action')
                 self.send_response(303);self.send_header('Location',dest);self.send_header('Content-Length','0');self.end_headers()
+            except Conflict as e:
+                self.send(409,'<h1>项目已有更新</h1><p>'+esc(e)+'</p><a href="/programs?id='+quote(q.get('id',''))+'">重新打开当前项目</a>')
             except (ValueError,OSError,sqlite3.IntegrityError) as e:self.send(400,'<h1>未能完成操作</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
     return Handler
 
