@@ -41,6 +41,33 @@ def seed_items(root):
     return json.loads((root / "sources" / "pilot_manifest.json").read_text())["items"]
 
 
+def candidate_identifiers(item, publication_number):
+    """Read declared discovery labels without granting a drug-identity review.
+
+    The two original pilot records predate the aliases field. Preserve only
+    those exact legacy mappings; an unrelated publication has no inferred drug.
+    """
+    def identifier(value):
+        return (isinstance(value, str) and 0 < len(value) <= 200
+                and value == value.strip()
+                and not any(ord(char) < 32 or ord(char) == 127 for char in value))
+
+    candidate = item.get("candidate_drug")
+    if not identifier(candidate):
+        raise ValueError("A bounded candidate_drug identifier is required")
+    if "aliases" in item:
+        aliases = item["aliases"]
+        if (not isinstance(aliases, list) or len(aliases) > 30
+                or any(not identifier(alias) for alias in aliases)):
+            raise ValueError("Candidate aliases must be a bounded list of nonempty identifiers")
+        return candidate, list(dict.fromkeys([candidate, *aliases]))
+    legacy = {
+        "WO2019125938A1": ["retatrutide", "LY3437943", "LY-3437943"],
+        "WO2020240467A1": ["datopotamab deruxtecan", "Dato-DXd", "DS-1062", "DS-1062a", "datopotamab"],
+    }
+    return candidate, legacy.get(publication_number, [candidate])
+
+
 def write_connector_receipt(root, response):
     """New acquisition only; retain exact original bytes inside the JSON receipt.
 
@@ -127,6 +154,7 @@ def build_catalog(root):
     mapping_dates = json.loads(dates_path.read_text()).get("items", {}) if dates_path.exists() else {}
     for item in seed_items(root):
         number = normalize_publication(item["publication_number"])
+        candidate, aliases = candidate_identifiers(item, number)
         pdf = root / "raw" / (number + ".pdf")
         if pdf.exists() and file_sha256(pdf) != item["raw_sha256"]:
             raise ValueError("Raw PDF hash mismatch: " + number)
@@ -140,13 +168,14 @@ def build_catalog(root):
             pages.append(page)
         numbers = [p["pdf_page_1_based"] for p in pages]
         complete = sorted(numbers) == list(range(1, item["page_count"] + 1))
-        is_incretin = number == "WO2019125938A1"
-        aliases = ["retatrutide", "LY3437943", "LY-3437943"] if is_incretin else ["datopotamab deruxtecan", "Dato-DXd", "DS-1062", "DS-1062a", "datopotamab"]
         record = {key: item[key] for key in ("publication_number", "title", "publication_date", "original_assignee", "source_url", "pdf_url", "retrieved_at", "raw_sha256", "bytes", "page_count")}
         record.update({
             "public_available_at": item["publication_date"],
-            "date_verification": "PDF cover visually checked by AI assistant during pilot; date precision is one day",
-            "drug_mapping": {"candidate_name": item["candidate_drug"], "aliases": aliases,
+            "date_verification": (
+                "PDF cover visually checked by AI assistant during pilot; date precision is one day"
+                if number in {"WO2019125938A1", "WO2020240467A1"}
+                else "Publication date declared in acquisition manifest; independent original-source date verification pending"),
+            "drug_mapping": {"candidate_name": candidate, "aliases": aliases,
                 "status": "candidate_cross_reference_requires_structure_or_sequence_review",
                 "reviewer": None, "reviewed_at": None,
                 "basis": "Later patent cross-reference; exact compound/sequence identity has not been verified",

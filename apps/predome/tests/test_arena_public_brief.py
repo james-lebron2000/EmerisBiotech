@@ -27,16 +27,30 @@ class Document(HTMLParser):
     def __init__(self, text):
         super().__init__()
         self.tags, self.text, self.links = [], [], []
+        self.model_articles, self._article = {}, None
         self.feed(text)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         self.tags.append((tag, attrs))
+        if tag == 'article' and 'model-evidence' in attrs.get('class', '').split():
+            self._article = {'text': [], 'links': [], 'tags': []}
+            self.model_articles[attrs.get('data-run-id')] = self._article
+        if self._article is not None:
+            self._article['tags'].append((tag, attrs))
         if tag == 'a':
             self.links.append(attrs.get('href'))
+            if self._article is not None:
+                self._article['links'].append(attrs.get('href'))
+
+    def handle_endtag(self, tag):
+        if tag == 'article':
+            self._article = None
 
     def handle_data(self, data):
         self.text.append(data)
+        if self._article is not None:
+            self._article['text'].append(data)
 
 
 @pytest.fixture
@@ -56,6 +70,43 @@ def native(tmp_path, monkeypatch):
     app.state.store = SimpleNamespace(path=root)
     app.include_router(public.router)
     return SimpleNamespace(ledger=ledger, target=target, ids=ids, client=TestClient(app))
+
+
+@pytest.fixture
+def native_references(native):
+    """Synthetic source associations, through the real ledger and public API."""
+    target, slots = spec()
+    target.update(id='model-reference-target', scope='prospective_challenge',
+                  trial_name='Synthetic model-reference question')
+    evidence = []
+    for ident, title, date, page in [('e1', 'Synthetic Alpha evidence', '2020-01-02', 3),
+                                     ('e2', 'Synthetic Beta evidence', '2020-02-03', 7),
+                                     ('unused', 'Synthetic uncited source', '2020-03-04', 11)]:
+        evidence.append({'id': ident, 'title': title, 'text': 'Synthetic isolated source '+ident,
+            'source_url': 'https://example.org/synthetic-'+ident,
+            'source_sha256': hashlib.sha256(ident.encode()).hexdigest(),
+            'available_at': date+'T00:00:00+00:00', 'availability_date': date,
+            'kind': 'clinical_prior', 'page': page})
+    third = deepcopy(slots[1])
+    third.update(model_id='C', requested_model='C-fixed')
+    slots.append(third)
+    for slot in slots:
+        slot['target_id'] = target['id']
+        slot['packet']['evidence'] = deepcopy(evidence)
+    ids = native.ledger.register('model-reference-cohort', [target], slots,
+                                {'season_kind': 'registered_12_project_season'})
+    finish(native.ledger, ids[0], .7, evidence_ids=['e1'], returned_model='A-fixed',
+           reasoning='Synthetic Alpha model explanation.')
+    finish(native.ledger, ids[1], .2, evidence_ids=['e2'], returned_model='B-fixed',
+           reasoning='Synthetic Beta model explanation.')
+    native.ledger.start(ids[2])
+    native.ledger.finish(ids[2], {'status': 'failed', 'probability': None, 'error_code': 'invalid_json'})
+    return SimpleNamespace(ledger=native.ledger, target=target, ids=ids, client=native.client)
+
+
+def model_markdown(markdown, model):
+    section = markdown.split('\n#### '+model+'\n', 1)[1]
+    return section.split('\n#### ', 1)[0].split('\n## Consensus and actual result', 1)[0]
 
 
 def unpack(response):
@@ -111,6 +162,127 @@ def test_native_api_brief_uses_one_public_snapshot_preserves_json_times_and_fail
     assert all(url.startswith('https://') for url in doc.links)
     assert any(tag == 'meta' and attrs.get('http-equiv') == 'Content-Security-Policy' for tag, attrs in doc.tags)
     assert native.ledger.events() == before
+
+
+def test_native_api_groups_actual_citations_by_model_without_borrowing_global_sources(native_references):
+    sample = native_references
+    before = sample.ledger.events()
+    base = '/api/arena/public/targets/' + sample.target['id']
+    record = sample.client.get(base + '/record').json()
+    runs = {run['id']: run for run in record['runs']}
+    assert [source['id'] for source in runs[sample.ids[0]]['sources']] == ['e1']
+    assert [source['id'] for source in runs[sample.ids[1]]['sources']] == ['e2']
+    assert runs[sample.ids[2]]['sources'] == []
+    assert {source['id'] for source in record['sources']} == {'e1', 'e2', 'unused'}
+    files, manifest = unpack(sample.client.get(base + '/brief/download'))
+    assert files['clinical-record.json'] == brief.canonical(record)
+    assert manifest['assigned_records'] == 3
+    document = Document(files['clinical-brief.html'].decode())
+    assert sum(tag == 'section' for tag, _ in document.tags) == 3
+    assert set(document.model_articles) == set(sample.ids)
+    markdown = files['clinical-brief.md'].decode()
+    for ident, model, own_title, other_title, explanation, page, date, source_id in [
+            (sample.ids[0], 'A-fixed', 'Synthetic Alpha evidence', 'Synthetic Beta evidence',
+             'Synthetic Alpha model explanation.', 3, '2020-01-02', 'e1'),
+            (sample.ids[1], 'B-fixed', 'Synthetic Beta evidence', 'Synthetic Alpha evidence',
+             'Synthetic Beta model explanation.', 7, '2020-02-03', 'e2')]:
+        article = document.model_articles[ident]
+        text = ' '.join(article['text'])
+        section = model_markdown(markdown, model)
+        assert explanation in text and explanation in section
+        assert own_title in text and own_title in section
+        assert other_title not in text and other_title not in section
+        assert 'Synthetic uncited source' not in text and 'Synthetic uncited source' not in section
+        assert 'Published '+date in text and 'Published '+date in section
+        assert 'Page '+str(page) in text and 'Page '+str(page) in section
+        assert article['links'] == ['https://example.org/synthetic-'+source_id]
+    failure = document.model_articles[sample.ids[2]]
+    failure_text = ' '.join(failure['text'])
+    failure_markdown = model_markdown(markdown, 'C-fixed')
+    assert failure['links'] == []
+    assert runs[sample.ids[2]]['brief_reason'] in failure_text
+    assert runs[sample.ids[2]]['brief_reason'] in failure_markdown
+    assert 'No references recorded for this model.' in failure_text
+    assert 'No references recorded for this model.' in failure_markdown
+    assert 'Synthetic Alpha evidence' not in failure_text + failure_markdown
+    assert 'Synthetic Beta evidence' not in failure_text + failure_markdown
+    assert 'not an independent claim-by-claim support review' in markdown
+    assert sample.ledger.events() == before
+
+
+def test_model_rationale_and_reference_titles_escape_both_contexts_and_keep_safe_metadata(native_references):
+    sample = native_references
+    events_before = sample.ledger.events()
+    record = sample.client.get('/api/arena/public/targets/' + sample.target['id'] + '/record').json()
+    run = next(run for run in record['runs'] if run['id'] == sample.ids[0])
+    synthetic_text = '<img src=x onerror=alert(1)> [bad](javascript:bad) | **marked**'
+    run['brief_reason'] = run['reason'] = synthetic_text
+    original_url = 'https://example.org/synthetic-e1?range=(1)&label=x%20y'
+    snapshot = '/api/arena/sources/' + 'a' * 64
+    for sources in (record['sources'], record['evidence'], record['target']['sources'], run['sources']):
+        for source in sources:
+            if source['id'] == 'e1':
+                source.update(title=synthetic_text, source_url=original_url,
+                              source_snapshot_url=snapshot)
+    input_before = deepcopy(record)
+    raw, _ = brief.build_brief(record)
+    with zipfile.ZipFile(BytesIO(raw)) as bundle:
+        html = bundle.read('clinical-brief.html').decode()
+        markdown = bundle.read('clinical-brief.md').decode()
+        assert bundle.read('clinical-record.json') == brief.canonical(record)
+    document = Document(html)
+    article = document.model_articles[run['id']]
+    assert article['links'] == [original_url, 'https://8.148.145.28' + snapshot]
+    assert not any(tag in ('img', 'script', 'iframe') for tag, _ in document.tags)
+    assert not any(key.startswith('on') for _, attrs in document.tags for key in attrs)
+    assert synthetic_text in ' '.join(article['text'])
+    section = model_markdown(markdown, 'A-fixed')
+    assert '&lt;img' in html and '&lt;img' in section
+    assert '\\[bad\\]' in section and '\\(javascript:bad\\)' in section
+    assert '\\| \\*\\*marked\\*\\*' in section
+    assert '[Original source](https://example.org/synthetic-e1?range=%281%29&label=x%20y)' in section
+    assert '[Captured snapshot](https://8.148.145.28' + snapshot + ')' in section
+    assert 'Published 2020-01-02' in section and 'Page 3' in section
+    assert record == input_before
+    assert sample.ledger.events() == events_before
+
+
+def test_predicted_model_with_missing_summary_keeps_its_own_references(native_references):
+    sample = native_references
+    record = sample.client.get('/api/arena/public/targets/' + sample.target['id'] + '/record').json()
+    run = next(run for run in record['runs'] if run['id'] == sample.ids[0])
+    run['brief_reason'] = run['reason'] = None
+    before = deepcopy(record)
+    raw, _ = brief.build_brief(record)
+    with zipfile.ZipFile(BytesIO(raw)) as bundle:
+        article = Document(bundle.read('clinical-brief.html').decode()).model_articles[run['id']]
+        section = model_markdown(bundle.read('clinical-brief.md').decode(), 'A-fixed')
+    assert 'No short rationale is available for this record.' in ' '.join(article['text'])
+    assert 'No short rationale is available for this record.' in section
+    assert article['links'] == ['https://example.org/synthetic-e1']
+    assert 'Synthetic Beta model explanation.' not in section
+    assert record == before
+
+
+@pytest.mark.parametrize('field,url', [
+    ('source_url', 'javascript:alert(1)'),
+    ('source_url', 'http://example.org/insecure'),
+    ('source_url', 'https://user:password@example.org/private'),
+    ('source_url', 'https://example.org/source?api_key=private-value'),
+    ('source_url', 'https://example.org/source\nnext'),
+    ('source_snapshot_url', '/api/arena/sources/not-a-sha256'),
+    ('source_snapshot_url', 'file:///private/isolated-source'),
+    ('source_snapshot_url', 'https://example.org/source?authorization=private-value'),
+])
+def test_model_reference_links_obey_the_existing_export_boundary(native_references, field, url):
+    sample = native_references
+    record = sample.client.get('/api/arena/public/targets/' + sample.target['id'] + '/record').json()
+    run = next(run for run in record['runs'] if run['id'] == sample.ids[0])
+    run['sources'][0][field] = url
+    before = deepcopy(record)
+    with pytest.raises(ValueError):
+        brief.build_brief(record)
+    assert record == before
 
 
 @pytest.mark.parametrize('credential', ['sk-' + 'X' * 32, '-----BEGIN OPENSSH PRIVATE KEY-----'])

@@ -237,7 +237,28 @@ def _result_text(result, historical):
         if result.get('scoring_eligible') is True else 'Mixed or inconclusive results do not produce a right-or-wrong score.')
 
 
-CSS = '''body{font:15px/1.55 Arial,Helvetica,sans-serif;color:#172c43;background:#fff;margin:0;padding:24px}main{max-width:1040px;margin:auto}h1{font-size:30px;line-height:1.2}h2{font-size:20px;margin-top:28px}h3{font-size:16px}a{color:#174d80}p,dd,td,li{overflow-wrap:anywhere}.scope,.note{color:#4b5f70}.facts{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 18px}.facts dt{font-weight:bold}.facts dd{margin:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}th,td{text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid #d7dfe6}th{background:#eef3f7}.sources{padding-left:20px}footer{border-top:1px solid #d7dfe6;margin-top:24px;padding-top:14px;font-size:12px;color:#4b5f70}@media(max-width:600px){body{padding:16px}.facts{grid-template-columns:1fr;gap:3px}.facts dd{margin-bottom:9px}h1{font-size:25px}}@media print{body{padding:0;font-size:11px}h1{font-size:23px}h2{font-size:16px}table{min-width:0;font-size:9px}.table-wrap{overflow:visible}th,td{padding:4px}a{color:inherit}tr{break-inside:avoid}footer{font-size:9px}}'''
+def _source_list(sources, empty):
+    """Render recorded references in both output contexts, without fetching them."""
+    markdown, items = [], []
+    for source in sources:
+        label = source.get('title') or source.get('id') or 'Public source'
+        metadata = []
+        if source.get('publication_date'):
+            metadata.append('Published '+_text(source['publication_date']))
+        if type(source.get('page')) is int and source['page'] > 0:
+            metadata.append('Page '+str(source['page']))
+        suffix = ' · '+' · '.join(metadata) if metadata else ''
+        links = [(name, _safe_url(source.get(key))) for name, key in
+                 (('Original source', 'source_url'), ('Captured snapshot', 'source_snapshot_url'))]
+        links = [(name, value) for name, value in links if value]
+        md_links = ['['+name+']('+quote(value, safe=':/?#=&%+@~.-_')+')' for name, value in links]
+        markdown.append('- '+_md(_text(label)+suffix)+': '+(' · '.join(md_links) if md_links else 'No public link recorded.'))
+        html_links = ['<a href="'+html.escape(value, quote=True)+'" rel="noopener noreferrer">'+name+'</a>' for name, value in links]
+        items.append('<li>'+html.escape(_text(label)+suffix)+': '+(' · '.join(html_links) if html_links else 'No public link recorded.')+'</li>')
+    return markdown or ['- '+empty], ''.join(items) or '<li>'+html.escape(empty)+'</li>'
+
+
+CSS = '''body{font:15px/1.55 Arial,Helvetica,sans-serif;color:#172c43;background:#fff;margin:0;padding:24px}main{max-width:1040px;margin:auto}h1{font-size:30px;line-height:1.2}h2{font-size:20px;margin-top:28px}h3{font-size:16px}a{color:#174d80}p,dd,td,li{overflow-wrap:anywhere}.scope,.note{color:#4b5f70}.facts{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 18px}.facts dt{font-weight:bold}.facts dd{margin:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}th,td{text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid #d7dfe6}th{background:#eef3f7}.sources{padding-left:20px}.model-evidence{padding:12px 0;border-top:1px solid #d7dfe6;font-size:13px}.model-evidence h4{font-size:15px;margin:4px 0 8px}.model-evidence p{margin:6px 0}footer{border-top:1px solid #d7dfe6;margin-top:24px;padding-top:14px;font-size:12px;color:#4b5f70}@media(max-width:600px){body{padding:16px}.facts{grid-template-columns:1fr;gap:3px}.facts dd{margin-bottom:9px}h1{font-size:25px}}@media print{body{padding:0;font-size:11px}h1{font-size:23px}h2{font-size:16px}table{min-width:0;font-size:9px}.table-wrap{overflow:visible}th,td{padding:4px}a{color:inherit}tr{break-inside:avoid}footer{font-size:9px}}'''
 
 
 def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
@@ -282,14 +303,23 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     md.extend('| '+_md(label)+' | '+_md(value)+' |' for label, value in facts)
     md += ['', '## AI Clinical Trial Predictions', '', '| '+' | '.join(headers)+' |', '| '+' | '.join('---' for _ in headers)+' |']
     md.extend('| '+' | '.join(_md(value) for value in row)+' |' for row in rows)
-    md += ['', calibration, '', '## Consensus and actual result', '',
+    reference_note = 'These are references recorded for each model, not an independent claim-by-claim support review. A citation does not establish that a judgment is correct.'
+    md += ['', calibration, '', '### Model rationales and recorded references', '', reference_note]
+    html_models = []
+    for run, row in zip(runs, rows):
+        rationale = run.get('brief_reason') or run.get('reason') or 'No short rationale is available for this record.'
+        reference_md, reference_html = _source_list(run['sources'], 'No references recorded for this model.')
+        md += ['', '#### '+_md(row[0]), '', _md(rationale), '', 'Recorded references:', '', *reference_md]
+        html_models.append('<article class="model-evidence" data-run-id="'+html.escape(run['id'], quote=True)+'"><h4>'
+            +html.escape(row[0])+'</h4><p class="model-rationale">'+html.escape(_text(rationale))
+            +'</p><p><strong>Recorded references</strong></p><ul class="sources">'+reference_html+'</ul></article>')
+    md += ['', '## Consensus and actual result', '',
            'Majority prediction: '+_md(consensus.get('predicted_outcome'))+'.',
            'Assigned model records: '+str(consensus['assigned'])+'.',
            'Direction counts: '+_md(counts)+'.', '', _md(outcome_note)]
     if result:
         md += ['Official announcement: '+_md(result.get('first_public_at'))+'.', _md(result.get('verification_note'))]
     md += ['', '### Public sources', '']
-    html_sources = []
     sources = [dict(s) for s in record['sources']]
     guidance = target['readout']
     if (_safe_url(guidance.get('source_url'))
@@ -297,17 +327,8 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
         sources.append({'title': guidance.get('source_title') or 'Readout timing source', 'source_url': guidance['source_url']})
     if result and _safe_url(result.get('source_url')):
         sources.append({'title': 'Official clinical result', 'source_url': result['source_url']})
-    if not sources:
-        md.append('- No public source metadata recorded.')
-        html_sources.append('<li>No public source metadata recorded.</li>')
-    for source in sources:
-        label = source.get('title') or source.get('id') or 'Public source'
-        links = [(name, _safe_url(source.get(key))) for name, key in (('Original source', 'source_url'), ('Verified snapshot', 'source_snapshot_url'))]
-        links = [(name, value) for name, value in links if value]
-        md_links = ['['+name+']('+quote(value, safe=':/?#=&%+@~.-_')+')' for name, value in links]
-        md.append('- '+_md(label)+': '+(' · '.join(md_links) if md_links else 'No verified public link recorded.'))
-        html_links = ['<a href="'+html.escape(value, quote=True)+'" rel="noopener noreferrer">'+name+'</a>' for name, value in links]
-        html_sources.append('<li>'+html.escape(_text(label))+': '+(' · '.join(html_links) if html_links else 'No verified public link recorded.')+'</li>')
+    source_md, html_sources = _source_list(sources, 'No public source metadata recorded.')
+    md.extend(source_md)
     md += ['', 'Exported at UTC: '+_md(exported)+'.', '', export_note, '', integrity_note]
     e = lambda value: html.escape(_text(value), quote=True)
     html_facts = ''.join('<dt>'+e(label)+'</dt><dd>'+e(value)+'</dd>' for label, value in facts)
@@ -315,7 +336,7 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     html_result = '<p>'+e(outcome_note)+'</p>'
     if result:
         html_result += '<p>Official announcement: '+e(result.get('first_public_at'))+'</p><p>'+e(result.get('verification_note'))+'</p>'
-    document = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><title>'+e(title)+' · Predome Clinical Brief</title><style>'+CSS+'</style></head><body><main><h1>'+e(title)+'</h1><p class="scope"><strong>'+e(scope)+'</strong> · '+e(scope_note)+'</p><p><a href="'+html.escape(page_url, quote=True)+'" rel="noopener noreferrer">Open this exact trial record</a></p><section><h2>Clinical trial</h2><dl class="facts">'+html_facts+'</dl></section><section><h2>AI Clinical Trial Predictions</h2><div class="table-wrap"><table><thead><tr>'+''.join('<th scope="col">'+e(name)+'</th>' for name in headers)+'</tr></thead><tbody>'+html_rows+'</tbody></table></div><p class="note">'+e(calibration)+'</p></section><section><h2>Consensus and actual result</h2><p>Majority prediction: '+e(consensus.get('predicted_outcome'))+' · Assigned records: '+e(consensus['assigned'])+'</p><p>Direction counts: '+e(counts)+'</p>'+html_result+'<h3>Public sources</h3><ul class="sources">'+''.join(html_sources)+'</ul></section><footer><p>Exported at UTC: '+e(exported)+'</p><p>'+e(export_note)+'</p><p>'+e(integrity_note)+'</p></footer></main></body></html>\n'
+    document = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><title>'+e(title)+' · Predome Clinical Brief</title><style>'+CSS+'</style></head><body><main><h1>'+e(title)+'</h1><p class="scope"><strong>'+e(scope)+'</strong> · '+e(scope_note)+'</p><p><a href="'+html.escape(page_url, quote=True)+'" rel="noopener noreferrer">Open this exact trial record</a></p><section><h2>Clinical trial</h2><dl class="facts">'+html_facts+'</dl></section><section><h2>AI Clinical Trial Predictions</h2><div class="table-wrap"><table><thead><tr>'+''.join('<th scope="col">'+e(name)+'</th>' for name in headers)+'</tr></thead><tbody>'+html_rows+'</tbody></table></div><p class="note">'+e(calibration)+'</p><div class="model-notes"><h3>Model rationales and recorded references</h3><p class="note">'+e(reference_note)+'</p>'+''.join(html_models)+'</div></section><section><h2>Consensus and actual result</h2><p>Majority prediction: '+e(consensus.get('predicted_outcome'))+' · Assigned records: '+e(consensus['assigned'])+'</p><p>Direction counts: '+e(counts)+'</p>'+html_result+'<h3>Public sources</h3><ul class="sources">'+html_sources+'</ul></section><footer><p>Exported at UTC: '+e(exported)+'</p><p>'+e(export_note)+'</p><p>'+e(integrity_note)+'</p></footer></main></body></html>\n'
     files = {'clinical-record.json': record_raw, 'clinical-brief.md': ('\n'.join(md)+'\n').encode(),
              'clinical-brief.html': document.encode()}
     manifest = {'schema_version': SCHEMA_VERSION, 'record_version': record['version'], 'exported_at_utc': exported,

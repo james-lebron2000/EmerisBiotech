@@ -1,0 +1,249 @@
+{
+  "consensus": {
+    "agreement": 0.5,
+    "agreement_denominator": 2,
+    "assigned": 2,
+    "average_probability": null,
+    "calibration_status": "not_established",
+    "confidence": null,
+    "counts": {
+      "Failure": 0,
+      "Success": 1,
+      "Uncertain": 1
+    },
+    "predicted_outcome": "Uncertain"
+  },
+  "evidence": [
+    {
+      "id": "triumph5-registry-v1",
+      "kind": "trial_registry",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+      "title": "TRIUMPH-5 exact registry primary target"
+    },
+    {
+      "id": "triumph1-prior-v1",
+      "kind": "clinical_prior",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/24d182ccc37f01342c231e25065a1c48c93639f6edfd0b0ea06d6042ea5aeb6c",
+      "source_url": "https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-delivered-powerful-weight-loss",
+      "title": "TRIUMPH-1 sponsor prior; different trial"
+    },
+    {
+      "id": "surmount5-prior-v1",
+      "kind": "clinical_prior",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/a12003544f988a688e6ec4564da641fcab8860569ab0ba4d6c3e44ad40b0c4c1",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05822830",
+      "title": "SURMOUNT-5 posted primary result; different comparison"
+    }
+  ],
+  "public_policy": {
+    "calibration_status": "not_established",
+    "clinical_prediction_validated": false,
+    "comparison_scope": "Same-evidence clinical-only assignments, separately for each exact registered target. Historical records remain separate.",
+    "confidence": null,
+    "consensus_rule": "Each assigned model slot counts once. A class needs more than half of all assigned slots; otherwise consensus is Uncertain. Agreement is the largest class count divided by all assigned slots, including Uncertain; it is not accuracy or confidence.",
+    "direction_rule": "Direction only: persisted valid model value >0.5 = Success; <0.5 = Failure; exactly 0.5, abstention, failed/missing output or blocked input = Uncertain. This is not a calibrated clinical success probability.",
+    "probability": null
+  },
+  "result": null,
+  "runs": [
+    {
+      "brief_reason": "本次未产生可用研究判断。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-retatrutide-pair-20261027-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "id": "run-609621f37ca3480b916128224492de98",
+      "locked_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "kimi-k3",
+      "model_version": "kimi-k3",
+      "predicted_outcome": "Uncertain",
+      "probability": null,
+      "reason": "本次未产生可用研究判断。",
+      "requested_model": "kimi-k3",
+      "scope": "prospective_challenge",
+      "sources": [],
+      "status": "failed",
+      "target_id": "of-retatrutide-pair-20261027-v1-target",
+      "track": "same_evidence"
+    },
+    {
+      "brief_reason": "TRIUMPH-1中retatrutide 12 mg Week80减重约-28.3%（疗效估计）/-25.0%（治疗方案估计），9 mg约-25.9%；SURMOUNT-5中tirzepatide 15 mg Week72约-20.2%，跨试验数值提示retatrutide可能领先约5-8个百分点。TRIUMPH-5为800例随机双盲头对头，主要终点同为体重百分比变化；若采用接近最大耐受剂量，优效性检验较可能达到统计学显著。但剂量、SAP、主要估计量、缺失处理及是否预设优效性均未知，且跨试验比较不能替代随机头对头结果，故不给出更高概率。",
+      "calibration_status": "not_established",
+      "cohort_id": "of-retatrutide-pair-20261027-v1",
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-26T17:55:11.481075+00:00",
+      "id": "run-b58d38210ec24ce7b40cb9f019c5f5d0",
+      "locked_at_utc": "2026-10-26T17:55:11.481075+00:00",
+      "match": null,
+      "match_status": "not_evaluable",
+      "model_id": "deepseek-v4.1-flash",
+      "model_version": "deepseek-v4.1-flash",
+      "predicted_outcome": "Success",
+      "probability": null,
+      "reason": "TRIUMPH-1中retatrutide 12 mg Week80减重约-28.3%（疗效估计）/-25.0%（治疗方案估计），9 mg约-25.9%；SURMOUNT-5中tirzepatide 15 mg Week72约-20.2%，跨试验数值提示retatrutide可能领先约5-8个百分点。TRIUMPH-5为800例随机双盲头对头，主要终点同为体重百分比变化；若采用接近最大耐受剂量，优效性检验较可能达到统计学显著。但剂量、SAP、主要估计量、缺失处理及是否预设优效性均未知，且跨试验比较不能替代随机头对头结果，故不给出更高概率。",
+      "requested_model": "deepseek-v4.1-flash",
+      "scope": "prospective_challenge",
+      "sources": [
+        {
+          "id": "triumph5-registry-v1",
+          "kind": "trial_registry",
+          "page": null,
+          "publication_date": null,
+          "source_snapshot_url": "/api/arena/sources/086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+          "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+          "title": "TRIUMPH-5 exact registry primary target"
+        },
+        {
+          "id": "triumph1-prior-v1",
+          "kind": "clinical_prior",
+          "page": null,
+          "publication_date": null,
+          "source_snapshot_url": "/api/arena/sources/24d182ccc37f01342c231e25065a1c48c93639f6edfd0b0ea06d6042ea5aeb6c",
+          "source_url": "https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-delivered-powerful-weight-loss",
+          "title": "TRIUMPH-1 sponsor prior; different trial"
+        },
+        {
+          "id": "surmount5-prior-v1",
+          "kind": "clinical_prior",
+          "page": null,
+          "publication_date": null,
+          "source_snapshot_url": "/api/arena/sources/a12003544f988a688e6ec4564da641fcab8860569ab0ba4d6c3e44ad40b0c4c1",
+          "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05822830",
+          "title": "SURMOUNT-5 posted primary result; different comparison"
+        }
+      ],
+      "status": "predicted",
+      "target_id": "of-retatrutide-pair-20261027-v1-target",
+      "track": "same_evidence"
+    }
+  ],
+  "sources": [
+    {
+      "id": "triumph5-registry-v1",
+      "kind": "trial_registry",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+      "title": "TRIUMPH-5 exact registry primary target"
+    },
+    {
+      "id": "triumph1-prior-v1",
+      "kind": "clinical_prior",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/24d182ccc37f01342c231e25065a1c48c93639f6edfd0b0ea06d6042ea5aeb6c",
+      "source_url": "https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-delivered-powerful-weight-loss",
+      "title": "TRIUMPH-1 sponsor prior; different trial"
+    },
+    {
+      "id": "surmount5-prior-v1",
+      "kind": "clinical_prior",
+      "page": null,
+      "publication_date": null,
+      "source_snapshot_url": "/api/arena/sources/a12003544f988a688e6ec4564da641fcab8860569ab0ba4d6c3e44ad40b0c4c1",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05822830",
+      "title": "SURMOUNT-5 posted primary result; different comparison"
+    }
+  ],
+  "target": {
+    "analysis_timepoint": "Baseline, Week 80",
+    "cohort_id": "of-retatrutide-pair-20261027-v1",
+    "comparison": "Retatrutide versus tirzepatide, both subcutaneous; exact dosing and escalation not publicly specified in the acquired summary; no placebo.",
+    "consensus": {
+      "agreement": 0.5,
+      "agreement_denominator": 2,
+      "assigned": 2,
+      "average_probability": null,
+      "calibration_status": "not_established",
+      "confidence": null,
+      "counts": {
+        "Failure": 0,
+        "Success": 1,
+        "Uncertain": 1
+      },
+      "predicted_outcome": "Uncertain"
+    },
+    "design": {
+      "allocation": "RANDOMIZED",
+      "enrollment": {
+        "count": 800,
+        "type": "ESTIMATED"
+      },
+      "intervention_model": "PARALLEL",
+      "masking": "DOUBLE",
+      "primary_purpose": "TREATMENT"
+    },
+    "drug": "retatrutide",
+    "endpoint": "Percent Change from Baseline in Body Weight",
+    "execution_status": null,
+    "id": "of-retatrutide-pair-20261027-v1-target",
+    "indication": "Obesity",
+    "information_cutoff_utc": "2026-10-26T17:46:48.518897+00:00",
+    "nct_id": "NCT06662383",
+    "phase": "PHASE3",
+    "population": "Adults aged 18 years or older with obesity and at least one self-reported unsuccessful dietary weight-loss effort enrolled in NCT06662383; primary analysis set/estimand is not publicly specified in the acquired summary. No additional diabetes or BMI restriction is inferred.",
+    "readout": {
+      "end": null,
+      "label": "Official result announcement time unconfirmed",
+      "precision": "unknown",
+      "source_granularity": null,
+      "source_note": null,
+      "source_title": null,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+      "start": null
+    },
+    "record_kind": null,
+    "registered_at": "2026-10-26T17:50:59.481668+00:00",
+    "registry_status": "ACTIVE_NOT_RECRUITING",
+    "registry_url": "https://clinicaltrials.gov/study/NCT06662383",
+    "result": null,
+    "scope": "prospective_challenge",
+    "sources": [
+      {
+        "id": "triumph5-registry-v1",
+        "kind": "trial_registry",
+        "page": null,
+        "publication_date": null,
+        "source_snapshot_url": "/api/arena/sources/086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+        "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+        "title": "TRIUMPH-5 exact registry primary target"
+      },
+      {
+        "id": "triumph1-prior-v1",
+        "kind": "clinical_prior",
+        "page": null,
+        "publication_date": null,
+        "source_snapshot_url": "/api/arena/sources/24d182ccc37f01342c231e25065a1c48c93639f6edfd0b0ea06d6042ea5aeb6c",
+        "source_url": "https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-delivered-powerful-weight-loss",
+        "title": "TRIUMPH-1 sponsor prior; different trial"
+      },
+      {
+        "id": "surmount5-prior-v1",
+        "kind": "clinical_prior",
+        "page": null,
+        "publication_date": null,
+        "source_snapshot_url": "/api/arena/sources/a12003544f988a688e6ec4564da641fcab8860569ab0ba4d6c3e44ad40b0c4c1",
+        "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05822830",
+        "title": "SURMOUNT-5 posted primary result; different comparison"
+      }
+    ],
+    "sponsor": "Eli Lilly and Company",
+    "status": "pending",
+    "success_definition": "For TRIUMPH-5 (NCT06662383), the first decisive official report of its prespecified Week 80 primary analysis states that retatrutide achieved statistically significant superiority to tirzepatide in percent change from baseline in body weight, in that trial's prespecified primary analysis population and under its protocol/SAP success rule. Only an explicit tested failure of this exact primary superiority criterion can resolve Failure; no result, delay, non-inferiority alone, nominal secondary significance, other TRIUMPH trials or numerical weight loss alone cannot. If the official report does not establish the prespecified primary criterion, analysis population or multiplicity qualification, resolution remains Mixed/Inconclusive or pending until clarified; do not force a binary score. The unknown SAP is not replaced with an assumed alpha or estimand.",
+    "trial_name": "TRIUMPH-5",
+    "verification_note": null
+  },
+  "version": "arena-clinical-public-1.1"
+}

@@ -10,6 +10,25 @@ original acquisition manifest and structured observations. `raw/`, `ocr/`, and
 The public catalogue links to the original PDF and its 1-based PDF page number.
 Printed patent page numbers differ from PDF page numbers.
 
+## New candidate identifiers
+
+For a new acquisition manifest, `candidate_drug` is a required, explicitly supplied
+candidate name. Optional `aliases` is a list of at most 30 nonempty identifiers.
+Each name or alias must be at most 200 characters, with no leading/trailing
+whitespace, C0 control characters or DEL. The builder retains the candidate name
+and deduplicates the supplied aliases. Omit the field or supply an empty list
+when no alternate identifier is known; it does not infer another drug's aliases.
+
+The two exact original publication IDs retain their legacy alias lists when the
+new field is absent, so this change does not require editing their historical
+manifest. Other publications without aliases use only their declared candidate
+name. These labels support candidate discovery; they do not establish drug
+identity, official family membership, scientific review or forecast eligibility.
+New publications also retain an explicit pending original-source date-verification
+status; declaring a date in a manifest is not a completed cover or publication check.
+New candidates still require the existing structure/sequence and source-review
+gates. Invalid identifiers fail before an existing catalogue is replaced.
+
 ## Reproduction
 
 From `apps/predome`, using Python 3.10+ with a working system CA trust store:

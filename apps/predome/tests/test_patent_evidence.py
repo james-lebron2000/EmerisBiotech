@@ -1,4 +1,5 @@
 import copy
+import importlib.util
 import json
 import tempfile
 import unittest
@@ -6,6 +7,30 @@ from pathlib import Path
 from unittest.mock import patch
 
 from emeris_live import patent_evidence as patents
+
+
+def load_ingester():
+    path = Path(__file__).resolve().parents[1] / "scripts" / "ingest_patents.py"
+    spec = importlib.util.spec_from_file_location("patent_candidate_ingest_fixture", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def candidate_manifest(root, **updates):
+    """Synthetic discovery metadata, with no identity or scientific approval."""
+    item = {"publication_number": "WO2026000001A1", "title": "Synthetic candidate",
+            "publication_date": "2026-01-01", "original_assignee": "Fixture only",
+            "source_url": "https://patents.google.com/patent/WO2026000001A1",
+            "pdf_url": "https://patentimages.storage.googleapis.com/fixture.pdf",
+            "retrieved_at": "2026-01-02T00:00:00Z", "raw_sha256": "a" * 64,
+            "bytes": 10, "page_count": 1, "candidate_drug": "Fixture candidate III",
+            "mapping_reference": "https://example.org/fixture", "access_method": "synthetic_test"}
+    item.update(updates)
+    sources = root / "sources"
+    sources.mkdir(exist_ok=True)
+    (sources / "pilot_manifest.json").write_text(json.dumps({"items": [item]}))
+    return item
 
 
 def reviewed_item():
@@ -21,6 +46,96 @@ def reviewed_item():
 
 
 class PatentEvidenceTests(unittest.TestCase):
+    def test_new_candidate_uses_only_declared_name_when_aliases_are_absent(self):
+        ingest = load_ingester()
+        with tempfile.TemporaryDirectory() as directory, patch.object(patents, "_http", side_effect=AssertionError("network")):
+            root = Path(directory)
+            source = candidate_manifest(root)
+            item = ingest.build_catalog(root)["items"][0]
+            self.assertEqual(item["drug_mapping"]["aliases"], [source["candidate_drug"]])
+            self.assertEqual(len(patents.read_catalog(drug=source["candidate_drug"], data_dir=root)["items"]), 1)
+            for unrelated in ("Dato-DXd", "DS-1062", "datopotamab", "retatrutide", "LY3437943"):
+                self.assertEqual(patents.read_catalog(drug=unrelated, data_dir=root)["items"], [])
+            self.assertEqual(item["family"]["status"], "official_family_lookup_pending")
+            self.assertEqual(item["drug_mapping"]["status"], "candidate_cross_reference_requires_structure_or_sequence_review")
+            gate = patents.evidence_eligibility(item, "2026-10-27")
+            self.assertFalse(gate["eligible_for_forecast"])
+            self.assertIn("drug_identity_not_verified", gate["reasons"])
+            self.assertEqual(patents.freeze_evidence_pack(source["candidate_drug"], "2026-10-27", root)["items"], [])
+
+    def test_new_candidate_aliases_are_discovery_labels_not_an_identity_review(self):
+        ingest = load_ingester()
+        for aliases in ([], ["FC-003", "Fixture candidate III", "FC-003"]):
+            with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = candidate_manifest(root, aliases=aliases)
+                item = ingest.build_catalog(root)["items"][0]
+                self.assertEqual(item["drug_mapping"]["aliases"],
+                                 ["Fixture candidate III", "FC-003"] if aliases else ["Fixture candidate III"])
+                for alias in [source["candidate_drug"], *aliases]:
+                    self.assertEqual(len(patents.read_catalog(drug=alias, data_dir=root)["items"]), 1)
+                    self.assertEqual(patents.freeze_evidence_pack(alias, "2026-10-27", root)["items"], [])
+                self.assertIsNone(item["drug_mapping"]["reviewer"])
+                self.assertIsNone(item["drug_mapping"]["reviewed_at"])
+                self.assertFalse(item["provenance"]["human_scientific_review"])
+                self.assertEqual(item["family"]["status"], "official_family_lookup_pending")
+
+    def test_new_candidate_familiar_drug_labels_do_not_inherit_pilot_cover_review(self):
+        ingest = load_ingester()
+        for name in ("retatrutide", "datopotamab deruxtecan"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                candidate_manifest(root, candidate_drug=name, aliases=[name],
+                                   visual_review={"scope": "cover", "verified_fields": ["publication_date"]})
+                item = ingest.build_catalog(root)["items"][0]
+                self.assertEqual(item["publication_date"], "2026-01-01")
+                self.assertIn("declared in acquisition manifest", item["date_verification"])
+                self.assertIn("independent original-source date verification pending", item["date_verification"])
+                self.assertNotIn("visually checked", item["date_verification"])
+                self.assertIsNone(item["drug_mapping"]["reviewer"])
+                self.assertFalse(patents.evidence_eligibility(item, "2026-10-27")["eligible_for_forecast"])
+
+    def test_two_exact_legacy_publications_keep_their_previous_aliases(self):
+        ingest = load_ingester()
+        legacy = {
+            "WO2019125938A1": ["retatrutide", "LY3437943", "LY-3437943"],
+            "WO2020240467A1": ["datopotamab deruxtecan", "Dato-DXd", "DS-1062", "DS-1062a", "datopotamab"],
+        }
+        for publication, aliases in legacy.items():
+            with self.subTest(publication=publication), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                candidate_manifest(root, publication_number=publication)
+                item = ingest.build_catalog(root)["items"][0]
+                self.assertEqual(item["drug_mapping"]["aliases"], aliases)
+                self.assertEqual(item["date_verification"], "PDF cover visually checked by AI assistant during pilot; date precision is one day")
+                self.assertFalse(patents.evidence_eligibility(item, "2026-10-27")["eligible_for_forecast"])
+                # An explicit new manifest replaces only discovery labels, without
+                # inheriting the pilot defaults or granting a verified identity.
+                candidate_manifest(root, publication_number=publication, aliases=["Declared-only"])
+                item = ingest.build_catalog(root)["items"][0]
+                self.assertEqual(item["drug_mapping"]["aliases"], ["Fixture candidate III", "Declared-only"])
+                self.assertEqual(item["drug_mapping"]["status"], "candidate_cross_reference_requires_structure_or_sequence_review")
+
+    def test_bad_candidate_identifiers_fail_before_replacing_catalog(self):
+        ingest = load_ingester()
+        invalid = [
+            {"candidate_drug": value} for value in (None, False, 1, [], {}, "", " ", " leading", "trailing ", "line\nbreak", "x" * 201)
+        ] + [
+            {"aliases": value} for value in (None, False, 1, {}, "FC-003", [None], [1], [False], [[]], [""], [" "],
+                [" leading"], ["trailing "], ["line\nbreak"], ["control\x7f"], ["x" * 201], ["FC"] * 31)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidate_manifest(root)
+            ingest.build_catalog(root)
+            existing = (root / "catalog.json").read_bytes()
+            for fields in invalid:
+                with self.subTest(fields=fields):
+                    candidate_manifest(root, **fields)
+                    with self.assertRaises(ValueError):
+                        ingest.build_catalog(root)
+                    self.assertEqual((root / "catalog.json").read_bytes(), existing)
+
     def test_canonical_hash_key_order_unicode_and_nan(self):
         self.assertEqual(patents.canonical_sha256({"b": 1, "a": "e\u0301"}), patents.canonical_sha256({"a": "é", "b": 1}))
         with self.assertRaises(ValueError):

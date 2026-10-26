@@ -10,6 +10,8 @@
 
 [TRIUMPH-5 专利配对研究](docs/PATENT_PAIR_PILOT.md)记录新的离线准备入口、四次真实首轮调用、失败保留、AI 来源评注和本地截图。原始模型值未校准，目标结果待定；隔离研究记录尚未部署。
 
+[逐模型引用报告](docs/launch/model-references-20261027/README.md)将已有公开摘要、每个模型自己的原文／快照引用与空状态一起展示。公开页面在 `Rationale & sources` 内查看；[实际记录截图](docs/images/model-references-20261027/provenance.json)来自本地候选版本，不代表线上部署或引用已获独立科学支持。新专利候选的名称／别名合同见[专利资料说明](patent_data/README.md#new-candidate-identifiers)，候选标签不授予药物身份或冻结资格。
+
 [1.2.5完整目标审计快照](docs/OPEN_FORECAST_STATUS_1_2_5.md)记录已交付能力、实际来源覆盖及剩余外部门槛；它区分软件可用与科学效度。新前端说明见[1.2.6竞技场展示](docs/ARENA_PRESENTATION_1_2_6.md)。原始时间凭证、预测失败和历史回放均保留。官方专利授权连接、真实科学审核、前瞻效度及活动实际执行尚未完成。
 
 以下安装与证据恢复说明保留1.1.8基础导入包的版本、哈希和兼容路径。Open Forecast新增的冻结输入、专利原件及运行状态另有独立清单，不由MIT源码许可证授予其数据权利。

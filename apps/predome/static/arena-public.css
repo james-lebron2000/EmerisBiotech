@@ -133,6 +133,17 @@ html[data-theme=dark] .public-outcome-failure{background:#422e3b;border-color:#6
 }
 
 /* Readout schedule, categorical face-off and source-backed reveal. No standings. */
+.public-model-references{margin-top:12px;padding-top:10px;border-top:1px solid var(--public-line);min-width:0}
+.public-model-references h3{font-size:11px;line-height:1.5;font-weight:650;color:var(--public-ink);margin:0 0 3px}
+.public-model-references .public-reference-note{font-size:10px;line-height:1.6;margin:0 0 8px;color:var(--public-muted)}
+.public-model-references ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.public-model-references li{min-width:0;overflow-wrap:anywhere}
+.public-reference-title,.public-reference-links{display:block}
+.public-reference-title{color:var(--public-ink);font-size:11px;line-height:1.5}
+.public-reference-links{font-size:10px;line-height:1.7;margin-top:1px}
+.public-reference-links a{color:var(--public-blue);text-decoration:underline;text-underline-offset:2px}
+.public-model-references .public-reference-empty{font-size:11px;color:var(--public-muted);margin:0}
+@media(max-width:700px){.public-model-references h3,.public-reference-title,.public-reference-links,.public-model-references .public-reference-note,.public-model-references .public-reference-empty{font-size:12px}.public-model-references ul{gap:10px}}
 .arena-fixture-stage{font-size:8px!important;font-weight:650;letter-spacing:.075em;color:var(--public-muted);margin-bottom:3px}
 .arena-match-chip{min-height:78px;border-top:3px solid var(--public-line)}
 .arena-match-chip[aria-pressed=true]{border-top-color:var(--public-blue);background:var(--public-soft)}
