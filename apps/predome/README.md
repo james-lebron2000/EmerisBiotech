@@ -14,16 +14,25 @@
 
 ## 安装与测试
 
-使用 Python 3.11，为本应用创建独立虚拟环境：
+使用 Python 3.11 和 Node 22（用于静态 JavaScript 语法检查），为本应用创建独立虚拟环境：
 
 ```sh
 cd apps/predome
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -r requirements.lock.txt -r requirements-research-v4.txt
-.venv/bin/python scripts/test_source.py
+.venv/bin/python scripts/check.py
 ```
 
-公开源码测试使用隔离fixture，不需要真实证据、模型密钥或生产数据库。GitHub Actions 同时在 macOS 跑原工作台完整测试，在 Linux 跑 Predome 源码测试及两份完全拦截API的浏览器测试。测试数量与范围以实际 Actions 结果为准。
+默认检查包含静态检查和源码fixture测试，不需要真实证据、模型密钥或生产数据库。源码测试使用干净检出，排除受控本地冻结材料，保留Git公开的Arena和专利配置。`scripts/test_source.py`保留为兼容入口。
+
+```sh
+.venv/bin/python scripts/check.py --suite static
+.venv/bin/python scripts/check.py --browser
+```
+
+`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加7份完全拦截API的浏览器fixture，需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这7份浏览器测试。测试数量与范围以实际Actions结果为准。
+
+完整命令、前置条件和工程／科学验证的边界见[开发与验证工作流](docs/AGENT_WORKFLOW.md)。原工作台仍从仓库根目录运行`uv run pytest -q tests`，与Predome包内检查分开记录。
 
 ## 证据包与完整运行
 
@@ -33,7 +42,7 @@ python3.11 -m venv .venv
 
 ```sh
 .venv/bin/python scripts/install_evidence.py /absolute/path/predome-1.1.8.tar.gz
-.venv/bin/python -m pytest tests -q
+.venv/bin/python scripts/check.py --suite full
 EMERIS_DATA_DIR=/absolute/private/state .venv/bin/python run.py
 ```
 

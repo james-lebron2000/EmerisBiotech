@@ -1,0 +1,68 @@
+# Predome 开发与验证工作流
+
+本次参考用户提供的 OpenCode AGENTS.md，并将引用固定到[提交 bcd713e2b71b433474d99fb1d29900c492c319a3](https://github.com/anomalyco/opencode/blob/bcd713e2b71b433474d99fb1d29900c492c319a3/AGENTS.md)。这里采用适合现有 Python 与静态 JavaScript 项目的工程原则，不复制整份指南，也不引入新的预测算法、训练、认证或部署能力。
+
+## 采用的原则
+
+| 原则 | 在本项目中的落实 |
+|---|---|
+| 依赖方向明确 | `scripts/` 调用 `emeris_live/`，运行库不反向导入命令脚本；静态页面使用公开的接口投影 |
+| 在所属边界验证 | API、文件、模型响应各自接收未知输入；来源哈希、权限和冻结目标仍在各自信任边界核验 |
+| 测试真实实现 | Python 测试调用生产实现；浏览器 fixture 加载实际 `static/` 文件；临时文件、SQLite 和传输层替身控制副作用 |
+| 检查入口一致 | Predome 本地与 CI 使用包内 `scripts/check.py`；根工作台保持现有独立回归 |
+| 记录与派生视图区分 | 原始来源、冻结输入和失败记录保持不变；页面和报告消费可核验的投影 |
+
+直接导入检查只能识别 Python AST 中显式声明的反向依赖，不能证明任意动态导入或运行时代码安全。检查通过也不授予数据访问、模型调用或服务器部署权限。
+
+## 命令与前置条件
+
+先按 [README](../README.md) 为 Predome 建立 Python 3.11 环境并安装既有锁定依赖。以下命令在 `apps/predome` 内执行；若使用 README 中的虚拟环境，将 `python` 换成 `.venv/bin/python`。
+
+| 命令 | 范围 | 前置条件 |
+|---|---|---|
+| `python scripts/check.py` | 默认 `source`：静态检查及 `ci-tests.txt` 中的源码 fixture 测试 | 源码检出、Python 3.11及测试依赖、Node 22；受控本地冻结路径不存在 |
+| `python scripts/check.py --suite static` | 仅静态检查 | Python 3.11、Node 22；不运行 pytest 或浏览器 |
+| `python scripts/check.py --suite full` | 静态检查及完整应用 pytest | Python 3.11、Node 22及已获授权、保持原件不变的现有证据；不会下载或生成缺失证据 |
+| `python scripts/check.py --browser` | 默认检查后，追加7份完全拦截的浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
+| `python scripts/test_source.py` | 保留兼容的源码 fixture 入口 | 与源码测试相同的隔离条件 |
+
+源码测试守卫针对本地冻结材料的具体路径，不把 Git 中公开的 Arena／专利配置一并认作禁入证据。现有证据不满足源码测试条件时，应使用干净源码检出，或在具有相应授权的环境运行完整测试；不能为通过检查移除守卫、覆盖原件或重新生成预测。
+
+受控路径是 `predome_data/`、`dashboard_data/`、`trial_data/`、`public_data/`、`arena_data/source_snapshots/` 及 `patent_data/` 下的 `raw/`、`ocr/`、`receipts/`。检查进程只保留必要系统变量；浏览器检查额外允许指定已有的 Playwright／Chromium 路径，不继承生产状态目录、服务凭据、线上浏览器测试开关或额外测试启动参数。这是子进程配置隔离，不是网络或文件系统沙箱。
+
+已有来源读取逻辑从 `scripts/arena_outcome_inbox.py` 移入 `emeris_live/arena_acquired.py`，CLI保留原有同名入口。这使后续API能够复用同一原件校验实现，不需要导入命令脚本或再写一套校验。此次移动不改变来源、标签或冻结记录。
+
+浏览器检查执行以下实际脚本，所有页面请求由 fixture 拦截：
+
+- `tests/ui_predict_context.cjs`
+- `tests/ui_prospective_coverage.cjs`
+- `tests/ui_arena.cjs`
+- `tests/ui_arena_home.cjs`
+- `tests/ui_arena_public.cjs`
+- `tests/ui_arena_lab.cjs`
+- `tests/ui_trials_readonly.cjs`
+
+模型服务的 HTTP 传输层替身和浏览器 API fixture 可继续使用；测试不应为减少 mock 而访问付费模型、真实患者数据或生产数据库。界面验证使用生产组件与实际静态资产，避免另写一份只供截图使用的页面。
+
+仓库根目录的原工作台使用独立的锁定环境和检查命令：
+
+```sh
+uv sync --extra dev --frozen
+uv run pytest -q tests
+```
+
+根工作台和 Predome 的依赖、数据库与测试范围保持独立。完整验收分别记录两边结果，不把某个包的成功描述为整个仓库均已通过。
+
+## 迭代与验收
+
+开始修改前，确认所属模块、原有合同和允许写入的位置。并行任务按文件明确责任；有依赖的修改按顺序合并。公开接口变化应同时检查生产方、页面消费者、版本、文档和相关测试，且不改写已冻结的输入或预测。
+
+测试优先覆盖实际失败方式，如清单越界、原件哈希不符、缺失证据、错误退出码、公开页面泄露内部字段或未公布结果被计分。纯文字或可逆的小调整不需要复制实现逻辑来增加测试数量。
+
+检查记录应写明提交、命令、范围、通过／失败及未满足的条件。源码 fixture 只验证工程行为；授权原件上的检查只验证对应记录性质；线上只读验收只证明所查部署行为；独立科学审核与前瞻预测效度需要各自证据。测试计数不能替代这些条件。
+
+本仓库默认分支为 `main`，当前 Open Forecast 工作继续使用既有 `codex/predome-open-forecast` 分支和 PR #3。提交和 PR 描述说明实际行为、验证与限制，界面变化附真实页面截图，不重写既有历史来调整命名。
+
+## 未迁移的设置
+
+OpenCode 的 Bun、TypeScript、Effect、Drizzle、TUI 故事、后台会话服务和 `dev` 分支设置不适用于本项目。这里也没有采用其禁止所有根目录测试的约定、强制动画 SVG，或为了风格统一全面改写 Python 变量与控制流。开发流程的变化不代表新增临床预测、模型训练、独立审核或服务器部署已经完成。

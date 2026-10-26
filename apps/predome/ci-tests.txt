@@ -1,5 +1,7 @@
-# Source-only regression suite. No archived evidence or private runtime data.
+# Source-only regression suite. Public config/catalogues are allowed; local
+# frozen originals and private runtime data must be absent.
 # Full release validation additionally requires the separately verified evidence bundle.
+tests/test_development_checks.py
 tests/test_backup.py
 tests/test_docx_run_extraction.py
 tests/test_prediction_ensemble.py
