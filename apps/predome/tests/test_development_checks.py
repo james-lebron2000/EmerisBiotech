@@ -66,12 +66,88 @@ def test_source_entry_rejects_local_evidence_without_deleting_it(package, path):
     assert 'passed' not in result.stdout
 
 
-def test_public_catalogues_and_configs_remain_valid_source_inputs(package):
-    for name in ('arena_data/season_spec.json', 'patent_data/catalog.json'):
+@pytest.mark.parametrize('script', ['test_source.py', 'check.py'])
+def test_public_catalogues_and_configs_remain_valid_source_inputs(package, script):
+    for name in ('arena_data/season_spec.json', 'patent_data/catalog.json',
+                 'patent_data/versions/assays-20261027-v2/catalog.json',
+                 'patent_data/versions/assays-20261027-v2/sources/pilot_manifest.json',
+                 'patent_data/versions/future-version/sources/experiment.curated.json'):
         path = package / name
-        path.parent.mkdir(exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text('{}')
-    assert invoke(package).returncode == 0
+    result = invoke(package, script)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert '1 passed' in result.stdout
+
+
+@pytest.mark.parametrize('script', ['test_source.py', 'check.py'])
+@pytest.mark.parametrize('name', ['raw', 'ocr', 'receipts'])
+@pytest.mark.parametrize('kind', ['empty_directory', 'directory_with_original', 'file', 'broken_symlink'])
+def test_versioned_originals_rejected_before_pytest_without_changing_files(package, script, name, kind):
+    # A different allowed version must not hide originals in the next version.
+    allowed = package / 'patent_data' / 'versions' / 'allowed-version'
+    allowed.mkdir(parents=True)
+    (allowed / 'catalog.json').write_text('{}')
+    evidence = package / 'patent_data' / 'versions' / 'another-version' / name
+    evidence.parent.mkdir()
+    original = evidence / 'original.bin' if kind == 'directory_with_original' else evidence
+    if kind in ('empty_directory', 'directory_with_original'):
+        evidence.mkdir()
+    if kind in ('directory_with_original', 'file'):
+        original.write_bytes(b'versioned frozen original')
+    missing_target = package.parent / 'missing-external-original'
+    if kind == 'broken_symlink':
+        evidence.symlink_to(missing_target)
+    marker = package / 'pytest-started'
+    (package / 'tests' / 'test_case.py').write_text(
+        'from pathlib import Path\nPath("pytest-started").write_text("unexpected pytest execution")\n'
+        'def test_case():\n    pass\n')
+    result = invoke(package, script)
+    assert result.returncode != 0
+    assert 'Source-only CI requires no evidence directories' in result.stderr
+    assert evidence.relative_to(package).as_posix() in result.stderr
+    assert not marker.exists()
+    assert (allowed / 'catalog.json').read_text() == '{}'
+    if kind == 'broken_symlink':
+        assert evidence.is_symlink() and evidence.readlink() == missing_target
+        assert not missing_target.exists()
+    elif kind == 'empty_directory':
+        assert evidence.is_dir() and not list(evidence.iterdir())
+    else:
+        assert original.read_bytes() == b'versioned frozen original'
+
+
+@pytest.mark.parametrize('script', ['test_source.py', 'check.py'])
+@pytest.mark.parametrize('location', ['versions_root', 'version_directory'])
+@pytest.mark.parametrize('target_exists', [False, True])
+def test_source_entry_rejects_version_symlinks_without_following_them(package, script, location, target_exists):
+    external = package.with_name(package.name + '-external-version')
+    if target_exists:
+        external.mkdir()
+        (external / 'catalog.json').write_bytes(b'external public metadata must remain untouched')
+    versions = package / 'patent_data' / 'versions'
+    if location == 'versions_root':
+        evidence = versions
+    else:
+        versions.mkdir(parents=True)
+        evidence = versions / 'linked-version'
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.symlink_to(external, target_is_directory=True)
+    marker = package / 'pytest-started'
+    (package / 'tests' / 'test_case.py').write_text(
+        'from pathlib import Path\nPath("pytest-started").write_text("unexpected pytest execution")\n'
+        'def test_case():\n    pass\n')
+    result = invoke(package, script)
+    assert result.returncode != 0
+    assert 'Source-only CI requires no evidence directories' in result.stderr
+    assert evidence.relative_to(package).as_posix() in result.stderr
+    assert not marker.exists()
+    assert evidence.is_symlink() and evidence.readlink() == external
+    if target_exists:
+        assert sorted(path.name for path in external.iterdir()) == ['catalog.json']
+        assert (external / 'catalog.json').read_bytes() == b'external public metadata must remain untouched'
+    else:
+        assert not external.exists()
 
 
 @pytest.mark.parametrize('selection', ['', 'scripts/check.py', '../tests/test_case.py',

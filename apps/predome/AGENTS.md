@@ -23,7 +23,7 @@ python scripts/check.py --suite full
 python scripts/check.py --browser
 ```
 
-- The default `source` suite runs static checks and the source-fixture tests selected by `ci-tests.txt`. It requires a source-only checkout without the guarded local frozen evidence paths. Git-published Arena and patent design/configuration files remain allowed.
+- The default `source` suite runs static checks and the source-fixture tests selected by `ci-tests.txt`. It requires a source-only checkout without the guarded local frozen evidence paths, including original-material directories inside each `patent_data/versions/<version>/`. Git-published Arena and patent design/configuration files remain allowed.
 - `--suite static` runs the static checks only. It does not execute the application tests or validate clinical predictions.
 - `--suite full` runs static checks and the full application pytest suite. Use it only with authorized access to the existing evidence required by those tests. It must not fetch or regenerate missing evidence.
 - `--browser` additionally runs nine controlled offline browser fixture scripts, including the internal readout-review interface. Page and API requests use intercepted fixtures; the public-download test also serves a fixture ZIP from a temporary loopback-only HTTP listener because the browser's download channel bypasses page interception. Node 22, Playwright 1.56.1 and its Chromium browser must already be installed; the check does not install them. These fixtures render shipped assets and must not reach providers, production state or external services.

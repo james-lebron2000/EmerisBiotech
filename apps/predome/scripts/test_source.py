@@ -13,6 +13,18 @@ EVIDENCE_DIRS = ("predome_data", "dashboard_data", "trial_data", "public_data",
 def source_tests(root=ROOT):
     """Public config/catalogue files are allowed; local frozen originals are not."""
     present = [name for name in EVIDENCE_DIRS if (root / name).exists() or (root / name).is_symlink()]
+    versions = root / 'patent_data' / 'versions'
+    if versions.is_symlink() or (versions.exists() and not versions.is_dir()):
+        present.append('patent_data/versions')
+    elif versions.is_dir():
+        for version in sorted(versions.iterdir()):
+            if version.is_symlink():
+                present.append(version.relative_to(root).as_posix())
+            elif version.is_dir():
+                for name in ('raw', 'ocr', 'receipts'):
+                    evidence = version / name
+                    if evidence.is_symlink() or evidence.exists():
+                        present.append(evidence.relative_to(root).as_posix())
     if present:
         raise SystemExit("Source-only CI requires no evidence directories; use a clean checkout: " + ", ".join(present))
     selected = [line.strip() for line in (root / "ci-tests.txt").read_text().splitlines()
