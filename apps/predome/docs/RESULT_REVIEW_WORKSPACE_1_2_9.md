@@ -37,3 +37,11 @@ API从真实登录会话取得稳定账号ID，拒绝请求体中的账号、人
 1.2.8九文件传输包仍固定旧提交，不适用于本版新增导入和端口配置。1.2.9使用独立部署器及完整文件白名单：固定1.2.7基线、原始Nginx哈希、数据库备份、源码导入预检、保留既有公开凭证下载路由的定点配置升级、配置预检、原子切换、健康与旧记录核验。失败时仅回退代码与本站点配置，不恢复或覆盖数据库。部署完成必须以远端收据、HTTPS健康及实际权限检查为准；本地准备和测试不算上线。
 
 上一轮GitHub CI的源码检查通过，后续在Ubuntu apt HTTP镜像等待至20分钟超时，macOS ARM runner未获分配。本版固定Ubuntu 24.04与macOS 15 Intel，给包管理器设置超时并使用官方HTTPS镜像；继续执行全部浏览器检查，不将安装失败变成跳过或成功。配置依据见[GitHub runner文档](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)与[Playwright系统依赖说明](https://playwright.dev/docs/browsers#install-system-dependencies)。实际CI结果另以提交对应运行记录为准。
+
+## 实际页面截图（隔离测试）
+
+以下截图由提交`35e0362`的生产页面资产渲染，API完全拦截，使用合成试验与虚构核验账号；表单内容由浏览器测试填写，不是页面默认结论，也不是真实审核记录或线上部署截图。
+
+![桌面核验工作区，合成测试数据](images/review-1.2.9/fixture-desktop.png)
+
+[查看375px移动端截图](images/review-1.2.9/fixture-mobile.png)。
