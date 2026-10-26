@@ -1,0 +1,171 @@
+{
+  "schema_version": "predome-actual-pair-ui-capture-1",
+  "captured_at_utc": "2026-10-26T18:10:22.740Z",
+  "scope": "Local candidate internal UI with actual post-review records; not deployed, not clinical validation.",
+  "forecast_probability_definition": "Original model subjective uncalibrated probability for this exact registered primary endpoint; not calibrated public success probability or patient benefit.",
+  "ledger_sha256": "9217ac9c830b97c53b3ad5d2d6473285464dd48eae4575d2a26c87d5db220ca4",
+  "event_count": 19,
+  "source_projection_hashes": {
+    "actual-lab-overview-reviewed.json": "c9a38a22772fa0d2f3e629c4a35fd1c083c25b63d3ff631995402268b5bce6b6",
+    "actual-lab-detail-reviewed.json": "868a2a4b738ed1ec2f4820b3759af0b7dbf9b3335a1b6514747c98bb2f88dd84"
+  },
+  "production_assets_sha256": {
+    "static/arena-lab.html": "fc46763c0dbb49d1395c4d5cac4afc826a3ae3733f72dbcec75234736bc4cedc",
+    "static/arena.js": "5286f61182a3d6045f6e480b0a1591ad9370eafa7abd37553c3c34aaa480a019",
+    "static/arena.css": "c349f4fcc9e64368a57d8636589545aa3153d7de4975c2a55132fe5d2ca261be",
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3"
+  },
+  "production_assets_unchanged": true,
+  "browser": "Installed Google Chrome via bundled Playwright; no browser or dependency download",
+  "isolation": "Every browser request intercepted; only shipped static assets and exact local actual-data projections fulfilled. Unrelated archived bootstrap excluded. No server, secret loading, provider or production request.",
+  "annotation": "Capture-only fixed banner reads TRIUMPH-5 / local actual records / original values uncalibrated / not deployed or clinically validated; no product asset or record modified.",
+  "mobile_limit": "The six-column table is horizontally scrollable inside its own container at 375px. Left/right positions captured separately. The full document has no horizontal overflow; this is not a one-screen/all-columns claim.",
+  "checks": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "document_horizontal_overflow": false,
+      "pair_table": {
+        "clientWidth": 1178,
+        "scrollWidth": 1178
+      },
+      "kimi_control": "failed; probability null; pair difference unavailable",
+      "flash": "0.82 to 0.78; -4.0 percentage points",
+      "actual_result": "pending; no outcome score",
+      "source_reviews": "3 AI; 0 human; selected claims only",
+      "transport_brand_visible": false,
+      "console_errors": 0
+    },
+    {
+      "viewport": {
+        "width": 375,
+        "height": 950
+      },
+      "document_horizontal_overflow": false,
+      "pair_table": {
+        "clientWidth": 305,
+        "scrollWidth": 740
+      },
+      "kimi_control": "failed; probability null; pair difference unavailable",
+      "flash": "0.82 to 0.78; -4.0 percentage points",
+      "actual_result": "pending; no outcome score",
+      "source_reviews": "3 AI; 0 human; selected claims only",
+      "transport_brand_visible": false,
+      "console_errors": 0
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/arena/lab"
+    },
+    {
+      "method": "GET",
+      "path": "/static/arena.css"
+    },
+    {
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "path": "/static/arena.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arena/lab/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arena/lab/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "method": "GET",
+      "path": "/arena/lab"
+    },
+    {
+      "method": "GET",
+      "path": "/static/arena.css"
+    },
+    {
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "method": "GET",
+      "path": "/static/arena.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arena/lab/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arena/lab/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    }
+  ],
+  "unexpected_requests": [],
+  "console_errors": [],
+  "captures": [
+    {
+      "file": "desktop-patent-pair.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "dd7752cb640aba3bc78d80e120ce3172f660717fcf4d1b0bbb483bb21a368743"
+    },
+    {
+      "file": "desktop-forecasts-pending.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "d471ecdef70e1ffddc20a5222b52ab4ade2880bcc7e3233ebfdeb4dddf845476"
+    },
+    {
+      "file": "desktop-ai-source-review.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "664fe609e7036274f7c7388e70cf9c5eb06873637fac59f89d74eb865ce4649e"
+    },
+    {
+      "file": "mobile-patent-pair-left.png",
+      "viewport": {
+        "width": 375,
+        "height": 950
+      },
+      "sha256": "88907ebe13084aace5e1b8cf31038bd38bdbaec118fb2491ef8c67de791ee071"
+    },
+    {
+      "file": "mobile-patent-pair-right.png",
+      "viewport": {
+        "width": 375,
+        "height": 950
+      },
+      "sha256": "2f681525e41b3744cbbee21ea3d0af40a1b2b136d11193d07379bb51dfc4232a"
+    }
+  ]
+}

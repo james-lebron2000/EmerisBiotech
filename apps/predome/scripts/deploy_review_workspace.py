@@ -41,6 +41,8 @@ FILES = frozenset((
     'emeris_live/official_intake.py', 'emeris_live/intake_api.py', 'scripts/ingest_patents.py',
     'scripts/arena_learning_report.py', 'scripts/arena_outcome_inbox.py', 'scripts/arena_result_review.py',
     'scripts/export_public_campaign.py', 'scripts/public_snapshot_proof.py', 'scripts/install_patent_review_bundle.py',
+    'scripts/prepare_patent_pair.py', 'docs/PATENT_PAIR_PILOT.md',
+    'docs/records/triumph5-patent-pair-20261027/run-summary.json',
     'scripts/arena_reviewers.py', 'scripts/configure_arena_frontends.py', 'scripts/deploy_result_reviews.py',
     'scripts/deploy_review_workspace.py', 'static/arena.js', 'static/arena-public.js', 'static/arena-home.js', 'static/arena-review.html',
     'static/arena-review.js', 'static/arena-review.css', 'docs/OPEN_FORECAST_RELIABILITY_1_2_8.md',
