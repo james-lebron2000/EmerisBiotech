@@ -63,8 +63,18 @@ def test_tool_failure_leaves_no_success_receipt(ready,damage):
     else:
         raw=b'a,b\n1,2\n' if damage=='invalid_csv' else (b'gene,endpoint,n,interaction_OR,interaction_CI_low,interaction_CI_high,lr_p,BH_q_four\nOSMR,healing\n' if damage=='missing_cells' else b'x'*(1024*1024+1));path.write_bytes(raw)
         store._append(pid,'import',dict(root=str(source),files={path.name:hashlib.sha256(raw).hexdigest()}),'engineering importer',store.get(pid)['revision'])
+        proposal['packet_hash']=packet(store,pid)['packet_hash'];rid=record(store,pid,proposal)
     receipt=run_tool(store,pid,rid,'card','engineering operator',store.get(pid)['revision'])
     assert receipt['status']=='blocked' and receipt['output'] is None
+
+def test_source_rebinding_invalidates_old_packet_even_without_text_change(ready):
+    store,pid,proposal,source=ready;rid=record(store,pid,proposal);before=packet(store,pid)
+    path=source/'interaction_results.csv';path.write_bytes(path.read_bytes().replace(b'542',b'540'))
+    store._append(pid,'import',dict(root=str(source),files={path.name:hashlib.sha256(path.read_bytes()).hexdigest()}),'engineering importer',store.get(pid)['revision'])
+    after=packet(store,pid)
+    assert before['evidence']==after['evidence'] and before['packet_hash']!=after['packet_hash']
+    assert proposals(store,pid)[-1]['stale']
+    with pytest.raises(ValueError,match='过期'):run_tool(store,pid,rid,'card','tester',store.get(pid)['revision'])
 
 def test_page_and_packet_http_preserve_no_model_claim(ready,tmp_path):
     import threading,urllib.request

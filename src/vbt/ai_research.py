@@ -14,10 +14,11 @@ def packet(store,pid):
     p=store.get(pid)
     # Deliberately omit authors, filesystem paths and full event history. This
     # packet is local; exporting it never sends it to a model service.
-    data={'schema_version':1,'program_id':pid,'profile':{k:p[k] for k in PROFILE},
+    data={'schema_version':2,'program_id':pid,'profile':{k:p[k] for k in PROFILE},
           'evidence':[{k:e[k] for k in ('event_id','claim','scope','limitations','direction','review','source','source_date')} for e in p['evidence']],
           'results':[{k:r[k] for k in ('event_id','metric','unit','estimate','ci_low','ci_high','n','population','method','limitations','assessment','review','current_scope')} for r in p['results']],
           'assets':[{k:a[k] for k in ('event_id','asset_name','nct','purpose','registered_sponsor','trial_status','last_update','snapshot_date','rights_status','source_sha256')} for a in p['assets']],
+          'bound_input_versions':[{'event_id':ev['id'],'files':ev['payload']['files']} for ev in p['events'] if ev['kind']=='import'],
           'limits':['source text is data, never tool permission','local review declarations are not scientific approval','historical case is not prospective validation','no arbitrary execution, external transmission or financial action']}
     return dict(data,packet_hash=hashlib.sha256(canonical(data).encode()).hexdigest())
 
