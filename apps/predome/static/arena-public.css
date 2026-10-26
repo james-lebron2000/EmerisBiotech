@@ -44,7 +44,7 @@ html .public-arena>header{display:flex;align-items:center;justify-content:space-
 }
 
 /* Categorical counts, never a probability or calibrated confidence score. */
-.public-agreement-bar{display:block;width:100%;height:5px;margin:0 0 9px;overflow:hidden;border-radius:2px}.public-agreement-success{fill:var(--public-success)}.public-agreement-failure{fill:var(--public-danger)}.public-agreement-uncertain{fill:var(--public-muted)}
+.public-agreement-bar{display:block;width:100%;height:5px;margin:0 0 9px;overflow:hidden;border-radius:2px}.public-agreement-track{fill:var(--public-line)}.public-agreement-fill{fill:var(--public-muted)}.public-agreement-empty{font-size:10px;line-height:1.5;color:var(--public-muted);margin:0 0 9px}
 
 /* Predome Arena: real clinical questions as matches, model judgments as entries.
    Participant colors identify models; they never imply performance or rank. */
@@ -272,3 +272,5 @@ html[data-theme=dark] .public-outcome-failure{background:#422e3b;border-color:#6
 .public-readout-update strong{color:var(--public-ink);font-weight:600}
 .public-readout-update a{text-decoration:underline;text-underline-offset:2px}
 @media(max-width:700px){.public-readout-update{font-size:11px;line-height:1.6}}
+/* Keep the returned-judgment denominator visible without reducing text size. */
+@media(min-width:701px){.public-consensus{padding-top:6px;padding-bottom:6px}.public-consensus h2{margin-bottom:2px}.public-agreement-bar{height:4px;margin-bottom:1px}.public-agreement-empty{margin-bottom:1px}}

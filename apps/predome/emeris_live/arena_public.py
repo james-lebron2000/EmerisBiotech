@@ -14,16 +14,16 @@ from fastapi.responses import JSONResponse, Response
 from . import arena_api
 from .arena_store import ArenaLedger, result_target_binding
 from .arena_result_assurance import result_assurance
-from .arena_public_contract import credential_like, public_url, validate_current_readout
+from .arena_public_contract import credential_like, public_url, validate_current_readout, public_consensus
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
-VERSION = 'arena-clinical-public-1.2'
+VERSION = 'arena-clinical-public-1.3'
 POLICY = {
     'calibration_status': 'not_established',
     'probability': None, 'confidence': None,
     'direction_rule': 'Direction only: persisted valid model value >0.5 = Success; <0.5 = Failure; exactly 0.5, abstention, failed/missing output or blocked input = Uncertain. This is not a calibrated clinical success probability.',
-    'consensus_rule': 'Each assigned model slot counts once. A class needs more than half of all assigned slots; otherwise consensus is Uncertain. Agreement is the largest class count divided by all assigned slots, including Uncertain; it is not accuracy or confidence.',
+    'consensus_rule': 'Each assigned model slot counts once for direction counts and majority; missing or failed outputs count as Uncertain. A class needs more than half of all assigned slots; otherwise consensus is Uncertain. Agreement uses only returned predicted or explicit abstention judgments, including Uncertain, and requires at least two judgments; technical failures and unexecuted slots do not contribute. It is not accuracy or confidence.',
     'comparison_scope': 'Same-evidence clinical-only assignments, separately for each exact registered target. Historical records remain separate.',
     'clinical_prediction_validated': False,
 }
@@ -440,13 +440,7 @@ def run_view(run, target, sources, snapshot_urls=None):
 
 
 def consensus(runs):
-    assigned = len(runs)
-    counts = {label: sum(r['predicted_outcome'] == label for r in runs) for label in ('Success', 'Failure', 'Uncertain')}
-    winner = next((label for label, count in counts.items() if count > assigned / 2), 'Uncertain')
-    return {'predicted_outcome': winner, 'assigned': assigned, 'counts': counts,
-            'agreement': max(counts.values()) / assigned if assigned else None,
-            'agreement_denominator': assigned, 'average_probability': None,
-            'confidence': None, 'calibration_status': 'not_established'}
+    return public_consensus(runs)
 
 
 def target_view(target, sources, snapshot_urls=None, verified_assets=None):

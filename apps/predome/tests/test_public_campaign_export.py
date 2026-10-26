@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 import pytest
 from emeris_live import arena_public as api
+from emeris_live.arena_public_contract import public_consensus
 from test_arena_public import row, target
 from emeris_live.arena_store import ArenaLedger, result_target_binding
 from test_arena_core import spec as trial_spec, finish
@@ -247,11 +248,16 @@ def test_current_calendar_export_rejects_unapproved_or_unsafe_contract(records,c
     with pytest.raises(ValueError):export.bundle(deepcopy(index),fetch)
 
 
-@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION])
+@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION,export.CALENDAR_VERSION])
 def test_old_record_contracts_are_only_offline_verification_inputs(records,version):
     index,data,_,fetch=records
     record=data['fixture-0'];record['version']=version
+    record['consensus']=public_consensus(record['runs'],legacy=True)
+    record['target']['consensus']=deepcopy(record['consensus'])
     with pytest.raises(ValueError,match='verification-only'):export.bundle(index,fetch)
     assert export.validate_record(record,record['target'],allow_legacy=True) is False
     record['target']['current_readout']=synthetic_current_readout()
-    with pytest.raises(ValueError,match='Legacy records'):export.validate_record(record,record['target'],allow_legacy=True)
+    if version==export.CALENDAR_VERSION:
+        assert export.validate_record(record,record['target'],allow_legacy=True) is False
+    else:
+        with pytest.raises(ValueError,match='Legacy records'):export.validate_record(record,record['target'],allow_legacy=True)

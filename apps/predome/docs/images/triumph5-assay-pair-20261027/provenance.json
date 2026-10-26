@@ -1,0 +1,177 @@
+{
+  "at_utc": "2026-10-26T23:54:05.992Z",
+  "scope": "Actual loopback create_app, copied real Arena records and normal synthetic local session. Page/API responses were not substituted. Not deployed; uncalibrated research records; not clinical prediction validation.",
+  "origin": "http://127.0.0.1:51161",
+  "target_id": "of-retatrutide-assay-pair-20261027-v2-target",
+  "cohort_id": "of-retatrutide-assay-pair-20261027-v2",
+  "synthetic_account": "synthetic_local_assay_qa",
+  "public_rows": 2,
+  "lab_rows": 4,
+  "actual_statuses": [
+    {
+      "id": "run-a73f15ff2f2d4fc1bfd14f6e031e5579",
+      "model": "kimi-k3",
+      "condition": "clinical_only",
+      "status": "failed"
+    },
+    {
+      "id": "run-d0f337eecafe4e67959a061264e71b3e",
+      "model": "kimi-k3",
+      "condition": "with_patents",
+      "status": "failed"
+    },
+    {
+      "id": "run-18239553076c43e48c730e066f010ab4",
+      "model": "deepseek-v4.1-flash",
+      "condition": "clinical_only",
+      "status": "failed"
+    },
+    {
+      "id": "run-aa2db995503649a895acd69df7ae3e04",
+      "model": "deepseek-v4.1-flash",
+      "condition": "with_patents",
+      "status": "predicted"
+    }
+  ],
+  "checks": [
+    "Actual imported v2 has all four terminal first-attempt slots; public shows only two clinical controls with calibrated probability N/A and pending/no-score state; old public run DTOs, clinical facts outside intentional derived consensus, and host event prefix unchanged",
+    "Actual frozen source downloads match their original SHA; both original imported timestamp-proof downloads are available through gated GET endpoints",
+    "Actual shipped desktop/mobile assets render four slots including failed/null attempts; public N/A stays separate from raw internal research values; six-column paired table is locally scrollable on mobile"
+  ],
+  "source_checks": [
+    {
+      "id": "triumph5-registry-assay-v2",
+      "sha256": "086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+      "bytes": 18228
+    },
+    {
+      "id": "triumph1-prior-v1",
+      "sha256": "24d182ccc37f01342c231e25065a1c48c93639f6edfd0b0ea06d6042ea5aeb6c",
+      "bytes": 32897
+    },
+    {
+      "id": "surmount5-prior-v1",
+      "sha256": "a12003544f988a688e6ec4564da641fcab8860569ab0ba4d6c3e44ad40b0c4c1",
+      "bytes": 52795
+    },
+    {
+      "id": "WO2019125938A1-example12-table4-casein-camp-v1",
+      "sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "bytes": 1978569
+    }
+  ],
+  "proof_download_checks": [
+    {
+      "purpose": "registration",
+      "sha256": "0caf94a1d37a592306d56dce5fe69726dd01ccb38c35efbea2b6ca7002feb25c",
+      "bytes": 54413
+    },
+    {
+      "purpose": "predictions",
+      "sha256": "94fb3064888121662fdc5ce56874b57078dfb48477b0b6c19fb98eead6cc0a89",
+      "bytes": 65160
+    }
+  ],
+  "import_proof_coverage": {
+    "bundle_sha256": "3f198a4d94a3d2dadbe1c6eec4a4e3b37ae8656f192a879f0be714144a2e1049",
+    "host_event_sha256": "732840d2dc915c4533dcea4d1021eccceb991cd1848a59d79ff878bdc6cc5534",
+    "source_events": 17,
+    "registration_covered_events": 6,
+    "prediction_covered_events": 15,
+    "later_events_not_prediction_attested": 2
+  },
+  "paired_table_scope": "Only Kimi has matching returned identity and receives a recognized-pair row; both failed so delta N/A. Flash provider_http_error control has no returned model and is not a verified table pair; all four attempts remain in the forecast list.",
+  "contract_version": "arena-clinical-public-1.3",
+  "actual_consensus": {
+    "predicted_outcome": "Uncertain",
+    "assigned": 2,
+    "counts": {
+      "Success": 0,
+      "Failure": 0,
+      "Uncertain": 2
+    },
+    "agreement": null,
+    "agreement_denominator": 0,
+    "average_probability": null,
+    "confidence": null,
+    "calibration_status": "not_established"
+  },
+  "old_public_records_unchanged": 144,
+  "old_target_clinical_facts_unchanged": 47,
+  "intentional_change": "Derived consensus agreement and denominator only; archived 1.2 snapshot retained under ignored before-agreement-fix",
+  "old_host_events_unchanged": 331,
+  "page_errors": [],
+  "console_errors": [],
+  "unexpected_requests": [],
+  "served_asset_sha256": {
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/arena-public.css": "245572c82b2cc9bb07534cbd3b3d6a530adee2389a701a077894cfa570dcedcc",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/arena-public.js": "0634ce2dd933480cdedf7c9ce804c7f782e23185003be98e62a8a9ce28980374",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3",
+    "static/arena.css": "9e84a178d4007e08c039c6cb39bb6dca13f7b2ae58b4125b4cc21ae3038014fe",
+    "static/arena.js": "63a42c48f101652d7fef400659a895812933bb06b5acc76731eb2cfe0d3e299e"
+  },
+  "captures": [
+    {
+      "name": "local-real-records-public-desktop.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "669c878472b16785242231e5067b73a709e269507ce0fea65468607a06582929"
+    },
+    {
+      "name": "local-real-records-public-mobile.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "8449c9b3a01d652e4ef8736d9f48a1fa688655e6fe9b41d1ba3c651bf759916a"
+    },
+    {
+      "name": "local-real-records-public-predictions-mobile.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "f14640e5ed589e3187b2caa798752b56bfe025e6db11e458d5d417c664198f7e"
+    },
+    {
+      "name": "local-real-records-public-result-mobile.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "04f5c7e1540e85a9c89d36d04b7fa755fd4c4f09ebee7565ac8a673aba265dff"
+    },
+    {
+      "name": "local-real-records-lab-forecasts-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "37e45fa19ae69241c4d228d512866d4a3a997fb7ddd74259048393d4bea236cb"
+    },
+    {
+      "name": "local-real-records-lab-pair-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "7e17674cc2b1aa95b2c94b5955a9fc336c42eb8fe45b89b25c5a0b30f53c1995"
+    },
+    {
+      "name": "local-real-records-lab-forecasts-mobile.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "709b384a2786722d73fb2c238fba006213baa76533f641b2bc2fe3d47c58c887"
+    },
+    {
+      "name": "local-real-records-lab-pair-mobile-left.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "5d4bc9675ccfb56f0d269ca018d0ee951cb4add5862af7ef4ba837107143d8b5"
+    },
+    {
+      "name": "local-real-records-lab-pair-mobile-right.png",
+      "width": 375,
+      "height": 812,
+      "sha256": "4c90394eebff94024b8ad48663edd89c0b71d7b9809c9feb82be8beb55b868bb"
+    }
+  ],
+  "provider_calls": 0,
+  "review_writes": 0,
+  "forecast_mutations": 0,
+  "production_deployed": false,
+  "clinical_prediction_validated": false,
+  "private_cookie_state_published": false
+}

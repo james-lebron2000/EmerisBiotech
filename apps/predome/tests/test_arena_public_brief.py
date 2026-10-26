@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from emeris_live import arena_public as public, arena_public_brief as brief
+from emeris_live import arena_public_contract as public_contract
 from emeris_live.arena_store import ArenaLedger, result_target_binding
 from arena_scientific_fixture import scientifically_accept
 from test_arena_core import finish, spec
@@ -126,6 +127,82 @@ def unpack(response):
     assert manifest['independent_timestamp_attestation'] is False
     assert manifest['clinical_prediction_validated'] is False
     return files, manifest
+
+
+@pytest.mark.parametrize('outputs,denominator,agreement,counts,majority',[
+    (['failed']*4,0,None,{'Success':0,'Failure':0,'Uncertain':4},'Uncertain'),
+    ([.7,'failed','failed','pending'],1,None,{'Success':1,'Failure':0,'Uncertain':3},'Uncertain'),
+    ([.7,'abstain','failed','pending'],2,.5,{'Success':1,'Failure':0,'Uncertain':3},'Uncertain'),
+    (['abstain','abstained','failed','unavailable'],2,1,{'Success':0,'Failure':0,'Uncertain':4},'Uncertain'),
+    ([.7,.8,'failed','pending'],2,1,{'Success':2,'Failure':0,'Uncertain':2},'Uncertain'),
+    (['pending']*4,0,None,{'Success':0,'Failure':0,'Uncertain':4},'Uncertain'),
+    ([.7,.8,.2,.3],4,.5,{'Success':2,'Failure':2,'Uncertain':0},'Uncertain'),
+    ([.7,.8,.9,.3],4,.75,{'Success':3,'Failure':1,'Uncertain':0},'Success'),
+])
+def test_actual_ledger_agreement_contract_matches_api_json_brief_and_campaign(
+        tmp_path,monkeypatch,outputs,denominator,agreement,counts,majority):
+    from test_public_campaign_export import export
+    from test_public_snapshot_proof import proof
+    target,slots=spec()
+    for model in ('C','D'):
+        slot=deepcopy(slots[0]);slot.update(model_id=model,requested_model=model+'-fixed');slots.append(slot)
+    root=tmp_path/'agreement-runtime';ledger=ArenaLedger(root)
+    ids=ledger.register('agreement-formal',[target],slots,{'season_kind':'registered_12_project_season'})
+    for ident,output in zip(ids,outputs):
+        if output=='pending':continue
+        ledger.start(ident)
+        result={'status':'predicted' if isinstance(output,float) else output,
+            'probability':output if isinstance(output,float) else None,
+            'evidence_ids':['e1'] if isinstance(output,float) else []}
+        ledger.finish(ident,result)
+    before=ledger.events()
+    monkeypatch.setattr(public,'read_archived',lambda store:([],[],{}))
+    app=FastAPI();app.state.store=SimpleNamespace(path=root);app.include_router(public.router)
+    client=TestClient(app);base='/api/arena/public/targets/'+target['id']
+    record=client.get(base+'/record').json()
+    assert record['version']=='arena-clinical-public-1.3'
+    consensus=record['consensus']
+    assert consensus['assigned']==4 and consensus['counts']==counts and consensus['predicted_outcome']==majority
+    assert consensus['agreement_denominator']==denominator and consensus['agreement']==agreement
+    files,_=unpack(client.get(base+'/brief/download'))
+    assert json.loads(files['clinical-record.json'])==record
+    expected='N/A (fewer than two returned judgments)' if agreement is None else str(int(agreement*100))+'%'
+    for name in ('clinical-brief.md','clinical-brief.html'):
+        text=files[name].decode()
+        assert 'Model agreement: '+expected in text
+        assert f'returned judgments: {denominator}/4' in text
+    index=client.get('/api/arena/public').json()
+    raw,manifest=export.bundle(index,lambda path:client.get(path).json())
+    assert proof.validate_bundle(raw)==manifest
+    with zipfile.ZipFile(BytesIO(raw)) as archive:
+        assert json.loads(archive.read('records/'+target['id']+'.json'))==record
+        assert ('Model agreement: '+expected) in archive.read('reports/'+target['id']+'.md').decode()
+    assert ledger.events()==before
+
+
+@pytest.mark.parametrize('key,value',[
+    ('agreement',1),('agreement',0),('agreement',False),('agreement_denominator',0),
+    ('agreement_denominator',2),('agreement_denominator',True),('assigned',True),
+    ('counts',{'Success':1,'Failure':0,'Uncertain':0}),
+    ('counts',{'Success':True,'Failure':0,'Uncertain':1}),
+    ('predicted_outcome','Success'),
+])
+def test_brief_and_campaign_reject_fabricated_agreement_denominators_and_majority(native,key,value):
+    from test_public_campaign_export import export
+    record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
+    assert record['consensus']['agreement'] is None and record['consensus']['agreement_denominator']==1
+    for consensus in (record['consensus'],record['target']['consensus']):consensus[key]=deepcopy(value)
+    with pytest.raises(ValueError,match='consensus'):brief.build_brief(record)
+    with pytest.raises(ValueError,match='consensus'):export.validate_record(record,record['target'])
+
+
+def test_old_brief_record_can_be_verified_but_not_exported_with_new_semantics(native):
+    record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
+    record['version']=brief.PREVIOUS_RECORD_VERSION
+    record['consensus']=public_contract.public_consensus(record['runs'],legacy=True)
+    record['target']['consensus']=deepcopy(record['consensus'])
+    assert brief.validate_record(record,allow_legacy=True)==brief.canonical(record)
+    with pytest.raises(ValueError,match='Current sanitized'):brief.build_brief(record)
 
 
 def test_native_api_brief_uses_one_public_snapshot_preserves_json_times_and_failure(native, monkeypatch):

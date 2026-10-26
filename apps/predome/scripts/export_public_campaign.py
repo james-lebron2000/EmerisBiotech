@@ -44,7 +44,8 @@ CONSENSUS_KEYS = {'predicted_outcome','assigned','counts','agreement','agreement
 LEGACY_RESULT_KEYS = {'status','label','first_public_at','source_url','summary','effect_size',
     'confidence_interval','p_value','numeric_source_url','verification_note'}
 RESULT_KEYS = LEGACY_RESULT_KEYS | {'review_status','scoring_eligible'}
-VERSION = 'arena-clinical-public-1.2'
+VERSION = 'arena-clinical-public-1.3'
+CALENDAR_VERSION = 'arena-clinical-public-1.2'
 PREVIOUS_VERSION = 'arena-clinical-public-1.1'
 LEGACY_VERSION = 'arena-clinical-public-1.0'
 BUNDLE_VERSION = 'predome-public-launch-bundle-3'
@@ -92,7 +93,7 @@ def validate_record(record, selected, *, allow_legacy=False):
     check_public(record)
     if not isinstance(record,dict) or set(record)!=ROOT_KEYS:raise ValueError('Unexpected public record schema')
     legacy = record['version'] == LEGACY_VERSION
-    if record['version'] != VERSION and not (record['version'] in (LEGACY_VERSION, PREVIOUS_VERSION) and allow_legacy):
+    if record['version'] != VERSION and not (record['version'] in (LEGACY_VERSION, PREVIOUS_VERSION, CALENDAR_VERSION) and allow_legacy):
         raise ValueError('Unsupported public record version; legacy records are verification-only')
     target=record['target'];runs=record['runs']
     if 'current_readout' in target:
@@ -100,7 +101,7 @@ def validate_record(record, selected, *, allow_legacy=False):
             from emeris_live.arena_public_contract import validate_current_readout
         except ImportError:
             raise ValueError('Reviewed calendar bundles require the complete Predome repository and its runtime publication contract; the historical three-script tool copy cannot validate this new format') from None
-        if record['version'] != VERSION:raise ValueError('Legacy records cannot carry a later calendar update')
+        if record['version'] not in (VERSION, CALENDAR_VERSION):raise ValueError('Legacy records cannot carry a later calendar update')
         validate_current_readout(target['current_readout'])
     if set(target)-TARGET_KEYS or target!=selected:raise ValueError('Target changed during export; start a new snapshot')
     if (set(record['public_policy'])!=POLICY_KEYS or set(record['consensus'])!=CONSENSUS_KEYS
@@ -157,10 +158,18 @@ def validate_record(record, selected, *, allow_legacy=False):
     if len({r['model_id'] for r in runs})!=len(runs):raise ValueError('Duplicate model assignments')
     counts={label:sum(r['predicted_outcome']==label for r in runs) for label in ('Success','Failure','Uncertain')}
     c=record['consensus']
-    if (c!=target['consensus'] or c['assigned']!=len(runs) or c['counts']!=counts
+    if c!=target['consensus']:
+        raise ValueError('Consensus does not match the assigned records')
+    if record['version'] == VERSION:
+        try:
+            from emeris_live.arena_public_contract import validate_consensus
+        except ImportError:
+            raise ValueError('Current consensus records require the complete Predome repository and its runtime publication contract; historical tool copies can verify old record versions only') from None
+        validate_consensus(c, runs)
+    elif (c['assigned']!=len(runs) or c['counts']!=counts
             or c['agreement_denominator']!=len(runs) or c['agreement']!=max(counts.values())/len(runs)
             or c['predicted_outcome']!=next((k for k,v in counts.items() if v>len(runs)/2),'Uncertain')):
-        raise ValueError('Consensus does not match the assigned records')
+        raise ValueError('Consensus does not match the original legacy assigned records')
     if record['result']!=target['result']:raise ValueError('Result does not match the exact target')
     for source in record['sources']+record['evidence']+target['sources']+[s for r in runs for s in r['sources']]:
         if not isinstance(source,dict) or set(source)-SOURCE_KEYS:raise ValueError('Unknown source metadata')
@@ -186,7 +195,7 @@ def report_text(record):
         ('Success definition','success_definition'),('Information cutoff','information_cutoff_utc')]:
         lines.append(f'| {label} | {cell(t.get(key))} |')
     lines += [f"| Expected readout / archived readout | {cell(t.get('readout',{}).get('label'))} |"]
-    update=t.get('current_readout') if record['version']==VERSION else None
+    update=t.get('current_readout') if record['version'] in (VERSION, CALENDAR_VERSION) else None
     if update is not None:
         original=t['readout']
         window='Readout unconfirmed' if update['precision']=='unknown' else str(update['start'])+' to '+str(update['end'])+'; '+update['precision']
@@ -207,8 +216,13 @@ def report_text(record):
     lines += ['','These are actual stored records. Probability and confidence are not clinically calibrated. Refusals and failures remain in the assigned denominator.', '',
         '## Consensus and actual result','',f"Majority prediction: {cell(record['consensus']['predicted_outcome'])}.",
         f"Assigned model records: {record['consensus']['assigned']}."]
+    if record['version'] == VERSION:
+        c=record['consensus']
+        agreement='N/A (fewer than two returned judgments)' if c['agreement'] is None else format(c['agreement']*100,'.1f').rstrip('0').rstrip('.')+'%'
+        lines += [f"Model agreement: {agreement}; returned judgments: {c['agreement_denominator']}/{c['assigned']}.",
+            'Majority uses all assigned records. Agreement excludes technical failures and unexecuted slots; explicit abstentions count as Uncertain judgments.']
     result=t.get('result')
-    if result and record['version'] in (VERSION, PREVIOUS_VERSION):
+    if result and record['version'] in (VERSION, CALENDAR_VERSION, PREVIOUS_VERSION):
         review=result['review_status']
         if review=='accepted':
             lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}.",

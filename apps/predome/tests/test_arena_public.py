@@ -146,11 +146,37 @@ def test_blocking_evidence_suppresses_direction_and_reason_but_warning_does_not(
     (['Success','Success','Success','Uncertain'],'Success',.75),
     (['Uncertain']*4,'Uncertain',1),([], 'Uncertain',None)])
 def test_consensus_requires_strict_majority_of_all_assignments(directions,expected,agreement):
-    result=api.consensus([{'predicted_outcome':d} for d in directions])
+    result=api.consensus([{'predicted_outcome':d,'status':'predicted'} for d in directions])
     assert result['predicted_outcome']==expected and result['agreement']==agreement
     assert result['assigned']==result['agreement_denominator']==len(directions)
     assert sum(result['counts'].values())==len(directions)
     assert result['average_probability'] is None and result['confidence'] is None
+
+
+@pytest.mark.parametrize('statuses,directions,denominator,agreement',[
+    (['failed','failed'],['Uncertain','Uncertain'],0,None),
+    (['pending','unavailable','timed_out'],['Uncertain']*3,0,None),
+    (['predicted','failed'],['Success','Uncertain'],1,None),
+    (['abstain','abstained'],['Uncertain','Uncertain'],2,1),
+    (['predicted','abstained','failed'],['Success','Uncertain','Uncertain'],2,.5),
+    (['predicted','predicted','failed','pending'],['Success','Success','Uncertain','Uncertain'],2,1),
+    ([],[],0,None),
+])
+def test_agreement_uses_only_returned_judgments(statuses,directions,denominator,agreement):
+    runs=[{'status':status,'predicted_outcome':direction} for status,direction in zip(statuses,directions)]
+    result=api.consensus(runs)
+    assert result['assigned']==len(runs)
+    assert sum(result['counts'].values())==len(runs)
+    assert result['agreement_denominator']==denominator and result['agreement']==agreement
+    public_contract.validate_consensus(result,runs)
+
+
+def test_no_public_assignments_does_not_fabricate_consensus(fixture):
+    client,frozen,_=fixture
+    frozen['runs']=[]
+    view=client.get('/api/arena/public').json()
+    assert view['runs']==view['targets']==[]
+    assert client.get('/api/arena/public/targets/t1/record').status_code==404
 
 
 def test_mixed_tracks_are_not_pooled_and_withdrawal_remains_in_denominator(fixture):

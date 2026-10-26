@@ -10,6 +10,8 @@
 
 [TRIUMPH-5 专利配对研究](docs/PATENT_PAIR_PILOT.md)记录新的离线准备入口、四次真实首轮调用、失败保留、AI 来源评注和本地截图。原始模型值未校准，目标结果待定；隔离研究记录尚未部署。
 
+[完整实验卡v2配对](docs/PATENT_PAIR_ASSAY_V2.md)新增四次真实首轮请求与独立时间签名：1条有效输出、3条操作失败。两临床对照均失败，无法计算专利增益；公开概率保持N/A。封存数据已在临时HTTP服务追加导入，原预测和失败保留，尚未上线。
+
 [逐模型引用报告](docs/launch/model-references-20261027/README.md)将已有公开摘要、每个模型自己的原文／快照引用与空状态一起展示。公开页面在 `Rationale & sources` 内查看；[实际记录截图](docs/images/model-references-20261027/provenance.json)来自本地候选版本，不代表线上部署或引用已获独立科学支持。新专利候选的名称／别名合同见[专利资料说明](patent_data/README.md#new-candidate-identifiers)，候选标签不授予药物身份或冻结资格。
 
 [公开读出日历](docs/READOUT_CALENDAR.md)按已记录窗口组织赛程，每项显示原模型方向分布、锁定时间和来源。项目级指引及未确认公告时间单列；历史回放不计为事前命中，未公布结果不排名。

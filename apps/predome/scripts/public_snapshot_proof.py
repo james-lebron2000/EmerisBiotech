@@ -74,7 +74,7 @@ def validate_bundle(raw):
         if set(entry)!={'sha256','bytes'} or entry!={'sha256':digest(files[name]),'bytes':len(files[name])}:
             raise ValueError('Export member hash or size mismatch')
     if digest(files.get('README.md',b''))!=README_PINS[m['schema_version']]:raise ValueError('Unknown public export explanatory text')
-    expected={'README.md','manifest.json'};formal=[];history=[];models=None;ids=set()
+    expected={'README.md','manifest.json'};formal=[];history=[];models=None;ids=set();record_versions=set()
     for item in m['records']:
         if set(item)!={'target_id','trial_name','kind','assigned_records','page_url'}:raise ValueError('Unknown record index metadata')
         ident=item['target_id']
@@ -82,11 +82,12 @@ def validate_bundle(raw):
         ids.add(ident);json_name='records/'+ident+'.json';report_name='reports/'+ident+'.md'
         if json_name not in files or report_name not in files:raise ValueError('Missing clinical record/report')
         record=decode(files[json_name]);target=record['target']
-        legacy=m['schema_version']!=campaign.BUNDLE_VERSION
-        expected_version={'predome-public-launch-bundle-1':campaign.LEGACY_VERSION,
-            'predome-public-launch-bundle-2':campaign.PREVIOUS_VERSION,
-            campaign.BUNDLE_VERSION:campaign.VERSION}[m['schema_version']]
-        if record['version']!=expected_version:raise ValueError('Public export and record versions differ')
+        legacy=record['version']!=campaign.VERSION
+        expected_versions={'predome-public-launch-bundle-1':(campaign.LEGACY_VERSION,),
+            'predome-public-launch-bundle-2':(campaign.PREVIOUS_VERSION,),
+            campaign.BUNDLE_VERSION:(campaign.CALENDAR_VERSION,campaign.VERSION)}[m['schema_version']]
+        if record['version'] not in expected_versions:raise ValueError('Public export and record versions differ')
+        record_versions.add(record['version'])
         replay=campaign.validate_record(record,target,allow_legacy=legacy)
         if target['id']!=ident or files[report_name]!=campaign.report_text(record):raise ValueError('Report differs from public clinical object')
         expected.add(json_name);expected.add(report_name)
@@ -100,6 +101,7 @@ def validate_bundle(raw):
             if target['cohort_id']!=m['cohort_id'] or len(own)!=4 or (models is not None and models!=own):
                 raise ValueError('Formal targets must share a cohort and four models')
             models=own;formal.append(record)
+    if len(record_versions)!=1:raise ValueError('Public export mixes record contract versions')
     if set(files)!=expected:raise ValueError('Unexpected public export member')
     if (m['formal_trials']!=len(formal) or m['historical_replays']!=len(history)
             or m['formal_assigned_records']!=sum(len(r['runs']) for r in formal)
@@ -222,7 +224,9 @@ def attest(bundle_path,expected_sha256,directory,cert_dir,openssl='openssl'):
     raw=regular(bundle_path)
     if digest(raw)!=expected_sha256:raise ValueError('Selected public ZIP changed')
     manifest=validate_bundle(raw)
-    if manifest['schema_version']!=campaign.BUNDLE_VERSION:
+    if (manifest['schema_version']!=campaign.BUNDLE_VERSION
+            or any(decode(value)['version']!=campaign.VERSION
+                   for name,value in zip_members(raw).items() if name.startswith('records/'))):
         raise ValueError('Legacy public bundles are verification-only; new attestations require the current schema')
     directory=Path(directory)
     if directory.exists() or directory.is_symlink():raise ValueError('Proof directories are never overwritten')

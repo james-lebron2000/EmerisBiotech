@@ -13,11 +13,12 @@ import re
 from urllib.parse import quote
 import zipfile
 
-from .arena_public_contract import credential_like, public_url, validate_current_readout
+from .arena_public_contract import credential_like, public_url, validate_current_readout, validate_consensus
 
 
 SCHEMA_VERSION = 'predome-public-clinical-brief-1'
-RECORD_VERSION = 'arena-clinical-public-1.2'
+RECORD_VERSION = 'arena-clinical-public-1.3'
+PREVIOUS_RECORD_VERSION = 'arena-clinical-public-1.2'
 PUBLIC_ORIGIN = 'https://8.148.145.28'
 ROOT_FIELDS = {'version', 'target', 'runs', 'consensus', 'sources', 'evidence', 'result', 'public_policy'}
 TARGET_FIELDS = {'id', 'cohort_id', 'trial_name', 'nct_id', 'drug', 'sponsor', 'indication',
@@ -83,10 +84,11 @@ def _sources(value):
             raise ValueError('A source link does not satisfy the public URL policy')
 
 
-def validate_record(record):
+def validate_record(record, *, allow_legacy=False):
     """Validate the export boundary; forecast/score calculations remain upstream."""
     _object(record, ROOT_FIELDS)
-    if set(record) != ROOT_FIELDS or record['version'] != RECORD_VERSION:
+    if (set(record) != ROOT_FIELDS or record['version'] != RECORD_VERSION
+            and not (allow_legacy and record['version'] == PREVIOUS_RECORD_VERSION)):
         raise ValueError('Current sanitized public record required')
     target = _object(record['target'], TARGET_FIELDS)
     _flat(target, ('design', 'readout', 'current_readout', 'sources', 'result', 'consensus'))
@@ -169,8 +171,7 @@ def validate_record(record):
                 raise ValueError('The public brief cannot assign an unsupported prediction match')
         elif run.get('match_status') not in ('not_evaluable', 'historical_replay'):
             raise ValueError('A missing public comparison cannot become a hit or miss')
-    if consensus.get('assigned') != len(runs) or consensus.get('agreement_denominator') != len(runs):
-        raise ValueError('Public consensus denominator differs from its assigned records')
+    validate_consensus(consensus, runs, legacy=record['version'] == PREVIOUS_RECORD_VERSION)
     _scalars(record)
     raw = canonical(record)
     if len(raw) > MAX_RECORD_BYTES:
@@ -311,7 +312,10 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
                      run.get('generated_at_utc'), run.get('locked_at_utc'), comparison])
     outcome_note = _result_text(result, kind == 'historical_replay')
     counts = ' · '.join(label+' '+_text(consensus['counts'].get(label)) for label in ('Success', 'Failure', 'Uncertain'))
-    calibration = 'Probability and confidence are not clinically calibrated. Failed, missing and abstained responses remain in the assigned denominator. Model agreement is not accuracy or confidence.'
+    calibration = 'Probability and confidence are not clinically calibrated. Every assigned record remains in direction counts and majority. Agreement uses returned predictions and explicit abstentions only, requires at least two judgments, and excludes technical failures and unexecuted slots. Model agreement is not accuracy or confidence.'
+    agreement = ('N/A (fewer than two returned judgments)' if consensus['agreement'] is None
+                 else format(consensus['agreement'] * 100, '.1f').rstrip('0').rstrip('.') + '%')
+    agreement_note = 'Model agreement: '+agreement+'; returned judgments: '+str(consensus['agreement_denominator'])+'/'+str(consensus['assigned'])+'.'
     export_note = 'Export time describes this public brief only. Original model-generation and lock times above are unchanged stored timestamps; this export does not independently prove those earlier times, expand a TSA proof, or generate a new prediction.'
     integrity_note = 'File hashes establish integrity only. This ZIP contains no independent timestamp attestation. Clinical predictive performance is not established.'
     md = ['# '+_md(title), '', _md(scope)+'. '+_md(scope_note), '', '[Open this exact trial record]('+page_url+')',
@@ -332,7 +336,7 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     md += ['', '## Consensus and actual result', '',
            'Majority prediction: '+_md(consensus.get('predicted_outcome'))+'.',
            'Assigned model records: '+str(consensus['assigned'])+'.',
-           'Direction counts: '+_md(counts)+'.', '', _md(outcome_note)]
+           'Direction counts: '+_md(counts)+'.', agreement_note, '', _md(outcome_note)]
     if result:
         md += ['Official announcement: '+_md(result.get('first_public_at'))+'.', _md(result.get('verification_note'))]
     md += ['', '### Public sources', '']
@@ -353,7 +357,7 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     html_result = '<p>'+e(outcome_note)+'</p>'
     if result:
         html_result += '<p>Official announcement: '+e(result.get('first_public_at'))+'</p><p>'+e(result.get('verification_note'))+'</p>'
-    document = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><title>'+e(title)+' · Predome Clinical Brief</title><style>'+CSS+'</style></head><body><main><h1>'+e(title)+'</h1><p class="scope"><strong>'+e(scope)+'</strong> · '+e(scope_note)+'</p><p><a href="'+html.escape(page_url, quote=True)+'" rel="noopener noreferrer">Open this exact trial record</a></p><section><h2>Clinical trial</h2><dl class="facts">'+html_facts+'</dl></section><section><h2>AI Clinical Trial Predictions</h2><div class="table-wrap"><table><thead><tr>'+''.join('<th scope="col">'+e(name)+'</th>' for name in headers)+'</tr></thead><tbody>'+html_rows+'</tbody></table></div><p class="note">'+e(calibration)+'</p><div class="model-notes"><h3>Model rationales and recorded references</h3><p class="note">'+e(reference_note)+'</p>'+''.join(html_models)+'</div></section><section><h2>Consensus and actual result</h2><p>Majority prediction: '+e(consensus.get('predicted_outcome'))+' · Assigned records: '+e(consensus['assigned'])+'</p><p>Direction counts: '+e(counts)+'</p>'+html_result+'<h3>Public sources</h3><ul class="sources">'+html_sources+'</ul></section><footer><p>Exported at UTC: '+e(exported)+'</p><p>'+e(export_note)+'</p><p>'+e(integrity_note)+'</p></footer></main></body></html>\n'
+    document = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><title>'+e(title)+' · Predome Clinical Brief</title><style>'+CSS+'</style></head><body><main><h1>'+e(title)+'</h1><p class="scope"><strong>'+e(scope)+'</strong> · '+e(scope_note)+'</p><p><a href="'+html.escape(page_url, quote=True)+'" rel="noopener noreferrer">Open this exact trial record</a></p><section><h2>Clinical trial</h2><dl class="facts">'+html_facts+'</dl></section><section><h2>AI Clinical Trial Predictions</h2><div class="table-wrap"><table><thead><tr>'+''.join('<th scope="col">'+e(name)+'</th>' for name in headers)+'</tr></thead><tbody>'+html_rows+'</tbody></table></div><p class="note">'+e(calibration)+'</p><div class="model-notes"><h3>Model rationales and recorded references</h3><p class="note">'+e(reference_note)+'</p>'+''.join(html_models)+'</div></section><section><h2>Consensus and actual result</h2><p>Majority prediction: '+e(consensus.get('predicted_outcome'))+' · Assigned records: '+e(consensus['assigned'])+'</p><p>Direction counts: '+e(counts)+'</p><p>'+e(agreement_note)+'</p>'+html_result+'<h3>Public sources</h3><ul class="sources">'+html_sources+'</ul></section><footer><p>Exported at UTC: '+e(exported)+'</p><p>'+e(export_note)+'</p><p>'+e(integrity_note)+'</p></footer></main></body></html>\n'
     files = {'clinical-record.json': record_raw, 'clinical-brief.md': ('\n'.join(md)+'\n').encode(),
              'clinical-brief.html': document.encode()}
     manifest = {'schema_version': SCHEMA_VERSION, 'record_version': record['version'], 'exported_at_utc': exported,

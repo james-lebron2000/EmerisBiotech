@@ -1,4 +1,5 @@
 """Offline public proof tamper tests; no providers, private ledger or TSA calls."""
+from copy import deepcopy
 from datetime import datetime, timezone
 import io
 import json
@@ -255,19 +256,26 @@ def test_non_sha256_message_imprint_is_rejected_after_actual_signature_checks(si
         proof.verify(directory)
 
 
-@pytest.mark.parametrize('bundle_version,record_version',[('predome-public-launch-bundle-1','arena-clinical-public-1.0'),('predome-public-launch-bundle-2','arena-clinical-public-1.1')])
+@pytest.mark.parametrize('bundle_version,record_version',[('predome-public-launch-bundle-1','arena-clinical-public-1.0'),('predome-public-launch-bundle-2','arena-clinical-public-1.1'),('predome-public-launch-bundle-3','arena-clinical-public-1.2')])
 def test_previous_bundle_contracts_verify_offline_but_cannot_reissue_attestation(records,tmp_path,monkeypatch,bundle_version,record_version):
     """Synthetic legacy contract fixture; original signed archives stay untouched."""
     index,_,_,fetch=records
     raw,_=proof.campaign.bundle(index,fetch);files=proof.zip_members(raw)
     manifest=proof.decode(files['manifest.json']);manifest['schema_version']=bundle_version
-    files['README.md']=files['README.md'].replace(b'Reviewed calendar updates are separate display records; original frozen readout windows, model inputs and stored prediction times stay unchanged.\n',b'')
+    if bundle_version!='predome-public-launch-bundle-3':
+        files['README.md']=files['README.md'].replace(b'Reviewed calendar updates are separate display records; original frozen readout windows, model inputs and stored prediction times stay unchanged.\n',b'')
     if bundle_version.endswith('-1'):
         files['README.md']=files['README.md'].replace(b'Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.\n',b'')
     assert proof.digest(files['README.md'])==proof.README_PINS[bundle_version]
     for name in list(files):
         if name.startswith('records/'):
+            from emeris_live.arena_public_contract import public_consensus
             record=proof.decode(files[name]);record['version']=record_version
+            record['consensus']=public_consensus(record['runs'],legacy=True)
+            record['target']['consensus']=deepcopy(record['consensus'])
+            if record_version==proof.campaign.CALENDAR_VERSION and name=='records/fixture-0.json':
+                from test_public_campaign_export import synthetic_current_readout
+                record['target']['current_readout']=synthetic_current_readout()
             files[name]=proof.campaign.canonical(record)
             files['reports/'+record['target']['id']+'.md']=proof.campaign.report_text(record)
     manifest['files']={name:{'sha256':proof.digest(value),'bytes':len(value)} for name,value in files.items() if name!='manifest.json'}

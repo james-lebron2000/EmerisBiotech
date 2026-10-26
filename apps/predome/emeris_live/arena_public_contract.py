@@ -9,6 +9,39 @@ import re
 from urllib.parse import parse_qsl, urlsplit
 
 
+JUDGMENT_STATUSES = frozenset(('predicted', 'abstain', 'abstained'))
+
+
+def public_consensus(runs, *, legacy=False):
+    """Keep assignment coverage separate from agreement among returned judgments.
+
+    Legacy public records used all assignments for both statistics. This option
+    exists only to verify their original values, never to rewrite frozen records.
+    """
+    labels = ('Success', 'Failure', 'Uncertain')
+    assigned = len(runs)
+    counts = {label: sum(run['predicted_outcome'] == label for run in runs) for label in labels}
+    judgments = runs if legacy else [run for run in runs if run.get('status') in JUDGMENT_STATUSES]
+    denominator = len(judgments)
+    agreement_counts = [sum(run['predicted_outcome'] == label for run in judgments) for label in labels]
+    agreement = max(agreement_counts) / denominator if denominator >= (1 if legacy else 2) else None
+    return {'predicted_outcome': next((label for label, count in counts.items() if count > assigned / 2), 'Uncertain'),
+        'assigned': assigned, 'counts': counts, 'agreement': agreement, 'agreement_denominator': denominator,
+        'average_probability': None, 'confidence': None, 'calibration_status': 'not_established'}
+
+
+def validate_consensus(value, runs, *, legacy=False):
+    """Verify public derived statistics from their actual sanitized run records."""
+    expected = public_consensus(runs, legacy=legacy)
+    if (not isinstance(value, dict) or value != expected
+            or type(value.get('assigned')) is not int or type(value.get('agreement_denominator')) is not int
+            or not isinstance(value.get('counts'), dict)
+            or any(type(count) is not int for count in value['counts'].values())
+            or value.get('agreement') is not None and type(value['agreement']) not in (int, float)):
+        raise ValueError('Public consensus does not match its assigned records and returned judgments')
+    return value
+
+
 def credential_like(value):
     """Recognize the existing key/private-key patterns without echoing them."""
     return isinstance(value, str) and re.search(
