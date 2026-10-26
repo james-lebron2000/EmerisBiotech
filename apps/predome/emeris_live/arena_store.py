@@ -72,7 +72,7 @@ FROZEN_RUN_FIELDS = {'id', 'target_id', 'cohort_id', 'track', 'condition', 'pack
     'execution_state', 'provider_config_snapshot', 'provider_implementation_sha256',
     'expected_provider_input_sha256', 'expected_prompt_sha256', 'execution_budget_sha256',
     'agent_spec', 'agent_contract', 'runner_implementation_sha256', 'citation_reviews', 'citation_support_reviews',
-    'input_evidence_issues', 'withdrawn_before_execution', 'withdrawn_at'}
+    'input_evidence_issues', 'withdrawn_before_execution', 'withdrawn_at', 'record_origin', 'completion_event_epoch'}
 
 
 def now():
@@ -195,8 +195,13 @@ class ArenaLedger:
             db.close()
 
     def _append(self, db, kind, entity_id, payload):
+        from .arena_imports import IMPORT_KIND
         last = db.execute('SELECT event_hash FROM arena_events ORDER BY seq DESC LIMIT 1').fetchone()
-        row = dict(id=uuid.uuid4().hex, kind=kind, entity_id=entity_id, created_at=now(),
+        ident = uuid.uuid4().hex
+        for event in db.execute('SELECT payload FROM arena_events WHERE kind=?', (IMPORT_KIND,)):
+            if any(item['id'] == ident for item in json.loads(event['payload'])['source_events']):
+                raise ValueError('A new host event ID collides with an imported source event')
+        row = dict(id=ident, kind=kind, entity_id=entity_id, created_at=now(),
                    payload=payload, previous_hash=last['event_hash'] if last else '0' * 64)
         row['event_hash'] = sha(row)
         db.execute('INSERT INTO arena_events(id,kind,entity_id,created_at,payload,previous_hash,event_hash) VALUES(?,?,?,?,?,?,?)',
@@ -206,6 +211,36 @@ class ArenaLedger:
     def events(self):
         with self.connect() as db:
             return self._verified_events(db)
+
+    def import_sealed_cohort(self, path, expected_sha256):
+        """Append one verified source epoch; never import permissions or results."""
+        from .arena_imports import IMPORT_KIND, imported_streams, stage_bundle, verify_bundle
+        payload = verify_bundle(path, expected_sha256)
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            events = self._verified_events(db)
+            streams = imported_streams(events)
+            prior = next((event for event, value in streams if value['bundle_sha256'] == expected_sha256), None)
+            if prior is not None:
+                if canonical(prior['payload']) != canonical(payload):
+                    raise ValueError('The same import digest cannot identify different source records')
+                stage_bundle(self.path.parent, path, payload)
+                event, appended = prior, False
+            else:
+                candidate = {'id': uuid.uuid4().hex, 'kind': IMPORT_KIND,
+                    'entity_id': payload['source_cohort_id'], 'payload': payload, 'created_at': now()}
+                imported_streams([*events, candidate])
+                stage_bundle(self.path.parent, path, payload)
+                event = self._append(db, IMPORT_KIND, payload['source_cohort_id'], payload)
+                imported_streams([*events, event])
+                appended = True
+        return {'schema_version': 'predome-sealed-cohort-import-receipt-1',
+            'appended': appended, 'bundle_sha256': expected_sha256,
+            'source_cohort_id': payload['source_cohort_id'], 'source_ledger_sha256': payload['source_ledger_sha256'],
+            'source_event_count': len(payload['source_events']), 'host_import_event_sha256': event['event_hash'],
+            'synced_at_utc': event['created_at'], 'original_predictions_preserved': True,
+            'provider_calls': 0, 'results_imported': 0, 'human_reviews_imported': 0,
+            'clinical_prediction_validated': False}
 
     def _verified_events(self, db):
         rows = [dict(r) for r in db.execute('SELECT * FROM arena_events ORDER BY seq')]
@@ -259,11 +294,14 @@ class ArenaLedger:
             raise ValueError('Assigned slots exceed the registered budget maximum')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            self._verified_events(db)
-            if db.execute('SELECT 1 FROM arena_events WHERE entity_id=?', (cohort_id,)).fetchone():
+            events = self._verified_events(db)
+            from .arena_imports import imported_streams
+            imported = imported_streams(events)
+            known = {e['entity_id'] for e in events} | {e['entity_id'] for _, value in imported for e in value['source_events']}
+            if cohort_id in known:
                 raise ValueError('Cohort already registered')
             for target in targets:
-                if target['id'] == cohort_id or db.execute('SELECT 1 FROM arena_events WHERE entity_id=?', (target['id'],)).fetchone():
+                if target['id'] == cohort_id or target['id'] in known:
                     raise ValueError('Target ID already frozen; use a new cohort-specific ID')
             self._append(db, 'cohort_registered', cohort_id, {'protocol': protocol, 'target_ids': sorted(by_target),
                                                            'slot_count': len(slots), 'clinical_prediction_validated': False})
@@ -272,6 +310,8 @@ class ArenaLedger:
             slot_ids = []
             for slot in slots:
                 ident = 'run-' + uuid.uuid4().hex
+                if ident in known:
+                    raise ValueError('Generated run identity collides with an existing record')
                 self._append(db, 'slot_registered', ident, {**slot, 'cohort_id': cohort_id,
                     'input_sha256': sha(slot['packet']), 'workflow_version': slot.get('workflow_version', VERSION),
                     'scope': 'prospective_challenge'})
@@ -281,7 +321,11 @@ class ArenaLedger:
     def start(self, run_id):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            self._verified_events(db)
+            events = self._verified_events(db)
+            from .arena_imports import imported_streams
+            if any(e['kind'] == 'slot_registered' and e['entity_id'] == run_id
+                   for _, value in imported_streams(events) for e in value['source_events']):
+                raise ValueError('Imported runs are sealed; execution cannot be repeated')
             rows = db.execute('SELECT kind,payload FROM arena_events WHERE entity_id=? ORDER BY seq', (run_id,)).fetchall()
             if not rows or rows[0]['kind'] != 'slot_registered' or any(r['kind'] in ('run_started', 'run_completed') for r in rows):
                 raise ValueError('Run is missing or has already started; never silently repeat a billed request')
@@ -323,7 +367,11 @@ class ArenaLedger:
             raise ValueError('A missing prediction must retain a null probability')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            self._verified_events(db)
+            events = self._verified_events(db)
+            from .arena_imports import imported_streams
+            if any(e['kind'] == 'slot_registered' and e['entity_id'] == run_id
+                   for _, value in imported_streams(events) for e in value['source_events']):
+                raise ValueError('Imported runs are sealed; completion cannot be replaced')
             rows = db.execute('SELECT kind,payload FROM arena_events WHERE entity_id=? ORDER BY seq', (run_id,)).fetchall()
             kinds = [r['kind'] for r in rows]
             if 'run_started' not in kinds or 'run_completed' in kinds:
@@ -415,10 +463,11 @@ class ArenaLedger:
                     raise ValueError('Credential-like review content rejected')
                 authentication={k:grant[k] for k in ('account_id','principal_id','identity_evidence_sha256','identity_assurance')}
                 authentication['enrollment_event_sha256']=grant['event_hash']
-            target_row=db.execute("SELECT payload FROM arena_events WHERE kind='target_registered' AND entity_id=?", (target_id,)).fetchone()
-            if not target_row:
+            from .arena_records import registered_targets
+            target = registered_targets(events).get(target_id)
+            if target is None:
                 raise ValueError('Unknown target')
-            expected=result_target_binding(json.loads(target_row['payload']))
+            expected=result_target_binding(target)
             if ('target_binding' in result or reviewer_kind!='unspecified') and result.get('target_binding')!=expected:
                 raise ValueError('Outcome must bind the exact registered trial, population, comparator and analysis')
             previous_events=[e for e in events if e['kind']=='result_adjudicated' and e['entity_id']==target_id]
@@ -466,6 +515,9 @@ class ArenaLedger:
         reason = reason.strip()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE');events=self._verified_events(db)
+            from .arena_imports import imported_streams
+            if any(value['source_cohort_id'] == cohort_id for _, value in imported_streams(events)):
+                raise ValueError('An executed imported cohort cannot be withdrawn')
             if not any(e['kind']=='cohort_registered' and e['entity_id']==cohort_id for e in events):
                 raise ValueError('Unknown cohort')
             if any(e['kind']=='cohort_withdrawn' and e['entity_id']==cohort_id for e in events):
@@ -485,8 +537,10 @@ class ArenaLedger:
         note = note.strip()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE');events=self._verified_events(db)
+            from .arena_imports import imported_streams
+            records = [e for _, value in imported_streams(events) for e in value['source_events']] + events
             if not any(e['kind']=='slot_registered' and any(v['id']==evidence_id and v['source_sha256']==source_sha256
-                for v in e['payload']['packet']['evidence']) for e in events):
+                for v in e['payload']['packet']['evidence']) for e in records):
                 raise ValueError('Unknown frozen source version')
             if any(e['kind']=='evidence_issue' and e['payload']['evidence_id']==evidence_id
                 and e['payload']['source_sha256']==source_sha256 and e['payload']['note']==note
@@ -505,13 +559,15 @@ class ArenaLedger:
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             events=self._verified_events(db)
-            assigned=next((e for e in events if e['kind']=='slot_registered' and e['entity_id']==run_id),None)
-            completed=next((e for e in events if e['kind']=='run_completed' and e['entity_id']==run_id),None)
+            from .arena_imports import imported_streams
+            records = [e for _, value in imported_streams(events) for e in value['source_events']] + events
+            assigned=next((e for e in records if e['kind']=='slot_registered' and e['entity_id']==run_id),None)
+            completed=next((e for e in records if e['kind']=='run_completed' and e['entity_id']==run_id),None)
             if not assigned or not completed:
                 raise ValueError('A completed registered run is required')
             run={**assigned['payload'],**completed['payload']}
             clean=validate_review(run,assessment)
-            prior=[e['payload'] for e in events if e['kind']=='citation_review' and e['entity_id']==run_id
+            prior=[e['payload'] for e in records if e['kind']=='citation_review' and e['entity_id']==run_id
                    and e['payload']['reviewer_id']==reviewer_id and e['payload']['reviewer_kind']==reviewer_kind]
             if (prior and supersedes!=prior[-1]['review_sha256']) or (not prior and supersedes is not None):
                 raise ValueError('Correction must identify the latest review by this reviewer')
@@ -556,82 +612,114 @@ class ArenaLedger:
             return self._append(db, 'timestamp_attested', 'attestation-' + uuid.uuid4().hex, receipt)
 
     def snapshot(self):
-        events = self.events()
-        targets, runs, cohorts = {}, {}, []
-        result_reviews={}
-        for event in events:
-            kind, ident, p = event['kind'], event['entity_id'], event['payload']
-            if kind == 'cohort_registered':
-                cohorts.append({'id': ident, **p, 'registered_at': event['created_at'], 'event_hash': event['event_hash']})
-            elif kind == 'target_registered':
-                targets[ident] = {**p, 'status': 'pending', 'registered_at': event['created_at']}
-            elif kind == 'slot_registered':
-                runs[ident] = {**p, 'id': ident, 'status': 'pending', 'probability': None,
-                              'registered_at': event['created_at'], 'timestamp_proof': {'status': 'not_attested', 'url': None}}
-            elif kind == 'run_started':
-                runs[ident]['started_at'] = event['created_at']
-                runs[ident]['execution_state'] = 'running'
-            elif kind == 'run_completed':
-                runs[ident].update(p, generated_at_utc=event['created_at'], locked_at_utc=event['created_at'], execution_state='terminal')
-                runs[ident]['completion_event_seq'] = event['seq']
-            elif kind == 'citation_review':
-                runs[ident].setdefault('citation_reviews',[]).append({**p,'reviewed_at':event['created_at']})
-            elif kind == 'result_review':
-                key=(ident,p.get('supersedes'))
-                result_reviews.setdefault(key,{})[(p['reviewer_id'].casefold(),bool(p.get('reviewer_authentication')))]=p
-                provenance=result_review_provenance(list(result_reviews[key].values()),authenticated=bool(p.get('reviewer_authentication')))
-                if targets[ident]['status']!='adjudicated' or p.get('supersedes'):
-                    if targets[ident]['status']=='adjudicated':targets[ident]['previous_adjudicated_result']=targets[ident].get('result')
-                    targets[ident].update(status='announced',result={**p['result'],
-                        'verification_status':'conflicting_reviews' if provenance['typed_conflict'] else 'pending_second_review',
-                        'review_provenance':provenance})
-            elif kind == 'result_adjudicated':
-                # Equal result bytes can recur after corrections. A new round
-                # cannot revive reviews from an earlier adjudication event.
-                result_reviews={key:value for key,value in result_reviews.items() if key[0]!=ident}
-                targets[ident]['result_adjudication_event_sha256']=event['event_hash']
-                targets[ident].update(status='adjudicated', result={**p['result'], 'verification_status': 'adjudicated',
-                    'result_sha256': p['result_sha256'], 'verified_at': event['created_at'],
-                    'review_provenance':p.get('review_provenance',{'basis':'legacy_unspecified',
-                        'review_counts':{'ai':0,'human':0,'unspecified':len(p.get('reviewer_ids',[]))},
-                        'identity_assurance':'not_recorded','independent_human_review_verified':False})})
-        for event in events:
-            if event['kind']=='cohort_withdrawn':
-                for cohort in cohorts:
-                    if cohort['id']==event['entity_id']:
-                        cohort.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
-                for target in targets.values():
-                    if target['cohort_id']==event['entity_id']:
-                        target.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
-                for run in runs.values():
-                    if run['cohort_id']==event['entity_id']:
-                        run.update(status='withdrawn',probability=None,withdrawn_before_execution=True,
-                            execution_state='withdrawn',reason=event['payload']['reason'],withdrawn_at=event['created_at'])
-            if event['kind']=='evidence_issue':
-                issue=event['payload']
-                for run in runs.values():
-                    if any(e['id']==issue['evidence_id'] and e['source_sha256']==issue['source_sha256'] for e in run['packet']['evidence']):
-                        run.setdefault('input_evidence_issues',[]).append({**issue,'recorded_at':event['created_at'],'event_hash':event['event_hash']})
-        for event in events:
-            receipt = event['payload']
-            if event['kind'] != 'timestamp_attested' or receipt.get('purpose') != 'predictions':
-                continue
+        return project_events(self.events(), getattr(self, 'path', None))
+
+
+def project_events(events, ledger_path=None):
+    """Fold source epochs independently, then apply later host facts in order."""
+    from .arena_imports import imported_streams, verify_stored_bundle
+    imports = {event['id']: payload for event, payload in imported_streams(events)}
+    targets, runs, cohorts = {}, {}, []
+    result_reviews={}
+    for event in events:
+        kind, ident, p = event['kind'], event['entity_id'], event['payload']
+        if event['id'] in imports:
+            payload = imports[event['id']]
+            if ledger_path is not None:
+                verify_stored_bundle(Path(ledger_path).parent, payload)
+            source = project_events(payload['source_events'])
+            origin = {'kind': 'sealed_cohort_import', 'bundle_sha256': payload['bundle_sha256'],
+                'source_ledger_sha256': payload['source_ledger_sha256'],
+                'source_event_count': len(payload['source_events']),
+                'synced_at_utc': event['created_at'], 'host_event_sha256': event['event_hash'],
+                'registration_proof': payload['proofs']['registration'],
+                'prediction_proof': payload['proofs']['predictions']}
+            for cohort in source['cohorts']:
+                cohorts.append({**cohort, 'record_origin': origin})
+            for target in source['targets']:
+                targets[target['id']] = {**target, 'record_origin': origin}
+            for run in source['runs']:
+                run['record_origin'] = origin
+                run['completion_event_epoch'] = payload['source_ledger_sha256']
+                if run['timestamp_proof'].get('status') == 'attested':
+                    run['timestamp_proof'] = {**run['timestamp_proof'], 'url': None,
+                        'verification_method': 'openssl_ts_verify_data_and_query_nonce',
+                        'proof_scope': 'original_source_event_prefix',
+                        'originals_access': 'authorized_internal_only',
+                        'source_ledger_sha256': payload['source_ledger_sha256']}
+                runs[run['id']] = run
+        elif kind == 'cohort_registered':
+            cohorts.append({'id': ident, **p, 'registered_at': event['created_at'], 'event_hash': event['event_hash']})
+        elif kind == 'target_registered':
+            targets[ident] = {**p, 'status': 'pending', 'registered_at': event['created_at']}
+        elif kind == 'slot_registered':
+            runs[ident] = {**p, 'id': ident, 'status': 'pending', 'probability': None,
+                          'registered_at': event['created_at'], 'timestamp_proof': {'status': 'not_attested', 'url': None}}
+        elif kind == 'run_started':
+            runs[ident]['started_at'] = event['created_at']
+            runs[ident]['execution_state'] = 'running'
+        elif kind == 'run_completed':
+            runs[ident].update(p, generated_at_utc=event['created_at'], locked_at_utc=event['created_at'], execution_state='terminal')
+            runs[ident]['completion_event_seq'] = event['seq']
+        elif kind == 'citation_review':
+            runs[ident].setdefault('citation_reviews',[]).append({**p,'reviewed_at':event['created_at']})
+        elif kind == 'result_review':
+            key=(ident,p.get('supersedes'))
+            result_reviews.setdefault(key,{})[(p['reviewer_id'].casefold(),bool(p.get('reviewer_authentication')))]=p
+            provenance=result_review_provenance(list(result_reviews[key].values()),authenticated=bool(p.get('reviewer_authentication')))
+            if targets[ident]['status']!='adjudicated' or p.get('supersedes'):
+                if targets[ident]['status']=='adjudicated':targets[ident]['previous_adjudicated_result']=targets[ident].get('result')
+                targets[ident].update(status='announced',result={**p['result'],
+                    'verification_status':'conflicting_reviews' if provenance['typed_conflict'] else 'pending_second_review',
+                    'review_provenance':provenance})
+        elif kind == 'result_adjudicated':
+            # Equal result bytes can recur after corrections. A new round
+            # cannot revive reviews from an earlier adjudication event.
+            result_reviews={key:value for key,value in result_reviews.items() if key[0]!=ident}
+            targets[ident]['result_adjudication_event_sha256']=event['event_hash']
+            targets[ident].update(status='adjudicated', result={**p['result'], 'verification_status': 'adjudicated',
+                'result_sha256': p['result_sha256'], 'verified_at': event['created_at'],
+                'review_provenance':p.get('review_provenance',{'basis':'legacy_unspecified',
+                    'review_counts':{'ai':0,'human':0,'unspecified':len(p.get('reviewer_ids',[]))},
+                    'identity_assurance':'not_recorded','independent_human_review_verified':False})})
+    for event in events:
+        if event['kind']=='cohort_withdrawn':
+            for cohort in cohorts:
+                if cohort['id']==event['entity_id']:
+                    cohort.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
+            for target in targets.values():
+                if target['cohort_id']==event['entity_id']:
+                    target.update(execution_status='withdrawn_before_execution',withdrawal=event['payload'])
             for run in runs.values():
-                if run.get('completion_event_seq', float('inf')) <= receipt['covered_event_count']:
-                    prior = run['timestamp_proof'].get('generated_at_utc')
-                    if prior and instant(prior) <= instant(receipt['generated_at_utc']):
-                        continue
-                    run['timestamp_proof'] = {'status': 'attested', 'url': receipt['public_url'],
-                        'generated_at_utc': receipt['generated_at_utc'], 'ledger_sha256': receipt['ledger_sha256'],
-                        'covered_event_count': receipt['covered_event_count'], 'tsa': receipt['tsa'],
-                        'signature_verified': True, 'verification_method': receipt['verification_method'],
-                        'manifest_sha256': receipt['manifest_sha256'],
-                        'trust_note': 'Depends on the third-party TSA certificate authority; not legal notarization.'}
-        from .arena_result_assurance import project_result_assurance
-        ledger_path=getattr(self,'path',None)
-        project_result_assurance(events,targets,Path(ledger_path).parent if ledger_path is not None else None)
-        from .arena_citations import summaries
+                if run['cohort_id']==event['entity_id']:
+                    run.update(status='withdrawn',probability=None,withdrawn_before_execution=True,
+                        execution_state='withdrawn',reason=event['payload']['reason'],withdrawn_at=event['created_at'])
+        if event['kind']=='evidence_issue':
+            issue=event['payload']
+            for run in runs.values():
+                if any(e['id']==issue['evidence_id'] and e['source_sha256']==issue['source_sha256'] for e in run['packet']['evidence']):
+                    run.setdefault('input_evidence_issues',[]).append({**issue,'recorded_at':event['created_at'],'event_hash':event['event_hash']})
+    for event in events:
+        receipt = event['payload']
+        if event['kind'] != 'timestamp_attested' or receipt.get('purpose') != 'predictions':
+            continue
         for run in runs.values():
-            run['citation_support_reviews']=summaries(run.get('citation_reviews',[]))
-        return {'targets': list(targets.values()), 'runs': list(runs.values()), 'cohorts': cohorts,
-                'events': events, 'ledger_sha256': events[-1]['event_hash'] if events else None}
+            if run.get('record_origin'):
+                continue
+            if run.get('completion_event_seq', float('inf')) <= receipt['covered_event_count']:
+                prior = run['timestamp_proof'].get('generated_at_utc')
+                if prior and instant(prior) <= instant(receipt['generated_at_utc']):
+                    continue
+                run['timestamp_proof'] = {'status': 'attested', 'url': receipt['public_url'],
+                    'generated_at_utc': receipt['generated_at_utc'], 'ledger_sha256': receipt['ledger_sha256'],
+                    'covered_event_count': receipt['covered_event_count'], 'tsa': receipt['tsa'],
+                    'signature_verified': True, 'verification_method': receipt['verification_method'],
+                    'manifest_sha256': receipt['manifest_sha256'],
+                    'trust_note': 'Depends on the third-party TSA certificate authority; not legal notarization.'}
+    from .arena_result_assurance import project_result_assurance
+    project_result_assurance(events,targets,Path(ledger_path).parent if ledger_path is not None else None)
+    from .arena_citations import summaries
+    for run in runs.values():
+        run['citation_support_reviews']=summaries(run.get('citation_reviews',[]))
+    return {'targets': list(targets.values()), 'runs': list(runs.values()), 'cohorts': cohorts,
+            'events': events, 'ledger_sha256': events[-1]['event_hash'] if events else None}

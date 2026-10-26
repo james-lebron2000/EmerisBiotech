@@ -15,6 +15,7 @@ import re
 import sqlite3
 
 from .arena_store import ArenaLedger, sha
+from .arena_records import registered_targets, target_registrations
 
 
 VERSION = 'arena-reviewer-enrollment-1'
@@ -73,8 +74,10 @@ def _enrollments(events):
                     or sha({k: v for k, v in event.items() if k not in ('seq', 'event_hash')}) != event['event_hash']):
                 raise ValueError('Invalid event chain')
             previous = event['event_hash']
-            if event.get('kind') == 'target_registered':
-                targets.add(event['entity_id'])
+            # A sealed cohort becomes available to this host only at its import
+            # event. Do not flatten source sequences or let a later import
+            # authorize an enrollment that preceded it in the host chain.
+            targets.update(target_registrations(event))
             if event.get('kind') != 'reviewer_enrollment':
                 continue
             p = event['payload']
@@ -191,7 +194,7 @@ def enroll_reviewer(ledger, account_id, principal_id, target_ids, identity_evide
             raise ValueError('An account principal binding is permanent')
         if prior is None and not active:
             raise ValueError('An account must be enrolled before revocation')
-        registered = {e['entity_id'] for e in events if e['kind'] == 'target_registered'}
+        registered = set(registered_targets(events))
         if not set(target_ids) <= registered:
             raise ValueError('Enrollment scope contains an unregistered target')
         payload = {'schema_version': VERSION, 'account_id': account_id, 'principal_id': principal_id,

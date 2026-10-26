@@ -14,6 +14,7 @@ import re
 import stat
 
 from .arena_store import sha, result_target_binding, instant, RESULT_LABELS
+from .arena_records import registered_targets
 
 POLICY_VERSION = 'operator-documented-independent-review-v1'
 ACCEPT_KIND = 'scientific_adjudication_acceptance'
@@ -116,8 +117,7 @@ def _verify_archived(root, metadata, owner=None):
 
 
 def _latest(events, target_id):
-    target = next((event['payload'] for event in events
-                   if event['kind'] == 'target_registered' and event['entity_id'] == target_id), None)
+    target = registered_targets(events).get(target_id)
     rounds = [event for event in events if event['kind'] == 'result_adjudicated' and event['entity_id'] == target_id]
     if target is None or not rounds:
         raise ValueError('A current agreed source result is required')

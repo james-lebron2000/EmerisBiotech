@@ -48,11 +48,11 @@ def public_url(value):
         return None
 
 
-def source_view(value):
+def source_view(value, snapshot_urls=None):
     return {'id': text(value.get('id') or value.get('source_id'), 200),
             'title': text(value.get('title') or value.get('id') or value.get('source_id'), 300),
             'source_url': public_url(value.get('source_url') or value.get('url')),
-            'source_snapshot_url': None if value.get('archive_only_source') else public_url(value.get('source_snapshot_url')) or ('/api/arena/sources/' + value['source_sha256'] if re.fullmatch(r'[a-f0-9]{64}', str(value.get('source_sha256', ''))) else None),
+            'source_snapshot_url': None if value.get('archive_only_source') else (snapshot_urls or {}).get(value.get('source_sha256')),
             'publication_date': text(value.get('public_date') or value.get('availability_date'), 80),
             'kind': text(value.get('kind'), 80),
             'page': value.get('page') if type(value.get('page')) is int else None}
@@ -233,24 +233,32 @@ def combined_archives(store, product):
     return targets + history_targets, runs + history_runs, {**evidence, **history_evidence}
 
 
-def registry_fields(target, sources):
+def registry_fields(target, sources, verified_assets=None):
     empty = {'phase': None, 'design': None, 'registry_status': None}
     try:
-        manifest = json.loads((ROOT / 'arena_data/season_acquisition_manifest.json').read_bytes())
-        if manifest.get('schema_version') != 'arena-public-acquisition-v1': return empty
-        assets = manifest.get('assets', [])
+        manifest_path = ROOT / 'arena_data/season_acquisition_manifest.json'
+        manifest = json.loads(manifest_path.read_bytes()) if manifest_path.is_file() else {}
+        assets = manifest.get('assets', []) if manifest.get('schema_version') == 'arena-public-acquisition-v1' else []
         for source in sources:
-            name = source.get('source_path', '')
-            if source.get('kind') != 'trial_registry' or not re.fullmatch(
-                    r'arena_data/source_snapshots/[A-Za-z0-9][A-Za-z0-9_.-]{0,160}\.json', name):
+            if source.get('kind') != 'trial_registry':
                 continue
-            matches = [a for a in assets if a.get('path') == name and a.get('sha256') == source.get('source_sha256')]
-            if len(matches) != 1: continue
-            path = ROOT / name
-            if path.is_symlink() or not path.resolve().is_relative_to(ROOT.resolve()) or not path.is_file(): continue
-            if not 0 < path.stat().st_size <= 10 * 1024 * 1024: continue
-            raw = path.read_bytes()
-            if len(raw) != matches[0].get('bytes') or hashlib.sha256(raw).hexdigest() != source.get('source_sha256'): continue
+            imported_raw = (verified_assets or {}).get(source.get('source_sha256'))
+            name = source.get('source_path', '')
+            if imported_raw is not None:
+                raw = imported_raw
+                if (not isinstance(raw, bytes) or not 0 < len(raw) <= 10 * 1024 * 1024
+                        or hashlib.sha256(raw).hexdigest() != source.get('source_sha256')):
+                    continue
+            else:
+                if not re.fullmatch(r'arena_data/source_snapshots/[A-Za-z0-9][A-Za-z0-9_.-]{0,160}\.json', name):
+                    continue
+                matches = [a for a in assets if a.get('path') == name and a.get('sha256') == source.get('source_sha256')]
+                if len(matches) != 1: continue
+                path = ROOT / name
+                if path.is_symlink() or not path.resolve().is_relative_to(ROOT.resolve()) or not path.is_file(): continue
+                if not 0 < path.stat().st_size <= 10 * 1024 * 1024: continue
+                raw = path.read_bytes()
+                if len(raw) != matches[0].get('bytes') or hashlib.sha256(raw).hexdigest() != source.get('source_sha256'): continue
             protocol = json.loads(raw).get('protocolSection', {})
             if protocol.get('identificationModule', {}).get('nctId') != target.get('nct_id'): continue
             design = protocol.get('designModule', {})
@@ -382,12 +390,12 @@ def brief_reason(run):
 
 
 
-def run_view(run, target, sources):
+def run_view(run, target, sources, snapshot_urls=None):
     predicted = direction(run)
     match = match_result(run, target, predicted)
     by_id = {s.get('id'): s for s in sources}
-    refs = [source_view(by_id[i]) for i in run.get('evidence_ids', []) if i in by_id]
-    if not refs: refs = [source_view(s) for s in run.get('supporting_evidence', []) if isinstance(s, dict)]
+    refs = [source_view(by_id[i], snapshot_urls) for i in run.get('evidence_ids', []) if i in by_id]
+    if not refs: refs = [source_view(s, snapshot_urls) for s in run.get('supporting_evidence', []) if isinstance(s, dict)]
     fields = {key: text(run.get(key), 300) for key in
               ('id', 'target_id', 'cohort_id', 'model_id', 'requested_model', 'scope', 'track', 'condition',
                'generated_at_utc', 'locked_at_utc')}
@@ -409,21 +417,21 @@ def consensus(runs):
             'confidence': None, 'calibration_status': 'not_established'}
 
 
-def target_view(target, sources):
+def target_view(target, sources, snapshot_urls=None, verified_assets=None):
     result = {key: text(target.get(key), 4000 if key in ('success_definition', 'endpoint', 'population', 'comparison') else 500)
               for key in ('id', 'cohort_id', 'trial_name', 'nct_id', 'drug', 'sponsor', 'indication',
                           'endpoint', 'population', 'comparison', 'success_definition', 'analysis_timepoint',
                           'scope', 'registered_at', 'execution_status', 'information_cutoff_utc', 'record_kind', 'verification_note')}
     result['status'] = target.get('status') if target.get('status') in ('pending', 'announced', 'adjudicated') else 'pending'
     result['registry_url'] = 'https://clinicaltrials.gov/study/' + target['nct_id'] if re.fullmatch(r'NCT\d{8}', str(target.get('nct_id', ''))) else None
-    result.update(registry_fields(target, sources))
+    result.update(registry_fields(target, sources, verified_assets))
     window = target.get('readout') if isinstance(target.get('readout'), dict) else {}
     result['readout'] = {key: (public_url(window.get(key)) if key == 'source_url' else text(window.get(key), 1000))
                          for key in ('label', 'start', 'end', 'precision', 'source_url', 'source_title', 'source_granularity', 'source_note')}
     result['result'] = result_view(target)
     if result['result'] is not None:
         result['status'] = result['result']['status']
-    result['sources'] = [source_view(s) for s in sources]
+    result['sources'] = [source_view(s, snapshot_urls) for s in sources]
     return result
 
 
@@ -432,7 +440,8 @@ def build_public(store):
     old_targets, old_runs, old_evidence = read_archived(store)
     raw_runs = [r for r in frozen['runs'] if r.get('track') == 'same_evidence' and r.get('condition') == 'clinical_only'] + [r for r in old_runs if r.get('track') == 'archived' and r.get('condition') == 'clinical_only' and r.get('scope') == 'archived_research']
     target_ids = {r['target_id'] for r in raw_runs}
-    targets, runs = [], []
+    targets, runs, verified_assets, snapshot_urls = [], [], {}, {}
+    checked_sources = set()
     for target in frozen['targets'] + old_targets:
         if target['id'] not in target_ids: continue
         own = [r for r in raw_runs if r['target_id'] == target['id']]
@@ -449,8 +458,21 @@ def build_public(store):
                     source = old_evidence[ident]
                     sources[(ident, source.get('source_sha256'))] = source
         source_list = list(sources.values())
-        public_target = target_view(target, source_list)
-        own_public = [run_view(run, target, run.get('packet', {}).get('evidence', []) or source_list) for run in own]
+        for source in source_list:
+            digest = source.get('source_sha256')
+            if source.get('archive_only_source') or not re.fullmatch(r'[a-f0-9]{64}', str(digest)) or digest in checked_sources:
+                continue
+            checked_sources.add(digest)
+            try:
+                _, raw = arena_api._source_asset(digest, data_dir=store.path, events=frozen.get('events', []))
+            except HTTPException as exc:
+                if exc.status_code != 404:
+                    raise
+                continue
+            verified_assets[digest] = raw
+            snapshot_urls[digest] = '/api/arena/sources/' + digest
+        public_target = target_view(target, source_list, snapshot_urls, verified_assets)
+        own_public = [run_view(run, target, run.get('packet', {}).get('evidence', []) or source_list, snapshot_urls) for run in own]
         public_target['consensus'] = consensus(own_public)
         targets.append(public_target); runs.extend(own_public)
     used_cohorts = {t.get('cohort_id') for t in targets}

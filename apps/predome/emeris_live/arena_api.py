@@ -27,6 +27,24 @@ TRACKS = [
 ]
 
 
+def _physical_events(data_dir):
+    """Read an existing host chain without creating a ledger on a download GET."""
+    from .arena_review_auth import read_enrollment_events
+    root, path = Path(data_dir), Path(data_dir) / 'arena.sqlite3'
+    if root.is_symlink() or path.is_symlink():
+        raise ValueError('Invalid existing Arena runtime path')
+    return read_enrollment_events(data_dir) if path.exists() else []
+
+
+def _import_access(request, events=None):
+    """Imported source ledgers contain internal paths/configuration, not public JSON."""
+    from .arena_imports import IMPORT_KIND
+    events = _physical_events(request.app.state.store.path) if events is None else events
+    if any(event['kind'] == IMPORT_KIND for event in events):
+        from .arena_lab import lab_user
+        lab_user(request)
+
+
 def _source(source, ident):
     return {'id':ident, 'source_url':source.get('url'), 'source_sha256':source.get('sha256'),
             'availability_date':source.get('source_date'), 'retrieved_at':source.get('retrieved_at')}
@@ -115,6 +133,13 @@ def _patent_view(item):
 
 def _public_run(run):
     value = {k:deepcopy(v) for k,v in run.items() if k!='packet'}
+    origin = value.get('record_origin') or {}
+    if origin.get('kind') == 'sealed_cohort_import' and re.fullmatch(r'[a-f0-9]{64}', str(origin.get('bundle_sha256', ''))):
+        prefix = '/api/arena/lab/imports/' + origin['bundle_sha256'] + '/proofs/'
+        origin['proof_downloads'] = {purpose: prefix + purpose + '/download'
+                                     for purpose in ('registration', 'predictions')}
+        if value.get('timestamp_proof', {}).get('status') == 'attested':
+            value['timestamp_proof']['url'] = origin['proof_downloads']['predictions']
     value['reason'] = run.get('reasoning') or run.get('reason') or {
         'provider_response_incomplete':'模型未在本次输出上限内完成响应；原始失败计入全部登记任务。',
         'provider_transport_error':'本次模型请求遇到网络传输错误，未得到可用输出；不自动重试。',
@@ -212,6 +237,7 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
 @router.get('/api/arena')
 def overview(request:Request, cohort_id:str|None=None, track:str='same_evidence', condition:str='clinical_only'):
     try:
+        _import_access(request)
         return build_arena(request.app.state.store,cohort_id=cohort_id,track=track,condition=condition)
     except (OSError,ValueError,KeyError,TypeError):
         raise HTTPException(503,'挑战证据或运行记录未通过完整性检查。') from None
@@ -229,13 +255,21 @@ def target_detail(target_id:str, request:Request):
     if target.get('scope') == 'prospective_challenge':
         frozen = ArenaLedger(request.app.state.store.path).snapshot()
         selected_evidence = list({(e['id'],e.get('source_sha256')):e for r in frozen['runs'] if r['target_id']==target_id for e in r['packet']['evidence']}.values())
-    try:
-        manifest=json.loads((ROOT/'arena_data/season_acquisition_manifest.json').read_text())
-        hashes={v['sha256'] for v in manifest.get('assets',[])}
-    except (OSError,ValueError,KeyError,TypeError):
-        hashes=set()
+    events = frozen['events'] if target.get('scope') == 'prospective_challenge' else _physical_events(request.app.state.store.path)
+    verified = set()
+    for source in selected_evidence:
+        digest = source.get('source_sha256')
+        if not re.fullmatch(r'[a-f0-9]{64}', str(digest)):
+            continue
+        try:
+            _source_asset(digest, data_dir=request.app.state.store.path, events=events)
+        except HTTPException as exc:
+            if exc.status_code != 404:
+                raise
+            continue
+        verified.add(digest)
     selected_evidence=[{**e,'source_snapshot_url':'/api/arena/sources/'+e['source_sha256']}
-                       if e.get('source_sha256') in hashes else e for e in selected_evidence]
+                       if e.get('source_sha256') in verified else e for e in selected_evidence]
     own_patents={p for r in runs for p in r.get('patent_ids',[])}
     return {'target':target,'runs':runs,'evidence':selected_evidence,
             'patents':[{**p,'included_in_predictions':p['id'] in own_patents} for p in view['patents'] if p['id'] in target.get('patent_ids',[])], 'result':target.get('result'),
@@ -249,7 +283,7 @@ def target_report(target_id:str, request:Request):
         headers={'Content-Disposition':'attachment; filename="predome-target-report.md"'})
 
 
-def _source_asset(identifier):
+def _source_asset(identifier, *, data_dir=None, events=None):
     if not re.fullmatch(r'[a-f0-9]{64}',identifier):
         raise HTTPException(404,'未找到公开来源快照。')
     try:
@@ -271,12 +305,26 @@ def _source_asset(identifier):
             raise ValueError('Changed public source snapshot')
         return item,raw
     except (OSError,ValueError,KeyError,TypeError):
-        raise HTTPException(404,'来源快照不存在或未通过完整性检查。') from None
+        pass
+    if data_dir is not None:
+        from .arena_imports import read_asset
+        asset = read_asset(data_dir, events or [], identifier)
+        if asset is not None:
+            raw = asset['raw']
+            if (not isinstance(raw, bytes) or hashlib.sha256(raw).hexdigest() != identifier
+                    or len(raw) != asset['bytes']):
+                raise ValueError('Imported source bytes differ from their verified asset')
+            return {'path': identifier + '.bin', 'content_type': asset['content_type']}, raw
+    raise HTTPException(404,'来源快照不存在或未通过完整性检查。') from None
 
 
 @router.get('/api/arena/sources/{identifier}')
-def source_snapshot(identifier:str):
-    item,raw=_source_asset(identifier)
+def source_snapshot(identifier:str, request:Request):
+    try:
+        item,raw=_source_asset(identifier, data_dir=request.app.state.store.path,
+                               events=_physical_events(request.app.state.store.path))
+    except (OSError, ValueError, KeyError, TypeError):
+        raise HTTPException(404,'来源快照不存在或未通过完整性检查。') from None
     suffix=Path(item['path']).suffix
     return Response(raw,media_type='application/octet-stream',
         headers={'Content-Disposition':'attachment; filename="predome-source-'+identifier[:12]+suffix+'"',
@@ -293,12 +341,14 @@ def patent_detail(publication_number:str):
 
 @router.get('/api/arena/ledger')
 def export_ledger(request:Request):
+    _import_access(request)
     value = ArenaLedger(request.app.state.store.path).snapshot()
     return JSONResponse(value,headers={'Content-Disposition':'attachment; filename=predome-open-forecast-ledger.json'})
 
 
 @router.get('/api/arena/runs/{run_id}/packet')
 def run_packet(run_id:str, request:Request):
+    _import_access(request)
     ledger = ArenaLedger(request.app.state.store.path).snapshot()
     run = next((r for r in ledger['runs'] if r['id']==run_id),None)
     if not run:
@@ -340,3 +390,35 @@ def attestation_download(identifier:str):
             bundle.write(folder/name,arcname=name)
     return Response(buffer.getvalue(),media_type='application/zip',
         headers={'Content-Disposition':'attachment; filename=predome-timestamp-'+identifier+'.zip'})
+
+
+@router.get('/api/arena/lab/imports/{bundle_sha256}/proofs/{purpose}/download')
+def imported_proof_download(bundle_sha256:str, purpose:str, request:Request):
+    from .arena_lab import lab_user
+    from .arena_imports import IMPORT_KIND, proof_files
+    lab_user(request)
+    try:
+        events = _physical_events(request.app.state.store.path)
+        files = proof_files(request.app.state.store.path, events, bundle_sha256, purpose)
+        if files is None:
+            raise ValueError('Unknown imported proof')
+        imported = next(event for event in events if event['kind'] == IMPORT_KIND
+                        and event['payload']['bundle_sha256'] == bundle_sha256)
+        payload = imported['payload']
+        receipt = {'schema_version':'predome-import-proof-download-1',
+            'bundle_sha256': bundle_sha256, 'source_ledger_sha256': payload['source_ledger_sha256'],
+            'source_cohort_id': payload['source_cohort_id'], 'purpose': purpose,
+            'synced_at_utc': imported['created_at'], 'host_event_sha256': imported['event_hash'],
+            'original_proof': payload['proofs'][purpose],
+            'original_files': {name: hashlib.sha256(raw).hexdigest() for name, raw in sorted(files.items())},
+            'scope': 'Unchanged original signed proof plus a separate import receipt. Synchronization is not a new forecast or clinical validation.'}
+        buffer = BytesIO()
+        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as bundle:
+            for name, raw in sorted(files.items()):
+                bundle.writestr(name, raw)
+            bundle.writestr('import-receipt.json', json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2)+'\n')
+        return Response(buffer.getvalue(), media_type='application/zip', headers={
+            'Content-Disposition': 'attachment; filename=predome-import-'+bundle_sha256[:12]+'-'+purpose+'.zip',
+            'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
+    except (OSError, ValueError, KeyError, TypeError, StopIteration):
+        raise HTTPException(404, '导入凭证不存在或未通过完整性检查。') from None

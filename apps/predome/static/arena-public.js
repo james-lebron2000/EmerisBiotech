@@ -3,7 +3,7 @@
   'use strict';
   const $=id=>document.getElementById(id),arr=x=>Array.isArray(x)?x:[],str=x=>typeof x==='string'?x:'',esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const short=(x,n=180)=>str(x).length>n?str(x).slice(0,n)+'…':str(x),query=new URLSearchParams(location.search);
-  const state={data:null,detail:null,targetId:query.get('target')||'',period:query.get('period')==='reported'?'reported':'upcoming',current:[],reported:[],request:0};
+  const state={data:null,detail:null,targetId:query.get('target')||'',period:query.get('period')==='reported'?'reported':'upcoming',current:[],pilots:[],reported:[],request:0};
   const inactive=c=>['withdrawn_before_execution','withdrawn','superseded'].includes(c?.execution_status)||c?.status==='superseded';
   const isReported=t=>['announced','adjudicated','verified','result_announced','agreement_pending_independent_review'].includes(t?.status)||['announced','adjudicated','verified','agreement_pending_independent_review'].includes(t?.result?.status);
   const historical=t=>['archived_research','retrospective'].includes(t?.scope)||t?.record_kind==='historical_replay';
@@ -17,24 +17,28 @@
   function readoutSource(r){return safeURL(r?.source_url)?' · '+link(r.source_url,'Source'):'';}
   const urlFor=id=>'/arena?'+new URLSearchParams({target:id}).toString();
   function safeModel(run){return str(run.requested_model)||str(run.model_id)||'—';}
+  function pilot(t){return arr(state.data?.cohorts).some(c=>c.id===t?.cohort_id&&(c.kind==='registered_patent_pair_pilot'||c.protocol?.season_kind==='registered_patent_pair_pilot'));}
+  function recordLabel(t){return pilot(t)?'Independent research pilot':state.current.some(c=>c.id===t?.id)?'Current formal record':'Earlier record';}
   function ownRuns(){const t=state.detail?.target;return arr(state.detail?.runs).filter(r=>r.target_id===t?.id&&r.condition==='clinical_only'&&(r.track==='same_evidence'||(t?.scope==='archived_research'&&r.track==='archived'&&r.scope==='archived_research')));}
   function displayStatus(run){return {failed:'No usable response',timed_out:'Timed out',abstained:'Abstained',abstain:'Abstained',pending:run.execution_state==='running'?'Running':'Awaiting run',withdrawn:'Withdrawn before execution',unavailable:'Unavailable'}[run.status]||'';}
-  function availableTargets(){return state.period==='reported'?state.reported:state.current.filter(t=>!isReported(t));}
+  function availableTargets(){return state.period==='reported'?state.reported:[...state.current,...state.pilots].filter(t=>!isReported(t));}
   function prepare(data){
     state.data=data;
     const cohorts=arr(data.cohorts).filter(c=>c&&(c.kind==='registered_12_project_season'||c.protocol?.season_kind==='registered_12_project_season')&&!inactive(c));
     const latest=cohorts.find(c=>c.id===data.current_cohort_id)||cohorts.sort((a,b)=>(Date.parse(b.registered_at)||0)-(Date.parse(a.registered_at)||0))[0];
     state.current=data.targets.filter(t=>latest&&t.cohort_id===latest.id&&!inactive(t)).sort((a,b)=>str(a.trial_name).localeCompare(str(b.trial_name)));
+    const pilotCohorts=new Set(arr(data.cohorts).filter(c=>pilot({cohort_id:c.id})&&!inactive(c)).map(c=>c.id));
+    state.pilots=data.targets.filter(t=>pilotCohorts.has(t.cohort_id)&&!inactive(t)).sort((a,b)=>str(a.trial_name).localeCompare(str(b.trial_name))||(Date.parse(b.registered_at)||0)-(Date.parse(a.registered_at)||0));
     // Retain distinct exact hypotheses. Revisions of the same clinical question use
     // the current formal record first, otherwise the most recently registered one.
     const ranked=data.targets.filter(t=>isReported(t)&&!inactive(t)).sort((a,b)=>Number(state.current.some(c=>c.id===b.id))-Number(state.current.some(c=>c.id===a.id))||(Date.parse(b.registered_at)||0)-(Date.parse(a.registered_at)||0));
-    const groups=new Map();ranked.forEach(t=>{const key=JSON.stringify([t.nct_id,t.endpoint,t.population,t.comparison,t.success_definition]);if(!groups.has(key))groups.set(key,t);});state.reported=[...groups.values()];
+    const groups=new Map();ranked.forEach(t=>{const key=JSON.stringify([t.nct_id,t.endpoint,t.population,t.comparison,t.success_definition,pilot(t)?t.cohort_id:null]);if(!groups.has(key))groups.set(key,t);});state.reported=[...groups.values()];
   }
   function schedule(available){
     const strip=$('arena-fixtures');if(!strip)return;
     strip.hidden=!available.length;
     const nctCounts=new Map();available.forEach(t=>nctCounts.set(t.nct_id,(nctCounts.get(t.nct_id)||0)+1));
-    strip.innerHTML=`<span class="arena-schedule-label">${state.period==='reported'?'RESULTS DESK':'TRIAL MATCHES'}</span><div class="arena-schedule-track">${available.map(t=>`<button type="button" class="arena-match-chip" data-arena-target="${esc(t.id)}" aria-label="${esc([t.trial_name,t.drug,t.nct_id,t.endpoint].filter(Boolean).join(' · '))}" aria-pressed="${t.id===state.targetId}"><span class="arena-fixture-stage">${isReported(t)?agreementPending(t)?'INDEPENDENT REVIEW PENDING':historical(t)?'HISTORICAL RECORD':'RESULT RECORDED':'AWAITING READOUT'}</span><strong>${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,40)):''}</strong><span>${esc(short(t.drug,45)||'Drug unavailable')} · ${esc(t.readout?.label||'Readout not specified')}</span></button>`).join('')}</div>`;
+    strip.innerHTML=`<span class="arena-schedule-label">${state.period==='reported'?'RESULTS DESK':'TRIAL MATCHES'}</span><div class="arena-schedule-track">${available.map(t=>`<button type="button" class="arena-match-chip" data-arena-target="${esc(t.id)}" aria-label="${esc([t.trial_name,t.drug,t.nct_id,t.endpoint].filter(Boolean).join(' · '))}" aria-pressed="${t.id===state.targetId}"><span class="arena-fixture-stage">${pilot(t)?'INDEPENDENT RESEARCH PILOT · ':''}${isReported(t)?agreementPending(t)?'INDEPENDENT REVIEW PENDING':historical(t)?'HISTORICAL RECORD':'RESULT RECORDED':'AWAITING READOUT'}</span><strong>${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,40)):''}</strong><span>${esc(short(t.drug,45)||'Drug unavailable')} · ${esc(t.readout?.label||'Readout not specified')}</span></button>`).join('')}</div>`;
     centerSchedule();
   }
   function centerSchedule(){
@@ -43,14 +47,15 @@
   function controls(){
     $('public-controls').hidden=false;let available=availableTargets();const explicit=arr(state.data?.targets).find(t=>t.id===state.targetId);
     if(explicit&&!available.some(t=>t.id===explicit.id))available=[explicit,...available];
-    schedule(available.filter(t=>state.period==='reported'?state.reported.some(r=>r.id===t.id):state.current.some(r=>r.id===t.id)));
+    schedule(available.filter(t=>state.period==='reported'?state.reported.some(r=>r.id===t.id):[...state.current,...state.pilots].some(r=>r.id===t.id)));
     const nctCounts=new Map();available.forEach(t=>nctCounts.set(t.nct_id,(nctCounts.get(t.nct_id)||0)+1));
-    $('public-trial').innerHTML=available.map(t=>`<option value="${esc(t.id)}">${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,65)):''}${!state.current.some(c=>c.id===t.id)?' · Earlier record':''}</option>`).join('');$('public-trial').value=state.targetId;
+    $('public-trial').innerHTML=available.map(t=>`<option value="${esc(t.id)}">${esc(t.trial_name||t.nct_id||'Unnamed trial')}${nctCounts.get(t.nct_id)>1?' · '+esc(short(t.endpoint,65)):''}${!state.current.some(c=>c.id===t.id)?' · '+recordLabel(t):''}</option>`).join('');$('public-trial').value=state.targetId;
     document.querySelectorAll('[data-public-period]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.publicPeriod===state.period)));
-    $('public-count').textContent=state.period==='reported'?`${state.reported.length} reported study questions`:`${state.current.length} current formal trials`;
+    $('public-count').textContent=state.period==='reported'?`${state.reported.length} reported study questions`:`${state.current.length} current formal trials${state.pilots.length?' · '+state.pilots.length+' independent research pilot'+(state.pilots.length===1?'':'s'):''}`;
   }
   function banner(t){
     const current=state.current.some(c=>c.id===t.id),latest=state.current.find(c=>c.nct_id&&c.nct_id===t.nct_id&&c.id!==t.id);
+    if(pilot(t))return '<aside class="public-record-banner" data-research-pilot="true"><strong>Independent research pilot · Separate from the formal season</strong><span>Clinical-only assignments are compared here. The patent-added arm remains a separate research condition. Original prediction times are preserved; adding this record to the service is not a new prediction. Uncalibrated research judgments; no ranking before an independently accepted outcome.</span></aside>';
     const replay=t.scope==='archived_research'||t.scope==='retrospective';if(current)return '';
     const label=inactive(t)?'Original record · Withdrawn before execution':replay?'Historical replay · Not a prospective prediction':'Earlier record · Original target preserved';
     return `<aside class="public-record-banner" data-original-record="true"><strong>${label}</strong><span>${replay?'This analysis may postdate the public result and is not evidence of a prospective hit.':inactive(t)?'Registration did not result in model execution.':'This is the exact record in the selected link; it has not been replaced by a later prediction.'}</span>${latest?`<br><a class="public-latest-link" href="${esc(urlFor(latest.id))}">View the latest formal record for this trial →</a>`:''}</aside>`;
@@ -62,7 +67,7 @@
     const current=state.current.some(c=>c.id===t.id),phase=(Array.isArray(t.phase)?t.phase.join(' / '):str(t.phase)).replace(/\bPHASE([1-4])\b/g,'Phase $1'),r=t.readout||{};
     const registry=safeURL(t.registry_url)||(/^NCT\d{8}$/.test(t.nct_id||'')?'https://clinicaltrials.gov/study/'+t.nct_id:'');
     const cells=[['Drug',t.drug],['Indication',t.indication],['Phase',phase],['Trial Status',registryText(t.registry_status)],['Study Design',designText(t.design)],['Primary Endpoint',t.endpoint,'public-fact-endpoint'],[isReported(t)&&t.scope==='archived_research'?'Actual Readout':'Expected Readout',r.label,'public-fact-readout']];
-    return `<section class="public-module public-trial-module" aria-label="Trial overview"><div class="public-trial-top"><div><p class="arena-match-kicker">${current?'CURRENT MATCH · FORMAL SEASON':t.scope==='archived_research'?'HISTORICAL REPLAY':'PRESERVED MATCH RECORD'}</p><h1>${esc(t.trial_name||'Trial title unavailable')}</h1><div class="public-trial-meta">${registry?link(registry,t.nct_id||'NCT registry'):'<span>NCT: '+esc(t.nct_id||'—')+'</span>'}<span>${esc(t.sponsor||'')}</span></div></div><span class="public-trial-label">${current?'Current formal record':t.scope==='archived_research'?'Historical replay':'Earlier record'}</span></div><dl class="public-facts">${cells.map(([label,value,cls])=>`<div class="public-fact ${cls||''}"><dt>${label}</dt><dd title="${esc(str(value))}">${esc((label==='Primary Endpoint'?str(value):short(value,160))||'—')}${cls==='public-fact-readout'?readoutSource(r):''}${cls==='public-fact-readout'&&r.source_granularity==='drug_program'?'<small>Program-level guidance; not a trial-specific promised date.</small>':''}</dd></div>`).join('')}</dl></section>`;
+    return `<section class="public-module public-trial-module" aria-label="Trial overview"><div class="public-trial-top"><div><p class="arena-match-kicker">${current?'CURRENT MATCH · FORMAL SEASON':pilot(t)?'INDEPENDENT RESEARCH PILOT':t.scope==='archived_research'?'HISTORICAL REPLAY':'PRESERVED MATCH RECORD'}</p><h1>${esc(t.trial_name||'Trial title unavailable')}</h1><div class="public-trial-meta">${registry?link(registry,t.nct_id||'NCT registry'):'<span>NCT: '+esc(t.nct_id||'—')+'</span>'}<span>${esc(t.sponsor||'')}</span></div></div><span class="public-trial-label">${pilot(t)?'Independent research pilot':current?'Current formal record':t.scope==='archived_research'?'Historical replay':'Earlier record'}</span></div><dl class="public-facts">${cells.map(([label,value,cls])=>`<div class="public-fact ${cls||''}"><dt>${label}</dt><dd title="${esc(str(value))}">${esc((label==='Primary Endpoint'?str(value):short(value,160))||'—')}${cls==='public-fact-readout'?readoutSource(r):''}${cls==='public-fact-readout'&&r.source_granularity==='drug_program'?'<small>Program-level guidance; not a trial-specific promised date.</small>':''}</dd></div>`).join('')}</dl></section>`;
   }
   function safeDirection(run){return ['failed','timed_out','abstained','abstain','pending','withdrawn','unavailable'].includes(run.status)?'Uncertain':outcome(run.predicted_outcome);}
   function matchStatus(t,run){
@@ -117,7 +122,7 @@
   }
   function render(){
     const t=state.detail.target,runs=ownRuns();controls();$('public-body').innerHTML=banner(t)+facts(t)+forecastTable(runs)+summary(t,runs)+`<a class="public-record-link" href="/api/arena/public/targets/${encodeURIComponent(t.id)}/record" download="predome-public-clinical-record.json">Download public clinical record ↓</a>`;
-    $('arena-status').textContent=`公开记录已读取 · ${state.current.some(c=>c.id===t.id)?'Current formal record':'Earlier record'} · ${t.nct_id||'NCT unavailable'}`;
+    $('arena-status').textContent=`公开记录已读取 · ${recordLabel(t)} · ${t.nct_id||'NCT unavailable'}`;
   }
   async function api(path){const c=new AbortController(),timer=setTimeout(()=>c.abort(),25000);try{const r=await fetch(path,{signal:c.signal,cache:'no-store',credentials:'same-origin',headers:{Accept:'application/json'}});if(!r.ok)throw Error('Public clinical records could not be read');return await r.json();}finally{clearTimeout(timer);}}
   function empty(){controls();$('public-body').innerHTML=`<section class="public-empty"><h2>${state.period==='reported'?'No reported outcomes available':arr(state.data?.cohorts).some(c=>c.kind==='registered_12_project_season')?'Current season is being corrected':'No current formal season available'}</h2><p>${state.period==='reported'?'No published target outcome is available in these public records. Pending studies are not scored as failures.':'No active formal record is available. Withdrawn registrations are not model predictions.'}</p></section>`;$('arena-status').textContent='公开记录已读取 · No matching clinical records';}

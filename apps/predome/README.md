@@ -31,6 +31,8 @@ python3.11 -m venv .venv
 
 默认检查包含静态检查和源码fixture测试，不需要真实证据、模型密钥或生产数据库。源码测试使用干净检出，排除受控本地冻结材料，保留Git公开的Arena和专利配置。`scripts/test_source.py`保留为兼容入口。
 
+独立账本中的既有预测可按[已完成预测的可核验同步](docs/SEALED_RECORD_SYNC.md)接入当前服务：保留原时间、失败和签名，在宿主仅追加一条导入事件；公开与内部视图使用不同权限及字段。
+
 ```sh
 .venv/bin/python scripts/check.py --suite static
 .venv/bin/python scripts/check.py --browser

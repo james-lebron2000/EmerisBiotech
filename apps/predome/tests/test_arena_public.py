@@ -88,7 +88,7 @@ def test_allowlist_removes_internal_metadata_at_every_level(fixture):
     assert run['probability'] is None and run['confidence'] is None
     assert run['calibration_status']=='not_established' and run['predicted_outcome']=='Success'
     assert view['current_cohort_id']=='c1'
-    assert run['sources'][0]['source_snapshot_url']=='/api/arena/sources/'+'a'*64
+    assert run['sources'][0]['source_snapshot_url'] is None
     assert view['targets'][0]['phase'] is None and view['targets'][0]['design'] is None
 
 
