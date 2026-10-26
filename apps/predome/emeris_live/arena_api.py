@@ -170,7 +170,8 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
     for pair in pairs:
         for run in new_runs:
             if run['id']==pair['treated_run_id']:
-                run.update(paired_run_id=pair['control_run_id'],pair_verified=True)
+                run.update(paired_run_id=pair['control_run_id'],pair_verified=True,
+                    cost_comparison=pair['cost_comparison'])
     for run in ledger['runs']:
         for item in run.get('packet',{}).get('evidence',[]):
             # Every run's own frozen packet is independently downloadable, even

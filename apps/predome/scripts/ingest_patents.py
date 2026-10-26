@@ -14,6 +14,7 @@ mapping and scientific review are separate from successful extraction.
 from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -25,7 +26,7 @@ import tempfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from emeris_live.patent_evidence import (DEFAULT_DATA_DIR, SCHEMA_VERSION, EPOOPSClient,
     USPTOODPClient, canonical_sha256, download_pdf, file_sha256, normalize_publication,
-    research_review_errors)
+    research_review_errors, connector_response_bytes, verified_ops_family)
 
 
 def write_json(path, value):
@@ -38,6 +39,55 @@ def write_json(path, value):
 
 def seed_items(root):
     return json.loads((root / "sources" / "pilot_manifest.json").read_text())["items"]
+
+
+def write_connector_receipt(root, response):
+    """New acquisition only; retain exact original bytes inside the JSON receipt.
+
+    The filename hashes the entire receipt, including acquisition time. Identical
+    acquisition names are never replaced; a later acquisition gets a new file.
+    """
+    connector_response_bytes(response)
+    if response.get("family") is not None:
+        verified_ops_family(response, response.get("publication_number"))
+    raw = (json.dumps(response, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n").encode("utf-8")
+    prefix = {"epo_ops": "epo", "uspto_odp": "odp"}[response["connector"]]
+    directory = Path(root) / "receipts"
+    directory.mkdir(parents=True, exist_ok=True)
+    if directory.is_symlink():
+        raise ValueError("Patent receipt directory must not be a symlink")
+    target = directory / (prefix + "-" + hashlib.sha256(raw).hexdigest() + ".json")
+    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return target
+
+
+def official_families(root):
+    """Unverified legacy family claims cannot enrich a newly built catalogue."""
+    verified, legacy = {}, set()
+    for path in sorted((root / "receipts").glob("epo-*.json")):
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("OPS receipt must be a regular local file")
+        receipt = json.loads(path.read_text())
+        if not isinstance(receipt, dict):
+            raise ValueError("OPS receipt must be an object")
+        if receipt.get("family") is None:
+            continue
+        number = normalize_publication(receipt.get("publication_number"))
+        if receipt.get("receipt_schema_version") is None and "raw_body_base64" not in receipt:
+            legacy.add(number)
+            continue
+        family = verified_ops_family(receipt, number)
+        acquired = datetime.fromisoformat(family["retrieved_at"].replace("Z", "+00:00"))
+        previous = verified.get(number)
+        if previous and acquired == previous[0] and family != previous[1]:
+            raise ValueError("Conflicting OPS family receipts at the same acquisition time")
+        if previous is None or acquired > previous[0]:
+            verified[number] = (acquired, family)
+    return {number: value[1] for number, value in verified.items()}, legacy
 
 
 def extract_candidate_cards(item, pages):
@@ -72,6 +122,7 @@ def extract_candidate_cards(item, pages):
 
 def build_catalog(root):
     records = []
+    families, legacy_families = official_families(root)
     dates_path = root / "sources" / "mapping_public_dates.json"
     mapping_dates = json.loads(dates_path.read_text()).get("items", {}) if dates_path.exists() else {}
     for item in seed_items(root):
@@ -148,11 +199,11 @@ def build_catalog(root):
                 card["eligible_for_forecast"] = False
             record["review_gaps"] = receipt["remaining_limitations"]
             record["extraction"]["status"] = "full_ocr_completed_selected_card_ai_source_checked"
-        for receipt_path in sorted((root / "receipts").glob("epo-*.json")):
-            receipt = json.loads(receipt_path.read_text())
-            if receipt.get("publication_number") == number and receipt.get("family"):
-                record["family"] = {**receipt["family"], "source_url": receipt["source_url"],
-                                    "retrieved_at": receipt["retrieved_at"], "raw_sha256": receipt["raw_sha256"]}
+        if number in families:
+            record["family"] = families[number]
+        elif number in legacy_families:
+            record["family"]["receipt_verification"] = "legacy_receipt_without_original_response_unverified"
+            record["review_gaps"].append("Legacy OPS family receipt has no original response bytes; family enrichment not verified")
         record["record_sha256"] = canonical_sha256(record)
         records.append(record)
     catalog = {"schema_version": SCHEMA_VERSION, "created_at": datetime.now(timezone.utc).isoformat(),
@@ -230,7 +281,7 @@ def main():
             result = client.family(args.publication) if args.section == "family" else client.publication(args.publication, args.section)
         else:
             parser.error("epo requires --query or --publication")
-        write_json(root / "receipts" / ("epo-" + result["raw_sha256"] + ".json"), result)
+        write_connector_receipt(root, result)
     elif args.command == "odp":
         client = USPTOODPClient()
         if args.query:
@@ -239,7 +290,7 @@ def main():
             result = client.documents(args.application)
         else:
             parser.error("odp requires --query or --application")
-        write_json(root / "receipts" / ("odp-" + result["raw_sha256"] + ".json"), result)
+        write_connector_receipt(root, result)
     catalog = build_catalog(root)
     print(json.dumps({"catalog_sha256": catalog["catalog_sha256"], "documents": len(catalog["items"]),
                       "ocr_pages": sum(i["extraction"]["completed_pages"] for i in catalog["items"])}))

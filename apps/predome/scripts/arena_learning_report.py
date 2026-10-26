@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, canonical, https, instant, sha
 from emeris_live.arena_metrics import _eligible
 
-VERSION = 'arena-learning-report-1.1'
+VERSION = 'arena-learning-report-1.2'
 HASH = re.compile(r'[a-f0-9]{64}')
 MODEL_FIELDS = ('cohort_id', 'track', 'condition', 'provider', 'model_id', 'requested_model',
                 'returned_model', 'workflow_version', 'config_sha256', 'execution_budget_sha256')
@@ -36,6 +36,72 @@ ISSUES = {
     'run_incomplete': '核查是否中断在已开始未完成状态；先确认计费与请求状态，不自动重试。',
     'unclassified_failure': '人工复核故障类别；不导出原始provider错误或凭据。',
 }
+ERROR_CATEGORIES = {
+    **dict.fromkeys(('provider_timeout', 'timeout'), 'timeout'),
+    **dict.fromkeys(('unsupported_citation', 'prediction_without_evidence', 'invalid_evidence_id'), 'citation_invalid'),
+    **dict.fromkeys(('evidence_missing', 'evidence_source_missing', 'invalid_evidence', 'invalid_evidence_text'), 'source_missing'),
+    **dict.fromkeys(('future_cutoff', 'evidence_after_cutoff', 'evidence_not_eligible', 'invalid_evidence_date',
+                     'evidence_date_missing'), 'evidence_time_invalid'),
+    'target_incomplete': 'target_definition_missing',
+    **dict.fromkeys(('model_not_registered', 'provider_not_configured', 'credential_missing', 'invalid_registry'), 'provider_unavailable'),
+    **dict.fromkeys(('invalid_budget', 'input_budget_exceeded', 'request_budget_exceeded', 'budget_price_unknown',
+                     'budget_currency_mismatch', 'cost_budget_exceeded', 'explicit_unpriced_policy_required'), 'budget_gate'),
+    **dict.fromkeys(('provider_response_incomplete', 'provider_output_missing', 'provider_response_too_large'), 'incomplete_output'),
+    **dict.fromkeys(('invalid_output', 'invalid_probability', 'invalid_json', 'duplicate_json_key', 'nonfinite_json',
+                     'invalid_review', 'target_mismatch', 'invalid_provider_response', 'credential_echo_rejected',
+                     'contract_rejected'), 'output_contract_invalid'),
+    'provider_transport_error': 'provider_transport',
+}
+AGENT_ROLES = ('evidence_review', 'forecast')
+STAGE_STATUSES = ('reviewed', 'predicted', 'abstain', 'abstained', 'failed', 'unavailable', 'timed_out')
+
+
+def _error_category(code):
+    if not isinstance(code, str):
+        return None
+    if re.fullmatch(r'provider_http_\d{3}', code):
+        return 'provider_transport'
+    return ERROR_CATEGORIES.get(code)
+
+
+def _execution_issues(status, code):
+    """Keep the single-model status/error classification shared with Agent stages."""
+    issues = set()
+    if status in ('abstain', 'abstained'):
+        issues.add('abstention')
+    if status == 'unavailable':
+        issues.add('provider_unavailable')
+    if status == 'timed_out':
+        issues.add('timeout')
+    category = _error_category(code)
+    if category:
+        issues.add(category)
+    elif code or status == 'failed':
+        issues.add('unclassified_failure')
+    return issues
+
+
+def _agent_stage_observations(run):
+    """Read three stage fields only; never export arbitrary provider values."""
+    trace = run.get('agent_trace')
+    stages = trace.get('stages') if isinstance(trace, dict) else None
+    if not isinstance(stages, list):
+        return []
+    result = []
+    for stage in stages:
+        if not isinstance(stage, dict) or stage.get('role') not in AGENT_ROLES:
+            continue
+        status = stage.get('status')
+        status = status if isinstance(status, str) and status in STAGE_STATUSES else 'unknown'
+        code = stage.get('error_code')
+        categories = _execution_issues(status, code)
+        if status == 'unknown':
+            categories.add('unclassified_failure')
+        if categories:
+            result.append({'role': stage['role'], 'status': status,
+                           'error_code': code if _error_category(code) else None,
+                           'categories': sorted(categories)})
+    return result
 
 
 def read_snapshot(ledger_path):
@@ -59,7 +125,7 @@ def read_snapshot(ledger_path):
     return ArenaLedger.snapshot(FrozenEvents())
 
 
-def _engineering(run):
+def _engineering(run, agent_stages=None):
     issues = set()
     if run.get('input_evidence_issues'):issues.add('input_correction')
     if run.get('withdrawn_before_execution'):issues.add('withdrawn_before_execution')
@@ -103,40 +169,18 @@ def _engineering(run):
             issues.add('citation_invalid')
     if run.get('status') == 'predicted' and (not run.get('returned_model') or not run.get('requested_model')):
         issues.add('version_unconfirmed')
-    if run.get('status') in ('abstain', 'abstained'):
-        issues.add('abstention')
-    if run.get('status') == 'unavailable':
-        issues.add('provider_unavailable')
-    if run.get('status') == 'timed_out':
-        issues.add('timeout')
     if run.get('status') == 'pending' and run.get('started_at'):
         issues.add('run_incomplete')
     code = run.get('error_code')
-    if code in ('provider_timeout', 'timeout'):
-        issues.add('timeout')
-    elif code in ('unsupported_citation', 'prediction_without_evidence', 'invalid_evidence_id'):
-        issues.add('citation_invalid')
-    elif code in ('evidence_missing', 'evidence_source_missing', 'invalid_evidence', 'invalid_evidence_text'):
-        issues.add('source_missing')
-    elif code in ('future_cutoff', 'evidence_after_cutoff', 'evidence_not_eligible', 'invalid_evidence_date', 'evidence_date_missing'):
-        issues.add('evidence_time_invalid')
-    elif code == 'target_incomplete':
-        issues.add('target_definition_missing')
-    elif code in ('model_not_registered', 'provider_not_configured', 'credential_missing', 'invalid_registry'):
-        issues.add('provider_unavailable')
-    elif code in ('invalid_budget', 'input_budget_exceeded', 'request_budget_exceeded', 'budget_price_unknown',
-                  'budget_currency_mismatch', 'cost_budget_exceeded', 'explicit_unpriced_policy_required'):
-        issues.add('budget_gate')
-    elif code in ('provider_response_incomplete', 'provider_output_missing', 'provider_response_too_large'):
-        issues.add('incomplete_output')
-    elif code in ('invalid_output', 'invalid_probability', 'invalid_json', 'duplicate_json_key', 'nonfinite_json',
-                  'invalid_review', 'target_mismatch', 'invalid_provider_response', 'credential_echo_rejected',
-                  'contract_rejected'):
-        issues.add('output_contract_invalid')
-    elif code == 'provider_transport_error' or (isinstance(code, str) and re.fullmatch(r'provider_http_\d{3}', code)):
-        issues.add('provider_transport')
-    elif code or run.get('status') == 'failed':
-        issues.add('unclassified_failure')
+    execution = _execution_issues(run.get('status'), code)
+    agent_stages = _agent_stage_observations(run) if agent_stages is None else agent_stages
+    stage_categories = {category for stage in agent_stages for category in stage['categories']}
+    # The wrapper is not a second unknown cause when a recorded stage explains it.
+    # Keep unrelated top-level failures and genuinely unknown stage failures visible.
+    if code == 'agent_component_failed' and stage_categories - {'unclassified_failure'}:
+        execution.discard('unclassified_failure')
+    issues.update(execution)
+    issues.update(stage_categories)
     return sorted(issues)
 
 
@@ -218,13 +262,17 @@ def build_report(snapshot, *, cohort_id=None):
         if run.get('scope') != 'prospective_challenge' or (cohort_id and run.get('cohort_id') != cohort_id):
             continue
         target = targets.get(run['target_id'], {})
-        engineering = _engineering(run)
+        agent_stages = _agent_stage_observations(run)
+        engineering = _engineering(run, agent_stages)
         exclusion = _exclusion(run, target, engineering)
         rows.append({'run': {**run, 'project_id': target.get('project_id')}, 'engineering': engineering,
+                     'agent_stages': agent_stages,
                      'exclusion': exclusion, 'loss': _loss(run,target) if exclusion is None else None})
     scored = [r['loss'] for r in rows if r['loss'] is not None]
     engineering_rows = [{'run_id': r['run']['id'], 'target_id': r['run']['target_id'],
-        'status': r['run']['status'], 'categories': r['engineering']} for r in rows if r['engineering']]
+        'status': r['run']['status'], 'categories': r['engineering'],
+        **({'agent_stages': r['agent_stages']} if r['agent_stages'] else {})}
+        for r in rows if r['engineering']]
     categories = sorted({c for r in engineering_rows for c in r['categories']})
     proposals = []
     for category in categories:

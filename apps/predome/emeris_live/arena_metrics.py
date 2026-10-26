@@ -6,6 +6,104 @@ from .arena_store import instant, sha
 from .arena_citations import aggregate_runs
 
 
+def _amount(value):
+    return type(value) in (int, float) and math.isfinite(value) and value >= 0
+
+
+def _native_cost(run, *, partial=False):
+    """Read one native-currency record, never convert or double-count its alias."""
+    field = 'known_cost_amount' if partial else 'cost_amount'
+    legacy = 'known_cost_usd' if partial else 'cost_usd'
+    amount, currency = run.get(field), run.get('cost_currency')
+    usd = run.get(legacy)
+    if amount is not None:
+        if not _amount(amount) or currency not in ('USD', 'CNY'):
+            return None
+        if usd is not None and (currency != 'USD' or not _amount(usd) or usd != amount):
+            return None
+        return currency, amount
+    if currency in (None, 'USD') and _amount(usd):
+        return 'USD', usd
+    return None
+
+
+def _cost_record(run):
+    full = _native_cost(run)
+    partial = _native_cost(run, partial=True)
+    if ((any(run.get(k) is not None for k in ('cost_amount', 'cost_usd')) and full is None)
+            or (any(run.get(k) is not None for k in ('known_cost_amount', 'known_cost_usd')) and partial is None)):
+        return None
+    breakdown = run.get('cost_breakdown')
+    known = {}
+    if breakdown is not None:
+        if not isinstance(breakdown, list) or len(breakdown) > 2:
+            return None
+        for item in breakdown:
+            if (not isinstance(item, dict) or set(item) != {'currency', 'known_amount', 'complete'}
+                    or item['currency'] not in ('CNY', 'USD') or item['currency'] in known
+                    or not _amount(item['known_amount']) or type(item['complete']) is not bool):
+                return None
+            known[item['currency']] = item['known_amount']
+            if item['complete'] and (len(breakdown) != 1 or (full and full != (item['currency'], item['known_amount']))):
+                return None
+        if partial and known.get(partial[0]) != partial[1]:
+            return None
+    elif partial:
+        known[partial[0]] = partial[1]
+    if full:
+        if any(currency != full[0] or amount > full[1] for currency, amount in known.items()):
+            return None
+        known = {full[0]: full[1]}
+    return full, known
+
+
+def recorded_cost(run):
+    """A complete cost must also agree with known portions and currency aliases."""
+    record = _cost_record(run)
+    return record[0] if record else None
+
+
+def cost_summary(rows):
+    """All assigned calls count; partial known spend is not a complete bill."""
+    totals, known, bases = defaultdict(float), defaultdict(float), set()
+    complete_runs = partial_runs = 0
+    for row in rows:
+        record = _cost_record(row)
+        full, portions = record if record else (None, {})
+        if full:
+            complete_runs += 1
+            totals[full[0]] += full[1]
+        elif portions:
+            partial_runs += 1
+        for currency, amount in portions.items():
+            known[currency] += amount
+        if portions:
+            bases.add(row.get('cost_basis') or 'not_recorded')
+    complete = bool(rows) and complete_runs == len(rows)
+    currency = next(iter(totals)) if complete and len(totals) == 1 else None
+    amount = totals[currency] if currency else None
+    return {'cost_complete': complete, 'cost_amount': amount, 'cost_currency': currency,
+        'cost_usd': amount if currency == 'USD' else None,
+        'cost_totals_by_currency': dict(sorted(totals.items())),
+        'known_cost_totals_by_currency': dict(sorted(known.items())),
+        'cost_recorded_runs': complete_runs, 'cost_partial_runs': partial_runs,
+        'cost_unknown_runs': len(rows) - complete_runs - partial_runs,
+        'cost_basis': next(iter(bases)) if len(bases) == 1 else 'mixed_or_unknown',
+        'cost_is_estimate': any(r.get('cost_is_estimate') is True or r.get('cost_basis') == 'configured_rates_estimate' for r in rows)}
+
+
+def paired_cost(control, treated):
+    a, b = recorded_cost(control), recorded_cost(treated)
+    reason = ('incomplete_cost' if a is None or b is None else
+              'currency_mismatch' if a[0] != b[0] else
+              'cost_basis_unconfirmed' if control.get('cost_basis') != 'configured_rates_estimate'
+                  or treated.get('cost_basis') != control.get('cost_basis') else None)
+    return {'comparable': reason is None, 'currency': a[0] if reason is None else None,
+        'delta_amount': b[1] - a[1] if reason is None else None,
+        'basis': control.get('cost_basis') if reason is None else None, 'reason': reason,
+        'is_estimate': reason is None}
+
+
 def _input_blocked(run):
     return any(i.get('severity') == 'blocking' for i in run.get('input_evidence_issues', []))
 
@@ -92,8 +190,6 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             return [(usable[i]['probability'], int(targets[i]['result']['label']=='success')) for i in ids]
         score = _scores(values(usable))
         common_score = _scores(values(common))
-        costs = [r.get('cost_usd') for r in rows]
-        costs_complete = bool(costs) and all(type(c) in (int,float) and math.isfinite(c) and c >= 0 for c in costs)
         by_model.append({'model_id': model, 'model_version': version, 'workflow_version': workflow,
             'returned_versions': returned_versions[key], 'mixed_versions_excluded': len(returned_versions[key]) > 1,
             'assigned': len(rows), 'answered': sum(r['status']=='predicted' for r in rows),
@@ -109,8 +205,7 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'common_log_loss': common_score['log_loss'], 'common_tasks': len(common),
             'independent_projects': len({targets[i]['project_id'] for i in usable}),
             'outcome_review_basis_counts':dict(Counter((targets[i].get('result') or {}).get('review_provenance',{}).get('basis','not_recorded') for i in usable)),
-            'cost_usd': sum(costs) if costs_complete else None,
-            'cost_complete': costs_complete,'citation_support': aggregate_runs(rows)})
+            **cost_summary(rows),'citation_support': aggregate_runs(rows)})
     paired = []
     keys = sorted(groups)
     for i, a in enumerate(keys):
@@ -165,6 +260,7 @@ def patent_pairs(snapshot):
         y = int((target.get('result') or {}).get('label')=='success')
         result.append({'target_id':treated['target_id'],'model_id':treated['model_id'],'control_run_id':control['id'],
             'treated_run_id':treated['id'],'pair_verified':True,'probability_change':q-p if valid else None,
+            'cost_comparison':paired_cost(control, treated),
             'delta_brier_with_minus_without':(q-y)**2-(p-y)**2 if scored else None,
             'interpretation':'概率变化不等于预测改善；评分等待事前锁定记录对应的已裁定结果。'})
     return result

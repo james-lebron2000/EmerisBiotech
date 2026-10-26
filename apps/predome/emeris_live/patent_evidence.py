@@ -22,6 +22,8 @@ from datetime import date, datetime, time as daytime, timezone
 from pathlib import Path
 
 SCHEMA_VERSION = "predome-patent-evidence-1.0"
+CONNECTOR_RECEIPT_VERSION = "predome-patent-connector-response-1"
+MAX_CONNECTOR_BYTES = 20 * 1024 * 1024
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "patent_data"
 PUBLICATION_RE = re.compile(r"^([A-Z]{2})([0-9]{5,14})([A-Z][0-9]?)$")
 OPS_DOCS = "https://link.epo.org/web/searching-for-patents/data/en-ops-v3.2-documentation-version-1.3.20.pdf"
@@ -327,6 +329,113 @@ def download_pdf(url, destination, expected_sha256=None, maximum=40 * 1024 * 102
             "access_method": "targeted_allowlisted_public_pdf"}
 
 
+def _connector_content_type(connector, content_type):
+    if not isinstance(content_type, str) or not 0 < len(content_type) <= 200:
+        raise ValueError("Patent connector response content type is required")
+    mime = content_type.split(";", 1)[0].strip().lower()
+    allowed = {"epo_ops": {"application/xml", "text/xml"},
+               "uspto_odp": {"application/json"}}
+    suffix = {"epo_ops": "+xml", "uspto_odp": "+json"}.get(connector)
+    if connector not in allowed or (mime not in allowed[connector]
+            and not (mime.startswith("application/") and mime.endswith(suffix))):
+        raise ValueError("Unexpected patent connector response content type")
+
+
+def _connector_url(connector, url):
+    hosts = {"epo_ops": "ops.epo.org", "uspto_odp": "api.uspto.gov"}
+    prefixes = {"epo_ops": "/3.2/rest-services/", "uspto_odp": "/api/v1/patent/applications/"}
+    if connector not in hosts or not isinstance(url, str):
+        raise ValueError("Unknown patent connector response source")
+    _safe_url(url, {hosts[connector]})
+    parsed = urllib.parse.urlsplit(url)
+    if not parsed.path.startswith(prefixes[connector]) or parsed.fragment:
+        raise ValueError("Unexpected patent connector response source path")
+
+
+def _connector_response(connector, url, body, content_type):
+    """Retain exact response bytes; a parsed JSON/XML value is not the original."""
+    _connector_url(connector, url)
+    _connector_content_type(connector, content_type)
+    if not isinstance(body, bytes) or not 0 < len(body) <= MAX_CONNECTOR_BYTES:
+        raise ValueError("A bounded original patent connector response is required")
+    return {"receipt_schema_version": CONNECTOR_RECEIPT_VERSION, "connector": connector,
+            "source_url": url, "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            "raw_sha256": hashlib.sha256(body).hexdigest(), "bytes": len(body),
+            "content_type": content_type, "raw_body_base64": base64.b64encode(body).decode("ascii")}
+
+
+def _connector_json(body):
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError("Duplicate patent connector JSON key")
+            value[key] = item
+        return value
+    value = json.loads(body, object_pairs_hook=unique,
+        parse_constant=lambda _: (_ for _ in ()).throw(ValueError("Nonfinite patent connector JSON")))
+    if not isinstance(value, dict):
+        raise ValueError("Patent connector JSON must be an object")
+    return value
+
+
+def connector_response_bytes(receipt):
+    """Mechanically verify an archived response; this is not scientific approval.
+
+    Legacy receipts without original bytes cannot pass. Parsed fields are checked
+    against the original as well, so they cannot silently diverge from its hash.
+    """
+    if not isinstance(receipt, dict) or receipt.get("receipt_schema_version") != CONNECTOR_RECEIPT_VERSION:
+        raise ValueError("Versioned original patent connector response required")
+    connector = receipt.get("connector")
+    _connector_url(connector, receipt.get("source_url"))
+    _connector_content_type(connector, receipt.get("content_type"))
+    encoded = receipt.get("raw_body_base64")
+    if not isinstance(encoded, str) or not 0 < len(encoded) <= 4 * ((MAX_CONNECTOR_BYTES + 2) // 3):
+        raise ValueError("Bounded original patent response bytes required")
+    try:
+        body = base64.b64decode(encoded, validate=True)
+    except (ValueError, UnicodeError):
+        raise ValueError("Invalid encoded patent response bytes") from None
+    if (type(receipt.get("bytes")) is not int or not 0 < len(body) <= MAX_CONNECTOR_BYTES
+            or len(body) != receipt["bytes"]
+            or hashlib.sha256(body).hexdigest() != receipt.get("raw_sha256")):
+        raise ValueError("Original patent connector response integrity mismatch")
+    acquired = receipt.get("retrieved_at")
+    if not isinstance(acquired, str) or "T" not in acquired:
+        raise ValueError("Patent response acquisition requires a timezone-aware timestamp")
+    if _instant(acquired) > datetime.now(timezone.utc):
+        raise ValueError("Patent response acquisition cannot be in the future")
+    if connector == "epo_ops":
+        if b"<!DOCTYPE" in body.upper() or b"<!ENTITY" in body.upper():
+            raise ValueError("Unsafe XML declaration in patent source")
+        ET.fromstring(body)
+        if receipt.get("xml") != body.decode("utf-8"):
+            raise ValueError("Derived patent XML differs from the original response")
+    elif canonical_bytes(receipt.get("data")) != canonical_bytes(_connector_json(body)):
+        raise ValueError("Derived patent JSON differs from the original response")
+    return body
+
+
+def verified_ops_family(receipt, publication_number):
+    """Re-derive a family from source bytes bound to the exact OPS request."""
+    number = normalize_publication(publication_number)
+    body = connector_response_bytes(receipt)
+    expected_url = EPOOPSClient.BASE + "/family/publication/docdb/" + EPOOPSClient._docdb(number) + "/biblio"
+    if (receipt.get("connector") != "epo_ops" or receipt.get("publication_number") != number
+            or receipt.get("source_url") != expected_url):
+        raise ValueError("OPS family receipt does not bind the requested publication")
+    family = parse_ops_family(body.decode("utf-8"))
+    if number not in {m["publication_number"] for m in family["members"]}:
+        raise ValueError("Requested publication is absent from the original OPS family")
+    if canonical_bytes(receipt.get("family")) != canonical_bytes(family):
+        raise ValueError("Derived OPS family differs from the original response")
+    return {**family, "source_url": receipt["source_url"], "retrieved_at": receipt["retrieved_at"],
+            "raw_sha256": receipt["raw_sha256"], "bytes": receipt["bytes"],
+            "content_type": receipt["content_type"],
+            "receipt_verification": "original_response_bytes_verified_not_scientific_review"}
+
+
 class EPOOPSClient:
     """Documented OPS v3.2 endpoints; credentials are only read when instantiated."""
     BASE = "https://ops.epo.org/3.2/rest-services"
@@ -359,12 +468,11 @@ class EPOOPSClient:
         self.last_call = time.monotonic()
         url = self.BASE + path
         body, mime = self.request(url, {"Authorization": "Bearer " + self.token, "Accept": "application/xml"})
+        receipt = _connector_response("epo_ops", url, body, mime)
         if b"<!DOCTYPE" in body.upper() or b"<!ENTITY" in body.upper():
             raise ValueError("Unsafe XML declaration in patent source")
         ET.fromstring(body)
-        return {"source_url": url, "documentation_url": OPS_DOCS, "content_type": mime,
-                "retrieved_at": datetime.now(timezone.utc).isoformat(), "raw_sha256": hashlib.sha256(body).hexdigest(),
-                "xml": body.decode("utf-8")}
+        return {**receipt, "documentation_url": OPS_DOCS, "xml": body.decode("utf-8")}
 
     @staticmethod
     def _docdb(publication_number):
@@ -428,10 +536,9 @@ class USPTOODPClient:
             time.sleep(delay)
         self.last_call = time.monotonic()
         url = self.BASE + path
-        body, _ = self.request(url, {"X-API-KEY": self.api_key, "Accept": "application/json"})
-        return {"source_url": url, "documentation_url": ODP_DOCS,
-                "retrieved_at": datetime.now(timezone.utc).isoformat(), "raw_sha256": hashlib.sha256(body).hexdigest(),
-                "data": json.loads(body)}
+        body, mime = self.request(url, {"X-API-KEY": self.api_key, "Accept": "application/json"})
+        return {**_connector_response("uspto_odp", url, body, mime),
+                "documentation_url": ODP_DOCS, "data": _connector_json(body)}
 
     def search(self, query, limit=10):
         if not query or len(query) > 1000 or not 1 <= limit <= 25:

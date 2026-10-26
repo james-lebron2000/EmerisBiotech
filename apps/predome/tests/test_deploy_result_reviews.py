@@ -33,6 +33,11 @@ def test_transport_is_exact_code_allowlist(tmp_path):
     assert set(release.read_archive(*archive(tmp_path)))==release.FILES
 
 
+def test_fixed_successor_is_a_newer_distinct_release():
+    assert release.BASE != release.TARGET
+    assert tuple(map(int, release.BASE_VERSION.split('.'))) < tuple(map(int, release.VERSION.split('.')))
+
+
 @pytest.mark.parametrize('name',['arena.sqlite3','arena_data/receipt.json','../escape.py','static/arena.css','scripts/arena_admin.py'])
 def test_transport_cannot_modify_runtime_or_sealed_runner(tmp_path,name):
     with pytest.raises(ValueError,match='Unexpected code transport'):release.read_archive(*archive(tmp_path,{name:b'forbidden'}))
@@ -67,7 +72,7 @@ def test_code_only_success_preserves_database_and_sealed_files(tmp_path,isolated
     assert result['database_imports']==0 and result['old_arena_events_preserved']
     assert ledger.events()==events and calls==['restart']
     assert (home/'current/arena_data/sealed.json').read_bytes()==b'original frozen data'
-    assert (home/'backups/20261024-arena08/arena.sqlite3').is_file()
+    assert (home/'backups/20261026-arena09/arena.sqlite3').is_file()
     assert (home/'current').resolve()==release.TARGET
 
 
