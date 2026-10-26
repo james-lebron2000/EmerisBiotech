@@ -589,6 +589,7 @@ class ArenaLedger:
                 # Equal result bytes can recur after corrections. A new round
                 # cannot revive reviews from an earlier adjudication event.
                 result_reviews={key:value for key,value in result_reviews.items() if key[0]!=ident}
+                targets[ident]['result_adjudication_event_sha256']=event['event_hash']
                 targets[ident].update(status='adjudicated', result={**p['result'], 'verification_status': 'adjudicated',
                     'result_sha256': p['result_sha256'], 'verified_at': event['created_at'],
                     'review_provenance':p.get('review_provenance',{'basis':'legacy_unspecified',
@@ -626,6 +627,9 @@ class ArenaLedger:
                         'signature_verified': True, 'verification_method': receipt['verification_method'],
                         'manifest_sha256': receipt['manifest_sha256'],
                         'trust_note': 'Depends on the third-party TSA certificate authority; not legal notarization.'}
+        from .arena_result_assurance import project_result_assurance
+        ledger_path=getattr(self,'path',None)
+        project_result_assurance(events,targets,Path(ledger_path).parent if ledger_path is not None else None)
         from .arena_citations import summaries
         for run in runs.values():
             run['citation_support_reviews']=summaries(run.get('citation_reviews',[]))

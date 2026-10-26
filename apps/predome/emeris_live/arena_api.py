@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 from .arena_store import ArenaLedger, VERSION
 from .arena_metrics import build_metrics, patent_pairs
+from .arena_result_assurance import result_assurance
 from .arena_providers import list_models
 from .arena_report import render_target_report
 from .patent_evidence import read_catalog, get_patent
@@ -135,6 +136,15 @@ def _public_run(run):
     return value
 
 
+def _target_review_view(target):
+    value = dict(target)
+    if isinstance(target.get('result'), dict):
+        assurance = result_assurance(target)
+        value['result'] = {**target['result'], 'review_status':assurance['status'],
+                           'scoring_eligible':assurance['scoring_eligible']}
+    return value
+
+
 def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clinical_only'):
     ledger = ArenaLedger(store.path).snapshot()
     old_targets, old_runs, evidence = archived_views(store)
@@ -192,7 +202,8 @@ def build_arena(store, *, cohort_id=None, track='same_evidence', condition='clin
                  '凭据仅保存在服务端；公共访问不会触发付费调用。']},
         'models':models,'patents':patents,'patent_connectors':catalog.get('connectors',[]),
         'challenge_summary':{'registered_tasks':len(new_runs),'independent_projects':len({t['project_id'] for t in ledger['targets']}),'prospective_targets':len(ledger['targets']),'complete_season_started':any(c.get('protocol',{}).get('season_kind')=='registered_12_project_season' and c.get('execution_status')!='withdrawn_before_execution' for c in ledger['cohorts'])},
-        'targets':ledger['targets']+old_targets,'runs':new_runs+old_runs,'evidence':list(evidence.values()),
+        'targets':[_target_review_view(t) for t in ledger['targets']+old_targets],
+        'runs':new_runs+old_runs,'evidence':list(evidence.values()),
         'metrics':build_metrics(ledger,cohort_id=cohort_id,track=track,condition=condition),
         'tracks':TRACKS,'cohorts':ledger['cohorts'],'patent_pairs':pairs,'ledger_sha256':ledger['ledger_sha256'],
         'historical_results_url':'/track-record'}

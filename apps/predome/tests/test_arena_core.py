@@ -4,6 +4,7 @@ import sqlite3
 import pytest
 from emeris_live.arena_store import ArenaLedger, sha, validate_packet, validate_target
 from emeris_live.arena_metrics import build_metrics, patent_pairs
+from arena_scientific_fixture import scientifically_accept
 
 
 def spec():
@@ -98,6 +99,11 @@ def test_two_distinct_reviews_and_scoring(tmp_path):
     assert build_metrics(ledger.snapshot())['common_tasks']==0
     with pytest.raises(ValueError):ledger.record_result(t['id'],result,reviewer_id='one')
     assert ledger.record_result(t['id'],result,reviewer_id='two')=='adjudicated'
+    agreement = ledger.events()
+    assert build_metrics(ledger.snapshot())['common_tasks'] == 0
+    assert all(row['brier'] is None for row in build_metrics(ledger.snapshot())['by_model'])
+    scientifically_accept(ledger, t)
+    assert ledger.events()[:len(agreement)] == agreement
     metrics=build_metrics(ledger.snapshot())
     assert metrics['common_tasks']==1 and metrics['independent_projects']==1
     assert metrics['by_model'][0]['common_brier']==pytest.approx(.04)
@@ -223,6 +229,7 @@ def test_timestamp_rejects_wrong_prefix_future_and_missing_signature(tmp_path):
 def test_unconfirmed_returned_version_is_not_scored(tmp_path):
     ledger,t,ids=registered(tmp_path);finish(ledger,ids[0]);finish(ledger,ids[1],returned_model='B-fixed')
     r=outcome();ledger.record_result(t['id'],r,reviewer_id='one');ledger.record_result(t['id'],r,reviewer_id='two')
+    scientifically_accept(ledger, t)
     m=build_metrics(ledger.snapshot())
     assert m['answered']==2 and m['common_tasks']==0
     assert m['by_model'][0]['scored_tasks']==0
@@ -231,6 +238,8 @@ def test_unconfirmed_returned_version_is_not_scored(tmp_path):
 def test_tsa_after_outcome_not_counted_as_prospective(tmp_path):
     ledger,t,ids=registered(tmp_path);finish(ledger,ids[0],returned_model='A-fixed')
     r=outcome();ledger.record_result(t['id'],r,reviewer_id='one');ledger.record_result(t['id'],r,reviewer_id='two')
+    scientifically_accept(ledger, t)
+    assert build_metrics(ledger.snapshot())['by_model'][0]['scored_tasks'] == 1
     ledger.attest(receipt(ledger))
     assert build_metrics(ledger.snapshot())['by_model'][0]['scored_tasks']==0
 
@@ -239,6 +248,8 @@ def test_paired_scores_exclude_mismatched_frozen_inputs(tmp_path):
     ledger,t,ids=registered(tmp_path)
     finish(ledger,ids[0],returned_model='A-fixed');finish(ledger,ids[1],returned_model='B-fixed')
     r=outcome();ledger.record_result(t['id'],r,reviewer_id='one');ledger.record_result(t['id'],r,reviewer_id='two')
+    scientifically_accept(ledger, t)
+    assert build_metrics(ledger.snapshot())['common_tasks'] == 1
     state=ledger.snapshot();state['runs'][1]['input_sha256']='f'*64
     m=build_metrics(state)
     assert m['common_tasks']==0 and m['paired_differences'][0]['tasks']==0

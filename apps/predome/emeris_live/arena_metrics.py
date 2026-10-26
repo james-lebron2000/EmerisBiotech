@@ -4,6 +4,7 @@ import math
 import random
 from .arena_store import instant, sha
 from .arena_citations import aggregate_runs
+from .arena_result_assurance import result_assurance
 
 
 def _amount(value):
@@ -109,7 +110,7 @@ def _input_blocked(run):
 
 
 def _eligible(run, target):
-    if _input_blocked(run):
+    if _input_blocked(run) or not result_assurance(target)['scoring_eligible']:
         return False
     result = target.get('result') or {}
     if (target.get('status') != 'adjudicated' or result.get('label') not in ('success', 'failure')
@@ -199,6 +200,8 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'pending': sum(r['status']=='pending' for r in rows),
             'withdrawn':sum(r['status']=='withdrawn' for r in rows),
             'input_blocked':sum(_input_blocked(r) for r in rows),
+            'outcome_review_pending':sum(targets.get(r['target_id'],{}).get('status') == 'adjudicated'
+                and result_assurance(targets.get(r['target_id'],{}))['status'] != 'accepted' for r in rows),
             'scored_tasks': len(usable), **score, 'common_brier': common_score['brier'],
             'eligible_coverage': len(usable)/len(rows),
             'timestamp_basis': 'external_TSA_and_server_ledger' if usable and all(r.get('timestamp_proof',{}).get('status')=='attested' for r in usable.values()) else 'server_ledger_only_or_mixed',
@@ -227,6 +230,8 @@ def build_metrics(snapshot, *, cohort_id=None, track='same_evidence', condition=
             'withdrawn':sum(r['status']=='withdrawn' for r in runs),
             'input_blocked':sum(_input_blocked(r) for r in runs),
             'adjudicated': len({r['target_id'] for r in runs if targets.get(r['target_id'],{}).get('status')=='adjudicated'}),
+            'scientifically_accepted':len({r['target_id'] for r in runs
+                if result_assurance(targets.get(r['target_id'],{}))['status']=='accepted'}),
             'common_tasks': len(common), 'independent_projects': len({targets[i]['project_id'] for i in common}),
             'ranking_allowed': False, 'reason': '展示配对评分与覆盖率；小样本和未解决结果不支持冠军声明。',
             'by_model': by_model, 'paired_differences': paired,'citation_support':aggregate_runs(runs),

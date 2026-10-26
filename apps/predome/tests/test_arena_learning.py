@@ -10,6 +10,7 @@ import sqlite3
 import pytest
 
 from emeris_live.arena_store import ArenaLedger, sha
+from arena_scientific_fixture import scientifically_accept
 
 
 @pytest.fixture
@@ -21,7 +22,7 @@ def learning():
     return module
 
 
-def fixture_ledger(tmp_path, *, adjudicated=False, label='success'):
+def fixture_ledger(tmp_path, *, adjudicated=False, label='success', scientific=False):
     now = datetime.now(timezone.utc)
     target = {'id':'isolated-target', 'project_id':'isolated-project', 'nct_id':'NCT00000001',
         'endpoint':'Primary PFS', 'population':'Fixture adults', 'comparison':'Fixture A vs B',
@@ -51,6 +52,8 @@ def fixture_ledger(tmp_path, *, adjudicated=False, label='success'):
     if adjudicated:
         ledger.record_result(target['id'],result,reviewer_id='fixture-reviewer-1')
         ledger.record_result(target['id'],result,reviewer_id='fixture-reviewer-2')
+        if scientific:
+            scientifically_accept(ledger, target)
     return ledger, ids, result
 
 
@@ -87,7 +90,7 @@ def test_unrevealed_has_no_accuracy_loss_or_training_claim(tmp_path,learning):
 
 
 def test_adjudicated_eligible_predictions_only_scored_and_failures_separate(tmp_path,learning):
-    ledger, ids, _ = fixture_ledger(tmp_path,adjudicated=True)
+    ledger, ids, _ = fixture_ledger(tmp_path,adjudicated=True,scientific=True)
     report = learning.build_report(learning.read_snapshot(ledger.path))
     losses = {r['run_id']:r for r in report['outcome_losses']}
     assert set(losses) == set(ids[:2])
@@ -108,9 +111,23 @@ def test_adjudicated_eligible_predictions_only_scored_and_failures_separate(tmp_
     assert any('newly preregistered' in gate for gate in report['next_version_gates'])
 
 
+def test_legacy_agreement_without_scientific_acceptance_never_becomes_learning_loss(tmp_path,learning):
+    ledger, ids, _ = fixture_ledger(tmp_path,adjudicated=True)
+    before = ledger.events()
+    state = learning.read_snapshot(ledger.path)
+    assert state['targets'][0]['status'] == 'adjudicated'
+    assert state['targets'][0]['result']['review_provenance']['basis'] == 'unspecified_only'
+    report = learning.build_report(state)
+    assert report['outcome_losses'] == [] and report['summary']['scored_forecasts'] == 0
+    assert {row['run_id'] for row in report['excluded_from_loss']
+            if row['reason'] == 'independent_scientific_review_not_accepted'} == set(ids[:2])
+    assert not any(proposal['kind'] == 'evidence_hypothesis_review' for proposal in report['version_proposals'])
+    assert ledger.events() == before
+
+
 @pytest.mark.parametrize('mutation', ['late_lock','late_tsa','missing_version','incomplete_contract','invalid_probability'])
 def test_ineligible_predictions_never_become_outcome_errors(tmp_path,learning,mutation):
-    ledger, ids, result = fixture_ledger(tmp_path,adjudicated=True)
+    ledger, ids, result = fixture_ledger(tmp_path,adjudicated=True,scientific=True)
     state = learning.read_snapshot(ledger.path)
     run = state['runs'][1]
     if mutation=='late_lock':run['locked_at_utc']=result['first_public_at']
@@ -128,7 +145,7 @@ def test_announced_once_and_not_adjudicable_are_not_binary_labels(tmp_path,learn
     ledger, _, result = fixture_ledger(tmp_path)
     ledger.record_result('isolated-target',result,reviewer_id='one')
     assert learning.build_report(learning.read_snapshot(ledger.path))['outcome_losses']==[]
-    other, _, _ = fixture_ledger(tmp_path/'other',adjudicated=True,label='not_adjudicable')
+    other, _, _ = fixture_ledger(tmp_path/'other',adjudicated=True,label='not_adjudicable',scientific=True)
     report=learning.build_report(learning.read_snapshot(other.path))
     assert report['outcome_losses']==[]
     assert 'outcome_not_binary_adjudicable' in {r['reason'] for r in report['excluded_from_loss']}
@@ -136,7 +153,7 @@ def test_announced_once_and_not_adjudicable_are_not_binary_labels(tmp_path,learn
 
 @pytest.mark.parametrize('issue', ['source_missing','citation_invalid','evidence_time_invalid'])
 def test_evidence_defects_are_engineering_not_loss(tmp_path,learning,issue):
-    ledger, ids, result = fixture_ledger(tmp_path,adjudicated=True)
+    ledger, ids, result = fixture_ledger(tmp_path,adjudicated=True,scientific=True)
     state=learning.read_snapshot(ledger.path);run=state['runs'][1]
     if issue=='source_missing':run['packet']['evidence'][0].pop('source_sha256')
     elif issue=='citation_invalid':run['evidence_ids']=['fabricated']
@@ -147,7 +164,7 @@ def test_evidence_defects_are_engineering_not_loss(tmp_path,learning,issue):
 
 
 def test_grouping_preserves_versions_workflows_and_independent_project_count(tmp_path,learning):
-    ledger, _, _ = fixture_ledger(tmp_path,adjudicated=True)
+    ledger, _, _ = fixture_ledger(tmp_path,adjudicated=True,scientific=True)
     state=learning.read_snapshot(ledger.path)
     clone=deepcopy(state['runs'][0]);clone.update(id='new-version-fixture',returned_model='changed-returned-v2',
         workflow_version='new-workflow-fixture',track='shared_agent')

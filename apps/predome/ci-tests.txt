@@ -38,6 +38,9 @@ tests/test_arena_result_reviews.py
 tests/test_arena_review_auth.py
 tests/test_arena_authenticated_results.py
 tests/test_arena_review_api.py
+tests/test_arena_result_assurance.py
+tests/test_arena_scientific_acceptance_cli.py
+tests/test_arena_scientific_consumers.py
 
 tests/test_deploy_result_reviews.py
 tests/test_deploy_review_workspace.py

@@ -1,5 +1,6 @@
 """Public projection fixtures never call providers or alter a live ledger."""
 from copy import deepcopy
+from datetime import timedelta
 import hashlib
 import json
 from pathlib import Path
@@ -11,9 +12,10 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from emeris_live import arena_public as api, platform_store
-from emeris_live.arena_store import ArenaLedger
+from emeris_live.arena_store import ArenaLedger, instant
 from emeris_live.store import Store
-from test_arena_core import spec
+from test_arena_core import finish, outcome, registered, spec
+from arena_scientific_fixture import scientifically_accept
 
 
 def row(**changes):
@@ -141,25 +143,53 @@ def test_mixed_tracks_are_not_pooled_and_withdrawal_remains_in_denominator(fixtu
 
 @pytest.mark.parametrize('label,expected',[('mixed','mixed'),('inconclusive','inconclusive'),('not_adjudicable','inconclusive'),(0,'failure'),(1,'success'),(False,None),(True,None),('unknown',None)])
 def test_actual_labels_remain_exact_and_nonbinary_never_match(label,expected):
-    t=target(status='adjudicated',result={'label':label,'first_public_at':'2026-10-23T00:00:00Z'})
+    t=target(status='adjudicated',record_kind='historical_replay',
+             result={'label':label,'first_public_at':'2026-10-23T00:00:00Z'})
     result=api.result_view(t)
     assert result['label']==expected
     match=api.match_result(row(),t,'Success')
-    assert match==(True if expected=='success' else False if expected=='failure' else None)
+    assert result['scoring_eligible'] is False and match is None
 
 
-@pytest.mark.parametrize('change',[
-    {'submission_on_time':False},{'submission_on_time':None},
-    {'locked_at_utc':'2026-10-23T00:00:00Z'},
-    {'generated_at_utc':'2026-10-19T00:00:00Z'},
-    {'generated_at_utc':'2026-10-21T13:00:00Z'},
-    {'locked_at_utc':'2026-10-22T01:00:00Z'},
-    {'generated_at_utc':'2026-10-21T11:00:00'},
-    {'timestamp_proof':{'status':'attested','generated_at_utc':'2026-10-24T00:00:00Z'}},
-])
-def test_result_match_requires_complete_valid_preresult_timing(change):
-    t=target(status='adjudicated',result={'label':'success','first_public_at':'2026-10-23T00:00:00Z'})
-    assert api.match_result(row(**change),t,'Success') is None
+def accepted_target_and_run(tmp_path, label='success'):
+    ledger, t, ids = registered(tmp_path / 'accepted')
+    for ident, model in zip(ids, ('A', 'B')):
+        finish(ledger, ident, returned_model=model + '-fixed')
+    result = {**outcome(), 'label': label}
+    for reviewer in ('synthetic-one', 'synthetic-two'):
+        ledger.record_result(t['id'], result, reviewer_id=reviewer)
+    scientifically_accept(ledger, t)
+    state = ledger.snapshot()
+    return state['targets'][0], state['runs'][0]
+
+
+@pytest.mark.parametrize('label,expected', [('success', True), ('failure', False)])
+def test_documented_scientific_acceptance_enables_real_snapshot_direction_match(tmp_path,label,expected):
+    t, run = accepted_target_and_run(tmp_path, label)
+    public = api.result_view(t)
+    assert public['review_status'] == 'accepted' and public['scoring_eligible'] is True
+    assert public['label'] == label and api.match_result(run, t, 'Success') is expected
+
+
+@pytest.mark.parametrize('change', ['submission_false', 'submission_missing', 'late_lock',
+    'before_cutoff', 'after_lock', 'after_deadline', 'naive_generation', 'late_tsa'])
+def test_result_match_requires_complete_valid_preresult_timing(tmp_path,change):
+    t, run = accepted_target_and_run(tmp_path)
+    assert api.match_result(run, t, 'Success') is True
+    if change == 'submission_false': run['submission_on_time'] = False
+    elif change == 'submission_missing': run['submission_on_time'] = None
+    elif change == 'late_lock': run['locked_at_utc'] = t['result']['first_public_at']
+    elif change == 'before_cutoff':
+        run['generated_at_utc'] = (instant(t['information_cutoff_utc']) - timedelta(seconds=1)).isoformat()
+    elif change == 'after_lock':
+        run['generated_at_utc'] = (instant(run['locked_at_utc']) + timedelta(seconds=1)).isoformat()
+    elif change == 'after_deadline':
+        run['locked_at_utc'] = (instant(t['submission_deadline_utc']) + timedelta(seconds=1)).isoformat()
+    elif change == 'naive_generation':
+        run['generated_at_utc'] = instant(run['generated_at_utc']).replace(tzinfo=None).isoformat()
+    elif change == 'late_tsa':
+        run['timestamp_proof'] = {'status': 'attested', 'generated_at_utc': t['result']['first_public_at']}
+    assert api.match_result(run,t,'Success') is None
 
 
 def test_announced_result_is_not_an_adjudicated_hit_and_archive_replay_is_not_hit():
@@ -167,7 +197,10 @@ def test_announced_result_is_not_an_adjudicated_hit_and_archive_replay_is_not_hi
     assert api.match_result(row(),t,'Success') is None
     t['status']='adjudicated'
     r=row(scope='archived_research',submission_on_time=None)
-    assert api.match_result(r,t,'Success') is True
+    assert api.match_result(r,t,'Success') is None
+    t['record_kind'] = 'historical_replay'
+    assert api.result_view(t)['label'] == 'success'
+    assert api.match_result(r,t,'Success') is None
     t['result']['first_public_at']='2026-10-01T00:00:00Z'
     assert api.match_result(r,t,'Success') is None
 
@@ -259,7 +292,7 @@ def test_frozen_ledger_reader_never_constructs_or_writes_ledger(tmp_path,monkeyp
     assert not (tmp_path/'absent').exists()
 
 
-def test_actual_sqlite_archive_projection_is_query_only_and_retains_approved_result(tmp_path,monkeypatch,verified_historical_product):
+def test_actual_sqlite_archive_projection_is_query_only_and_withholds_unaccepted_result(tmp_path,monkeypatch,verified_historical_product):
     """Real frozen archive inputs with synthetic adjudication in an isolated DB."""
     monkeypatch.setattr(platform_store,'now',lambda:'2026-10-21T00:00:00+00:00')
     store=Store(tmp_path/'isolated');platform_store.import_legacy_archive(store)
@@ -288,7 +321,9 @@ def test_actual_sqlite_archive_projection_is_query_only_and_retains_approved_res
     response=TestClient(app).get('/api/arena/public')
     assert response.status_code==200,response.text
     view=response.json();t=next(t for t in view['targets'] if t['id']=='archive-forward-002')
-    assert t['result']['label']=='failure' and t['status']=='adjudicated'
+    assert t['result']['label'] is None and t['status']=='agreement_pending_independent_review'
+    assert t['result']['review_status'] == 'agreement_pending_independent_review'
+    assert t['result']['scoring_eligible'] is False and all(run['match'] is None for run in view['runs'])
     assert t['result']['p_value']==.8 and t['result']['confidence_interval']==[.8,1.3]
     assert 'isolated-submitter' not in response.text and 'isolated-reviewer' not in response.text
     assert all(r['probability'] is None and r['confidence'] is None for r in view['runs'])

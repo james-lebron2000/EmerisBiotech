@@ -8,6 +8,7 @@ import pytest
 from emeris_live.arena_metrics import build_metrics
 from emeris_live.arena_store import ArenaLedger
 from test_arena_core import finish, outcome, registered, spec
+from arena_scientific_fixture import scientifically_accept
 
 
 REASON = 'Source verification identified an error before any model execution.'
@@ -211,6 +212,7 @@ def test_blocking_issue_excludes_loss_but_retains_execution_denominator(tmp_path
         result = outcome()
         ledger.record_result(target['id'], result, reviewer_id='reviewer-one')
         ledger.record_result(target['id'], result, reviewer_id='reviewer-two')
+        scientifically_accept(ledger, target)
     issue(ledger, severity=severity)
     metrics = build_metrics(ledger.snapshot())
     assert metrics['assigned'] == metrics['answered'] == 3
@@ -228,6 +230,7 @@ def test_all_blocked_inputs_remove_scores_and_paired_comparisons(tmp_path):
     result = outcome()
     for reviewer in ('one', 'two'):
         ledger.record_result(target['id'], result, reviewer_id=reviewer)
+    scientifically_accept(ledger, target)
     assert build_metrics(ledger.snapshot())['common_tasks'] == 1
     issue(ledger)
     metrics = build_metrics(ledger.snapshot())

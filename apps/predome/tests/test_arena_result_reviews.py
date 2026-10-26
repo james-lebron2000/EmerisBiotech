@@ -12,6 +12,7 @@ from emeris_live.arena_store import ArenaLedger, result_target_binding
 from emeris_live.arena_metrics import build_metrics
 from emeris_live.arena_public import result_view
 from test_arena_core import registered,finish
+from arena_scientific_fixture import scientifically_accept
 
 sys.path.insert(0,str(Path(__file__).parents[1]/'scripts'))
 import arena_result_review as cli
@@ -42,7 +43,11 @@ def test_explicit_review_kinds_remain_distinct_without_claiming_authenticated_pe
     assert p['independent_human_review_verified'] is False
     public=result_view(target)
     assert 'fixture-one' not in json.dumps(public) and 'fixture-two' not in json.dumps(public)
-    assert public['verification_note'] and build_metrics(snap)['by_model'][0]['outcome_review_basis_counts']=={basis:1}
+    metrics = build_metrics(snap)
+    assert public['verification_note'] and public['status'] == 'agreement_pending_independent_review'
+    assert public['label'] is None and public['scoring_eligible'] is False
+    assert all(row['scored_tasks'] == 0 and row['brier'] is None for row in metrics['by_model'])
+    assert metrics['by_model'][0]['outcome_review_basis_counts'] == {}
     assert build_metrics(snap)['clinical_prediction_validated'] is False
 
 
@@ -91,7 +96,11 @@ def test_nonbinary_outcomes_survive_registration_and_public_view_without_binary_
     body=result(t,label);vote(ledger,t,body,'fixture-one');vote(ledger,t,body,'fixture-two')
     target=ledger.snapshot()['targets'][0]
     assert target['status']=='adjudicated' and target['result']['label']==label
+    assert result_view(target)['label'] is None and result_view(target)['scoring_eligible'] is False
+    scientifically_accept(ledger, t)
+    target=ledger.snapshot()['targets'][0]
     assert result_view(target)['label']==('inconclusive' if label=='not_adjudicable' else label)
+    assert result_view(target)['review_status'] == 'accepted' and result_view(target)['scoring_eligible'] is False
     metrics=build_metrics(ledger.snapshot())
     assert metrics['common_tasks']==0 and all(row['brier'] is None for row in metrics['by_model'])
 
@@ -113,6 +122,7 @@ def test_result_correction_suspends_old_score_and_retains_previous_result(tmp_pa
     ledger,t,ids=registered(tmp_path)
     for ident,model in zip(ids,('A','B')):finish(ledger,ident,returned_model=model+'-fixed')
     body=result(t);vote(ledger,t,body,'fixture-one');vote(ledger,t,body,'fixture-two')
+    scientifically_accept(ledger, t)
     previous=ledger.snapshot()['targets'][0]['result']['result_sha256']
     assert build_metrics(ledger.snapshot())['common_tasks']==1
     changed={**body,'label':'mixed'}
@@ -197,8 +207,15 @@ def test_real_ledger_review_projection_through_public_api_is_pending_then_mixed(
     assert first.json()['target']['result']['status']=='announced'
     vote(ledger,t,body,'fixture-reviewer-two')
     response=client.get('/api/arena/public/targets/'+t['id']);assert response.status_code==200
-    data=response.json();assert data['target']['result']['label']=='mixed'
-    assert data['target']['result']['status']=='adjudicated'
+    data=response.json();assert data['target']['result']['label'] is None
+    assert data['target']['result']['status']=='agreement_pending_independent_review'
+    assert data['target']['result']['scoring_eligible'] is False
     assert all(r['match'] is None for r in data['runs'])
     assert 'fixture-reviewer' not in response.text and 'review_provenance' not in response.text
     assert 'AI' in data['target']['result']['verification_note']
+    scientifically_accept(ledger, t)
+    accepted = client.get('/api/arena/public/targets/' + t['id']).json()
+    assert accepted['target']['result']['label'] == 'mixed'
+    assert accepted['target']['result']['review_status'] == 'accepted'
+    assert accepted['target']['result']['scoring_eligible'] is False
+    assert all(run['match'] is None for run in accepted['runs'])

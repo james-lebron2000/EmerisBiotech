@@ -14,10 +14,11 @@ from fastapi.responses import JSONResponse
 
 from . import arena_api
 from .arena_store import ArenaLedger
+from .arena_result_assurance import result_assurance
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
-VERSION = 'arena-clinical-public-1.0'
+VERSION = 'arena-clinical-public-1.1'
 POLICY = {
     'calibration_status': 'not_established',
     'probability': None, 'confidence': None,
@@ -69,7 +70,9 @@ def read_frozen(store):
         events = ArenaLedger._verified_events(None, db)
     class FrozenEvents:
         def events(self): return events
-    return ArenaLedger.snapshot(FrozenEvents())
+    frozen = FrozenEvents()
+    frozen.path = path
+    return ArenaLedger.snapshot(frozen)
 
 
 
@@ -286,6 +289,7 @@ def result_view(target):
     if label == 'not_adjudicable': label = 'inconclusive'
     if label not in ('success', 'failure', 'mixed', 'inconclusive'): label = None
     status = target.get('status')
+    assurance = result_assurance(target)
     provenance=result.get('review_provenance')
     note=text(result.get('verification_note'),1000)
     if isinstance(provenance,dict):
@@ -302,7 +306,14 @@ def result_view(target):
         if status!='adjudicated':
             label=None
             note+=' Awaiting agreement against the exact registered target; no match score is assigned.'
-    return {'status': status if status in ('pending', 'announced', 'adjudicated') else 'pending',
+    if status == 'adjudicated' and assurance['status'] == 'agreement_pending_independent_review':
+        status = 'agreement_pending_independent_review'
+        label = None
+        note = (note or '') + ' Source agreement is recorded; independent scientific review has not been accepted. No prediction match or formal score is assigned.'
+    if assurance['status'] == 'accepted':
+        note = 'Documented independent source review was accepted by the responsible operator. This is not automated verification of professional credentials or clinical predictive validity.'
+    return {'status': status if status in ('pending', 'announced', 'adjudicated', 'agreement_pending_independent_review') else 'pending',
+            'review_status':assurance['status'], 'scoring_eligible':assurance['scoring_eligible'],
             'label': label, 'first_public_at': text(result.get('first_public_at') or result.get('published_at'), 80),
             'source_url': public_url(result.get('source_url')),
             'summary': text(result.get('summary') or result.get('endpoint_match_note'), 1500),
@@ -334,7 +345,7 @@ def timestamp(value, *, date_only=False):
 def match_result(run, target, predicted):
     if target.get('record_kind') == 'historical_replay': return None
     result = result_view(target)
-    if (not result or result['status'] != 'adjudicated' or result['label'] not in ('success', 'failure')
+    if (not result or not result['scoring_eligible'] or result['status'] != 'adjudicated' or result['label'] not in ('success', 'failure')
             or predicted == 'Uncertain' or run.get('submission_on_time') is False): return None
     if run.get('scope') != 'archived_research' and run.get('submission_on_time') is not True: return None
     try:
@@ -410,6 +421,8 @@ def target_view(target, sources):
     result['readout'] = {key: (public_url(window.get(key)) if key == 'source_url' else text(window.get(key), 1000))
                          for key in ('label', 'start', 'end', 'precision', 'source_url', 'source_title', 'source_granularity', 'source_note')}
     result['result'] = result_view(target)
+    if result['result'] is not None:
+        result['status'] = result['result']['status']
     result['sources'] = [source_view(s) for s in sources]
     return result
 

@@ -13,8 +13,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, canonical, https, instant, sha
 from emeris_live.arena_metrics import _eligible
+from emeris_live.arena_result_assurance import result_assurance
 
-VERSION = 'arena-learning-report-1.2'
+VERSION = 'arena-learning-report-1.3'
 HASH = re.compile(r'[a-f0-9]{64}')
 MODEL_FIELDS = ('cohort_id', 'track', 'condition', 'provider', 'model_id', 'requested_model',
                 'returned_model', 'workflow_version', 'config_sha256', 'execution_budget_sha256')
@@ -122,7 +123,9 @@ def read_snapshot(ledger_path):
         def events(self):
             return events
 
-    return ArenaLedger.snapshot(FrozenEvents())
+    frozen = FrozenEvents()
+    frozen.path = path
+    return ArenaLedger.snapshot(frozen)
 
 
 def _engineering(run, agent_stages=None):
@@ -192,6 +195,8 @@ def _exclusion(run, target, engineering):
     result = target.get('result') or {}
     if target.get('status') != 'adjudicated':
         return 'outcome_not_adjudicated'
+    if result_assurance(target)['status'] != 'accepted':
+        return 'independent_scientific_review_not_accepted'
     if result.get('label') not in ('success', 'failure'):
         return 'outcome_not_binary_adjudicable'
     if run.get('contract_complete') is False:
@@ -218,6 +223,8 @@ def _loss(run, target):
         'high_confidence_error': not correct and (p >= .8 or p <= .2),
         'outcome_source_sha256': target['result'].get('source_sha256'),
         'outcome_review_basis':target['result'].get('review_provenance',{}).get('basis','not_recorded'),
+        'scientific_review_acceptance':result_assurance(target)['status'],
+        'scientific_acceptance_event_sha256':(target.get('scientific_adjudication_acceptance') or {}).get('acceptance_event_sha256'),
         'independent_human_review_verified':False,
         'timestamp_basis': 'external_TSA_and_server_ledger' if run.get('timestamp_proof',{}).get('status')=='attested' else 'server_ledger_only'}
 
@@ -241,7 +248,7 @@ def _summary(rows):
         'project_equal_weight_brier': sum(sum(v)/len(v) for v in projects.values())/len(projects) if projects else None,
         'engineering_categories': dict(sorted(engineering.items())),
         'outcome_error_categories': dict(sorted(Counter(r['error_category'] for r in scored).items())),
-        'scoring_denominator': 'Eligible adjudicated forecasts only; assigned denominator separately retained.',
+        'scoring_denominator': 'Scientifically accepted, time-eligible binary outcomes only; assigned denominator separately retained.',
         'causal_or_calibration_claim': False}
 
 
@@ -317,6 +324,7 @@ def build_report(snapshot, *, cohort_id=None):
         'proposal_required_review_fields': ['hypothesis', 'candidate_version', 'baseline',
             'resource_budget', 'independent_holdout_projects', 'stop_rule', 'reviewer'],
         'limitations': [
+            'Source-review agreement alone does not admit an outcome to loss calculations. Scientific acceptance records operator-documented checks; it does not automatically verify professional credentials or clinical validity.',
             'No adjudicated eligible outcome means no accuracy, loss, calibration or predictive optimization conclusion.',
             'A wrong direction is a descriptive label, not a biological mechanism or causal error diagnosis.',
             'Coverage includes failures and abstentions. Brier/log loss never impute a probability for either.',

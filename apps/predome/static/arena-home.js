@@ -27,8 +27,9 @@
     }
     return typeof run?.requested_model === 'string' && run.requested_model ? run.requested_model : model.id || modelId;
   }
-  const actualStatus = target => ['pending', 'announced', 'adjudicated'].includes(target.status) ? target.status : 'pending';
-  const statusName = status => ({pending: '待揭晓', announced: '已公布 · 待裁定', adjudicated: '已裁定'}[status]);
+  const historical = target => ['archived_research','retrospective'].includes(target?.scope) || target?.record_kind === 'historical_replay';
+  const actualStatus = target => historical(target) ? 'historical' : ['adjudicated','verified','agreement_pending_independent_review'].includes(target.status) ? (target.result?.review_status === 'accepted' || target.result?.scoring_eligible === true) && target.status !== 'agreement_pending_independent_review' ? 'adjudicated' : 'agreement_pending_independent_review' : ['pending','announced'].includes(target.status) ? target.status : 'pending';
+  const statusName = status => ({pending: '待揭晓', announced: '已公布 · 待裁定', agreement_pending_independent_review: '待独立科学审核', adjudicated: '科学审核已接纳', historical: '历史回放 · 不计前瞻'}[status]);
   function windowGroup(target) {
     const readout = target.readout || {}, year = /^(20\d{2})/.exec(String(readout.start || ''))?.[1];
     if (!year) return {key:'unknown', year:'', label:'读出窗口待核实', sort:99999};
@@ -67,11 +68,12 @@
   function resultBlock(target) {
     const status = actualStatus(target), result = target.result;
     if (status === 'pending') return '<div class="challenge-result"><span class="challenge-result-label">实际结果</span><strong>待揭晓</strong><p>等待目标终点的公开读出；未公布不计为失败。</p></div>';
-    const outcome = {success:'达到预设标准',failure:'未达到预设标准',not_adjudicable:'无法裁定'}[result?.label] || '结果标签待核实';
-    const title = status === 'announced' ? '已公布 · 待独立裁定' : outcome;
-    const note = status === 'announced' ? '尚未进入正式成绩；已公布信息不等于目标终点已完成裁定。' : '仅对应已登记的人群、对照与终点。';
+    const outcome = {success:'达到预设标准',failure:'未达到预设标准',mixed:'混合结果',inconclusive:'结论不确定',not_adjudicable:'无法裁定'}[result?.label] || '结果标签待核实';
+    const waiting = status === 'agreement_pending_independent_review', replay = status === 'historical';
+    const title = waiting ? '来源核对一致 · 待独立科学审核' : replay ? '历史结果记录 · ' + outcome : status === 'announced' ? '已公布 · 待独立裁定' : outcome;
+    const note = waiting ? '来源一致性不等于科学接纳；当前不计命中或正式评分。' : replay ? '历史标签与来源保留；本回放不计入前瞻成绩。' : status === 'announced' ? '尚未进入正式成绩；已公布信息不等于目标终点已完成裁定。' : '仅对应已登记的人群、对照与终点。';
     const reported = status === 'announced' && ['success','failure'].includes(result?.label) ? `<p>披露标签：${result.label === 'success' ? '报告达标' : '报告未达标'}（待裁定）</p>` : '';
-    const statistics = ['effect_size','confidence_interval','p_value'].filter(k=>result?.[k] !== null && result?.[k] !== undefined).map(k=>{const value=result[k];return `<p>${{effect_size:'报告效应值',confidence_interval:'报告置信区间',p_value:'报告 P 值'}[k]}：${esc(typeof value === 'object' ? JSON.stringify(value) : value)}</p>`;}).join('');
+    const statistics = (status === 'adjudicated' || replay ? ['effect_size','confidence_interval','p_value'] : []).filter(k=>result?.[k] !== null && result?.[k] !== undefined).map(k=>{const value=result[k];return `<p>${{effect_size:'报告效应值',confidence_interval:'报告置信区间',p_value:'报告 P 值'}[k]}：${esc(typeof value === 'object' ? JSON.stringify(value) : value)}</p>`;}).join('');
     return `<div class="challenge-result" data-readout-state="${status}"><span class="challenge-result-label">实际结果</span><strong>${esc(title)}</strong><p>${esc(note)}</p>${reported}${statistics}${result?.first_public_at ? `<p>首次公开：${esc(date(result.first_public_at))}</p>`:''}${result?.source_url ? link(result.source_url,result.source_title || '核对结果原始来源'):''}</div>`;
   }
   function card(target, allRuns, modelIds) {
@@ -97,7 +99,7 @@
     runs.forEach(r=>{const key=JSON.stringify([r.target_id,r.model_id]);if(!assignments.has(key))assignments.set(key,[]);assignments.get(key).push(r);});
     const answered = [...assignments.values()].filter(group=>group.length===1 && validProbability(group[0])).length;
     const adjudicated = targets.filter(t=>actualStatus(t)==='adjudicated').length;
-    $('challenge-summary').innerHTML = [[new Set(targets.map(t=>t.project_id || t.id)).size,'药物项目'],[modelIds.length,'模型 ID'],[`${answered} / ${runs.length}`,'有效概率 / 分配记录'],[`${adjudicated} / ${targets.length}`,'已裁定 / 登记目标']].map(([n,l])=>`<div><strong>${esc(n)}</strong><span>${esc(l)}</span></div>`).join('');
+    $('challenge-summary').innerHTML = [[new Set(targets.map(t=>t.project_id || t.id)).size,'药物项目'],[modelIds.length,'模型 ID'],[`${answered} / ${runs.length}`,'有效概率 / 分配记录'],[`${adjudicated} / ${targets.length}`,'科学审核已接纳 / 登记目标']].map(([n,l])=>`<div><strong>${esc(n)}</strong><span>${esc(l)}</span></div>`).join('');
     const search = $('challenge-search').value.trim().toLocaleLowerCase(), year = $('challenge-year').value;
     const shown = targets.filter(t=>(!year||windowGroup(t).year===year) && (!search||[t.trial_name,t.drug,t.sponsor,t.nct_id,t.indication,t.endpoint].join(' ').toLocaleLowerCase().includes(search)));
     $('challenge-status').textContent = `已读取正式赛季 · ${cohort.id} · 当前显示 ${shown.length} / ${targets.length} 项。失败、拒答与等待运行均保留，不换算成 0%。`;
