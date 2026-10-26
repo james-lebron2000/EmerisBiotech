@@ -1,4 +1,8 @@
-"""Publish only a verified public snapshot kit; leave the app and ledger intact."""
+"""Publish only the original fixed historical kit; leave app and ledger intact.
+
+This three-script publisher is not a deployment path for newer campaign bundles.
+New calendar-aware exports require verification in the complete Predome repository.
+"""
 import argparse
 import fcntl
 import hashlib
@@ -27,6 +31,7 @@ BASE='https://'+HOST
 URL_PREFIX='/public-forecast/20261023-clinical-v1/'
 EXPECTED_SITE='9044ac171851a7b09e604449ed2a234b5b232d78800cf8784a7548a2ad5dadd6'
 SCRIPT_NAMES=('publish_public_proof.py','public_snapshot_proof.py','export_public_campaign.py')
+HISTORICAL_BUNDLE_SHA256='1a0144906b743e03c50b13b2c1e9554ec488381b88e4939d9d8ec53fa116825c'
 
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
@@ -65,6 +70,11 @@ def load_transport(raw):
     return {name.removeprefix('assets/'):value for name,value in files.items()},meta
 
 
+def require_historical_bundle(raw):
+    if digest(raw)!=HISTORICAL_BUNDLE_SHA256:
+        raise ValueError('This fixed historical publisher accepts only the original 20261023 bundle; newer campaign bundles require the complete Predome repository and a separate publication plan')
+
+
 def remote(transport_sha256,expected_site):
     if expected_site!=EXPECTED_SITE:raise ValueError('Fixed previously verified frontend hash required')
     if LOCK.is_symlink():raise ValueError('Unsafe publication lock path')
@@ -73,6 +83,7 @@ def remote(transport_sha256,expected_site):
         raw=proof.regular(TRANSPORT,16*1024*1024)
         if digest(raw)!=transport_sha256:raise ValueError('Transport changed after upload')
         files,meta=load_transport(raw)
+        require_historical_bundle(files['clinical-records.zip'])
         old=proof.regular(SITE)
         if digest(old)!=expected_site or any(path.exists() or path.is_symlink() for path in (BACKUP,RECEIPT,DEST)):
             raise ValueError('Frontend changed or publication already attempted; inspect receipts')
@@ -123,6 +134,7 @@ def remote(transport_sha256,expected_site):
 
 def local(identity,directory,receipt):
     if receipt.exists() or receipt.is_symlink():raise ValueError('New local receipt required')
+    require_historical_bundle(proof.regular(directory/'clinical-records.zip'))
     fields=proof.verify(directory,require_outer=True)
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     sources={name:subprocess.check_output(['git','show',commit+':apps/predome/scripts/'+name],cwd=ROOT) for name in SCRIPT_NAMES}

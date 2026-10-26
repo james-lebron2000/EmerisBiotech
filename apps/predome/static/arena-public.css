@@ -266,3 +266,9 @@ html[data-theme=dark] .public-outcome-failure{background:#422e3b;border-color:#6
  .arena-calendar-card .arena-calendar-lock{line-height:1.5;margin-top:3px}
  .arena-calendar-source{padding:0 10px 8px;gap:7px}
 }
+
+.arena-calendar-original{margin:0;padding:0 9px 5px;font-size:10px;line-height:1.4;color:var(--public-muted);overflow-wrap:anywhere}
+.public-readout-update{margin:8px 0 0;padding-top:7px;border-top:1px solid var(--public-line);font-size:10px;line-height:1.45;color:var(--public-muted)}
+.public-readout-update strong{color:var(--public-ink);font-weight:600}
+.public-readout-update a{text-decoration:underline;text-underline-offset:2px}
+@media(max-width:700px){.public-readout-update{font-size:11px;line-height:1.6}}

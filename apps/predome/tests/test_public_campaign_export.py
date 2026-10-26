@@ -204,3 +204,54 @@ def test_live_export_rejects_legacy_version_even_without_results(records):
     index,data,_,fetch=records
     data['fixture-0']['version']=export.LEGACY_VERSION
     with pytest.raises(ValueError,match='verification-only'):export.bundle(index,fetch)
+
+
+def synthetic_current_readout(**changes):
+    """Publication-contract fixture only; it is not an actual approved schedule."""
+    return {'label':'SYNTHETIC reviewed calendar · 2027 Q1','start':'2027-01-01','end':'2027-03-31',
+        'precision':'quarter','source_url':'https://example.org/synthetic-current-calendar',
+        'source_title':'SYNTHETIC current timing source','source_granularity':'exact_analysis',
+        'source_note':'Synthetic exact primary-analysis timing; no actual result.',
+        'published_at':'2026-10-23','retrieved_at':'2026-10-23T14:00:00Z','approved_at':'2026-10-24T14:00:00Z',
+        'proposal_id':'ru_'+'1'*24,'proposal_sha256':'1'*64,'decision_id':'rd_'+'2'*24,
+        'decision_sha256':'2'*64,'source_sha256':'3'*64,'hash_scope':'source_response_bytes',
+        'timestamp_attestation':'server_clock_not_independent_timestamp','original_prediction_unchanged':True,**changes}
+
+
+def test_synthetic_current_calendar_exports_separately_from_frozen_forecasts(records):
+    index,data,_,fetch=records
+    original=deepcopy(data['fixture-0'])
+    update=synthetic_current_readout()
+    data['fixture-0']['target']['current_readout']=deepcopy(update)
+    index=deepcopy(index)
+    raw,manifest=export.bundle(index,fetch)
+    assert manifest['schema_version']=='predome-public-launch-bundle-3'
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        record=json.loads(archive.read('records/fixture-0.json'))
+        assert record['target']['readout']==original['target']['readout']
+        assert record['target']['current_readout']==update
+        assert record['runs']==original['runs'] and record['result']==original['result']
+        report=archive.read('reports/fixture-0.md').decode()
+        assert 'Original frozen window' in report and 'Current reviewed readout' in report
+        assert '2027-01-01 to 2027-03-31' in report
+        assert 'This update was not model input' in report and 'Awaiting results' in report
+        assert update['source_url'] in report and update['approved_at'] in report
+
+
+@pytest.mark.parametrize('changes',[{'original_prediction_unchanged':False}, {'source_granularity':'drug_program'},
+    {'source_sha256':'invalid'}, {'precision':'quarter','end':'2027-04-01'}, {'approved_at':'2026-10-22T00:00:00Z'},
+    {'source_url':'javascript:alert(1)'}, {'internal_reason':{'prompt':'PRIVATE'}}])
+def test_current_calendar_export_rejects_unapproved_or_unsafe_contract(records,changes):
+    index,data,_,fetch=records
+    data['fixture-0']['target']['current_readout']=synthetic_current_readout(**changes)
+    with pytest.raises(ValueError):export.bundle(deepcopy(index),fetch)
+
+
+@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION])
+def test_old_record_contracts_are_only_offline_verification_inputs(records,version):
+    index,data,_,fetch=records
+    record=data['fixture-0'];record['version']=version
+    with pytest.raises(ValueError,match='verification-only'):export.bundle(index,fetch)
+    assert export.validate_record(record,record['target'],allow_legacy=True) is False
+    record['target']['current_readout']=synthetic_current_readout()
+    with pytest.raises(ValueError,match='Legacy records'):export.validate_record(record,record['target'],allow_legacy=True)

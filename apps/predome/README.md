@@ -14,6 +14,8 @@
 
 [公开读出日历](docs/READOUT_CALENDAR.md)按已记录窗口组织赛程，每项显示原模型方向分布、锁定时间和来源。项目级指引及未确认公告时间单列；历史回放不计为事前命中，未公布结果不排名。
 
+[独立日程版本](docs/CURRENT_READOUT_UPDATES.md)将精确目标的获批当前日程与预测时的冻结窗口并列保留。AVANZAR 的[新官方指引观察](docs/AVANZAR_READOUT_OBSERVATION_20261027.md)仍待原件采集和独立审核，不作为已批准日程或临床结果发布。
+
 [1.2.5完整目标审计快照](docs/OPEN_FORECAST_STATUS_1_2_5.md)记录已交付能力、实际来源覆盖及剩余外部门槛；它区分软件可用与科学效度。新前端说明见[1.2.6竞技场展示](docs/ARENA_PRESENTATION_1_2_6.md)。原始时间凭证、预测失败和历史回放均保留。官方专利授权连接、真实科学审核、前瞻效度及活动实际执行尚未完成。
 
 以下安装与证据恢复说明保留1.1.8基础导入包的版本、哈希和兼容路径。Open Forecast新增的冻结输入、专利原件及运行状态另有独立清单，不由MIT源码许可证授予其数据权利。
@@ -46,7 +48,7 @@ python3.11 -m venv .venv
 .venv/bin/python scripts/check.py --browser
 ```
 
-`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加8份受控离线浏览器fixture：页面/API使用拦截样例，附件点击另用临时loopback HTTP传输样例，不访问生产、模型或外部服务。需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这8份浏览器测试。测试数量与范围以实际Actions结果为准。
+`--suite static`仅运行静态检查；其中的AST依赖检查针对显式Python导入，不是任意动态执行的沙箱。`--browser`追加9份受控离线浏览器fixture：页面/API使用拦截样例，附件点击另用临时loopback HTTP传输样例，不访问生产、模型或外部服务。需预装Node 22、Playwright 1.56.1及Chromium，检查入口不会自动安装。GitHub Actions同时在macOS跑原工作台完整测试，在Linux跑Predome源码测试及这9份浏览器测试。测试数量与范围以实际Actions结果为准。
 
 完整命令、前置条件和工程／科学验证的边界见[开发与验证工作流](docs/AGENT_WORKFLOW.md)。原工作台仍从仓库根目录运行`uv run pytest -q tests`，与Predome包内检查分开记录。
 

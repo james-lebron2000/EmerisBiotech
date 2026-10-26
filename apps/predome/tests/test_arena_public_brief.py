@@ -495,3 +495,43 @@ def test_missing_target_and_unavailable_records_keep_clear_http_states(native, m
     response = native.client.get('/api/arena/public/targets/' + native.target['id'] + '/brief/download')
     assert response.status_code == 503
     assert 'application/zip' not in response.headers['content-type']
+
+
+@pytest.mark.parametrize('kind',['quarter','range','unknown'])
+def test_synthetic_current_calendar_brief_preserves_frozen_readout_and_original_model_times(native,kind):
+    from test_public_campaign_export import synthetic_current_readout
+    record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
+    original=deepcopy(record)
+    update=synthetic_current_readout()
+    if kind=='range':update=synthetic_current_readout(start='2027-02-15',end='2028-04-01',precision='range')
+    elif kind=='unknown':update=synthetic_current_readout(label='SYNTHETIC official time unconfirmed',start=None,end=None,precision='unknown')
+    record['target']['current_readout']=update
+    before=deepcopy(record)
+    raw,manifest=brief.build_brief(record,cohort_kind='registered_12_project_season')
+    with zipfile.ZipFile(BytesIO(raw)) as archive:
+        exported=json.loads(archive.read('clinical-record.json'))
+        assert exported==before and record==before
+        assert exported['target']['readout']==original['target']['readout']
+        assert exported['runs']==original['runs'] and exported['result']==original['result']
+        markdown=archive.read('clinical-brief.md').decode()
+        doc=Document(archive.read('clinical-brief.html').decode())
+        text=' '.join(doc.text)
+        for label in ('Original frozen readout','Original frozen window','Current reviewed readout',
+                      'Current reviewed window','Calendar source publication','Calendar update approved UTC'):
+            assert label in markdown and label in text
+        assert update['label'] in markdown and update['label'] in text
+        assert 'this update was not model input' in markdown
+        assert update['source_url'] in doc.links
+        assert 'Awaiting results' in markdown and 'Awaiting results' in text
+        assert (update['start'] in markdown and update['end'] in markdown) if kind!='unknown' else 'Readout unconfirmed' in markdown
+    assert manifest['original_model_times']==[{key:r.get(key) for key in ('id','generated_at_utc','locked_at_utc')} for r in original['runs']]
+
+
+@pytest.mark.parametrize('changes',[{'original_prediction_unchanged':False},{'source_granularity':'drug_program'},
+    {'decision_sha256':'bad'}, {'source_url':'https://example.org/?api_key=secret'},
+    {'approved_at':'2026-10-22T00:00:00Z'}, {'precision':'unknown'}, {'internal_prompt':'PRIVATE'}])
+def test_synthetic_current_calendar_contract_is_validated_at_brief_boundary(native,changes):
+    from test_public_campaign_export import synthetic_current_readout
+    record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
+    record['target']['current_readout']=synthetic_current_readout(**changes)
+    with pytest.raises(ValueError):brief.build_brief(record)

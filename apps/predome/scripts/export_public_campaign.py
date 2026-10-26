@@ -13,9 +13,12 @@ import math
 import os
 from pathlib import Path
 import re
+import sys
 import urllib.request
 from urllib.parse import quote
 import zipfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 BASE = 'https://8.148.145.28'
 PREFIX = '/api/arena/public'
@@ -32,7 +35,7 @@ TARGET_KEYS = {'id','cohort_id','trial_name','nct_id','drug','sponsor','indicati
     'endpoint','population','comparison','success_definition','analysis_timepoint',
     'scope','registered_at','execution_status','information_cutoff_utc','record_kind',
     'verification_note','status','registry_url','phase','design','registry_status',
-    'readout','result','sources','consensus'}
+    'readout','current_readout','result','sources','consensus'}
 SOURCE_KEYS = {'id','title','source_url','source_snapshot_url','publication_date','kind','page'}
 POLICY_KEYS = {'calibration_status','probability','confidence','direction_rule','consensus_rule',
     'comparison_scope','clinical_prediction_validated'}
@@ -41,9 +44,10 @@ CONSENSUS_KEYS = {'predicted_outcome','assigned','counts','agreement','agreement
 LEGACY_RESULT_KEYS = {'status','label','first_public_at','source_url','summary','effect_size',
     'confidence_interval','p_value','numeric_source_url','verification_note'}
 RESULT_KEYS = LEGACY_RESULT_KEYS | {'review_status','scoring_eligible'}
-VERSION = 'arena-clinical-public-1.1'
+VERSION = 'arena-clinical-public-1.2'
+PREVIOUS_VERSION = 'arena-clinical-public-1.1'
 LEGACY_VERSION = 'arena-clinical-public-1.0'
-BUNDLE_VERSION = 'predome-public-launch-bundle-2'
+BUNDLE_VERSION = 'predome-public-launch-bundle-3'
 READOUT_KEYS = {'label','start','end','precision','source_url','source_title','source_granularity','source_note'}
 
 
@@ -88,9 +92,16 @@ def validate_record(record, selected, *, allow_legacy=False):
     check_public(record)
     if not isinstance(record,dict) or set(record)!=ROOT_KEYS:raise ValueError('Unexpected public record schema')
     legacy = record['version'] == LEGACY_VERSION
-    if record['version'] != VERSION and not (legacy and allow_legacy):
+    if record['version'] != VERSION and not (record['version'] in (LEGACY_VERSION, PREVIOUS_VERSION) and allow_legacy):
         raise ValueError('Unsupported public record version; legacy records are verification-only')
     target=record['target'];runs=record['runs']
+    if 'current_readout' in target:
+        try:
+            from emeris_live.arena_public_contract import validate_current_readout
+        except ImportError:
+            raise ValueError('Reviewed calendar bundles require the complete Predome repository and its runtime publication contract; the historical three-script tool copy cannot validate this new format') from None
+        if record['version'] != VERSION:raise ValueError('Legacy records cannot carry a later calendar update')
+        validate_current_readout(target['current_readout'])
     if set(target)-TARGET_KEYS or target!=selected:raise ValueError('Target changed during export; start a new snapshot')
     if (set(record['public_policy'])!=POLICY_KEYS or set(record['consensus'])!=CONSENSUS_KEYS
             or set(target['readout'])-READOUT_KEYS):raise ValueError('Unexpected nested public metadata')
@@ -174,8 +185,21 @@ def report_text(record):
         ('Phase','phase'),('Study design','design'),('Trial status','registry_status'),('Primary endpoint','endpoint'),('Population','population'),('Comparison','comparison'),
         ('Success definition','success_definition'),('Information cutoff','information_cutoff_utc')]:
         lines.append(f'| {label} | {cell(t.get(key))} |')
-    lines += [f"| Expected readout / archived readout | {cell(t.get('readout',{}).get('label'))} |",'',
-        '## AI Clinical Trial Predictions','','| Model / version | Outcome | Success probability | Confidence | Status | Record time UTC | Prediction vs reality |',
+    lines += [f"| Expected readout / archived readout | {cell(t.get('readout',{}).get('label'))} |"]
+    update=t.get('current_readout') if record['version']==VERSION else None
+    if update is not None:
+        original=t['readout']
+        window='Readout unconfirmed' if update['precision']=='unknown' else str(update['start'])+' to '+str(update['end'])+'; '+update['precision']
+        lines += [f"| Original frozen window | {cell(original.get('start'))} to {cell(original.get('end'))}; {cell(original.get('precision'))} |",
+            f"| Original frozen timing source | {cell(original.get('source_url'))} |",
+            f"| Current reviewed readout | {cell(update['label'])} |",
+            f"| Current reviewed window | {cell(window)} |",
+            f"| Current timing source | {cell(update['source_url'])} |",
+            f"| Calendar source publication | {cell(update['published_at'])} |",
+            f"| Calendar source retrieved UTC | {cell(update['retrieved_at'])} |",
+            f"| Calendar update approved UTC | {cell(update['approved_at'])} |", '',
+            'Calendar update only. Original model inputs, information cutoff and stored prediction times are unchanged. This update was not model input. Server clock, not an independent timestamp proof.']
+    lines += ['', '## AI Clinical Trial Predictions','','| Model / version | Outcome | Success probability | Confidence | Status | Record time UTC | Prediction vs reality |',
         '| --- | --- | --- | --- | --- | --- | --- |']
     for r in sorted(record['runs'],key=lambda r:r['model_id']):
         model=r['model_id']+(' / '+r['model_version'] if r['model_id']!=r['model_version'] else '')
@@ -184,7 +208,7 @@ def report_text(record):
         '## Consensus and actual result','',f"Majority prediction: {cell(record['consensus']['predicted_outcome'])}.",
         f"Assigned model records: {record['consensus']['assigned']}."]
     result=t.get('result')
-    if result and record['version']==VERSION:
+    if result and record['version'] in (VERSION, PREVIOUS_VERSION):
         review=result['review_status']
         if review=='accepted':
             lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}.",
@@ -240,6 +264,7 @@ One Trial. Multiple Models. One Clear Comparison.
 This is an export of actual public clinical records from https://8.148.145.28/arena.
 Each records/ file preserves the public API object; each reports/ file is a readable clinical summary of that same object.
 Use the exact page URLs in manifest.json when sharing. Model versions, record times, official result links and missing responses remain visible.
+Reviewed calendar updates are separate display records; original frozen readout windows, model inputs and stored prediction times stay unchanged.
 Success probability and confidence are N/A because clinical calibration is not established.
 Historical replays are separate from current formal predictions and do not earn prospective hits.
 Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.

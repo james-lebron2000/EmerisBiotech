@@ -6,6 +6,8 @@ import sys
 import tarfile
 
 import pytest
+from test_public_campaign_export import records
+from test_public_snapshot_proof import actual_proof
 
 sys.path.insert(0,str(Path(__file__).parents[1]/'scripts'))
 import configure_arena_frontends as frontends
@@ -28,6 +30,7 @@ def staged(tmp_path,monkeypatch):
     site=tmp_path/'site';site.write_bytes(old)
     files={name:('isolated fixture '+name).encode() for name in publish.proof.PUBLIC_FILES}
     raw=transport(files);archive=tmp_path/'transport.tar.gz';archive.write_bytes(raw)
+    monkeypatch.setattr(publish,'HISTORICAL_BUNDLE_SHA256',publish.digest(files['clinical-records.zip']))
     for name,path in {'SITE':site,'BACKUP':tmp_path/'backup','DEST':tmp_path/'public'/'fixed-version',
         'RECEIPT':tmp_path/'receipt','LOCK':tmp_path/'lock','TRANSPORT':archive}.items():monkeypatch.setattr(publish,name,path)
     verifies=[]
@@ -128,3 +131,40 @@ def test_transport_extra_path_and_nonregular_member_are_rejected():
     with tarfile.open(fileobj=out,mode='w:gz') as tar:
         item=tarfile.TarInfo('../private');item.size=1;tar.addfile(item,io.BytesIO(b'x'))
     with pytest.raises(ValueError,match='member'):publish.load_transport(out.getvalue())
+
+
+def current_calendar_bundle(records):
+    from copy import deepcopy
+    from test_public_campaign_export import synthetic_current_readout
+    index,data,_,fetch=records
+    data['fixture-0']['target']['current_readout']=synthetic_current_readout()
+    return publish.proof.campaign.bundle(deepcopy(index),fetch)[0]
+
+
+def test_local_historical_publisher_rejects_new_calendar_bundle_before_verification_or_network(records,tmp_path,monkeypatch):
+    directory=tmp_path/'new-campaign';directory.mkdir()
+    (directory/'clinical-records.zip').write_bytes(current_calendar_bundle(records))
+    monkeypatch.setattr(publish.proof,'verify',lambda *a,**kw:pytest.fail('Reject new format before proof verification/upload'))
+    monkeypatch.setattr(publish.subprocess,'run',lambda *a,**kw:pytest.fail('No SSH, scp or remote command'))
+    monkeypatch.setattr(publish.subprocess,'check_output',lambda *a,**kw:pytest.fail('No Git or remote command'))
+    receipt=tmp_path/'never-written.json'
+    with pytest.raises(ValueError,match='only the original 20261023 bundle'):
+        publish.local(tmp_path/'unused-identity',directory,receipt)
+    assert not receipt.exists()
+
+
+def test_remote_historical_publisher_rejects_new_calendar_bundle_before_site_or_publication_writes(staged,records,monkeypatch):
+    old,_,files,verifies,commands=staged
+    files['clinical-records.zip']=current_calendar_bundle(records)
+    raw=transport(files);publish.TRANSPORT.write_bytes(raw)
+    monkeypatch.setattr(publish.proof,'verify',lambda *a,**kw:pytest.fail('Reject before source-contract loading'))
+    with pytest.raises(ValueError,match='only the original 20261023 bundle'):
+        publish.remote(publish.digest(raw),publish.EXPECTED_SITE)
+    assert publish.SITE.read_bytes()==old and not publish.DEST.exists()
+    assert not publish.BACKUP.exists() and not publish.RECEIPT.exists() and commands==verifies==[]
+
+
+def test_historical_publisher_pin_matches_unchanged_original_signed_bundle(actual_proof):
+    raw=(actual_proof/'clinical-records.zip').read_bytes()
+    publish.require_historical_bundle(raw)
+    assert publish.proof.decode((actual_proof/'receipt.json').read_bytes())['bundle_sha256']==publish.HISTORICAL_BUNDLE_SHA256

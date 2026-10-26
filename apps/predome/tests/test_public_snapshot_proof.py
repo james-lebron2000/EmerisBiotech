@@ -36,19 +36,20 @@ def test_public_bundle_can_be_independently_rebuilt_after_json_roundtrip(records
 def test_new_schema_proof_validation_uses_actual_ledger_projection(tmp_path,monkeypatch,state,label):
     ledger,before,index,_,client=real_public_record(tmp_path,monkeypatch,state,label)
     raw,m=proof.campaign.bundle(index,lambda path:client.get(path).json())
-    assert m['schema_version']=='predome-public-launch-bundle-2'
+    assert m['schema_version']=='predome-public-launch-bundle-3'
     assert proof.validate_bundle(raw)==m
     assert ledger.events()==before
 
 
-@pytest.mark.parametrize('version',['predome-public-launch-bundle-1','unknown'])
+@pytest.mark.parametrize('version',['predome-public-launch-bundle-1','predome-public-launch-bundle-2','unknown'])
 def test_new_bundle_cannot_be_downgraded_to_legacy_or_unknown_version(records,version):
     index,_,_,fetch=records
     raw,_=proof.campaign.bundle(index,fetch);files=proof.zip_members(raw)
     m=proof.decode(files['manifest.json']);m['schema_version']=version
-    if version=='predome-public-launch-bundle-1':
+    if version in ('predome-public-launch-bundle-1','predome-public-launch-bundle-2'):
         # Correct legacy README does not authorize 1.1 records in a 1.0 export.
-        files['README.md']=files['README.md'].replace(
+        files['README.md']=files['README.md'].replace(b'Reviewed calendar updates are separate display records; original frozen readout windows, model inputs and stored prediction times stay unchanged.\n',b'')
+        if version=='predome-public-launch-bundle-1':files['README.md']=files['README.md'].replace(
             b'Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.\n',b'')
         assert proof.digest(files['README.md'])==proof.README_PINS[version]
         m['files']['README.md']={'sha256':proof.digest(files['README.md']),'bytes':len(files['README.md'])}
@@ -252,3 +253,49 @@ def test_non_sha256_message_imprint_is_rejected_after_actual_signature_checks(si
     directory=altered('sha384-imprint',algorithm='sha384')
     with pytest.raises(ValueError,match='SHA-256'):
         proof.verify(directory)
+
+
+@pytest.mark.parametrize('bundle_version,record_version',[('predome-public-launch-bundle-1','arena-clinical-public-1.0'),('predome-public-launch-bundle-2','arena-clinical-public-1.1')])
+def test_previous_bundle_contracts_verify_offline_but_cannot_reissue_attestation(records,tmp_path,monkeypatch,bundle_version,record_version):
+    """Synthetic legacy contract fixture; original signed archives stay untouched."""
+    index,_,_,fetch=records
+    raw,_=proof.campaign.bundle(index,fetch);files=proof.zip_members(raw)
+    manifest=proof.decode(files['manifest.json']);manifest['schema_version']=bundle_version
+    files['README.md']=files['README.md'].replace(b'Reviewed calendar updates are separate display records; original frozen readout windows, model inputs and stored prediction times stay unchanged.\n',b'')
+    if bundle_version.endswith('-1'):
+        files['README.md']=files['README.md'].replace(b'Source agreement alone is not scientific acceptance. Pending independent review and nonbinary outcomes cannot earn formal binary scores.\n',b'')
+    assert proof.digest(files['README.md'])==proof.README_PINS[bundle_version]
+    for name in list(files):
+        if name.startswith('records/'):
+            record=proof.decode(files[name]);record['version']=record_version
+            files[name]=proof.campaign.canonical(record)
+            files['reports/'+record['target']['id']+'.md']=proof.campaign.report_text(record)
+    manifest['files']={name:{'sha256':proof.digest(value),'bytes':len(value)} for name,value in files.items() if name!='manifest.json'}
+    files['manifest.json']=proof.campaign.canonical(manifest);legacy=packed(files)
+    assert proof.validate_bundle(legacy)==manifest
+    source=tmp_path/'synthetic-legacy.zip';source.write_bytes(legacy);output=tmp_path/'not-created'
+    monkeypatch.setattr(proof,'openssl_run',lambda *a,**kw:pytest.fail('No new timestamp query for a legacy contract'))
+    monkeypatch.setattr(proof.urllib.request,'urlopen',lambda *a,**kw:pytest.fail('No authority call for a legacy contract'))
+    with pytest.raises(ValueError,match='verification-only'):proof.attest(source,proof.digest(legacy),output,tmp_path/'unused-certificates')
+    assert not output.exists() and source.read_bytes()==legacy
+
+
+def test_calendar_bundle_in_bare_historical_three_script_directory_fails_with_complete_repository_requirement(records,tmp_path):
+    """Execute the actual verifier in an isolated interpreter, not a mocked import."""
+    from copy import deepcopy
+    from test_public_campaign_export import synthetic_current_readout
+    index,data,_,fetch=records
+    data['fixture-0']['target']['current_readout']=synthetic_current_readout()
+    raw,manifest=proof.campaign.bundle(deepcopy(index),fetch)
+    assert proof.validate_bundle(raw)==manifest
+    bundle=tmp_path/'synthetic-calendar-bundle.zip';bundle.write_bytes(raw)
+    tools=tmp_path/'historical-tools';tools.mkdir()
+    for name in ('publish_public_proof.py','public_snapshot_proof.py','export_public_campaign.py'):
+        shutil.copyfile(SCRIPTS/name,tools/name)
+    code="import sys;sys.path.insert(0,sys.argv[1]);from pathlib import Path;import public_snapshot_proof as p;p.validate_bundle(Path(sys.argv[2]).read_bytes())"
+    result=subprocess.run([sys.executable,'-I','-c',code,str(tools),str(bundle)],cwd=tmp_path,
+        env={},capture_output=True,text=True,timeout=30)
+    assert result.returncode!=0
+    assert 'complete Predome repository and its runtime publication contract' in result.stderr
+    assert 'ModuleNotFoundError' not in result.stderr
+    assert bundle.read_bytes()==raw

@@ -13,17 +13,17 @@ import re
 from urllib.parse import quote
 import zipfile
 
-from .arena_public_contract import credential_like, public_url
+from .arena_public_contract import credential_like, public_url, validate_current_readout
 
 
 SCHEMA_VERSION = 'predome-public-clinical-brief-1'
-RECORD_VERSION = 'arena-clinical-public-1.1'
+RECORD_VERSION = 'arena-clinical-public-1.2'
 PUBLIC_ORIGIN = 'https://8.148.145.28'
 ROOT_FIELDS = {'version', 'target', 'runs', 'consensus', 'sources', 'evidence', 'result', 'public_policy'}
 TARGET_FIELDS = {'id', 'cohort_id', 'trial_name', 'nct_id', 'drug', 'sponsor', 'indication',
     'endpoint', 'population', 'comparison', 'success_definition', 'analysis_timepoint', 'scope',
     'registered_at', 'execution_status', 'information_cutoff_utc', 'record_kind', 'verification_note',
-    'status', 'registry_url', 'phase', 'design', 'registry_status', 'readout', 'result', 'sources', 'consensus'}
+    'status', 'registry_url', 'phase', 'design', 'registry_status', 'readout', 'current_readout', 'result', 'sources', 'consensus'}
 RUN_FIELDS = {'id', 'target_id', 'cohort_id', 'model_id', 'requested_model', 'scope', 'track', 'condition',
     'generated_at_utc', 'locked_at_utc', 'model_version', 'status', 'predicted_outcome', 'probability',
     'confidence', 'calibration_status', 'brief_reason', 'reason', 'sources', 'match', 'match_status'}
@@ -89,12 +89,14 @@ def validate_record(record):
     if set(record) != ROOT_FIELDS or record['version'] != RECORD_VERSION:
         raise ValueError('Current sanitized public record required')
     target = _object(record['target'], TARGET_FIELDS)
-    _flat(target, ('design', 'readout', 'sources', 'result', 'consensus'))
+    _flat(target, ('design', 'readout', 'current_readout', 'sources', 'result', 'consensus'))
     if not re.fullmatch(r'[A-Za-z0-9_.-]{1,180}', str(target.get('id', ''))):
         raise ValueError('An exact public target identifier is required')
     if not re.fullmatch(r'NCT\d{8}', str(target.get('nct_id', ''))):
         raise ValueError('An exact public NCT identifier is required')
     _flat(_object(target.get('readout'), READOUT_FIELDS))
+    if 'current_readout' in target:
+        validate_current_readout(target['current_readout'])
     for value in (target.get('registry_url'), target['readout'].get('source_url')):
         if value is not None and _safe_url(value) is None:
             raise ValueError('A clinical link does not satisfy the public URL policy')
@@ -261,6 +263,12 @@ def _source_list(sources, empty):
 CSS = '''body{font:15px/1.55 Arial,Helvetica,sans-serif;color:#172c43;background:#fff;margin:0;padding:24px}main{max-width:1040px;margin:auto}h1{font-size:30px;line-height:1.2}h2{font-size:20px;margin-top:28px}h3{font-size:16px}a{color:#174d80}p,dd,td,li{overflow-wrap:anywhere}.scope,.note{color:#4b5f70}.facts{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 18px}.facts dt{font-weight:bold}.facts dd{margin:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}th,td{text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid #d7dfe6}th{background:#eef3f7}.sources{padding-left:20px}.model-evidence{padding:12px 0;border-top:1px solid #d7dfe6;font-size:13px}.model-evidence h4{font-size:15px;margin:4px 0 8px}.model-evidence p{margin:6px 0}footer{border-top:1px solid #d7dfe6;margin-top:24px;padding-top:14px;font-size:12px;color:#4b5f70}@media(max-width:600px){body{padding:16px}.facts{grid-template-columns:1fr;gap:3px}.facts dd{margin-bottom:9px}h1{font-size:25px}}@media print{body{padding:0;font-size:11px}h1{font-size:23px}h2{font-size:16px}table{min-width:0;font-size:9px}.table-wrap{overflow:visible}th,td{padding:4px}a{color:inherit}tr{break-inside:avoid}footer{font-size:9px}}'''
 
 
+def _window(value):
+    if value.get('start') is None or value.get('end') is None:
+        return 'Readout unconfirmed'
+    return str(value['start'])+' – '+str(value['end'])+' ('+str(value.get('precision') or 'unknown')+')'
+
+
 def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     """Return a four-file ZIP and its unsigned manifest; no files/network/DB writes."""
     record_raw = validate_record(record)
@@ -279,6 +287,14 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
         ('Analysis timepoint', target.get('analysis_timepoint')), ('Success definition', target.get('success_definition')),
         ('Information cutoff UTC', target.get('information_cutoff_utc')), ('Original registration UTC', target.get('registered_at')),
         ('Expected readout', target['readout'].get('label'))]
+    update = target.get('current_readout')
+    if update is not None:
+        facts[-1] = ('Original frozen readout', target['readout'].get('label'))
+        facts.extend([('Original frozen window', _window(target['readout'])),
+            ('Current reviewed readout', update.get('label')), ('Current reviewed window', _window(update)),
+            ('Calendar source publication', update['published_at']), ('Calendar source retrieved UTC', update['retrieved_at']),
+            ('Calendar update approved UTC', update['approved_at']),
+            ('Calendar update scope', 'Display calendar only. Original model input, information cutoff and stored generation/lock times are unchanged; this update was not model input. Server clock, not an independent timestamp proof.')])
     if target.get('execution_status'):
         facts.append(('Execution status', target['execution_status']))
     headers = ['Model / version', 'Outcome', 'Success probability', 'Confidence', 'Status',
@@ -321,10 +337,11 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
         md += ['Official announcement: '+_md(result.get('first_public_at'))+'.', _md(result.get('verification_note'))]
     md += ['', '### Public sources', '']
     sources = [dict(s) for s in record['sources']]
-    guidance = target['readout']
-    if (_safe_url(guidance.get('source_url'))
-            and not any(s.get('source_url') == guidance['source_url'] for s in sources)):
-        sources.append({'title': guidance.get('source_title') or 'Readout timing source', 'source_url': guidance['source_url']})
+    for guidance, name in [(target['readout'], 'Original frozen readout timing source'),
+                           (update, 'Current reviewed calendar source')]:
+        if (guidance and _safe_url(guidance.get('source_url'))
+                and not any(s.get('source_url') == guidance['source_url'] for s in sources)):
+            sources.append({'title': guidance.get('source_title') or name, 'source_url': guidance['source_url']})
     if result and _safe_url(result.get('source_url')):
         sources.append({'title': 'Official clinical result', 'source_url': result['source_url']})
     source_md, html_sources = _source_list(sources, 'No public source metadata recorded.')

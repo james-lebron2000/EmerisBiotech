@@ -59,3 +59,4 @@ tests/test_arena_watch_inbox.py
 tests/test_formal_official_watch.py
 tests/test_arena_costs.py
 tests/test_patent_connector_provenance.py
+tests/test_arena_current_readout.py

@@ -11,7 +11,7 @@ from test_source import ROOT, source_tests, test_environment
 BROWSER_TESTS = (
     'ui_predict_context.cjs', 'ui_prospective_coverage.cjs', 'ui_arena.cjs',
     'ui_arena_home.cjs', 'ui_arena_public.cjs', 'ui_arena_lab.cjs', 'ui_trials_readonly.cjs',
-    'ui_arena_review.cjs',
+    'ui_arena_review.cjs', 'ui_readout_reviews.cjs',
 )
 
 

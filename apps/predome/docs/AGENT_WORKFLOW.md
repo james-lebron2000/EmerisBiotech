@@ -47,7 +47,7 @@
 | `python scripts/check.py` | 默认 `source`：静态检查及 `ci-tests.txt` 中的源码 fixture 测试 | 源码检出、Python 3.11及测试依赖、Node 22；受控本地冻结路径不存在 |
 | `python scripts/check.py --suite static` | 仅静态检查 | Python 3.11、Node 22；不运行 pytest 或浏览器 |
 | `python scripts/check.py --suite full` | 静态检查及完整应用 pytest | Python 3.11、Node 22及已获授权、保持原件不变的现有证据；不会下载或生成缺失证据 |
-| `python scripts/check.py --browser` | 默认检查后，追加8份受控离线浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
+| `python scripts/check.py --browser` | 默认检查后，追加9份受控离线浏览器 fixture | 预装 Node 22、Playwright 1.56.1 及 Chromium；不会自动安装 |
 | `python scripts/test_source.py` | 保留兼容的源码 fixture 入口 | 与源码测试相同的隔离条件 |
 
 源码测试守卫针对本地冻结材料的具体路径，不把 Git 中公开的 Arena／专利配置一并认作禁入证据。现有证据不满足源码测试条件时，应使用干净源码检出，或在具有相应授权的环境运行完整测试；不能为通过检查移除守卫、覆盖原件或重新生成预测。
@@ -66,6 +66,7 @@
 - `tests/ui_arena_lab.cjs`
 - `tests/ui_trials_readonly.cjs`
 - `tests/ui_arena_review.cjs`
+- `tests/ui_readout_reviews.cjs`
 
 模型服务的 HTTP 传输层替身和浏览器 API fixture 可继续使用；测试不应为减少 mock 而访问付费模型、真实患者数据或生产数据库。界面验证使用生产组件与实际静态资产，避免另写一份只供截图使用的页面。
 
@@ -89,6 +90,14 @@ uv run pytest -q tests
 检查记录应写明提交、命令、范围、通过／失败及未满足的条件。源码 fixture 只验证工程行为；授权原件上的检查只验证对应记录性质；线上只读验收只证明所查部署行为；独立科学审核与前瞻预测效度需要各自证据。测试计数不能替代这些条件。
 
 本仓库默认分支为 `main`，当前 Open Forecast 工作继续使用既有 `codex/predome-open-forecast` 分支和 PR #3。提交和 PR 描述说明实际行为、验证与限制，界面变化附真实页面截图，不重写既有历史来调整命名。
+
+### 当前日程更新中的应用
+
+本轮将“原始事实与派生视图分开”应用到读出时间更新：保存经采集和审核的新日程，公开投影单独提供 `current_readout`，原预测的 `readout`、模型输出、生成时间与结果评分保持原样。仅当前正式赛季的精确目标可以接收获批更新；NCT 相同不能代替终点、人群、比较和分析时间点的匹配。未知时间保持空值，不回退成旧日期。
+
+共用日期合同继续由纯标准库模块拥有，公开接口、简报、活动导出与离线验证器共同使用，接口版本更新为 1.2，新活动资料包为版本3。内部界面通过实际生产资产的离线 fixture 验证选择目标、未知时间、不同账号审核与延迟回包切换；真实记录验收单独比较复制运行环境中原有的144条模型记录，没有写入合成审核或预测。详情见[当前日程与原预测窗口](CURRENT_READOUT_UPDATES.md)。
+
+此处账号分离是操作审核要求，不能替代独立科学审核。AVANZAR 的新官方2027日程观察仍缺原始PDF获取及哈希、适用性核验和批准，因此保持待处理；它未被用来改写旧预测或提前判断疗效失败。
 
 ## 未迁移的设置
 

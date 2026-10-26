@@ -12,13 +12,13 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 
 from . import arena_api
-from .arena_store import ArenaLedger
+from .arena_store import ArenaLedger, result_target_binding
 from .arena_result_assurance import result_assurance
-from .arena_public_contract import credential_like, public_url
+from .arena_public_contract import credential_like, public_url, validate_current_readout
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
-VERSION = 'arena-clinical-public-1.1'
+VERSION = 'arena-clinical-public-1.2'
 POLICY = {
     'calibration_status': 'not_established',
     'probability': None, 'confidence': None,
@@ -101,23 +101,65 @@ def read_archived(store):
         overlay_tables = {'readout_update_proposals', 'readout_update_decisions'}
         if tables & overlay_tables:
             if not overlay_tables <= tables: raise ValueError('Incomplete calendar schema')
-            from .readout_updates import ReadoutUpdateStore
-            updates = object.__new__(ReadoutUpdateStore)
-            updates.store = view_store
+            from .readout_updates import approved_records
             newest = {}
-            rows = db.execute("SELECT p.*,d.payload AS decision_payload,d.sha256 AS decision_sha FROM readout_update_decisions d JOIN readout_update_proposals p ON p.id=d.proposal_id WHERE d.decision='approved' ORDER BY d.created DESC,d.rowid DESC")
-            for row in rows:
-                if row['nct_id'] in newest: continue
-                proposal = updates.decode(row)
-                review = updates.decode({'payload': row['decision_payload'], 'sha256': row['decision_sha']})
-                if review['proposal_sha256'] != row['sha256']: raise ValueError('Calendar binding failed')
-                newest[row['nct_id']] = proposal
+            for record in approved_records(db, view_store.unpack):
+                proposal = record['proposal']
+                # A target-scoped approval cannot silently cover every legacy
+                # question that happens to share its registry identifier.
+                if proposal.get('arena_target_id') or proposal['nct_id'] in newest:
+                    continue
+                newest[proposal['nct_id']] = proposal
             for trial in product['upcoming'] + product.get('resolved_trials', []):
                 update = newest.get(trial['nct_id'])
                 if update:
                     trial['window'] = {k: update[k] for k in ('start', 'end', 'precision', 'label')}
                     trial['window']['source_url'] = update['source']['url']
     return combined_archives(store, product)
+
+
+def current_readouts(store, frozen):
+    """Read exact-target display updates without initializing or changing state."""
+    path = Path(store.path) / 'workbench.sqlite3'
+    if path.is_symlink(): raise ValueError('Invalid calendar path')
+    if not path.exists(): return {}
+    if not path.is_file(): raise ValueError('Invalid calendar path')
+    from .arena_watch import current_targets
+    from .platform_store import digest
+    from .readout_updates import approved_records
+    targets = {target['id']: target for target in current_targets(frozen)}
+    result = {}
+    with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as db:
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA query_only=ON')
+        db.execute('BEGIN')
+        tables = {row['name'] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if not tables & {'readout_update_proposals', 'readout_update_decisions'}:
+            return {}
+        for record in approved_records(db, store.unpack):
+            proposal, review = record['proposal'], record['review']
+            ident = proposal.get('arena_target_id')
+            target = targets.get(ident)
+            if target is None or ident in result:
+                continue
+            binding = result_target_binding(target)
+            if (proposal.get('arena_target_binding') != binding
+                    or proposal.get('arena_target_binding_sha256') != digest(binding)
+                    or proposal['nct_id'] != target['nct_id']
+                    or proposal.get('applicability') != 'exact_registered_target'):
+                raise ValueError('Calendar update does not bind the registered target')
+            source = proposal['source']
+            value = {key: proposal[key] for key in ('label', 'start', 'end', 'precision', 'source_granularity')}
+            value.update(source_url=source['url'], source_title='Approved schedule update',
+                source_note='Reviewed display schedule; original frozen forecast inputs are unchanged.',
+                published_at=source['published_at'], retrieved_at=source['retrieved_at'],
+                approved_at=review['created_at'], proposal_id=proposal['id'],
+                proposal_sha256=record['proposal_sha256'], decision_id=review['id'],
+                decision_sha256=record['decision_sha256'], source_sha256=source['sha256'],
+                hash_scope=source['hash_scope'], original_prediction_unchanged=True,
+                timestamp_attestation='server_clock_not_independent_timestamp')
+            result[ident] = validate_current_readout(value)
+    return result
 
 
 
@@ -427,6 +469,7 @@ def target_view(target, sources, snapshot_urls=None, verified_assets=None):
 
 def build_public(store):
     frozen = read_frozen(store)
+    calendar = current_readouts(store, frozen)
     old_targets, old_runs, old_evidence = read_archived(store)
     raw_runs = [r for r in frozen['runs'] if r.get('track') == 'same_evidence' and r.get('condition') == 'clinical_only'] + [r for r in old_runs if r.get('track') == 'archived' and r.get('condition') == 'clinical_only' and r.get('scope') == 'archived_research']
     target_ids = {r['target_id'] for r in raw_runs}
@@ -462,6 +505,8 @@ def build_public(store):
             verified_assets[digest] = raw
             snapshot_urls[digest] = '/api/arena/sources/' + digest
         public_target = target_view(target, source_list, snapshot_urls, verified_assets)
+        if target['id'] in calendar:
+            public_target['current_readout'] = calendar[target['id']]
         own_public = [run_view(run, target, run.get('packet', {}).get('evidence', []) or source_list, snapshot_urls) for run in own]
         public_target['consensus'] = consensus(own_public)
         targets.append(public_target); runs.extend(own_public)

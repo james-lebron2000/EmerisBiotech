@@ -18,7 +18,8 @@ PINS={'tsa.crt':'8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea1346
       'cacert.pem':'2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438'}
 README_PINS={
     'predome-public-launch-bundle-1':'99d0bfa9c299419abb94dfc969f28a29d67263b63ba67f0e319559d9eb7cb584',
-    'predome-public-launch-bundle-2':'a0439c566f87f66af68e911216743650f57394f5bf4d4df13609dc888da3eb62'}
+    'predome-public-launch-bundle-2':'a0439c566f87f66af68e911216743650f57394f5bf4d4df13609dc888da3eb62',
+    'predome-public-launch-bundle-3':'15231fb7b3ef96bf06da4979b63dcadc39ee316f7b591b0f1771057c2235a876'}
 FILES=frozenset(('clinical-records.zip','request.tsq','timestamp.tsr','cacert.pem','tsa.crt',
                  'receipt.json','verification.txt','README.md'))
 PUBLIC_FILES=FILES|{'verification-kit.zip'}
@@ -81,8 +82,10 @@ def validate_bundle(raw):
         ids.add(ident);json_name='records/'+ident+'.json';report_name='reports/'+ident+'.md'
         if json_name not in files or report_name not in files:raise ValueError('Missing clinical record/report')
         record=decode(files[json_name]);target=record['target']
-        legacy=m['schema_version']=='predome-public-launch-bundle-1'
-        expected_version=campaign.LEGACY_VERSION if legacy else campaign.VERSION
+        legacy=m['schema_version']!=campaign.BUNDLE_VERSION
+        expected_version={'predome-public-launch-bundle-1':campaign.LEGACY_VERSION,
+            'predome-public-launch-bundle-2':campaign.PREVIOUS_VERSION,
+            campaign.BUNDLE_VERSION:campaign.VERSION}[m['schema_version']]
         if record['version']!=expected_version:raise ValueError('Public export and record versions differ')
         replay=campaign.validate_record(record,target,allow_legacy=legacy)
         if target['id']!=ident or files[report_name]!=campaign.report_text(record):raise ValueError('Report differs from public clinical object')
