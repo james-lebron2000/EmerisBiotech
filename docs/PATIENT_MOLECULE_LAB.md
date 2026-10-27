@@ -171,3 +171,16 @@ estimation status and phase. Missing values are empty, never zero. All patients
 remain in the CSV regardless of the selected summary population. The 24-patient
 cutoff-7 CSV therefore has 528 rows, including 22 missing patient–molecule time rows.
 The cohort UI's selected day and population remain in the JSON view metadata.
+
+
+## Progressive cohort drawing
+
+The initial cohort chart shows baseline markers only. Play advances the shared
+assay-day timeline; all individual curves, the highlighted patient, the population
+median and the patient IQR band are drawn only through that day. Dashed assay
+extrapolations appear progressively after the cutoff. Rewinding removes later
+geometry, and changing the available-data cutoff resets the drawing to baseline.
+Playback from the final day restarts at day 0. Axes remain fixed to support
+comparison. This changes visual disclosure only; model outputs and complete
+JSON/CSV exports remain unchanged. The selected timeline day is not a replacement
+for the data-availability cutoff.
