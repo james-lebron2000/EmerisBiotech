@@ -4,6 +4,8 @@
 
 实际 HTTP 页面和 API 响应没有 fixture 替换，使用原始 CSP 与实际 shipped 静态资产，没有注入样式或改写预测。截图由 `verification/patent-assay-pair-20261027/http-acceptance-v2/capture.cjs` 在主 agent 将 v2 sealed bundle 导入隔离 runtime-copy 后取得。全部九张图片已读屏检查。
 
+本轮因 Linux 字体度量下桌面布局超出既有最小滚动范围，再次压缩了桌面模型表和共识区域的留白，保留字号、字段和手机布局。随后以实际 HTTP GET 重拍九图；公开桌面图已重新读屏，其余八图与上一轮已读屏图片字节一致。前一轮图片和 receipt 保留在 ignored 的 `before-desktop-whitespace-fix` 目录。
+
 ## 真实结果与展示范围
 
 四个 first-attempt 槽完整保留：Kimi clinical、Kimi patent 均为 invalid_json 失败；Flash clinical 为 provider_http_error 失败；Flash patent 有原始未校准研究值 0.71。

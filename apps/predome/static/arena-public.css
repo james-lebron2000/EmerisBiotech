@@ -272,5 +272,6 @@ html[data-theme=dark] .public-outcome-failure{background:#422e3b;border-color:#6
 .public-readout-update strong{color:var(--public-ink);font-weight:600}
 .public-readout-update a{text-decoration:underline;text-underline-offset:2px}
 @media(max-width:700px){.public-readout-update{font-size:11px;line-height:1.6}}
-/* Keep the returned-judgment denominator visible without reducing text size. */
-@media(min-width:701px){.public-consensus{padding-top:6px;padding-bottom:6px}.public-consensus h2{margin-bottom:2px}.public-agreement-bar{height:4px;margin-bottom:1px}.public-agreement-empty{margin-bottom:1px}}
+/* Keep the returned-judgment denominator and cross-platform font-metric slack
+   visible by reducing desktop whitespace only; mobile and text sizes stay intact. */
+@media(min-width:701px){.public-model-heading,.arena-faceoff{margin-bottom:4px}.public-table td{padding-top:4px;padding-bottom:4px}.public-calibration-note{margin-top:6px}.public-summary-row{margin:3px 0}.public-consensus{padding-top:6px;padding-bottom:6px}.public-consensus h2{margin-bottom:2px}.public-agreement-bar{height:4px;margin-bottom:1px}.public-agreement-empty{margin-bottom:1px}}
