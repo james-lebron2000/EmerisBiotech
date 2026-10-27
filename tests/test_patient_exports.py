@@ -101,3 +101,19 @@ def test_offline_cli_csv_and_failures(tmp_path):
     assert repeat.returncode!=0 and csv_path.read_bytes()==previous
     source.write_text('{"a":NaN}')
     assert subprocess.run(command,capture_output=True).returncode!=0
+
+
+@pytest.mark.parametrize('day',[0.125,3.375,5.999])
+def test_fractional_display_time_preserves_canonical_daily_outputs(day):
+    envelope=export()
+    original=envelope['canonical_template']
+    envelope['view']['assay_day']=day
+    assert verify_export(envelope)==envelope['result']
+    assert envelope['canonical_template']==original
+
+
+@pytest.mark.parametrize('day',[float('nan'),float('inf'),-0.001,6.001,'3.5'])
+def test_invalid_fractional_display_times_rejected(day):
+    envelope=export()
+    envelope['view']['assay_day']=day
+    with pytest.raises(ValueError):verify_export(envelope)
