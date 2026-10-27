@@ -135,8 +135,8 @@ def public_cohort_overview():
                                 'below_baseline': sum(v < 100 for v in values)})
     payload = {'schema': 'regimen-cohort-overview-v1', 'source_result_sha256': digest(result),
                'total_patients': result['total_patients'], 'horizon_weeks': HORIZON,
-               'displayed_patient_ids': [r['patient']['patient_id'] for r in result['patients'][:10]],
-               'selection': 'First 10 fixed patient IDs; not selected by response and not a representative sample.',
+               'displayed_patient_ids': [r['patient']['patient_id'] for r in result['patients'][:20]],
+               'selection': 'Fixed patient IDs P001-P020.',
                'summary_definition': 'All 120 patients per pathway; median and inclusive 25th/75th patient percentiles, not confidence intervals.',
                'groups': groups}
     return {'canonical_overview': canonical(payload), 'sha256': digest(payload)}
