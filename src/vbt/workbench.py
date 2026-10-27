@@ -191,6 +191,19 @@ def handler(app, public_origin=None):
                     from .ai_research import packet
                     from .programs import Programs
                     self.send(200,json.dumps(packet(Programs(app.state),q.get('id','')),ensure_ascii=False,indent=2),'application/json; charset=utf-8',True);return
+                if u.path=='/program/comparison-report':
+                    from .scientific_review import export_report
+                    from .programs import Programs
+                    fmt=q.get('format','md')
+                    raw=export_report(Programs(app.state),q.get('id',''),fmt)
+                    self.send_bytes(200,raw,'text/csv; charset=utf-8' if fmt=='csv' else 'text/plain; charset=utf-8',True);return
+                if u.path=='/program/comparison-source':
+                    from .scientific_review import comparison_source
+                    from .programs import Programs
+                    name=q.get('file','')
+                    raw=comparison_source(Programs(app.state),q.get('id',''),name)
+                    mime='application/json; charset=utf-8' if name.endswith('.json') else 'text/csv; charset=utf-8' if name.endswith('.csv') else 'text/plain; charset=utf-8'
+                    self.send_bytes(200,raw,mime,True);return
                 if u.path in ('/program/export','/program/attachment'):
                     from .programs import Programs
                     programs=Programs(app.state)
