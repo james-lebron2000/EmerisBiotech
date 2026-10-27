@@ -5,3 +5,4 @@ html[lang="zh-CN"] .company-section h1{letter-spacing:0;font-weight:400;line-hei
 @media(max-width:480px){.simulation-section .patient-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.simulation-section .patient{height:64px}.company-section h1{font-size:44px}html[lang="zh-CN"] .company-section h1{font-size:46px}.product-heading h2{font-size:34px}.simulation-heading h2{font-size:23px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{padding-top:64px}.site-header{position:fixed;left:0;right:0;top:0}
+@media(min-width:1101px){.simulation-section{padding-top:12px;padding-bottom:12px}.simulation-heading h2{font-size:27px}.simulation-heading .section-index{margin-bottom:2px}.simulation-section .controls{padding-top:5px;padding-bottom:5px}.simulation-section .patient{height:clamp(44px,calc((100svh - 380px)/10),54px)}}
