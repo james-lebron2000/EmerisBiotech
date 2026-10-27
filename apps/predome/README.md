@@ -14,6 +14,8 @@
 
 [单次请求安全诊断](docs/ARENA_ATTEMPT_DIAGNOSTICS.md)说明未来新登记 Provider 1.2.0／Agent 1.1.0 的内部类型化元数据、旧 receipt 兼容与公私隔离。旧三条失败不回填、不猜原因、不重试；本轮仅更新 GitHub 候选，未正式打包、stage 或部署，不操作服务器后台。
 
+[方案与 SAP 原件接入](docs/TRIAL_DOCUMENT_SOURCES.md)提供官方附件清单、显式原件采集、逐页索引与待人工审核的 OCR 补录。真实 INAVO120 原件用于验证采集路径；资料获取、完整文字提取和精确预测目标资格分别记录，不回填旧运行。
+
 [逐模型引用报告](docs/launch/model-references-20261027/README.md)将已有公开摘要、每个模型自己的原文／快照引用与空状态一起展示。公开页面在 `Rationale & sources` 内查看；[实际记录截图](docs/images/model-references-20261027/provenance.json)来自本地候选版本，不代表线上部署或引用已获独立科学支持。新专利候选的名称／别名合同见[专利资料说明](patent_data/README.md#new-candidate-identifiers)，候选标签不授予药物身份或冻结资格。
 
 [公开读出日历](docs/READOUT_CALENDAR.md)按已记录窗口组织赛程，每项显示原模型方向分布、锁定时间和来源。项目级指引及未确认公告时间单列；历史回放不计为事前命中，未公布结果不排名。

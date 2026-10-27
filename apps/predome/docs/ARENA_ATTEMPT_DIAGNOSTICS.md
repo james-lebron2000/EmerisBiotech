@@ -2,7 +2,7 @@
 
 当前源码候选为未来新登记执行增加可选的内部 `attempts[n].diagnostics`，用于区分传输、响应解析和输出校验的失败边界。诊断版本为 `arena-attempt-diagnostics-1`，Provider 为 `arena-providers-1.2.0`，Agent 为 `arena-agents-1.1.0`。这些版本不升级旧运行，也不改变预测 Prompt、严格解析规则、模型、预算、临床终点或评分方法。
 
-本轮范围为 **GitHub candidate only**。当前固定基线部署清单在源码中包含 **70 个文件、23 个 runtime 模块**，已纳入共享诊断模块、Agent 和 operator CLI；本轮尚未正式打包、stage 或部署上线，不操作服务器后台。源码与测试不代表生产已经运行新版本，也不授权新模型调用。
+诊断改造提交 `8f6cf3f` 的范围为 **GitHub candidate only**，当时固定基线部署清单包含 **70 个文件、23 个 runtime 模块**，已纳入共享诊断模块、Agent 和 operator CLI；该轮未正式打包、stage 或部署上线。后续清单可能随独立功能更新，以对应提交为准。源码与测试不代表生产已经运行新版本，也不授权新模型调用。
 
 ## 合同归属与接线
 

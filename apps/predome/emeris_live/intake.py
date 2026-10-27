@@ -5,6 +5,7 @@ import hashlib,json,re,uuid,base64
 from urllib.parse import urlencode
 from urllib.request import Request,urlopen
 from defusedxml import ElementTree as ET
+from .trial_documents import document_inventory
 
 NCT=re.compile(r'^NCT[0-9]{8}$')
 def now():return datetime.now(timezone.utc).isoformat()
@@ -41,23 +42,59 @@ def save_candidate(store,nct,kind,url,raw,structured,source_key=None,hash_scope=
 def list_candidates(store,limit=100,offset=0):
     initialize(store)
     with store.connect() as db:
-        rows=db.execute('SELECT * FROM intake_candidates ORDER BY created DESC,id DESC LIMIT ? OFFSET ?',(min(max(limit,1),200),max(offset,0)))
-        return [dict(id=r['id'],created=r['created'],**{k:v for k,v in store.unpack(r['payload']).items() if k!='raw_text'}) for r in rows]
+        rows=db.execute('SELECT * FROM intake_candidates ORDER BY created DESC,id DESC LIMIT ? OFFSET ?',(min(max(limit,1),200),max(offset,0))).fetchall()
+    return [{k:v for k,v in _candidate_projection(store,r).items() if k!='raw_text'} for r in rows]
 
 def get_candidate(store,id):
     initialize(store)
     with store.connect() as db:r=db.execute('SELECT * FROM intake_candidates WHERE id=?',(id,)).fetchone()
     if not r:raise KeyError(id)
-    return {'id':r['id'],'created':r['created'],**store.unpack(r['payload'])}
+    return _candidate_projection(store,r)
 
-def get_source_bytes(store,id):
-    source=get_candidate(store,id)
+
+def _source_bytes(store,source):
+    """Read archived bytes or the existing legacy text fallback, without recursion."""
     with store.connect() as db:row=db.execute('SELECT payload FROM intake_source_blobs WHERE sha256=?',(source['source']['sha256'],)).fetchone()
     if row:
         raw=base64.b64decode(store.unpack(row['payload'])['bytes_b64'],validate=True)
     else:
         raw=source['raw_text'].encode('utf-8')
     if hashlib.sha256(raw).hexdigest()!=source['source']['sha256']:raise ValueError('Original source bytes unavailable or integrity check failed')
+    return raw
+
+
+def _candidate_projection(store,row):
+    """Derive registry inventory from verified originals; never update old payloads."""
+    source={'id':row['id'],'created':row['created'],**store.unpack(row['payload'])}
+    if source.get('kind') not in ('registry_update','reported_results_candidate'):
+        return source
+    structured=dict(source['structured']) if isinstance(source.get('structured'),dict) else {}
+    digest=row['sha256'] if isinstance(row['sha256'],str) and re.fullmatch(r'[a-f0-9]{64}',row['sha256']) else None
+    projection={'schema_version':'predome.registry-document-projection-1',
+                'status':'source_unavailable','source_sha256':digest}
+    structured.update(study_documents=None,study_documents_projection=projection)
+    source={**source,'structured':structured}
+    try:
+        nct=source['nct_id'];metadata=source['source']
+        if (not isinstance(nct,str) or not NCT.fullmatch(nct) or nct!=row['nct']
+                or source['kind']!=row['kind'] or metadata.get('sha256')!=digest
+                or metadata.get('url')!='https://clinicaltrials.gov/api/v2/studies/'+nct
+                or row['source_url'] not in (metadata['url'],metadata['url']+'#predome-trial='+nct)):
+            raise ValueError('Registry source identity mismatch')
+        value=json.loads(_source_bytes(store,source))
+        if value.get('protocolSection',{}).get('identificationModule',{}).get('nctId')!=nct:
+            raise ValueError('Original registry identity mismatch')
+        structured['study_documents']=document_inventory(value)
+        projection['status']='verified_source_bytes'
+    except Exception:
+        # Unavailable or corrupt originals are unknown, never an empty listing.
+        pass
+    return source
+
+
+def get_source_bytes(store,id):
+    source=get_candidate(store,id)
+    raw=_source_bytes(store,source)
     return raw,source
 
 def jobs(store):
@@ -73,6 +110,7 @@ def registry_summary(value):
             'results_first_post_date':status.get('resultsFirstPostDateStruct'),
             'registered_primary_outcomes':p.get('outcomesModule',{}).get('primaryOutcomes',[]),
             'reported_outcome_measures':result.get('outcomeMeasuresModule',{}).get('outcomeMeasures',[]),
+            'study_documents':document_inventory(value),
             'extraction_status':'needs_review','label':None,
             'note':'Reported measures, analyses, effect estimates and P values are retained as source structure. No primary success label is inferred.'}
 
