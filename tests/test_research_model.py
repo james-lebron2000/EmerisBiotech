@@ -264,6 +264,20 @@ def test_json_escaped_credentials_are_not_persisted(ready,monkeypatch):
     assert r['error']=='credential_echo_rejected' and KEY not in store.export(pid).decode() and not proposals(store,pid)
 
 
+def test_short_http_body_is_not_certified_complete_even_if_prefix_is_valid_json(ready,monkeypatch):
+    store,pid,ref=ready;calls,_=transport(monkeypatch,envelope(draft(store,pid,ref)))
+    import vbt.research_model as model
+    original=model.http.client.HTTPSConnection
+    class ShortBody(original):
+        def getresponse(self):
+            response=super().getresponse();response.length=5
+            return response
+    monkeypatch.setattr(model.http.client,'HTTPSConnection',ShortBody)
+    r=run(ready)
+    assert r['error']=='response_incomplete' and not r['response_complete'] and r['response_sha256'] is None
+    assert len(calls)==1 and not proposals(store,pid)
+
+
 def test_http_explicit_send_and_csrf_use_actual_adapter(ready,monkeypatch,tmp_path):
     store,pid,ref=ready;calls,_=transport(monkeypatch,envelope(draft(store,pid,ref)))
     app=Workbench(tmp_path/'workspace',store.state)

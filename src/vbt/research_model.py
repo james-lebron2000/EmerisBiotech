@@ -185,6 +185,12 @@ def call_once(config, body):
                 connection.sock.settimeout(remaining)
             chunk = response.read1(min(16384, MAX_RESPONSE + 1 - result['observed_response_bytes']))
             if not chunk:
+                # HTTPResponse.read1 can return EOF without raising when a
+                # Content-Length body is short. Do not certify a complete hash
+                # or usable draft solely because the received prefix is JSON.
+                if getattr(response, 'length', None) not in (None, 0):
+                    result['error'] = 'response_incomplete'
+                    return result
                 break
             result['observed_response_bytes'] += len(chunk)
             if result['observed_response_bytes'] > MAX_RESPONSE:
