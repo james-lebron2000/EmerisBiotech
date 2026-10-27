@@ -30,6 +30,9 @@ def main():
         result=generate(store,args.program,args.author,store.get(args.program)['revision'],args.packet_hash,args.config_hash,args.send_context)
         print(json.dumps({k:v for k,v in result.items() if k!='draft'},ensure_ascii=False,indent=2))
         if result['status']!='succeeded':raise SystemExit(2)
-    else:print(json.dumps(run_tool(store,args.program,args.proposal_id,args.task,args.author,store.get(args.program)['revision']),ensure_ascii=False,indent=2))
+    else:
+        result=run_tool(store,args.program,args.proposal_id,args.task,args.author,store.get(args.program)['revision'])
+        print(json.dumps(result,ensure_ascii=False,indent=2))
+        if result['status']!='succeeded':raise SystemExit(2)
 
 if __name__=='__main__':main()

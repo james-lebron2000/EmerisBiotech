@@ -107,6 +107,18 @@ def test_attempt_cap_stops_before_next_task(ready):
     assert run_batch(store,pid,bid,'worker',store.get(pid)['revision'])==[]
 
 
+def test_cli_no_progress_is_not_reported_as_completed(ready):
+    store,pid,rid,bid,source=create(ready,budget=dict(max_attempts=1,max_seconds=60,per_task_seconds=15))
+    run_batch(store,pid,bid,'worker',store.get(pid)['revision'])
+    before=len(store.events(pid))
+    script=Path(__file__).resolve().parent.parent/'scripts/research_batches.py'
+    result=subprocess.run([sys.executable,str(script),'--state-dir',str(store.state),'--program',pid,
+        'run','--batch',bid,'--author','engineering CLI operator'],capture_output=True,text=True,timeout=10)
+    payload=json.loads(result.stdout)
+    assert result.returncode==2 and payload['status']=='budget_exhausted' and payload['receipts']==[]
+    assert len(store.events(pid))==before
+
+
 def slow_child(monkeypatch):
     import vbt.research_queue as queue
     original=queue.subprocess.Popen;children=[];started=threading.Event()

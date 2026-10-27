@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 from vbt.programs import Programs
-from vbt.research_queue import enqueue,run_batch,cancel,recover,retry,export_batches
+from vbt.research_queue import enqueue,run_batch,cancel,recover,retry,export_batches,get_batch
 
 
 def main():
@@ -26,7 +26,10 @@ def main():
     if args.command=='enqueue':
         result=enqueue(store,args.program,args.proposal_id,args.task,json.loads(args.dependencies_json),dict(max_attempts=args.max_attempts,max_seconds=args.max_seconds,per_task_seconds=args.per_task_seconds),args.author,revision)
     elif args.command=='run':
-        result=run_batch(store,args.program,args.batch,args.author,revision)
+        receipts=run_batch(store,args.program,args.batch,args.author,revision)
+        batch=get_batch(store,args.program,args.batch)
+        result=dict(batch_id=args.batch,status=batch['status'],receipts=receipts,
+                    remaining_attempts=batch['remaining_attempts'],remaining_seconds=batch['remaining_seconds'])
     elif args.command=='cancel':
         result=cancel(store,args.program,args.batch,args.author,revision,args.reason)
     elif args.command=='recover':
@@ -34,7 +37,7 @@ def main():
     else:
         result=retry(store,args.program,args.batch,args.task,args.author,revision,args.reason)
     print(json.dumps(result,ensure_ascii=False,indent=2))
-    if args.command=='run' and any(r['status']!='succeeded' for r in result):raise SystemExit(2)
+    if args.command=='run' and result['status']!='complete':raise SystemExit(2)
 
 
 if __name__=='__main__':main()
