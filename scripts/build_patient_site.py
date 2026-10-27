@@ -34,6 +34,7 @@ def main():
     shutil.copyfile(source.parent / 'product-review' / 'index.html', args.out / 'index.html')
     shutil.copyfile(source / 'styles.css', args.out / 'styles.css')
     shutil.copyfile(source.parent / 'product-review' / 'review.css', args.out / 'review.css')
+    shutil.copyfile(source.parent / 'product-review' / 'favicon.svg', args.out / 'favicon.svg')
     molecule_out = args.out / 'molecule-lab'
     molecule_out.mkdir(exist_ok=True)
     molecule_source = source.parent / 'molecule-lab'
