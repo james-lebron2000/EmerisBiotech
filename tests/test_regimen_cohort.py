@@ -144,4 +144,3 @@ def test_paired_comparison_strata_are_input_defined_and_exhaustive(result):
     assert verify_export(record)==result
     record['view']['comparison_stratum']='invented'
     with pytest.raises(ValueError):verify_export(record)
-
