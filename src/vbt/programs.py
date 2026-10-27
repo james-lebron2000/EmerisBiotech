@@ -280,6 +280,8 @@ class Programs:
         data={k:text(payload.get(k),k,10) for k in ('thesis','unresolved','next_request')}
         _,sha=self.attachment(pid,'NCT06137183_current.json')
         if sha!=asset['source_sha256']: raise ValueError('参考资产来源版本发生变化')
+        from .asset_diligence import bd_binding
+        data.update(bd_binding(self,pid,payload,asset['event_id']))
         data.update(action=payload['action'],asset_id=asset['event_id'],evidence_ids=refs,result_ids=result_refs,basis_revision=p['revision'],rights_status='not_established',scope='研究尽调记录；不构成资产权利、交易承诺、成功概率或投资收益判断')
         return self._append(pid,'diligence',data,author,revision)
 

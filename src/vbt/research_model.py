@@ -18,7 +18,7 @@ from .programs import Conflict, canonical
 from .ai_research import DOMAINS, TOOLS, packet, validate_proposal
 
 ADAPTER_VERSION = 'research-chat-1'
-PROMPT_VERSION = 'uc-research-json-1'
+PROMPT_VERSION = 'uc-research-json-2'
 MAX_RESPONSE = 1024 * 1024
 MAX_CONTEXT = 256 * 1024
 IDENTIFIER = re.compile(r'[A-Za-z0-9_.:/-]{1,160}')
@@ -34,6 +34,8 @@ next_action, success_criterion, stop_criterion, references. All tasks need
 references. Allowed tools: %s, manual_research. No code, arguments or URLs.
 Use exact evidence/result/asset event_id values; difference reference_id values
 are eligible only if scientific_review.source_integrity is verified.
+Asset claim reference_id values are eligible only when citation_eligible is true.
+A sponsor record or supported local review does not establish asset rights.
 Do not invent references or change the context. Explain missing data and
 counterevidence. Suggest tasks only; the host does not execute them automatically.
 Write reasons and task descriptions in Chinese, with at least 10 characters.

@@ -13,10 +13,12 @@ PROFILE=('title','target','population','modality','hypothesis','comparator','end
 def packet(store,pid):
     p=store.get(pid)
     from .scientific_review import context_summary
+    from .asset_diligence import context_summary as asset_context
     # Deliberately omit authors, filesystem paths and full event history. This
     # packet is local; exporting it never sends it to a model service.
-    data={'schema_version':3,'program_id':pid,'profile':{k:p[k] for k in PROFILE},
+    data={'schema_version':4,'program_id':pid,'profile':{k:p[k] for k in PROFILE},
           'scientific_review':context_summary(store,pid),
+          'asset_diligence':asset_context(store,pid),
           'evidence':[{k:e[k] for k in ('event_id','claim','scope','limitations','direction','review','source','source_date')} for e in p['evidence']],
           'results':[{k:r[k] for k in ('event_id','metric','unit','estimate','ci_low','ci_high','n','population','method','limitations','assessment','review','current_scope')} for r in p['results']],
           'assets':[{k:a[k] for k in ('event_id','asset_name','nct','purpose','registered_sponsor','trial_status','last_update','snapshot_date','rights_status','source_sha256')} for a in p['assets']],
@@ -34,6 +36,7 @@ def validate_proposal(proposal,context):
     if proposal.get('packet_hash')!=context['packet_hash']: raise Conflict('AI 草案所依据的项目内容已变化，请重新冻结上下文')
     if set(proposal)!={'packet_hash','summary','risks','tasks'}: raise ValueError('草案字段必须为 packet_hash、summary、risks、tasks')
     known={e['event_id'] for e in context['evidence']}|{r['event_id'] for r in context['results']}|{a['event_id'] for a in context['assets']}
+    known |= {r['reference_id'] for r in context.get('asset_diligence',{}).get('rows',[]) if r['citation_eligible']}
     comparison=context.get('scientific_review',{})
     # Historical snapshots stay readable, but unavailable source rows cannot
     # become newly qualified citations merely because their text was retained.

@@ -195,6 +195,18 @@ def handler(app, public_origin=None):
                     from .research_queue import export_batches
                     from .programs import Programs
                     self.send_bytes(200,export_batches(Programs(app.state),q.get('id','')),'application/json; charset=utf-8',True);return
+                if u.path=='/program/asset-source':
+                    from .asset_diligence import asset_source
+                    from .programs import Programs
+                    raw=asset_source(Programs(app.state),q.get('id',''),q.get('asset_id',''))
+                    self.send_bytes(200,raw,'application/json; charset=utf-8',True);return
+                if u.path=='/program/asset-matrix':
+                    from .asset_diligence import export_matrix
+                    from .programs import Programs
+                    fmt=q.get('format','md')
+                    raw=export_matrix(Programs(app.state),q.get('id',''),fmt)
+                    mime={'csv':'text/csv; charset=utf-8','json':'application/json; charset=utf-8'}.get(fmt,'text/plain; charset=utf-8')
+                    self.send_bytes(200,raw,mime,True);return
                 if u.path=='/program/comparison-report':
                     from .scientific_review import export_report
                     from .programs import Programs
@@ -261,6 +273,7 @@ def handler(app, public_origin=None):
                     from .program_view import submit
                     q['evidence_ids']=parsed.get('evidence_ids',[])
                     q['result_ids']=parsed.get('result_ids',[])
+                    q['asset_claim_ids']=parsed.get('asset_claim_ids',[])
                     q['task_ids']=parsed.get('task_ids',[])
                     dest=submit(app,q)
                 elif self.path.startswith('/market/'):

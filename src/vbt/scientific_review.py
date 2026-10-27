@@ -22,7 +22,7 @@ BASE_FILES = ('claim_comparison.csv', 'replication_status.json', REPORT,
               'published_compatible_reconstruction.csv', 'sample_flow.csv')
 COLUMNS = ('item', 'original', 'independent', 'status', 'difference_class', 'explanation', 'evidence')
 BASIS_KINDS = {'created', 'profile', 'evidence', 'evidence_review', 'result', 'result_review',
-               'asset_import', 'import', 'comparison_import'}
+               'asset_import', 'import', 'comparison_import', 'asset_claim', 'asset_claim_review'}
 LIMIT = 1024 * 1024
 
 

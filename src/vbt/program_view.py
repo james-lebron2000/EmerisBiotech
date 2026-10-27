@@ -110,12 +110,22 @@ def result_section(app,p):
 def diligence_section(app,p):
     body='<section class="section-head" id="asset-diligence"><h2>资产与 BD 尽调</h2><span>使用同一研究证据，单独记录资产判断</span></section><p class="data-note">研究假说、外部参考药物和可交易资产分别记录。登记申办方不等于资产所有权或可获得许可；研发决定也不等于投资判断。</p>'
     for a in p['assets']:
-        body+='<section class="card"><span class="badge">外部参考资产 · 权利未核实</span><h3>'+e(a['asset_name'])+'</h3><p>'+e(a['purpose'])+'</p><dl class="asset-facts"><dt>登记试验</dt><dd>'+e(a['nct'])+'</dd><dt>登记申办方</dt><dd>'+e(a['registered_sponsor'])+'</dd><dt>来源试验阶段/状态</dt><dd>'+e(', '.join(a['phases']))+' / '+e(a['trial_status'])+'</dd><dt>登记终止原因</dt><dd>'+e(a['why_stopped'])+'</dd><dt>版本日期</dt><dd>登记更新 '+e(a['last_update'])+'；本地快照 '+e(a['snapshot_date'])+'</dd></dl><a href="/program/attachment?id='+quote(p['id'])+'&file=NCT06137183_current.json" target="_blank" rel="noopener">查看本地登记源记录</a><p class="data-note">以上为有日期的来源快照，未据此认定当前完整管线、交易可得性或投资回报。</p></section>'
+        body+='<section class="card"><span class="badge">外部参考资产 · 权利未核实</span><h3>'+e(a['asset_name'])+'</h3><p>'+e(a['purpose'])+'</p><dl class="asset-facts"><dt>登记试验</dt><dd>'+e(a['nct'])+'</dd><dt>登记申办方</dt><dd>'+e(a['registered_sponsor'])+'</dd><dt>来源试验阶段/状态</dt><dd>'+e(', '.join(a['phases']))+' / '+e(a['trial_status'])+'</dd><dt>登记终止原因</dt><dd>'+e(a['why_stopped'])+'</dd><dt>版本日期</dt><dd>登记更新 '+e(a['last_update'])+'；本地快照 '+e(a['snapshot_date'])+'</dd></dl><a href="/program/asset-source?id='+quote(p['id'])+'&asset_id='+quote(a['event_id'])+'" target="_blank" rel="noopener">查看本地登记源记录</a><p class="data-note">以上为有日期的来源快照，未据此认定当前完整管线、交易可得性或投资回报。</p></section>'
     if not p['assets']:return body+'<p class="data-note">尚未关联有来源的外部参考资产。先补齐实体与权利范围。</p>'
+    from .asset_diligence_view import render_matrix
+    matrix_body, matrix_state = render_matrix(app,p)
+    body += matrix_body
     for r in reversed(p['diligence']):
+        body += '<p class="data-note">'+('资料矩阵已变化或旧记录未绑定矩阵，需重新核对。' if r.get('asset_matrix_hash') != matrix_state['matrix_hash'] else '已绑定当前资料矩阵；仍非权利或交易认证。')+'</p>'
         body+='<section class="card"><h3>'+e(BD_ACTIONS[r['action']])+'</h3><p>'+e(r['thesis'])+'</p><p><b>未解决的资产与交易问题</b> '+e(r['unresolved'])+'</p><p><b>下一项资料需求</b> '+e(r['next_request'])+'</p><p class="ref">'+e(r['author'])+' · '+e(r['created'])+'<br>依据版本 '+e(r['basis_revision'])+'</p></section>'
     body+=form(app,p,'diligence','记录资产尽调下一步')+'<label for="bd-asset">参考资产</label><select id="bd-asset" name="asset_id">'+''.join('<option value="'+e(a['event_id'])+'">'+e(a['asset_name'])+' · '+e(a['nct'])+'</option>' for a in p['assets'])+'</select><label for="bd-action">尽调动作</label><select id="bd-action" name="action">'+''.join('<option value="'+k+'">'+v+'</option>' for k,v in BD_ACTIONS.items())+'</select>'
     for k,l in [('thesis','研究证据对资产机会意味着什么（至少 10 字符）'),('unresolved','权利、差异化、交易和商业风险中尚缺什么'),('next_request','下一步需要哪些具体材料或验证')]:body+=field(k,l)
+    body += '<input type="hidden" name="asset_matrix_hash" value="'+e(matrix_state['matrix_hash'])+'">'
+    if matrix_state['rows']:
+        body += '<fieldset><legend>勾选所选资产的全部资料（含反证、未知和过期依据）</legend>'
+        for row in matrix_state['rows']:
+            body += '<label><input type="checkbox" name="asset_claim_ids" value="'+e(row['event_id'])+'"> '+e(row['asset_identity']+' · '+row['claim'])+'</label>'
+        body += '<label><input type="checkbox" name="acknowledge_gaps" value="yes" required>已面对全部资料及缺失项，未将过期依据视为当前证明，未认证权利或交易。</label></fieldset>'
     body+=evidence_choices(p,'bd')
     if any(r['current_scope'] for r in p['results']):body+='<fieldset><legend>引用当前验证结果</legend>'+''.join('<label><input type="checkbox" name="result_ids" value="'+e(r['event_id'])+'"> '+e(r['metric'])+' · '+e(ASSESSMENTS[r['assessment']])+'</label>' for r in p['results'] if r['current_scope'])+'</fieldset>'
     return body+field('author','尽调记录人（本地声明）','text')+'<p><button>保存尽调记录</button></p></form>'
@@ -130,6 +140,9 @@ def submit(app,q):
     elif operation=='result':store.add_result(pid,q,author,revision)
     elif operation=='result_review':store.review_result(pid,q,author,revision)
     elif operation=='diligence':store.add_diligence(pid,q,author,revision)
+    elif operation in ('asset_claim','asset_claim_review'):
+        from .asset_diligence import add_claim,review_claim
+        (add_claim if operation=='asset_claim' else review_claim)(store,pid,q,author,revision)
     elif operation=='scientific_assessment':
         from .scientific_review import assess
         assess(store,pid,dict(q,references=q.get('evidence_ids',[])),author,revision)
