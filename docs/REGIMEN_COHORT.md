@@ -1,6 +1,6 @@
 # 120-patient treatment atlas
 
-The default public `cohort-lab/` shows the same 120 authored synthetic patients under
+The third section of public `cohort-lab/` shows the same 120 authored synthetic patients under
 two sequential pathways. It replaces the default presentation, not the prior assay
 engine. The frozen 24-patient paired-exposure model and its verifier remain unchanged;
 its public UI now lives at `assay-cohort-archive/`. The local workbench route remains
@@ -73,3 +73,5 @@ CSV contains 120×2×73 = 17,520 rows. The older export schemas remain supported
 This integrity check is not scientific review, a signature, identity verification or
 clinical validation. No real patients, trial participants or clinical benefit are
 claimed.
+
+The company/product/simulation narrative and Chinese edition are documented in [COHORT_PRESENTATION.md](COHORT_PRESENTATION.md).

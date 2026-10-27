@@ -51,7 +51,8 @@ links to:
 
 - `molecule-lab/`: automatic state summaries from matched patient/drug assay counts,
   raw evidence, data cutoffs, browser-only saved runs and JSON export.
-- `cohort-lab/`: 120 synthetic mCRC patients under two 1L/2L/3L treatment pathways,
+- `cohort-lab/`: company/product/simulation presentation; Chinese edition at
+  `cohort-lab/zh.html`, with language switching. The simulation shows 120 synthetic mCRC patients under two 1L/2L/3L treatment pathways,
   a compact paired patient matrix, continuous playback and source-backed regimen names.
   All burden trajectories are fictional and uncalibrated; see [methods](docs/REGIMEN_COHORT.md).
 - `assay-cohort-archive/`: the unchanged 24-patient paired-exposure cohort and exports.
