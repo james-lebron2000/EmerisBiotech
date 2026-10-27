@@ -1,0 +1,134 @@
+{
+  "schema_version": "arena-citation-assessments-v1",
+  "reviews": [
+    {
+      "run_id": "run-0e5ff767be094423b30976567a8acfcb",
+      "reviewer_id": "codex-source-check-20261023",
+      "reviewer_kind": "ai",
+      "assessment": {
+        "scope": "frozen_packet_claim_source_pairs",
+        "claim_inventory_complete": false,
+        "inventory_method": "AI selected-statement review of three existing probability narratives against their own frozen input packets; includes factual claims and stated extrapolations. Not a full claim census or re-review of all original publications.",
+        "run_output_sha256": "c4d1da418f15d49fbcc1e1905bf0556cef8b1720df47735fec3fa923cfaf8833",
+        "pairs": [
+          {
+            "claim_id": "claim-1",
+            "claim_text": "仅有的一项临床疗效证据显示Dato-DXd在既往治疗非鳞NSCLC中较化疗改善PFS",
+            "source_id": "tropion_lung01_nsq_pfs",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "verdict": "partially_supports",
+            "packet_excerpt": "versus docetaxel",
+            "note": "冻结证据明确对照为多西他赛，泛称化疗扩大了对照范围；PFS方向得到支持。"
+          },
+          {
+            "claim_id": "claim-2",
+            "claim_text": "为靶向人群的一线组合治疗提供弱正向外推",
+            "source_id": "tropion_lung01_nsq_pfs",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "verdict": "unverifiable",
+            "packet_excerpt": "It is not an AVANZAR treatment effect.",
+            "note": "这是跨线别、跨方案和人群的推断；输入不足以核实该外推的方向或大小。"
+          },
+          {
+            "claim_id": "claim-3",
+            "claim_text": "登记信息仅确认目标假设属于预设主要分析",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "verdict": "supports",
+            "packet_excerpt": "There are four primary hypotheses",
+            "note": "注册摘要把指定目标列为四个主要假设之一。"
+          }
+        ]
+      }
+    },
+    {
+      "run_id": "run-91c6892aabb14573811bdd41463d7955",
+      "reviewer_id": "codex-source-check-20261023",
+      "reviewer_kind": "ai",
+      "assessment": {
+        "scope": "frozen_packet_claim_source_pairs",
+        "claim_inventory_complete": false,
+        "inventory_method": "AI selected-statement review of three existing probability narratives against their own frozen input packets; includes factual claims and stated extrapolations. Not a full claim census or re-review of all original publications.",
+        "run_output_sha256": "665e1250943e2ba6443ffa06f7193aa8829286c3036866fc2abda51317d6cd2b",
+        "pairs": [
+          {
+            "claim_id": "claim-1",
+            "claim_text": "既往经治非鳞NSCLC中单药相对多西他赛改善PFS",
+            "source_id": "tropion_lung01_nsq_pfs",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "verdict": "supports",
+            "packet_excerpt": "PFS HR 0.63",
+            "note": "冻结输入的间接随机证据支持这句话；仅核对输入，未重新审核全文。"
+          },
+          {
+            "claim_id": "claim-2",
+            "claim_text": "且早期研究中存在未确认客观缓解",
+            "source_id": "WO2020240467A1-example7-orr",
+            "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+            "verdict": "supports",
+            "packet_excerpt": "Investigator-assessed UNCONFIRMED objective responses",
+            "note": "一期未确认缓解得到指定实验卡支持；没有转写为随机比较疗效。"
+          },
+          {
+            "claim_id": "claim-3",
+            "claim_text": "未提供结果、事件数、α分配或TROP2阳性比例",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+            "verdict": "supports",
+            "packet_excerpt": "Alpha allocation, event counts, biomarker prevalence",
+            "note": "指定输入确实缺少这些目标分析资料。"
+          }
+        ]
+      }
+    },
+    {
+      "run_id": "run-54621de8471d4771819e2a048bac8bd7",
+      "reviewer_id": "codex-source-check-20261023",
+      "reviewer_kind": "ai",
+      "assessment": {
+        "scope": "frozen_packet_claim_source_pairs",
+        "claim_inventory_complete": false,
+        "inventory_method": "AI selected-statement review of three existing probability narratives against their own frozen input packets; includes factual claims and stated extrapolations. Not a full claim census or re-review of all original publications.",
+        "run_output_sha256": "a83642a62bbc7b61beaf630981474e7bcc334583f1424fe421a15a67c6bcdb6f",
+        "pairs": [
+          {
+            "claim_id": "claim-1",
+            "claim_text": "Dato-DXd 单药在既往治疗非鳞 NSCLC 对比多西他赛的 PFS HR 0.63",
+            "source_id": "tropion_lung01_nsq_pfs",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "verdict": "supports",
+            "packet_excerpt": "PFS HR 0.63",
+            "note": "数值、方向和对照与冻结输入一致，原始研究全文未在本次审核中重审。"
+          },
+          {
+            "claim_id": "claim-2",
+            "claim_text": "专利一期未确认 ORR",
+            "source_id": "WO2020240467A1-example7-orr",
+            "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+            "verdict": "supports",
+            "packet_excerpt": "Investigator-assessed UNCONFIRMED objective responses",
+            "note": "指定一期实验卡的未确认 ORR 支持该描述。"
+          },
+          {
+            "claim_id": "claim-3",
+            "claim_text": "AVANZAR 另有四个主要假设",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+            "verdict": "supports",
+            "packet_excerpt": "There are four primary hypotheses",
+            "note": "四主要假设见冻结注册摘要。"
+          },
+          {
+            "claim_id": "claim-4",
+            "claim_text": "多重性校正后该特定 PFS 假设达到统计学显著的成功概率被压低",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+            "verdict": "unverifiable",
+            "packet_excerpt": "Alpha allocation, event counts, biomarker prevalence",
+            "note": "输入未提供具体 alpha 分配与效应分布，不能核实所述概率压低程度。"
+          }
+        ]
+      }
+    }
+  ]
+}

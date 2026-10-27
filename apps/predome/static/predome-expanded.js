@@ -12,7 +12,7 @@
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   const num = v => finite(v) ? v.toFixed(3) : '无法估计';
   const probability = v => finite(v) && v >= 0 && v <= 1 ? (100 * v).toFixed(1) + '%' : '拒答 / 未提供';
-  const names = {design_logistic:'设计特征 · L2 逻辑回归', design_extra_trees:'设计特征 · Extra Trees', prior_augmented_logistic:'设计 + 前期证据 · L2 逻辑回归', prior_augmented_extra_trees:'设计 + 前期证据 · Extra Trees', beta_pooled:'统计 · 合并贝叶斯基准', beta_area:'统计 · 适应症收缩基准', constant_0_5:'固定 50% 基准', logistic_l2:'设计特征 · L2 逻辑回归', extra_trees:'设计特征 · Extra Trees', prior_logistic_l2:'设计 + 前期证据 · L2 逻辑回归', prior_extra_trees:'设计 + 前期证据 · Extra Trees', 'deepseek-flash':'DeepSeek Flash', 'deepseek-v4-pro':'DeepSeek Pro'};
+  const names = {design_logistic:'设计特征 · L2 逻辑回归', design_extra_trees:'设计特征 · Extra Trees', prior_augmented_logistic:'设计 + 前期证据 · L2 逻辑回归', prior_augmented_extra_trees:'设计 + 前期证据 · Extra Trees', beta_pooled:'统计 · 合并贝叶斯基准', beta_area:'统计 · 适应症收缩基准', constant_0_5:'固定 50% 基准', logistic_l2:'设计特征 · L2 逻辑回归', extra_trees:'设计特征 · Extra Trees', prior_logistic_l2:'设计 + 前期证据 · L2 逻辑回归', prior_extra_trees:'设计 + 前期证据 · Extra Trees', 'deepseek-flash':'deepseek-flash', 'deepseek-v4-pro':'deepseek-v4-pro'};
   const label = k => names[k] || k;
   const paragraph = (target, text, cls) => el(target).append(node('p', text, cls));
   const sourceLink = (parent, raw, title) => {

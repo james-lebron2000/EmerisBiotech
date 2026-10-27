@@ -1,0 +1,110 @@
+{
+  "schema_version": "predome-actual-public-brief-capture-1",
+  "captured_at_utc": "2026-10-26T20:03:07.186488+00:00",
+  "target_id": "of-retatrutide-pair-20261027-v1-target",
+  "nct_id": "NCT06662383",
+  "scope": "Real original forecasts via actual new API in a temporary host copy; not deployed or clinically validated.",
+  "api_status": 200,
+  "content_disposition": "attachment; filename=predome-clinical-brief-NCT06662383.zip",
+  "zip_sha256": "b778d1500af41cd2f7818d46da6484820ce2890d1a0c227cda57e68526d01d40",
+  "files": {
+    "clinical-brief.html": {
+      "sha256": "cb72c21e301f1ba561d63e384596a3d2a582751b30c08d0650f4b8d9dca99bff",
+      "bytes": 6757
+    },
+    "clinical-brief.md": {
+      "sha256": "1e43556c273e5aa834f5068e7a0de30df1be9c3fcd2f4b0859cbce8cef54bf3f",
+      "bytes": 4400
+    },
+    "clinical-record.json": {
+      "sha256": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249",
+      "bytes": 12294
+    },
+    "manifest.json": {
+      "sha256": "c29b91bc72b8ee4ac918a34e6efe4ea540d6da9a3be6858a79aad47b3a6bde08",
+      "bytes": 1807
+    }
+  },
+  "manifest": {
+    "assigned_records": 2,
+    "clinical_prediction_validated": false,
+    "cohort_id": "of-retatrutide-pair-20261027-v1",
+    "comparison_scope": "same_evidence_clinical_only",
+    "export_time_scope": "public_brief_export_only",
+    "exported_at_utc": "2026-10-26T20:03:07.152275+00:00",
+    "files": {
+      "clinical-brief.html": {
+        "bytes": 6757,
+        "sha256": "cb72c21e301f1ba561d63e384596a3d2a582751b30c08d0650f4b8d9dca99bff"
+      },
+      "clinical-brief.md": {
+        "bytes": 4400,
+        "sha256": "1e43556c273e5aa834f5068e7a0de30df1be9c3fcd2f4b0859cbce8cef54bf3f"
+      },
+      "clinical-record.json": {
+        "bytes": 12294,
+        "sha256": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249"
+      }
+    },
+    "independent_timestamp_attestation": false,
+    "ledger_writes": 0,
+    "nct_id": "NCT06662383",
+    "original_model_time_note": "Export time describes this public brief only. Original model-generation and lock times above are unchanged stored timestamps; this export does not independently prove those earlier times, expand a TSA proof, or generate a new prediction.",
+    "original_model_times": [
+      {
+        "generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+        "id": "run-609621f37ca3480b916128224492de98",
+        "locked_at_utc": "2026-10-26T17:53:28.016692+00:00"
+      },
+      {
+        "generated_at_utc": "2026-10-26T17:55:11.481075+00:00",
+        "id": "run-b58d38210ec24ce7b40cb9f019c5f5d0",
+        "locked_at_utc": "2026-10-26T17:55:11.481075+00:00"
+      }
+    ],
+    "page_url": "https://8.148.145.28/arena?target=of-retatrutide-pair-20261027-v1-target",
+    "provider_calls": 0,
+    "record_kind": "independent_research_pilot",
+    "record_version": "arena-clinical-public-1.1",
+    "schema_version": "predome-public-clinical-brief-1",
+    "target_id": "of-retatrutide-pair-20261027-v1-target"
+  },
+  "public_control_records": 2,
+  "failed_controls": 1,
+  "result": null,
+  "model_matches": 0,
+  "original_runtime_files_unchanged": true,
+  "copied_forecast_database_bytes_unchanged": true,
+  "forecast_events_unchanged": true,
+  "physical_host_events": 331,
+  "host_ledger_sha256": "0ec9fb20841e5aba43aaa09e40573f862c34efe4c1d2391b331806077b36c79b",
+  "sqlite_auxiliary_files_created_by_readonly_connection": [
+    {
+      "name": "arena.sqlite3-shm",
+      "bytes": 32768,
+      "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+    },
+    {
+      "name": "arena.sqlite3-wal",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_runtime_changed": false,
+  "initial_capture_check": "Attempt1 preserved separately: file-set assertion rejected newly created empty WAL/shared-memory files; database bytes and ledger events remained unchanged.",
+  "producer_and_ui_sha256": {
+    "emeris_live/arena_public_brief.py": "ceb857232d5e1cd2a0a0f19e76c3eada6e9822fa1a86e1525f0e46e266fb095c",
+    "emeris_live/arena_public.py": "d928de4e281cd1b39de924e96da2884c03f1dfd00e3edad1e7e8d6bd79ef0294",
+    "static/arena-public.js": "9b2d3d29a42130cbd9968b2219184eb93ae528a0bcc8432c5c58acce171b9239",
+    "static/arena-public.html": "df675c45948283b4d5c2b931721665c9e3c223f4fee703ca651d02c894434d58",
+    "static/arena-public.css": "2d5f167c249ddb082ef5be53d83cfc33d97f22796057e4de1d3a1f6e6e91b089",
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3"
+  },
+  "provider_calls": 0,
+  "new_predictions": 0,
+  "actual_outcomes_created": 0,
+  "clinical_prediction_validated": false,
+  "deployment_completed": false
+}

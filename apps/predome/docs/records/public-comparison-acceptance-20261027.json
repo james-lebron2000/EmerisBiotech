@@ -1,0 +1,179 @@
+{
+  "schema_version": "predome.public-comparison-acceptance-summary-1",
+  "checked_at_utc": "2026-10-27T04:03:16.568687+00:00",
+  "scope": "Actual unmodified public comparison producer and API over three authorized existing local Arena ledgers. Not server state, a fresh official-result search, scientific review or new predictions.",
+  "candidate_source_hashes": {
+    "emeris_live/arena_comparisons.py": "cceeb8853071674e8576466d83b237f62a47f8b836c834078adb0547985ab9a1",
+    "emeris_live/arena_public.py": "0bf7497aeaa73ac1aa4d42fa8e73b48932ff7a8f6d9f1d296270f51d38275e30"
+  },
+  "runtime_count": 3,
+  "target_versions_checked": 8,
+  "original_assigned_records_preserved": 134,
+  "patent_comparison_statuses": {
+    "incomplete_judgments": 10,
+    "comparable_judgments": 4
+  },
+  "agent_statuses": {
+    "failed": 5,
+    "predicted": 4,
+    "abstained": 1
+  },
+  "recorded_values_statuses_times_and_hashes_unchanged": true,
+  "public_probability_and_confidence_null": true,
+  "sources_and_privacy_scope": "Allowlisted public metadata and per-run references only. Original PDFs, private inputs, receipts and runtime paths are excluded from this summary.",
+  "all_checked_targets_pending_in_saved_records": true,
+  "pending_is_not_a_new_official_result_check": true,
+  "comparisons_reuse_projects_and_are_not_independent_trials": true,
+  "provider_calls": 0,
+  "server_operations": 0,
+  "ledger_writes": 0,
+  "human_scientific_reviews": 0,
+  "clinical_prediction_validated": false,
+  "targets": [
+    {
+      "target_id": "of-pilot-20261022-avanzar-pfs",
+      "checked_at_utc": "2026-10-27T04:03:16.225248+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "531916d299f6df1621a402d9a8e0877a1cc44987ba3cff9346495443291c977a",
+      "response_bytes": 834,
+      "patent_rows": 0,
+      "patent_comparison_statuses": {},
+      "agent_rows": 0,
+      "agent_statuses": {},
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-ablation-20261022-avanzar-pfs",
+      "checked_at_utc": "2026-10-27T04:03:16.267434+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "04de6915b4e7f8a3d528e6485906b516830d559924dd36f497bb6c5b01c04d07",
+      "response_bytes": 12223,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "incomplete_judgments": 2
+      },
+      "agent_rows": 2,
+      "agent_statuses": {
+        "failed": 2
+      },
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-workflow-20261023-avanzar-pfs",
+      "checked_at_utc": "2026-10-27T04:03:16.314544+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "7abb91a34312dff1c6c6972e0af9508838114b5d5233e498ae34edbd0c3f38df",
+      "response_bytes": 23080,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "incomplete_judgments": 2
+      },
+      "agent_rows": 4,
+      "agent_statuses": {
+        "predicted": 3,
+        "failed": 1
+      },
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-season-20261023-avanzar",
+      "checked_at_utc": "2026-10-27T04:03:16.359886+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "88582ef1d55e09a6013eb3510a626400562b89b8ea91f2d324d1b85062abbb17",
+      "response_bytes": 5907,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "incomplete_judgments": 2
+      },
+      "agent_rows": 0,
+      "agent_statuses": {},
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-season-20261023-corrected-avanzar",
+      "checked_at_utc": "2026-10-27T04:03:16.409915+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "6da6b6e51e1a1f5c7d57f8f9bbf6eba0dcf820b524bc5894211d3da2ea1473e0",
+      "response_bytes": 19379,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "comparable_judgments": 2
+      },
+      "agent_rows": 0,
+      "agent_statuses": {},
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-workflow-corrected-20261023-avanzar",
+      "checked_at_utc": "2026-10-27T04:03:16.458057+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "1cb7dcc533bd24de1b5e79d813d584f563ea79c832c120d56d058401de13f22d",
+      "response_bytes": 27835,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "comparable_judgments": 1,
+        "incomplete_judgments": 1
+      },
+      "agent_rows": 4,
+      "agent_statuses": {
+        "predicted": 1,
+        "abstained": 1,
+        "failed": 2
+      },
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-retatrutide-pair-20261027-v1-target",
+      "checked_at_utc": "2026-10-27T04:03:16.541053+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "5c048fdc3ddddeca9c42838449d9252fd89e3dd28a91916bf5be4245fa4f7f37",
+      "response_bytes": 14495,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "incomplete_judgments": 1,
+        "comparable_judgments": 1
+      },
+      "agent_rows": 0,
+      "agent_statuses": {},
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    },
+    {
+      "target_id": "of-retatrutide-assay-pair-20261027-v2-target",
+      "checked_at_utc": "2026-10-27T04:03:16.556819+00:00",
+      "http_status": 200,
+      "builder_equals_api": true,
+      "response_sha256": "024b6cbd6cf26a1871309b3c915da7fb33f8749711a28212d94009158457d8ec",
+      "response_bytes": 10646,
+      "patent_rows": 2,
+      "patent_comparison_statuses": {
+        "incomplete_judgments": 2
+      },
+      "agent_rows": 0,
+      "agent_statuses": {},
+      "persisted_target_status": "pending",
+      "all_individual_matches_none": true
+    }
+  ],
+  "actual_api_acceptance_database_and_wal_bytes_unchanged": true,
+  "earlier_baseline_storage_observation": {
+    "zero_byte_sqlite_wal_sidecar_created": true,
+    "main_database_bytes_and_logical_records_unchanged": true,
+    "reproduced_by_isolated_read_only_sqlite_fixture": true,
+    "sidecar_not_deleted_or_restored": true,
+    "scope": "Separate from the actual API before/after interval. Read-only SQL does not promise no SQLite sidecar creation."
+  }
+}

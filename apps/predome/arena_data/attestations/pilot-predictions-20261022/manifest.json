@@ -1,0 +1,1601 @@
+{
+  "covered_event_count": 15,
+  "ledger_sha256": "15be88ac79076c8aa84a92cf035c107d478842d902f24bf4c259479d10b7e861",
+  "purpose": "predictions",
+  "schema_version": "predome-arena-attestation-1",
+  "snapshot": {
+    "cohorts": [
+      {
+        "clinical_prediction_validated": false,
+        "event_hash": "be25ef422a972c21d0d62f2e6746e912ac5331c82fbf3679aa905c4a98ac9fa1",
+        "id": "of-pilot-20261022-v1",
+        "protocol": {
+          "comparison": "Same evidence and instructions; four gateway-reported models from three model families.",
+          "execution_budget": {
+            "budget_policy": "token_only_unpriced",
+            "max_input_chars": 6000,
+            "max_output_tokens": 4096,
+            "max_requests": 1,
+            "timeout_seconds": 120
+          },
+          "independent_timestamp": "Server append-only hash chain; external public attestation still pending.",
+          "maximum_slots": 4,
+          "metrics": "Brier/log loss after exact target outcome adjudication; coverage includes all four assigned slots; historical replay excluded.",
+          "pricing_status": "Unverified: provider pricing page requires account login. No monetary total is claimed.",
+          "primary_selection": "First run of each registered slot; failures retained, no replacement or semantic retry.",
+          "purpose": "First prospective operational pilot; full 12-project season remains to be enrolled",
+          "version": "pilot-20261022-v1"
+        },
+        "registered_at": "2026-10-22T15:49:35.737056+00:00",
+        "slot_count": 4,
+        "target_ids": [
+          "of-pilot-20261022-avanzar-pfs"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "created_at": "2026-10-22T15:49:35.737056+00:00",
+        "entity_id": "of-pilot-20261022-v1",
+        "event_hash": "be25ef422a972c21d0d62f2e6746e912ac5331c82fbf3679aa905c4a98ac9fa1",
+        "id": "69807bf0a5d44beb874ce00994399db2",
+        "kind": "cohort_registered",
+        "payload": {
+          "clinical_prediction_validated": false,
+          "protocol": {
+            "comparison": "Same evidence and instructions; four gateway-reported models from three model families.",
+            "execution_budget": {
+              "budget_policy": "token_only_unpriced",
+              "max_input_chars": 6000,
+              "max_output_tokens": 4096,
+              "max_requests": 1,
+              "timeout_seconds": 120
+            },
+            "independent_timestamp": "Server append-only hash chain; external public attestation still pending.",
+            "maximum_slots": 4,
+            "metrics": "Brier/log loss after exact target outcome adjudication; coverage includes all four assigned slots; historical replay excluded.",
+            "pricing_status": "Unverified: provider pricing page requires account login. No monetary total is claimed.",
+            "primary_selection": "First run of each registered slot; failures retained, no replacement or semantic retry.",
+            "purpose": "First prospective operational pilot; full 12-project season remains to be enrolled",
+            "version": "pilot-20261022-v1"
+          },
+          "slot_count": 4,
+          "target_ids": [
+            "of-pilot-20261022-avanzar-pfs"
+          ]
+        },
+        "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "seq": 1
+      },
+      {
+        "created_at": "2026-10-22T15:49:35.737118+00:00",
+        "entity_id": "of-pilot-20261022-avanzar-pfs",
+        "event_hash": "26c77b3a22c93e2f4db1da5c88330fd47b10586aa0ccadccbe3bcd6f68539e34",
+        "id": "5cd25587d5864f708d0a7d299a936312",
+        "kind": "target_registered",
+        "payload": {
+          "analysis_timepoint": "First officially reported decisive analysis of the specified primary PFS hypothesis; registry timeframe approximately 3 years.",
+          "cohort_id": "of-pilot-20261022-v1",
+          "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+          "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+          "drug": "datopotamab deruxtecan",
+          "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+          "evidence_ids": [
+            "registry-NCT05687266",
+            "tropion_lung01_nsq_pfs"
+          ],
+          "id": "of-pilot-20261022-avanzar-pfs",
+          "indication": "first-line advanced NSCLC",
+          "information_cutoff_utc": "2026-10-22T15:33:52.652299+00:00",
+          "nct_id": "NCT05687266",
+          "patent_ids": [],
+          "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+          "project_id": "datopotamab-deruxtecan",
+          "readout": {
+            "end": "2026-12-31",
+            "guidance_as_of": "2026-07-27",
+            "label": "H2 2026 公司指引；待更新核查",
+            "precision": "half_year",
+            "requires_refresh": true,
+            "source_title": "AstraZeneca H1 2026 Clinical Trials Appendix",
+            "source_url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+            "start": "2026-07-01"
+          },
+          "readout_screen": {
+            "checked_at_utc": "2026-10-22T15:35:52.652299+00:00",
+            "domains": [
+              "astrazeneca.com",
+              "daiichisankyo.com",
+              "clinicaltrials.gov",
+              "astrazeneca.com.cn",
+              "daiichisankyo.com.cn"
+            ],
+            "finding": "Retrieved results concerned TROPION-Breast02, TROPION-Lung01 or other trials, not the AVANZAR target.",
+            "method": "Registry hasResults check plus domain-limited English and Chinese search of sponsor official sources.",
+            "queries": [
+              "AVANZAR datopotamab trial results 2026",
+              "AVANZAR 研究 结果 2026"
+            ],
+            "sources": [
+              {
+                "retrieved_at": "2026-10-22T15:34:00.360843+00:00",
+                "sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+                "url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266"
+              },
+              {
+                "role": "earlier company timing guidance, not negative result proof",
+                "url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf"
+              }
+            ],
+            "status": "no_decisive_public_result_found"
+          },
+          "scope": "prospective_challenge",
+          "sponsor": "AstraZeneca / Daiichi Sankyo",
+          "status_note": "2026-10-22限定官方中英文检索未发现本目标决定性结果；不能排除未索引公告。注册记录预计主要完成时间2027-11，不能用其替换公司读出窗口。",
+          "submission_deadline_utc": "2026-10-22T18:35:52.652299+00:00",
+          "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+          "trial_name": "AVANZAR"
+        },
+        "previous_hash": "be25ef422a972c21d0d62f2e6746e912ac5331c82fbf3679aa905c4a98ac9fa1",
+        "seq": 2
+      },
+      {
+        "created_at": "2026-10-22T15:49:35.737209+00:00",
+        "entity_id": "run-42f455f175544523874f93f1468ad1c4",
+        "event_hash": "7c5d33ff135ada1a04a3308077ae583cee0762d0eb33913ae792392fed9e0b3f",
+        "id": "94603a4d51f9424fb5215fe76d28db62",
+        "kind": "slot_registered",
+        "payload": {
+          "cohort_id": "of-pilot-20261022-v1",
+          "condition": "clinical_only",
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+          "model_id": "glm-5.2",
+          "packet": {
+            "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+            "evidence": [
+              {
+                "available_at": "2026-10-09T23:59:59+00:00",
+                "id": "registry-NCT05687266",
+                "kind": "trial_registry",
+                "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+                "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+                "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+                "title": "AVANZAR registered design"
+              },
+              {
+                "available_at": "2024-09-09T23:59:59+00:00",
+                "id": "tropion_lung01_nsq_pfs",
+                "kind": "clinical_prior",
+                "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+                "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+                "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+                "title": "TROPION-Lung01 indirect randomized evidence"
+              }
+            ],
+            "target": {
+              "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+              "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+              "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+              "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+            }
+          },
+          "provider": "openai_compatible",
+          "provider_config_snapshot": {
+            "adapter_version": "arena-providers-1.0.0",
+            "availability_basis": "configuration_only_not_live_probe",
+            "available": true,
+            "config_sha256": "560035d58c19710f33b12e284896655d1d2919b12adbd336d0dbedb2813c3e68",
+            "cost_basis": null,
+            "cost_currency": null,
+            "id": "glm-5.2",
+            "model": "glm-5.2",
+            "model_version": "glm-5.2",
+            "name": "GLM 5.2 · Semantix 网关",
+            "pricing_configured": false,
+            "provider": "openai_compatible",
+            "reason": null,
+            "requested_model": "glm-5.2",
+            "unavailable_reason": null,
+            "workflows": [
+              "single_pass",
+              "evidence_review"
+            ]
+          },
+          "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+          "requested_model": "glm-5.2",
+          "scope": "prospective_challenge",
+          "target_id": "of-pilot-20261022-avanzar-pfs",
+          "track": "same_evidence",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "26c77b3a22c93e2f4db1da5c88330fd47b10586aa0ccadccbe3bcd6f68539e34",
+        "seq": 3
+      },
+      {
+        "created_at": "2026-10-22T15:49:35.737291+00:00",
+        "entity_id": "run-0e5ff767be094423b30976567a8acfcb",
+        "event_hash": "9d082a984bd0851e0d32f40cd56b471c72e7f15fecb1a3d333d3b46e26b9b565",
+        "id": "a392fbc1964047e08efcbb36fe351029",
+        "kind": "slot_registered",
+        "payload": {
+          "cohort_id": "of-pilot-20261022-v1",
+          "condition": "clinical_only",
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+          "model_id": "kimi-k3",
+          "packet": {
+            "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+            "evidence": [
+              {
+                "available_at": "2026-10-09T23:59:59+00:00",
+                "id": "registry-NCT05687266",
+                "kind": "trial_registry",
+                "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+                "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+                "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+                "title": "AVANZAR registered design"
+              },
+              {
+                "available_at": "2024-09-09T23:59:59+00:00",
+                "id": "tropion_lung01_nsq_pfs",
+                "kind": "clinical_prior",
+                "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+                "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+                "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+                "title": "TROPION-Lung01 indirect randomized evidence"
+              }
+            ],
+            "target": {
+              "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+              "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+              "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+              "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+            }
+          },
+          "provider": "openai_compatible",
+          "provider_config_snapshot": {
+            "adapter_version": "arena-providers-1.0.0",
+            "availability_basis": "configuration_only_not_live_probe",
+            "available": true,
+            "config_sha256": "42df19a35b8c6848908c6d52e63bf38288ec6e0b091979389bd11eb55368f0b4",
+            "cost_basis": null,
+            "cost_currency": null,
+            "id": "kimi-k3",
+            "model": "kimi-k3",
+            "model_version": "kimi-k3",
+            "name": "Kimi K3 · Semantix 网关",
+            "pricing_configured": false,
+            "provider": "openai_compatible",
+            "reason": null,
+            "requested_model": "kimi-k3",
+            "unavailable_reason": null,
+            "workflows": [
+              "single_pass",
+              "evidence_review"
+            ]
+          },
+          "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+          "requested_model": "kimi-k3",
+          "scope": "prospective_challenge",
+          "target_id": "of-pilot-20261022-avanzar-pfs",
+          "track": "same_evidence",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "7c5d33ff135ada1a04a3308077ae583cee0762d0eb33913ae792392fed9e0b3f",
+        "seq": 4
+      },
+      {
+        "created_at": "2026-10-22T15:49:35.737364+00:00",
+        "entity_id": "run-bc8d83525423416e9f73b7c6c3f0f66f",
+        "event_hash": "e81f5265bf677ac72ab83a224fd92afc765529f5ad655855c48462b80e82207c",
+        "id": "a483e70f5bf5418ba60e647096de8936",
+        "kind": "slot_registered",
+        "payload": {
+          "cohort_id": "of-pilot-20261022-v1",
+          "condition": "clinical_only",
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+          "model_id": "deepseek-v4.1-flash",
+          "packet": {
+            "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+            "evidence": [
+              {
+                "available_at": "2026-10-09T23:59:59+00:00",
+                "id": "registry-NCT05687266",
+                "kind": "trial_registry",
+                "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+                "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+                "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+                "title": "AVANZAR registered design"
+              },
+              {
+                "available_at": "2024-09-09T23:59:59+00:00",
+                "id": "tropion_lung01_nsq_pfs",
+                "kind": "clinical_prior",
+                "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+                "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+                "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+                "title": "TROPION-Lung01 indirect randomized evidence"
+              }
+            ],
+            "target": {
+              "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+              "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+              "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+              "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+            }
+          },
+          "provider": "openai_compatible",
+          "provider_config_snapshot": {
+            "adapter_version": "arena-providers-1.0.0",
+            "availability_basis": "configuration_only_not_live_probe",
+            "available": true,
+            "config_sha256": "be7149f93053fbf604de8d0e63b1b494662962ca8240454280abd9d8aa39ae58",
+            "cost_basis": null,
+            "cost_currency": null,
+            "id": "deepseek-v4.1-flash",
+            "model": "deepseek-v4.1-flash",
+            "model_version": "deepseek-v4.1-flash",
+            "name": "DeepSeek V4.1 Flash · Semantix 网关",
+            "pricing_configured": false,
+            "provider": "openai_compatible",
+            "reason": null,
+            "requested_model": "deepseek-v4.1-flash",
+            "unavailable_reason": null,
+            "workflows": [
+              "single_pass",
+              "evidence_review"
+            ]
+          },
+          "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+          "requested_model": "deepseek-v4.1-flash",
+          "scope": "prospective_challenge",
+          "target_id": "of-pilot-20261022-avanzar-pfs",
+          "track": "same_evidence",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "9d082a984bd0851e0d32f40cd56b471c72e7f15fecb1a3d333d3b46e26b9b565",
+        "seq": 5
+      },
+      {
+        "created_at": "2026-10-22T15:49:35.737438+00:00",
+        "entity_id": "run-260d69fafd9942288ef1ae3fc4cb36a9",
+        "event_hash": "2ec4fb9f86831bc04c345cb2d0522ab379fdbccd80f35d3b000be4405de531f4",
+        "id": "fd744f01893a47c5bfe2e0fde4e87f0e",
+        "kind": "slot_registered",
+        "payload": {
+          "cohort_id": "of-pilot-20261022-v1",
+          "condition": "clinical_only",
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+          "model_id": "deepseek-v4-pro",
+          "packet": {
+            "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+            "evidence": [
+              {
+                "available_at": "2026-10-09T23:59:59+00:00",
+                "id": "registry-NCT05687266",
+                "kind": "trial_registry",
+                "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+                "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+                "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+                "title": "AVANZAR registered design"
+              },
+              {
+                "available_at": "2024-09-09T23:59:59+00:00",
+                "id": "tropion_lung01_nsq_pfs",
+                "kind": "clinical_prior",
+                "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+                "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+                "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+                "title": "TROPION-Lung01 indirect randomized evidence"
+              }
+            ],
+            "target": {
+              "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+              "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+              "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+              "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+            }
+          },
+          "provider": "openai_compatible",
+          "provider_config_snapshot": {
+            "adapter_version": "arena-providers-1.0.0",
+            "availability_basis": "configuration_only_not_live_probe",
+            "available": true,
+            "config_sha256": "72337271265f53e7f0814e2f7b6764f7485045a41028ffbd6741b53c83830be7",
+            "cost_basis": null,
+            "cost_currency": null,
+            "id": "deepseek-v4-pro",
+            "model": "deepseek-v4-pro",
+            "model_version": "deepseek-v4-pro",
+            "name": "DeepSeek V4 Pro · Semantix 网关",
+            "pricing_configured": false,
+            "provider": "openai_compatible",
+            "reason": null,
+            "requested_model": "deepseek-v4-pro",
+            "unavailable_reason": null,
+            "workflows": [
+              "single_pass",
+              "evidence_review"
+            ]
+          },
+          "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+          "requested_model": "deepseek-v4-pro",
+          "scope": "prospective_challenge",
+          "target_id": "of-pilot-20261022-avanzar-pfs",
+          "track": "same_evidence",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "e81f5265bf677ac72ab83a224fd92afc765529f5ad655855c48462b80e82207c",
+        "seq": 6
+      },
+      {
+        "created_at": "2026-10-22T15:49:38.870778+00:00",
+        "entity_id": "attestation-b4189c418a1843d28a387c6e318b24fc",
+        "event_hash": "afd4f3ebb891d4b35132cbd0dec6e0f7c86e021570385951980f6bd16525191d",
+        "id": "1fdc1c959eb24fd8afec93cb54a87cfd",
+        "kind": "timestamp_attested",
+        "payload": {
+          "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+          "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+          "covered_event_count": 6,
+          "files": {
+            "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+            "manifest.json": "dbf27f6558bd6c9c1ec0e50768f515a320a39c98ab64117a7aa1a60ee5882e4c",
+            "manifest.tsq": "e7b1380c98200ab9ff4529dda81157a7af87e5ece21f0911bd8d9d0a0ce779c0",
+            "manifest.tsr": "337d2f9f141461887920998fe891d46743035885f31f4e12f0209b027ae9c21a",
+            "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+            "verification.txt": "59b9d249b15e4bbba3985139a3e6bf79d2dd541c239407cdedcc1c5e2b62ca50"
+          },
+          "generated_at_utc": "2026-10-22T15:49:38+00:00",
+          "id": "pilot-registration-20261022",
+          "ledger_sha256": "2ec4fb9f86831bc04c345cb2d0522ab379fdbccd80f35d3b000be4405de531f4",
+          "manifest_sha256": "dbf27f6558bd6c9c1ec0e50768f515a320a39c98ab64117a7aa1a60ee5882e4c",
+          "public_url": "https://8.148.145.28/api/arena/attestations/pilot-registration-20261022",
+          "purpose": "registration",
+          "signature_verified": true,
+          "timestamp_response_sha256": "337d2f9f141461887920998fe891d46743035885f31f4e12f0209b027ae9c21a",
+          "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+          "tsa": "FreeTSA",
+          "verification_method": "openssl_ts_verify",
+          "verified_at_utc": "2026-10-22T15:49:38.868955+00:00"
+        },
+        "previous_hash": "2ec4fb9f86831bc04c345cb2d0522ab379fdbccd80f35d3b000be4405de531f4",
+        "seq": 7
+      },
+      {
+        "created_at": "2026-10-22T15:49:50.052032+00:00",
+        "entity_id": "run-42f455f175544523874f93f1468ad1c4",
+        "event_hash": "46a4019163f59f5b97e3da7f7b4a0b453b026f7e62a9c2d69f121f2c146aa93b",
+        "id": "0e317f51be854bd5a9b78f956bd8ecfe",
+        "kind": "run_started",
+        "payload": {
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd"
+        },
+        "previous_hash": "afd4f3ebb891d4b35132cbd0dec6e0f7c86e021570385951980f6bd16525191d",
+        "seq": 8
+      },
+      {
+        "created_at": "2026-10-22T15:50:49.201181+00:00",
+        "entity_id": "run-42f455f175544523874f93f1468ad1c4",
+        "event_hash": "e9ef41a395f9288aeb1e5dd69ac27440c553058c7101e0564cbba5ddb0c41dac",
+        "id": "0568050b2fa24382b656ac275a770ac4",
+        "kind": "run_completed",
+        "payload": {
+          "adapter_version": "arena-providers-1.0.0",
+          "attempts": [
+            {
+              "cost_amount": null,
+              "cost_currency": null,
+              "cost_usd": null,
+              "error_code": "provider_response_incomplete",
+              "latency_ms": 59144,
+              "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+              "request_sha256": "7228c5f6aa9d684c9ff9e1d4f38923ef372e6d89c837adb59bfab47eb210fe1d",
+              "requested_model": "glm-5.2",
+              "response_sha256": "28c5e49a0641a821728ab8f5df1b7e66c1df579d00bce0fdd31df510bdedb6c6",
+              "returned_model": "glm-5.2",
+              "stage": "forecast",
+              "status": "failed",
+              "usage": {
+                "cache_read_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "input_tokens": 944,
+                "output_tokens": 4096
+              }
+            }
+          ],
+          "budget": {
+            "budget_policy": "token_only_unpriced",
+            "cost_currency": null,
+            "max_cost_amount": null,
+            "max_input_chars": 6000,
+            "max_output_tokens_per_request": 4096,
+            "max_requests": 1,
+            "monetary_limit_enforced": false,
+            "monetary_limit_scope": null,
+            "timeout_seconds_per_request": 120
+          },
+          "clinical_prediction_validated": false,
+          "config_sha256": "560035d58c19710f33b12e284896655d1d2919b12adbd336d0dbedb2813c3e68",
+          "cost_amount": null,
+          "cost_basis": null,
+          "cost_currency": null,
+          "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+          "cost_usd": null,
+          "error_code": "provider_response_incomplete",
+          "evidence_ids": [],
+          "evidence_review": null,
+          "key_assumptions": [],
+          "key_unknowns": [],
+          "known_cost_amount": null,
+          "known_cost_usd": null,
+          "latency_ms": 59144,
+          "model_id": "glm-5.2",
+          "opposing_evidence_ids": [],
+          "output_sha256": "046a353bcfa1670fdbdf08969c1dbae29eafe14810d6562202c87a40a8b40c82",
+          "probability": null,
+          "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "provider": "openai_compatible",
+          "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "provider_response_sha256": "704697a86d8e5d061754880f752c8b9bfd486b5b981e4b91882f57cb4bbdf50b",
+          "reasoning": "",
+          "request_sha256": "80e0b114f3d9f46750ea0767e29c14b81a02ae88db44ff089bea55c5d650435d",
+          "requested_model": "glm-5.2",
+          "returned_model": "glm-5.2",
+          "status": "failed",
+          "submission_on_time": true,
+          "supporting_evidence_ids": [],
+          "usage": {
+            "cache_read_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "input_tokens": 944,
+            "output_tokens": 4096
+          },
+          "workflow": "single_pass",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "46a4019163f59f5b97e3da7f7b4a0b453b026f7e62a9c2d69f121f2c146aa93b",
+        "seq": 9
+      },
+      {
+        "created_at": "2026-10-22T15:50:49.206078+00:00",
+        "entity_id": "run-0e5ff767be094423b30976567a8acfcb",
+        "event_hash": "2f38c566798ee893af9ca5e4630eccacfdc0a6c2d26775f5f870e15cbd64ceff",
+        "id": "ffac1e3aeb3a4b988b32f41c3690e764",
+        "kind": "run_started",
+        "payload": {
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd"
+        },
+        "previous_hash": "e9ef41a395f9288aeb1e5dd69ac27440c553058c7101e0564cbba5ddb0c41dac",
+        "seq": 10
+      },
+      {
+        "created_at": "2026-10-22T15:51:15.547318+00:00",
+        "entity_id": "run-0e5ff767be094423b30976567a8acfcb",
+        "event_hash": "2bdfe88e7276039aa84570993e96871b572d869d3a369348a08665ac71e879c1",
+        "id": "b7788e1e8274410785926a5db4e244df",
+        "kind": "run_completed",
+        "payload": {
+          "adapter_version": "arena-providers-1.0.0",
+          "attempts": [
+            {
+              "cost_amount": null,
+              "cost_currency": null,
+              "cost_usd": null,
+              "error_code": null,
+              "latency_ms": 26337,
+              "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+              "request_sha256": "65377172535fced6e78f51a4fbcc972b416eb46032357bc10d7593f4cfbcf356",
+              "requested_model": "kimi-k3",
+              "response_sha256": "ffbca3622ec043da2dddea90f1f5edd09d48dc6ed60704f08ab92aa937885890",
+              "returned_model": "kimi-k3",
+              "stage": "forecast",
+              "status": "validated",
+              "usage": {
+                "cache_read_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "input_tokens": 1007,
+                "output_tokens": 944
+              }
+            }
+          ],
+          "budget": {
+            "budget_policy": "token_only_unpriced",
+            "cost_currency": null,
+            "max_cost_amount": null,
+            "max_input_chars": 6000,
+            "max_output_tokens_per_request": 4096,
+            "max_requests": 1,
+            "monetary_limit_enforced": false,
+            "monetary_limit_scope": null,
+            "timeout_seconds_per_request": 120
+          },
+          "clinical_prediction_validated": false,
+          "config_sha256": "42df19a35b8c6848908c6d52e63bf38288ec6e0b091979389bd11eb55368f0b4",
+          "cost_amount": null,
+          "cost_basis": null,
+          "cost_currency": null,
+          "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+          "cost_usd": null,
+          "error_code": null,
+          "evidence_ids": [
+            "registry-NCT05687266",
+            "tropion_lung01_nsq_pfs"
+          ],
+          "evidence_review": null,
+          "key_assumptions": [
+            "既往治疗人群中的PFS获益可作为该药物临床活性的弱间接依据，但不能等同于AVANZAR的目标治疗效果。",
+            "一线Dato-DXd、度伐利尤单抗和卡铂组合能够保留至少部分药物活性。",
+            "最终判定需基于预设统计计划下TROP2阳性非鳞人群经BICR评估且满足多重性要求的结果。"
+          ],
+          "key_unknowns": [
+            "目标假设的显著性水平分配、事件数、检验功效、缺失数据处理和多重性控制均未披露。",
+            "TROP2阳性比例及其对疗效的预测或预后影响未知。",
+            "三联方案相对帕博利珠单抗联合铂类化疗的净疗效与安全性耐受性未知。",
+            "登记估计完成时间不能保证首次决定性主要分析的公布时间。",
+            "无法排除回顾性污染及预训练记忆对判断的潜在影响。"
+          ],
+          "known_cost_amount": null,
+          "known_cost_usd": null,
+          "latency_ms": 26338,
+          "model_id": "kimi-k3",
+          "opposing_evidence_ids": [],
+          "output_sha256": "c4d1da418f15d49fbcc1e1905bf0556cef8b1720df47735fec3fa923cfaf8833",
+          "probability": 0.55,
+          "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "provider": "openai_compatible",
+          "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "provider_response_sha256": "e0c42c7605ed316ccbd04a703a9405e9b2fe99ea9b8a07868826f4304c07fa5a",
+          "reasoning": "仅有的一项临床疗效证据显示Dato-DXd在既往治疗非鳞NSCLC中较化疗改善PFS，为靶向人群的一线组合治疗提供弱正向外推；但治疗线别、方案组成、对照、TROP2阳性人群及统计检验均不同，因此只能给出接近中性、轻微偏正面的主观未校准概率。登记信息仅确认目标假设属于预设主要分析，未提供可判断疗效的结果。",
+          "request_sha256": "b1d279dd95a5f8649b0c7ff5a7db80350cda6b956696a8688152d6541f59e2e9",
+          "requested_model": "kimi-k3",
+          "returned_model": "kimi-k3",
+          "status": "predicted",
+          "submission_on_time": true,
+          "supporting_evidence_ids": [
+            "tropion_lung01_nsq_pfs"
+          ],
+          "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+          "usage": {
+            "cache_read_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "input_tokens": 1007,
+            "output_tokens": 944
+          },
+          "workflow": "single_pass",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "2f38c566798ee893af9ca5e4630eccacfdc0a6c2d26775f5f870e15cbd64ceff",
+        "seq": 11
+      },
+      {
+        "created_at": "2026-10-22T15:51:15.550704+00:00",
+        "entity_id": "run-bc8d83525423416e9f73b7c6c3f0f66f",
+        "event_hash": "e3a1da64287816f817e7d184832f878741b9499a31dfd77c9fe740a0beb8f6b6",
+        "id": "6059b843eea546058779225c5fa80100",
+        "kind": "run_started",
+        "payload": {
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd"
+        },
+        "previous_hash": "2bdfe88e7276039aa84570993e96871b572d869d3a369348a08665ac71e879c1",
+        "seq": 12
+      },
+      {
+        "created_at": "2026-10-22T15:51:49.860114+00:00",
+        "entity_id": "run-bc8d83525423416e9f73b7c6c3f0f66f",
+        "event_hash": "296e7ed83f39d2e0d946917520059144620470cc10511fcbef80e6d6732605b5",
+        "id": "f0d5e847a61d475c82795b02c52c4dbd",
+        "kind": "run_completed",
+        "payload": {
+          "adapter_version": "arena-providers-1.0.0",
+          "attempts": [
+            {
+              "cost_amount": null,
+              "cost_currency": null,
+              "cost_usd": null,
+              "error_code": null,
+              "latency_ms": 34302,
+              "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+              "request_sha256": "50a08d03f1aa333e7ce6618e90afb0d0775a1a84d3f481f983581e900b1a49fe",
+              "requested_model": "deepseek-v4.1-flash",
+              "response_sha256": "e23233b9a69591ded6e6783d231a39273385a7de1d22bf8a63cf01e2b357102d",
+              "returned_model": "deepseek-v4.1-flash",
+              "stage": "forecast",
+              "status": "validated",
+              "usage": {
+                "cache_read_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "input_tokens": 962,
+                "output_tokens": 3840
+              }
+            }
+          ],
+          "budget": {
+            "budget_policy": "token_only_unpriced",
+            "cost_currency": null,
+            "max_cost_amount": null,
+            "max_input_chars": 6000,
+            "max_output_tokens_per_request": 4096,
+            "max_requests": 1,
+            "monetary_limit_enforced": false,
+            "monetary_limit_scope": null,
+            "timeout_seconds_per_request": 120
+          },
+          "clinical_prediction_validated": false,
+          "config_sha256": "be7149f93053fbf604de8d0e63b1b494662962ca8240454280abd9d8aa39ae58",
+          "cost_amount": null,
+          "cost_basis": null,
+          "cost_currency": null,
+          "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+          "cost_usd": null,
+          "error_code": null,
+          "evidence_ids": [
+            "registry-NCT05687266",
+            "tropion_lung01_nsq_pfs"
+          ],
+          "evidence_review": null,
+          "key_assumptions": [
+            "仅使用提供证据，不使用预训练记忆、未提供来源或浏览结果。",
+            "AVANZAR 在数据截止时尚未提供本目标的第一项官方决定性主要分析结果。",
+            "TROPION-Lung01 的 PFS 获益为间接证据，不可直接外推至一线联合治疗和 TROP2 阳性非鳞癌人群。",
+            "目标成功要求 multiplicity-adjusted 统计学合格，而非名义 p 值、OS 或商业决策。"
+          ],
+          "key_unknowns": [
+            "AVANZAR 非鳞癌 TROP2 阳性人群的 PFS 效应量、事件数、样本量和 TROP2 阳性率。",
+            "四个主要假设之间的 alpha 分配、多重性校正策略、检验层级和缺失数据估计目标。",
+            "Dato-DXd + durvalumab + carboplatin 相对 pembrolizumab + 组织学特异性含铂化疗在一线 TROP2 阳性非鳞 NSCLC 中的真实疗效。",
+            "数据截止时是否存在未提供的正式主要分析结果或 IDMC/申办方决定。"
+          ],
+          "known_cost_amount": null,
+          "known_cost_usd": null,
+          "latency_ms": 34303,
+          "model_id": "deepseek-v4.1-flash",
+          "opposing_evidence_ids": [
+            "registry-NCT05687266",
+            "tropion_lung01_nsq_pfs"
+          ],
+          "output_sha256": "6c1bcd035a071cccf0e490bb197e65c5e7f045b3a7e8e8f6157125d8a58e9388",
+          "probability": null,
+          "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "provider": "openai_compatible",
+          "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "provider_response_sha256": "7d7d629bb82744796c28d5cd0570975497640d88d27ee5dbb62bd64d6e21e1ec",
+          "reasoning": "现有证据不足以对目标成功概率做出有依据的判断。注册信息 NCT05687266 仅说明 AVANZAR 为 III 期试验且本目标只是四个主要假设之一，未提供该 TROP2 阳性非鳞癌人群的 PFS 结果，也未提供 alpha 分配、事件数、TROP2 阳性率或缺失数据估计目标。TROPION-Lung01 的证据显示 Dato-DXd 单药在经治非鳞 NSCLC 中 PFS HR 0.63，但该证据属于后线、单药、不同对照，且未分离 TROP2 阳性人群，不能直接外推至一线 Dato-DXd + durvalumab + carboplatin 对比 pembrolizumab + 组织学特异性含铂化疗的目标。由于成功定义要求预设 SAP 下多重性校正后的 PFS 统计学合格，而关键设计参数与目标人群疗效均未知，故应弃权。",
+          "request_sha256": "7488e8a9d8359578dd7e580fa917a238296662ce3405ee5f0c94679a26668607",
+          "requested_model": "deepseek-v4.1-flash",
+          "returned_model": "deepseek-v4.1-flash",
+          "status": "abstained",
+          "submission_on_time": true,
+          "supporting_evidence_ids": [],
+          "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+          "usage": {
+            "cache_read_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "input_tokens": 962,
+            "output_tokens": 3840
+          },
+          "workflow": "single_pass",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "e3a1da64287816f817e7d184832f878741b9499a31dfd77c9fe740a0beb8f6b6",
+        "seq": 13
+      },
+      {
+        "created_at": "2026-10-22T15:51:49.871060+00:00",
+        "entity_id": "run-260d69fafd9942288ef1ae3fc4cb36a9",
+        "event_hash": "4fc184c7a69c0d14fcae5294189630571b6d28c9bf3ea66da820bffa43c43678",
+        "id": "42eb29700f074b3b914528766465f4f3",
+        "kind": "run_started",
+        "payload": {
+          "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+          "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd"
+        },
+        "previous_hash": "296e7ed83f39d2e0d946917520059144620470cc10511fcbef80e6d6732605b5",
+        "seq": 14
+      },
+      {
+        "created_at": "2026-10-22T15:52:18.198262+00:00",
+        "entity_id": "run-260d69fafd9942288ef1ae3fc4cb36a9",
+        "event_hash": "15be88ac79076c8aa84a92cf035c107d478842d902f24bf4c259479d10b7e861",
+        "id": "02a6f429721c4b5785599739401389da",
+        "kind": "run_completed",
+        "payload": {
+          "adapter_version": "arena-providers-1.0.0",
+          "attempts": [
+            {
+              "cost_amount": null,
+              "cost_currency": null,
+              "cost_usd": null,
+              "error_code": null,
+              "latency_ms": 28323,
+              "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+              "request_sha256": "59baa86245160b3a9ad5856c786b415ea1cf5e0eab40770d5c4b28fc4a0743cc",
+              "requested_model": "deepseek-v4-pro",
+              "response_sha256": "4f8ac819a1c22db9cc490f49614ea5631d15ad491c40a7be9e6efec1013642fb",
+              "returned_model": "deepseek-v4-pro",
+              "stage": "forecast",
+              "status": "validated",
+              "usage": {
+                "cache_read_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "input_tokens": 937,
+                "output_tokens": 1552
+              }
+            }
+          ],
+          "budget": {
+            "budget_policy": "token_only_unpriced",
+            "cost_currency": null,
+            "max_cost_amount": null,
+            "max_input_chars": 6000,
+            "max_output_tokens_per_request": 4096,
+            "max_requests": 1,
+            "monetary_limit_enforced": false,
+            "monetary_limit_scope": null,
+            "timeout_seconds_per_request": 120
+          },
+          "clinical_prediction_validated": false,
+          "config_sha256": "72337271265f53e7f0814e2f7b6764f7485045a41028ffbd6741b53c83830be7",
+          "cost_amount": null,
+          "cost_basis": null,
+          "cost_currency": null,
+          "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+          "cost_usd": null,
+          "error_code": null,
+          "evidence_ids": [
+            "registry-NCT05687266",
+            "tropion_lung01_nsq_pfs"
+          ],
+          "evidence_review": null,
+          "key_assumptions": [
+            "没有可用的AVANZAR生物标志物阳性亚组疗效或统计分析信息",
+            "TROPION-Lung01后线单药结果不能外推至一线三联方案"
+          ],
+          "key_unknowns": [
+            "TROP2阳性非鳞亚组的PFS事件数和数据成熟度",
+            "预设SAP中该假设的alpha分配与多重性调整规则",
+            "Dato-DXd+度伐利尤单抗+卡铂一线方案的实际PFS HR及BICR评估结果"
+          ],
+          "known_cost_amount": null,
+          "known_cost_usd": null,
+          "latency_ms": 28323,
+          "model_id": "deepseek-v4-pro",
+          "opposing_evidence_ids": [],
+          "output_sha256": "b0f47fdc8efd1c8614fadbc05b600f7dfbd1f0084ec762ca4218cf763741e6dd",
+          "probability": null,
+          "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+          "provider": "openai_compatible",
+          "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+          "provider_response_sha256": "e854a94d8294dcaec61d19b841e18f46d85a6233a5d5402fa6761fc8a097a079",
+          "reasoning": "证据仅包含AVANZAR注册设计信息和TROPION-Lung01后线非鳞NSCLC单药间接结果；缺乏该TROP2阳性非鳞亚组的PFS事件数、alpha分配、实际治疗效果及BICR/SAP统计资格信息，无法形成对首次官方决定性分析是否报告有利且符合预设SAP的PFS结果的概率判断。",
+          "request_sha256": "1493af20b890d4d5abcb3bfd181145f064d4e3b6c0b8d8a3207579af59c1cb43",
+          "requested_model": "deepseek-v4-pro",
+          "returned_model": "deepseek-v4-pro",
+          "status": "abstained",
+          "submission_on_time": true,
+          "supporting_evidence_ids": [],
+          "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+          "usage": {
+            "cache_read_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "input_tokens": 937,
+            "output_tokens": 1552
+          },
+          "workflow": "single_pass",
+          "workflow_version": "arena-providers-1.0.0:single_pass"
+        },
+        "previous_hash": "4fc184c7a69c0d14fcae5294189630571b6d28c9bf3ea66da820bffa43c43678",
+        "seq": 15
+      }
+    ],
+    "ledger_sha256": "15be88ac79076c8aa84a92cf035c107d478842d902f24bf4c259479d10b7e861",
+    "runs": [
+      {
+        "adapter_version": "arena-providers-1.0.0",
+        "attempts": [
+          {
+            "cost_amount": null,
+            "cost_currency": null,
+            "cost_usd": null,
+            "error_code": "provider_response_incomplete",
+            "latency_ms": 59144,
+            "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+            "request_sha256": "7228c5f6aa9d684c9ff9e1d4f38923ef372e6d89c837adb59bfab47eb210fe1d",
+            "requested_model": "glm-5.2",
+            "response_sha256": "28c5e49a0641a821728ab8f5df1b7e66c1df579d00bce0fdd31df510bdedb6c6",
+            "returned_model": "glm-5.2",
+            "stage": "forecast",
+            "status": "failed",
+            "usage": {
+              "cache_read_input_tokens": 0,
+              "cache_write_input_tokens": 0,
+              "input_tokens": 944,
+              "output_tokens": 4096
+            }
+          }
+        ],
+        "budget": {
+          "budget_policy": "token_only_unpriced",
+          "cost_currency": null,
+          "max_cost_amount": null,
+          "max_input_chars": 6000,
+          "max_output_tokens_per_request": 4096,
+          "max_requests": 1,
+          "monetary_limit_enforced": false,
+          "monetary_limit_scope": null,
+          "timeout_seconds_per_request": 120
+        },
+        "clinical_prediction_validated": false,
+        "cohort_id": "of-pilot-20261022-v1",
+        "completion_event_seq": 9,
+        "condition": "clinical_only",
+        "config_sha256": "560035d58c19710f33b12e284896655d1d2919b12adbd336d0dbedb2813c3e68",
+        "cost_amount": null,
+        "cost_basis": null,
+        "cost_currency": null,
+        "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+        "cost_usd": null,
+        "error_code": "provider_response_incomplete",
+        "evidence_ids": [],
+        "evidence_review": null,
+        "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+        "execution_state": "terminal",
+        "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "generated_at_utc": "2026-10-22T15:50:49.201181+00:00",
+        "id": "run-42f455f175544523874f93f1468ad1c4",
+        "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+        "key_assumptions": [],
+        "key_unknowns": [],
+        "known_cost_amount": null,
+        "known_cost_usd": null,
+        "latency_ms": 59144,
+        "locked_at_utc": "2026-10-22T15:50:49.201181+00:00",
+        "model_id": "glm-5.2",
+        "opposing_evidence_ids": [],
+        "output_sha256": "046a353bcfa1670fdbdf08969c1dbae29eafe14810d6562202c87a40a8b40c82",
+        "packet": {
+          "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+          "evidence": [
+            {
+              "available_at": "2026-10-09T23:59:59+00:00",
+              "id": "registry-NCT05687266",
+              "kind": "trial_registry",
+              "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+              "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+              "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+              "title": "AVANZAR registered design"
+            },
+            {
+              "available_at": "2024-09-09T23:59:59+00:00",
+              "id": "tropion_lung01_nsq_pfs",
+              "kind": "clinical_prior",
+              "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+              "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+              "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+              "title": "TROPION-Lung01 indirect randomized evidence"
+            }
+          ],
+          "target": {
+            "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+            "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+            "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+            "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+          }
+        },
+        "probability": null,
+        "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "provider": "openai_compatible",
+        "provider_config_snapshot": {
+          "adapter_version": "arena-providers-1.0.0",
+          "availability_basis": "configuration_only_not_live_probe",
+          "available": true,
+          "config_sha256": "560035d58c19710f33b12e284896655d1d2919b12adbd336d0dbedb2813c3e68",
+          "cost_basis": null,
+          "cost_currency": null,
+          "id": "glm-5.2",
+          "model": "glm-5.2",
+          "model_version": "glm-5.2",
+          "name": "GLM 5.2 · Semantix 网关",
+          "pricing_configured": false,
+          "provider": "openai_compatible",
+          "reason": null,
+          "requested_model": "glm-5.2",
+          "unavailable_reason": null,
+          "workflows": [
+            "single_pass",
+            "evidence_review"
+          ]
+        },
+        "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+        "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "provider_response_sha256": "704697a86d8e5d061754880f752c8b9bfd486b5b981e4b91882f57cb4bbdf50b",
+        "reasoning": "",
+        "registered_at": "2026-10-22T15:49:35.737209+00:00",
+        "request_sha256": "80e0b114f3d9f46750ea0767e29c14b81a02ae88db44ff089bea55c5d650435d",
+        "requested_model": "glm-5.2",
+        "returned_model": "glm-5.2",
+        "scope": "prospective_challenge",
+        "started_at": "2026-10-22T15:49:50.052032+00:00",
+        "status": "failed",
+        "submission_on_time": true,
+        "supporting_evidence_ids": [],
+        "target_id": "of-pilot-20261022-avanzar-pfs",
+        "timestamp_proof": {
+          "status": "not_attested",
+          "url": null
+        },
+        "track": "same_evidence",
+        "usage": {
+          "cache_read_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "input_tokens": 944,
+          "output_tokens": 4096
+        },
+        "workflow": "single_pass",
+        "workflow_version": "arena-providers-1.0.0:single_pass"
+      },
+      {
+        "adapter_version": "arena-providers-1.0.0",
+        "attempts": [
+          {
+            "cost_amount": null,
+            "cost_currency": null,
+            "cost_usd": null,
+            "error_code": null,
+            "latency_ms": 26337,
+            "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+            "request_sha256": "65377172535fced6e78f51a4fbcc972b416eb46032357bc10d7593f4cfbcf356",
+            "requested_model": "kimi-k3",
+            "response_sha256": "ffbca3622ec043da2dddea90f1f5edd09d48dc6ed60704f08ab92aa937885890",
+            "returned_model": "kimi-k3",
+            "stage": "forecast",
+            "status": "validated",
+            "usage": {
+              "cache_read_input_tokens": 0,
+              "cache_write_input_tokens": 0,
+              "input_tokens": 1007,
+              "output_tokens": 944
+            }
+          }
+        ],
+        "budget": {
+          "budget_policy": "token_only_unpriced",
+          "cost_currency": null,
+          "max_cost_amount": null,
+          "max_input_chars": 6000,
+          "max_output_tokens_per_request": 4096,
+          "max_requests": 1,
+          "monetary_limit_enforced": false,
+          "monetary_limit_scope": null,
+          "timeout_seconds_per_request": 120
+        },
+        "clinical_prediction_validated": false,
+        "cohort_id": "of-pilot-20261022-v1",
+        "completion_event_seq": 11,
+        "condition": "clinical_only",
+        "config_sha256": "42df19a35b8c6848908c6d52e63bf38288ec6e0b091979389bd11eb55368f0b4",
+        "cost_amount": null,
+        "cost_basis": null,
+        "cost_currency": null,
+        "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+        "cost_usd": null,
+        "error_code": null,
+        "evidence_ids": [
+          "registry-NCT05687266",
+          "tropion_lung01_nsq_pfs"
+        ],
+        "evidence_review": null,
+        "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+        "execution_state": "terminal",
+        "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "generated_at_utc": "2026-10-22T15:51:15.547318+00:00",
+        "id": "run-0e5ff767be094423b30976567a8acfcb",
+        "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+        "key_assumptions": [
+          "既往治疗人群中的PFS获益可作为该药物临床活性的弱间接依据，但不能等同于AVANZAR的目标治疗效果。",
+          "一线Dato-DXd、度伐利尤单抗和卡铂组合能够保留至少部分药物活性。",
+          "最终判定需基于预设统计计划下TROP2阳性非鳞人群经BICR评估且满足多重性要求的结果。"
+        ],
+        "key_unknowns": [
+          "目标假设的显著性水平分配、事件数、检验功效、缺失数据处理和多重性控制均未披露。",
+          "TROP2阳性比例及其对疗效的预测或预后影响未知。",
+          "三联方案相对帕博利珠单抗联合铂类化疗的净疗效与安全性耐受性未知。",
+          "登记估计完成时间不能保证首次决定性主要分析的公布时间。",
+          "无法排除回顾性污染及预训练记忆对判断的潜在影响。"
+        ],
+        "known_cost_amount": null,
+        "known_cost_usd": null,
+        "latency_ms": 26338,
+        "locked_at_utc": "2026-10-22T15:51:15.547318+00:00",
+        "model_id": "kimi-k3",
+        "opposing_evidence_ids": [],
+        "output_sha256": "c4d1da418f15d49fbcc1e1905bf0556cef8b1720df47735fec3fa923cfaf8833",
+        "packet": {
+          "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+          "evidence": [
+            {
+              "available_at": "2026-10-09T23:59:59+00:00",
+              "id": "registry-NCT05687266",
+              "kind": "trial_registry",
+              "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+              "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+              "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+              "title": "AVANZAR registered design"
+            },
+            {
+              "available_at": "2024-09-09T23:59:59+00:00",
+              "id": "tropion_lung01_nsq_pfs",
+              "kind": "clinical_prior",
+              "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+              "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+              "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+              "title": "TROPION-Lung01 indirect randomized evidence"
+            }
+          ],
+          "target": {
+            "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+            "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+            "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+            "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+          }
+        },
+        "probability": 0.55,
+        "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "provider": "openai_compatible",
+        "provider_config_snapshot": {
+          "adapter_version": "arena-providers-1.0.0",
+          "availability_basis": "configuration_only_not_live_probe",
+          "available": true,
+          "config_sha256": "42df19a35b8c6848908c6d52e63bf38288ec6e0b091979389bd11eb55368f0b4",
+          "cost_basis": null,
+          "cost_currency": null,
+          "id": "kimi-k3",
+          "model": "kimi-k3",
+          "model_version": "kimi-k3",
+          "name": "Kimi K3 · Semantix 网关",
+          "pricing_configured": false,
+          "provider": "openai_compatible",
+          "reason": null,
+          "requested_model": "kimi-k3",
+          "unavailable_reason": null,
+          "workflows": [
+            "single_pass",
+            "evidence_review"
+          ]
+        },
+        "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+        "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "provider_response_sha256": "e0c42c7605ed316ccbd04a703a9405e9b2fe99ea9b8a07868826f4304c07fa5a",
+        "reasoning": "仅有的一项临床疗效证据显示Dato-DXd在既往治疗非鳞NSCLC中较化疗改善PFS，为靶向人群的一线组合治疗提供弱正向外推；但治疗线别、方案组成、对照、TROP2阳性人群及统计检验均不同，因此只能给出接近中性、轻微偏正面的主观未校准概率。登记信息仅确认目标假设属于预设主要分析，未提供可判断疗效的结果。",
+        "registered_at": "2026-10-22T15:49:35.737291+00:00",
+        "request_sha256": "b1d279dd95a5f8649b0c7ff5a7db80350cda6b956696a8688152d6541f59e2e9",
+        "requested_model": "kimi-k3",
+        "returned_model": "kimi-k3",
+        "scope": "prospective_challenge",
+        "started_at": "2026-10-22T15:50:49.206078+00:00",
+        "status": "predicted",
+        "submission_on_time": true,
+        "supporting_evidence_ids": [
+          "tropion_lung01_nsq_pfs"
+        ],
+        "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+        "target_id": "of-pilot-20261022-avanzar-pfs",
+        "timestamp_proof": {
+          "status": "not_attested",
+          "url": null
+        },
+        "track": "same_evidence",
+        "usage": {
+          "cache_read_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "input_tokens": 1007,
+          "output_tokens": 944
+        },
+        "workflow": "single_pass",
+        "workflow_version": "arena-providers-1.0.0:single_pass"
+      },
+      {
+        "adapter_version": "arena-providers-1.0.0",
+        "attempts": [
+          {
+            "cost_amount": null,
+            "cost_currency": null,
+            "cost_usd": null,
+            "error_code": null,
+            "latency_ms": 34302,
+            "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+            "request_sha256": "50a08d03f1aa333e7ce6618e90afb0d0775a1a84d3f481f983581e900b1a49fe",
+            "requested_model": "deepseek-v4.1-flash",
+            "response_sha256": "e23233b9a69591ded6e6783d231a39273385a7de1d22bf8a63cf01e2b357102d",
+            "returned_model": "deepseek-v4.1-flash",
+            "stage": "forecast",
+            "status": "validated",
+            "usage": {
+              "cache_read_input_tokens": 0,
+              "cache_write_input_tokens": 0,
+              "input_tokens": 962,
+              "output_tokens": 3840
+            }
+          }
+        ],
+        "budget": {
+          "budget_policy": "token_only_unpriced",
+          "cost_currency": null,
+          "max_cost_amount": null,
+          "max_input_chars": 6000,
+          "max_output_tokens_per_request": 4096,
+          "max_requests": 1,
+          "monetary_limit_enforced": false,
+          "monetary_limit_scope": null,
+          "timeout_seconds_per_request": 120
+        },
+        "clinical_prediction_validated": false,
+        "cohort_id": "of-pilot-20261022-v1",
+        "completion_event_seq": 13,
+        "condition": "clinical_only",
+        "config_sha256": "be7149f93053fbf604de8d0e63b1b494662962ca8240454280abd9d8aa39ae58",
+        "cost_amount": null,
+        "cost_basis": null,
+        "cost_currency": null,
+        "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+        "cost_usd": null,
+        "error_code": null,
+        "evidence_ids": [
+          "registry-NCT05687266",
+          "tropion_lung01_nsq_pfs"
+        ],
+        "evidence_review": null,
+        "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+        "execution_state": "terminal",
+        "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "generated_at_utc": "2026-10-22T15:51:49.860114+00:00",
+        "id": "run-bc8d83525423416e9f73b7c6c3f0f66f",
+        "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+        "key_assumptions": [
+          "仅使用提供证据，不使用预训练记忆、未提供来源或浏览结果。",
+          "AVANZAR 在数据截止时尚未提供本目标的第一项官方决定性主要分析结果。",
+          "TROPION-Lung01 的 PFS 获益为间接证据，不可直接外推至一线联合治疗和 TROP2 阳性非鳞癌人群。",
+          "目标成功要求 multiplicity-adjusted 统计学合格，而非名义 p 值、OS 或商业决策。"
+        ],
+        "key_unknowns": [
+          "AVANZAR 非鳞癌 TROP2 阳性人群的 PFS 效应量、事件数、样本量和 TROP2 阳性率。",
+          "四个主要假设之间的 alpha 分配、多重性校正策略、检验层级和缺失数据估计目标。",
+          "Dato-DXd + durvalumab + carboplatin 相对 pembrolizumab + 组织学特异性含铂化疗在一线 TROP2 阳性非鳞 NSCLC 中的真实疗效。",
+          "数据截止时是否存在未提供的正式主要分析结果或 IDMC/申办方决定。"
+        ],
+        "known_cost_amount": null,
+        "known_cost_usd": null,
+        "latency_ms": 34303,
+        "locked_at_utc": "2026-10-22T15:51:49.860114+00:00",
+        "model_id": "deepseek-v4.1-flash",
+        "opposing_evidence_ids": [
+          "registry-NCT05687266",
+          "tropion_lung01_nsq_pfs"
+        ],
+        "output_sha256": "6c1bcd035a071cccf0e490bb197e65c5e7f045b3a7e8e8f6157125d8a58e9388",
+        "packet": {
+          "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+          "evidence": [
+            {
+              "available_at": "2026-10-09T23:59:59+00:00",
+              "id": "registry-NCT05687266",
+              "kind": "trial_registry",
+              "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+              "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+              "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+              "title": "AVANZAR registered design"
+            },
+            {
+              "available_at": "2024-09-09T23:59:59+00:00",
+              "id": "tropion_lung01_nsq_pfs",
+              "kind": "clinical_prior",
+              "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+              "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+              "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+              "title": "TROPION-Lung01 indirect randomized evidence"
+            }
+          ],
+          "target": {
+            "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+            "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+            "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+            "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+          }
+        },
+        "probability": null,
+        "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "provider": "openai_compatible",
+        "provider_config_snapshot": {
+          "adapter_version": "arena-providers-1.0.0",
+          "availability_basis": "configuration_only_not_live_probe",
+          "available": true,
+          "config_sha256": "be7149f93053fbf604de8d0e63b1b494662962ca8240454280abd9d8aa39ae58",
+          "cost_basis": null,
+          "cost_currency": null,
+          "id": "deepseek-v4.1-flash",
+          "model": "deepseek-v4.1-flash",
+          "model_version": "deepseek-v4.1-flash",
+          "name": "DeepSeek V4.1 Flash · Semantix 网关",
+          "pricing_configured": false,
+          "provider": "openai_compatible",
+          "reason": null,
+          "requested_model": "deepseek-v4.1-flash",
+          "unavailable_reason": null,
+          "workflows": [
+            "single_pass",
+            "evidence_review"
+          ]
+        },
+        "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+        "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "provider_response_sha256": "7d7d629bb82744796c28d5cd0570975497640d88d27ee5dbb62bd64d6e21e1ec",
+        "reasoning": "现有证据不足以对目标成功概率做出有依据的判断。注册信息 NCT05687266 仅说明 AVANZAR 为 III 期试验且本目标只是四个主要假设之一，未提供该 TROP2 阳性非鳞癌人群的 PFS 结果，也未提供 alpha 分配、事件数、TROP2 阳性率或缺失数据估计目标。TROPION-Lung01 的证据显示 Dato-DXd 单药在经治非鳞 NSCLC 中 PFS HR 0.63，但该证据属于后线、单药、不同对照，且未分离 TROP2 阳性人群，不能直接外推至一线 Dato-DXd + durvalumab + carboplatin 对比 pembrolizumab + 组织学特异性含铂化疗的目标。由于成功定义要求预设 SAP 下多重性校正后的 PFS 统计学合格，而关键设计参数与目标人群疗效均未知，故应弃权。",
+        "registered_at": "2026-10-22T15:49:35.737364+00:00",
+        "request_sha256": "7488e8a9d8359578dd7e580fa917a238296662ce3405ee5f0c94679a26668607",
+        "requested_model": "deepseek-v4.1-flash",
+        "returned_model": "deepseek-v4.1-flash",
+        "scope": "prospective_challenge",
+        "started_at": "2026-10-22T15:51:15.550704+00:00",
+        "status": "abstained",
+        "submission_on_time": true,
+        "supporting_evidence_ids": [],
+        "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+        "target_id": "of-pilot-20261022-avanzar-pfs",
+        "timestamp_proof": {
+          "status": "not_attested",
+          "url": null
+        },
+        "track": "same_evidence",
+        "usage": {
+          "cache_read_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "input_tokens": 962,
+          "output_tokens": 3840
+        },
+        "workflow": "single_pass",
+        "workflow_version": "arena-providers-1.0.0:single_pass"
+      },
+      {
+        "adapter_version": "arena-providers-1.0.0",
+        "attempts": [
+          {
+            "cost_amount": null,
+            "cost_currency": null,
+            "cost_usd": null,
+            "error_code": null,
+            "latency_ms": 28323,
+            "prompt_sha256": "9165cec7def172a4b636d96dbd585a24ef23819e6fb0cd3aa4cef71150f7cf51",
+            "request_sha256": "59baa86245160b3a9ad5856c786b415ea1cf5e0eab40770d5c4b28fc4a0743cc",
+            "requested_model": "deepseek-v4-pro",
+            "response_sha256": "4f8ac819a1c22db9cc490f49614ea5631d15ad491c40a7be9e6efec1013642fb",
+            "returned_model": "deepseek-v4-pro",
+            "stage": "forecast",
+            "status": "validated",
+            "usage": {
+              "cache_read_input_tokens": 0,
+              "cache_write_input_tokens": 0,
+              "input_tokens": 937,
+              "output_tokens": 1552
+            }
+          }
+        ],
+        "budget": {
+          "budget_policy": "token_only_unpriced",
+          "cost_currency": null,
+          "max_cost_amount": null,
+          "max_input_chars": 6000,
+          "max_output_tokens_per_request": 4096,
+          "max_requests": 1,
+          "monetary_limit_enforced": false,
+          "monetary_limit_scope": null,
+          "timeout_seconds_per_request": 120
+        },
+        "clinical_prediction_validated": false,
+        "cohort_id": "of-pilot-20261022-v1",
+        "completion_event_seq": 15,
+        "condition": "clinical_only",
+        "config_sha256": "72337271265f53e7f0814e2f7b6764f7485045a41028ffbd6741b53c83830be7",
+        "cost_amount": null,
+        "cost_basis": null,
+        "cost_currency": null,
+        "cost_note": "Token usage multiplied by configured rates; not a provider billing receipt.",
+        "cost_usd": null,
+        "error_code": null,
+        "evidence_ids": [
+          "registry-NCT05687266",
+          "tropion_lung01_nsq_pfs"
+        ],
+        "evidence_review": null,
+        "execution_budget_sha256": "0bd62f5d8299009c52623a2d633312bb4ebcb5bbb517bb3384739f48d8ed2b62",
+        "execution_state": "terminal",
+        "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "expected_provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "generated_at_utc": "2026-10-22T15:52:18.198262+00:00",
+        "id": "run-260d69fafd9942288ef1ae3fc4cb36a9",
+        "input_sha256": "9e38b332b20b2c5daa3b8289c2eeb10805ada33c05a2f6f9d5c9a3d22027e4fd",
+        "key_assumptions": [
+          "没有可用的AVANZAR生物标志物阳性亚组疗效或统计分析信息",
+          "TROPION-Lung01后线单药结果不能外推至一线三联方案"
+        ],
+        "key_unknowns": [
+          "TROP2阳性非鳞亚组的PFS事件数和数据成熟度",
+          "预设SAP中该假设的alpha分配与多重性调整规则",
+          "Dato-DXd+度伐利尤单抗+卡铂一线方案的实际PFS HR及BICR评估结果"
+        ],
+        "known_cost_amount": null,
+        "known_cost_usd": null,
+        "latency_ms": 28323,
+        "locked_at_utc": "2026-10-22T15:52:18.198262+00:00",
+        "model_id": "deepseek-v4-pro",
+        "opposing_evidence_ids": [],
+        "output_sha256": "b0f47fdc8efd1c8614fadbc05b600f7dfbd1f0084ec762ca4218cf763741e6dd",
+        "packet": {
+          "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+          "evidence": [
+            {
+              "available_at": "2026-10-09T23:59:59+00:00",
+              "id": "registry-NCT05687266",
+              "kind": "trial_registry",
+              "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+              "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+              "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+              "title": "AVANZAR registered design"
+            },
+            {
+              "available_at": "2024-09-09T23:59:59+00:00",
+              "id": "tropion_lung01_nsq_pfs",
+              "kind": "clinical_prior",
+              "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+              "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+              "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+              "title": "TROPION-Lung01 indirect randomized evidence"
+            }
+          ],
+          "target": {
+            "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+            "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+            "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+            "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+          }
+        },
+        "probability": null,
+        "prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+        "provider": "openai_compatible",
+        "provider_config_snapshot": {
+          "adapter_version": "arena-providers-1.0.0",
+          "availability_basis": "configuration_only_not_live_probe",
+          "available": true,
+          "config_sha256": "72337271265f53e7f0814e2f7b6764f7485045a41028ffbd6741b53c83830be7",
+          "cost_basis": null,
+          "cost_currency": null,
+          "id": "deepseek-v4-pro",
+          "model": "deepseek-v4-pro",
+          "model_version": "deepseek-v4-pro",
+          "name": "DeepSeek V4 Pro · Semantix 网关",
+          "pricing_configured": false,
+          "provider": "openai_compatible",
+          "reason": null,
+          "requested_model": "deepseek-v4-pro",
+          "unavailable_reason": null,
+          "workflows": [
+            "single_pass",
+            "evidence_review"
+          ]
+        },
+        "provider_implementation_sha256": "4c22cb3294c79494e8410d353bba651bb64471468f78943e78a4d49125e1c8dd",
+        "provider_input_sha256": "8ab31ad113311aba251b233612a34f14340a8b8ac2db8f0beb9f5bdb7e42cb32",
+        "provider_response_sha256": "e854a94d8294dcaec61d19b841e18f46d85a6233a5d5402fa6761fc8a097a079",
+        "reasoning": "证据仅包含AVANZAR注册设计信息和TROPION-Lung01后线非鳞NSCLC单药间接结果；缺乏该TROP2阳性非鳞亚组的PFS事件数、alpha分配、实际治疗效果及BICR/SAP统计资格信息，无法形成对首次官方决定性分析是否报告有利且符合预设SAP的PFS结果的概率判断。",
+        "registered_at": "2026-10-22T15:49:35.737438+00:00",
+        "request_sha256": "1493af20b890d4d5abcb3bfd181145f064d4e3b6c0b8d8a3207579af59c1cb43",
+        "requested_model": "deepseek-v4-pro",
+        "returned_model": "deepseek-v4-pro",
+        "scope": "prospective_challenge",
+        "started_at": "2026-10-22T15:51:49.871060+00:00",
+        "status": "abstained",
+        "submission_on_time": true,
+        "supporting_evidence_ids": [],
+        "target_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+        "target_id": "of-pilot-20261022-avanzar-pfs",
+        "timestamp_proof": {
+          "status": "not_attested",
+          "url": null
+        },
+        "track": "same_evidence",
+        "usage": {
+          "cache_read_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "input_tokens": 937,
+          "output_tokens": 1552
+        },
+        "workflow": "single_pass",
+        "workflow_version": "arena-providers-1.0.0:single_pass"
+      }
+    ],
+    "targets": [
+      {
+        "analysis_timepoint": "First officially reported decisive analysis of the specified primary PFS hypothesis; registry timeframe approximately 3 years.",
+        "cohort_id": "of-pilot-20261022-v1",
+        "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+        "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+        "drug": "datopotamab deruxtecan",
+        "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+        "evidence_ids": [
+          "registry-NCT05687266",
+          "tropion_lung01_nsq_pfs"
+        ],
+        "id": "of-pilot-20261022-avanzar-pfs",
+        "indication": "first-line advanced NSCLC",
+        "information_cutoff_utc": "2026-10-22T15:33:52.652299+00:00",
+        "nct_id": "NCT05687266",
+        "patent_ids": [],
+        "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+        "project_id": "datopotamab-deruxtecan",
+        "readout": {
+          "end": "2026-12-31",
+          "guidance_as_of": "2026-07-27",
+          "label": "H2 2026 公司指引；待更新核查",
+          "precision": "half_year",
+          "requires_refresh": true,
+          "source_title": "AstraZeneca H1 2026 Clinical Trials Appendix",
+          "source_url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+          "start": "2026-07-01"
+        },
+        "readout_screen": {
+          "checked_at_utc": "2026-10-22T15:35:52.652299+00:00",
+          "domains": [
+            "astrazeneca.com",
+            "daiichisankyo.com",
+            "clinicaltrials.gov",
+            "astrazeneca.com.cn",
+            "daiichisankyo.com.cn"
+          ],
+          "finding": "Retrieved results concerned TROPION-Breast02, TROPION-Lung01 or other trials, not the AVANZAR target.",
+          "method": "Registry hasResults check plus domain-limited English and Chinese search of sponsor official sources.",
+          "queries": [
+            "AVANZAR datopotamab trial results 2026",
+            "AVANZAR 研究 结果 2026"
+          ],
+          "sources": [
+            {
+              "retrieved_at": "2026-10-22T15:34:00.360843+00:00",
+              "sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+              "url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266"
+            },
+            {
+              "role": "earlier company timing guidance, not negative result proof",
+              "url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf"
+            }
+          ],
+          "status": "no_decisive_public_result_found"
+        },
+        "registered_at": "2026-10-22T15:49:35.737118+00:00",
+        "scope": "prospective_challenge",
+        "sponsor": "AstraZeneca / Daiichi Sankyo",
+        "status": "pending",
+        "status_note": "2026-10-22限定官方中英文检索未发现本目标决定性结果；不能排除未索引公告。注册记录预计主要完成时间2027-11，不能用其替换公司读出窗口。",
+        "submission_deadline_utc": "2026-10-22T18:35:52.652299+00:00",
+        "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+        "trial_name": "AVANZAR"
+      }
+    ]
+  },
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization."
+}

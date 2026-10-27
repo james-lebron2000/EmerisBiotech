@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Predome 内部临床试验结果核验。根据原始公开来源，独立确认注册目标与实际结果。">
+<title>结果核验 · Predome</title>
+<link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/arena-review.css">
+</head>
+<body>
+<a class="review-skip" href="#review-main">跳到结果核验</a>
+<header class="review-header"><a class="review-brand" href="/arena/lab/review">Predome <span>Review</span></a><div class="review-account"><span id="review-account-name">授权核验中</span><a id="review-account-link" href="https://8.148.145.28/data">账户与登录 ↗</a></div></header>
+<main id="review-main">
+<section class="review-intro"><div><p class="review-eyebrow">RESEARCH / OUTCOME VERIFICATION</p><h1>从公开原件，独立核对结果。</h1><p>先确认同一试验、主要终点和预设分析，再提交你自己的核验记录。</p></div><span class="review-private">内部授权工作区</span></section>
+<aside class="review-boundary"><strong>账户认证不等于科学审核资格。</strong><span>科研资质与审核独立性仍待核验。本页不展示其他审核者的判断或模型预测。</span></aside>
+<div class="review-status-bar"><p id="review-status" role="status" aria-live="polite">正在核对现有账户的授权范围…</p><button id="review-retry" type="button" hidden>重新读取授权与目标</button><a id="review-login" href="https://8.148.145.28/data" hidden>前往账户登录 ↗</a></div>
+<section id="review-empty" class="review-empty" hidden><h2>暂无分配的试验目标</h2><p>请由管理员登记现有账户及具体核验范围。此页面不会自动创建或扩大权限。</p></section>
+<div id="review-workspace" hidden aria-busy="false">
+<section class="review-target-panel"><div class="review-target-toolbar"><label for="review-target">分配给我的临床试验</label><select id="review-target" aria-label="分配给我的临床试验"></select><button id="review-refresh" type="button">重新读取</button></div><div id="review-target-details"><p class="review-muted">正在读取注册目标…</p></div></section>
+<div class="review-columns">
+<section class="review-card review-source-panel" aria-labelledby="source-title"><div class="review-step"><span>01</span><div><h2 id="source-title">核对公开原件</h2><p>来源可读取，不代表已证实该试验结果。</p></div></div>
+<label for="review-source">已获取的候选来源</label><select id="review-source" disabled><option value="">选择来源</option></select><p id="review-source-note" class="review-help">尚未选择来源。</p>
+<div id="review-source-meta" hidden><dl class="review-source-facts"><div><dt>来源类别</dt><dd id="review-source-kind"></dd></div><div><dt>获取时间</dt><dd id="review-source-time"></dd></div><div><dt>公开网址</dt><dd id="review-source-url"></dd></div><div><dt>原件 SHA-256</dt><dd id="review-source-hash" class="review-hash"></dd></div></dl><div class="review-source-actions"><button id="review-inspect" type="button">读取原件正文</button><a id="review-download" href="#">下载已核验原件 ↓</a></div></div>
+<div id="review-inspection" hidden><div class="review-inspection-heading"><strong>已获取原件的提取正文</strong><span>请与下载原件核对</span></div><pre id="review-source-text" tabindex="0" aria-label="原件提取正文"></pre><p id="review-publication-basis" class="review-help"></p></div>
+<p class="review-help review-source-limits">无结果的注册更新、文献索引或不匹配来源不能作为结果提交。无法判定时保留相应状态，不强制分为成功或失败。</p>
+</section>
+<section class="review-card" aria-labelledby="form-title"><div class="review-step"><span>02</span><div><h2 id="form-title">提交我的核验</h2><p id="review-own-state">提交后保留原始记录；更正不会覆盖历史。</p></div></div>
+<form id="review-form"><fieldset id="review-fields" disabled><legend class="review-sr-only">自己的结果核验</legend>
+<div class="review-form-grid"><div><label for="review-label">主要终点结果</label><select id="review-label" required><option value="">请独立判定</option><option value="success">Success · 达到预设标准</option><option value="failure">Failure · 未达到预设标准</option><option value="mixed">Mixed · 混合结果</option><option value="inconclusive">Inconclusive · 结论不确定</option><option value="not_adjudicable">Not adjudicable · 无法裁定</option></select></div><div><label for="review-publication-date">原件公开日期</label><input id="review-publication-date" type="date" required><p class="review-help">可由来源元数据填入；请核对下方日期依据。</p></div><div class="review-span"><label for="review-first-public">该目标结果首次公开时间 <span>UTC</span></label><input id="review-first-public" type="datetime-local" step="60" required><p class="review-help">按 UTC 明确填写。不会自动填入当天日期，也不会把本地时间自动换算为 UTC。</p></div></div>
+<label for="review-quote">支持该目标结果的连续原文摘录</label><textarea id="review-quote" rows="4" minlength="20" maxlength="6000" required placeholder="从原件复制连续原文，20–6000字符。"></textarea><p class="review-help">摘录须能对应本页的精确试验、终点及预设分析；服务端会继续校验来源。</p>
+<label for="review-note">我的核验说明</label><textarea id="review-note" rows="3" maxlength="4000" required placeholder="说明原文如何对应注册目标，以及尚存的不确定性。"></textarea>
+<fieldset class="review-confirmations"><legend>逐项确认 · 初始均未勾选</legend><label><input type="checkbox" data-confirm="exact_trial" required><span>原件对应同一 NCT／同一临床试验。</span></label><label><input type="checkbox" data-confirm="primary_endpoint" required><span>结果对应本页登记的主要终点和人群。</span></label><label><input type="checkbox" data-confirm="prespecified_analysis" required><span>比较、判定标准和分析时点与预设目标一致。</span></label><label><input type="checkbox" data-confirm="first_public_release" required><span>已核对该目标结果首次公开时间及来源日期。</span></label><label><input type="checkbox" data-confirm="source_inspected" required><span>已亲自查看本次提交对应的原始来源。</span></label></fieldset>
+<div class="review-submit-row"><button id="review-submit" type="submit">保存核验记录</button><span>草稿仅保留在当前标签页内存。</span></div>
+</fieldset></form><p id="review-submission-status" class="review-submission-status" role="status" aria-live="polite"></p>
+</section>
+</div></div>
+<noscript><section class="review-empty"><h2>此工作区需要 JavaScript</h2><p>启用后才能核对账户授权、原件及提交状态。未执行任何提交。</p></section></noscript>
+</main><footer><span>Predome · Emeris</span><span>来源、个人核验、记录一致性与科学独立性分别记录</span></footer>
+<script src="/static/arena-review.js"></script>
+</body></html>

@@ -1,0 +1,65 @@
+{
+  "schema_version": "predome.public-comparisons-synthetic-ui-preview-1",
+  "captured_at_utc": "2026-10-27T04:02:48.726887+00:00",
+  "scope": "Explicitly synthetic offline browser fixture rendering the shipped assets; not real model results, scientific review or a deployment. Screenshot bytes copied without editing.",
+  "files": [
+    {
+      "path": "synthetic-default-desktop.png",
+      "sha256": "20c0312f2009e67f74799814c5f248d8a0ebbe275d7b441ef14c345757099318",
+      "bytes": 197052
+    },
+    {
+      "path": "synthetic-expanded-desktop.png",
+      "sha256": "f129875d60c01acc41b0c011ff831e8f99c38ee03f8de81c800ef8540345aeae",
+      "bytes": 355539
+    },
+    {
+      "path": "synthetic-expanded-mobile.png",
+      "sha256": "065e2e61517fe167785f40aa7d20aae97e0793b8a7f1d35ed4400b6270ae3e67",
+      "bytes": 421050
+    }
+  ],
+  "source_assets": {
+    "static/arena-public.js": {
+      "sha256": "2aaa120646646a3ffee2179cff1dbc6a1f6ebec1e5fec2de06c0054c0b806e82",
+      "bytes": 50877
+    },
+    "static/arena-public.css": {
+      "sha256": "b6083c41aa732139ba59f5c25cb39bdbd9a3d1856a1a862606982935ba7256bf",
+      "bytes": 39567
+    },
+    "static/arena-public.html": {
+      "sha256": "fb95317fe2d9dd532c6bad03d1b19ff69e13760e9363bf34bae4ccb5187a4e2f",
+      "bytes": 2099
+    },
+    "tests/ui_arena_public.cjs": {
+      "sha256": "3c354e308e4a76a8bd3756638776760c31c854ac0a34022a7b2cc5d73a16d2ca",
+      "bytes": 88574
+    }
+  },
+  "browser_fixture_receipt": {
+    "scope": "Explicit synthetic sanitized comparison DTOs rendered with shipped public assets; not actual model records, not deployed, no clinical validation",
+    "head": "4d33a8a7c648f2d18fc07acd7683eeeee4368058 plus owned UI candidate",
+    "schema": "predome-public-trial-comparisons-1",
+    "screenshots": [
+      "synthetic-default-desktop.png",
+      "synthetic-expanded-desktop.png",
+      "synthetic-expanded-1280.png",
+      "synthetic-expanded-mobile.png"
+    ],
+    "checks": [
+      "Lazy public comparisons use one GET only after expansion; patent arms and Agent systems retain own model/version/status/time/sources with unchanged clinical-only baseline/consensus, no uncalibrated numbers or pending ranks, and three modules at1440/1280/375",
+      "Comparison text and own recorded references escape hostile HTML, reject unsafe links and map unknown reason codes to a generic label",
+      "Transport, wrong-target and malformed comparison contracts fail independently; retry preserves baseline; missing controls and absent Agent records stay explicit without fabricated changes",
+      "Two technical failures never become a complete pair or change; explicit abstentions remain legitimate Uncertain judgments without an efficacy score",
+      "Old asynchronous comparison responses cannot attach to another exact target; a new target lazily loads its own honest empty state",
+      "Earlier native workflow records with null kind are discoverable without replacing the formal default or merging NCT epochs; inactive records stay excluded but exact original links remain readable"
+    ],
+    "no_provider_calls": true,
+    "no_internal_api": true
+  },
+  "image_bytes_unmodified": true,
+  "clinical_prediction_validated": false,
+  "provider_calls": 0,
+  "server_operations": 0
+}

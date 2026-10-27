@@ -1,0 +1,22 @@
+{
+  "schema_version": "predome-launch-public-sources-1",
+  "snapshot_date_local": "2026-10-23",
+  "timezone": "Asia/Taipei",
+  "captured_at_utc": "2026-10-22T20:39:12.234633+00:00",
+  "files": {
+    "comparison-case.json": {
+      "sha256": "d0338124e95eb52965e349c7c807aefa68e534a86c9490ec94bb3eef33d59b12",
+      "source_url": "https://8.148.145.28/api/arena/public/targets/of-season-20261023-corrected-mevpro1/record"
+    },
+    "historical-replay.json": {
+      "sha256": "d4c430043e67b3bc2ab359b1d707319d0a9962b0c587182254b36a406c21efcc",
+      "source_url": "https://8.148.145.28/api/arena/public/targets/history-replay-case-001/record"
+    }
+  },
+  "presentation_page_id": "page_6eeb6942d504819180b4bbd9a0c92704",
+  "material_status": "prepared_not_event_held",
+  "time_scope": "material_source_snapshot_not_original_prediction_time_proof",
+  "clinical_prediction_validated": false,
+  "provider_calls": 0,
+  "ledger_writes": 0
+}

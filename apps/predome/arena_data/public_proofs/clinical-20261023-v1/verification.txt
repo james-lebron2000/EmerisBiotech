@@ -1,0 +1,4 @@
+Data verification: OK
+Query nonce verification: OK
+Signed genTime UTC: 2026-10-22T18:48:48+00:00
+Signed public ZIP SHA-256: 1a0144906b743e03c50b13b2c1e9554ec488381b88e4939d9d8ec53fa116825c

@@ -1,0 +1,327 @@
+{
+  "schema_version": "predome.triumph5-review-assignment-1",
+  "assignment_id": "triumph5-next-forecast-jake-20261027",
+  "prepared_at_utc": "2026-10-27T03:45:55.919523Z",
+  "assignment_status": "pending_scientific_review",
+  "assignment_basis": "Direct user designation of Predome login username Jake in this task; not independently verified identity evidence.",
+  "responsible_reviewer": {
+    "predome_login_username": "Jake",
+    "designation": "user_designated_responsible_reviewer",
+    "account_id": null,
+    "principal_id": null,
+    "account_authentication_status": "not_verified_or_changed_in_this_github_only_task",
+    "enrollment_status": "not_verified_or_changed_in_this_github_only_task",
+    "enrollment_event_sha256": null,
+    "scientific_credentials_status": "not_verified",
+    "independence_status": "not_verified"
+  },
+  "scope": "Reviewer work packet for a possible new TRIUMPH-5 evidence input; not enrollment, clinical outcome adjudication, source authentication or scientific approval.",
+  "trial": {
+    "trial_name": "TRIUMPH-5",
+    "declared_nct_id": "NCT06662383",
+    "eu_ct_number": "2024-511450-49-00",
+    "protocol_code": "J1I-MC-GZBP",
+    "protocol_amendment_observed": "c",
+    "protocol_document_id_observed": "VV-CLIN-132835",
+    "protocol_approval_stamp_observed": "19 Feb 2025 GMT",
+    "cover_location": "protocol PDF page 1 (one based)",
+    "latest_applicable_global_amendment_verified": false,
+    "identity_scientifically_reviewed": false,
+    "new_exact_registered_target_id": null
+  },
+  "sources": {
+    "official_ctis": "https://euclinicaltrials.eu/ctis-public/view/2024-511450-49-00",
+    "official_registry": "https://clinicaltrials.gov/study/NCT06662383",
+    "official_download_guidance": "https://euclinicaltrials.eu/search-tips-and-guidance/?lang=en",
+    "acquisition_documentation": "docs/TRIUMPH5_CTIS_ACQUISITION.md",
+    "acquisition_metadata": {
+      "path": "docs/records/triumph5-ctis-acquisition-20261027.json",
+      "file_bytes_sha256": "da2e04bedf8fc86f74987cc4541efd9c0326d3d5cba5f3af912eebf9ce973be2",
+      "bytes": 5636
+    },
+    "account_review_workflow": "docs/RESULT_REVIEW_WORKSPACE_1_2_9.md",
+    "scientific_result_acceptance": "docs/SCIENTIFIC_RESULT_ACCEPTANCE.md"
+  },
+  "acquisition_boundary": {
+    "method": "local_file_registration_from_browser_observation",
+    "browser_ui_completion_observed": true,
+    "browser_download_event_captured": false,
+    "transport_response_observed": false,
+    "download_url": null,
+    "http_status": null,
+    "retrieved_at_utc": null,
+    "source_origin_independently_authenticated": false,
+    "sha256_scope": "local file bytes and mechanical indices only; not authenticity or scientific approval",
+    "document_date_is_historical_availability_proof": false,
+    "zip": {
+      "bytes": 25121521,
+      "sha256": "b481c6d5a8dcb0eaeee9cfcce888e5fd83575ea1b60fd6f0ebf63b83c4d0a7d9",
+      "entry_count": 45
+    }
+  },
+  "documents": [
+    {
+      "document_type": "protocol",
+      "source_sha256": "adb16ec19a47ad8be5716f3475d775f96fa1503cdfb461de042f74057e6cb96f",
+      "source_bytes": 1937394,
+      "zip_member_name": "Trial documents/Protocol/D1_Protocol 2024-511450-49-00_Redacted.PDF",
+      "page_count": 186,
+      "page_index_status": "complete",
+      "page_number_semantics": "pdf_page_1_based; page_index is zero_based; printed labels remain separate",
+      "registered_at_utc": "2026-10-27T02:40:45.625378Z",
+      "available_at": "2026-10-27T02:40:45.625378Z",
+      "review_status": "needs_human_review",
+      "eligible_for_forecast": false,
+      "local_readback_at_utc": "2026-10-27T03:45:55.919523Z",
+      "local_byte_and_index_binding_matches_acquisition_metadata": true,
+      "bindings": {
+        "original_pdf": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/protocol-registered/original.pdf",
+          "sha256": "adb16ec19a47ad8be5716f3475d775f96fa1503cdfb461de042f74057e6cb96f",
+          "bytes": 1937394
+        },
+        "registration_manifest": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/protocol-registered/manifest.json",
+          "sha256": "d2b7fc77ab7290670c9ff174a6dfb33e36ca6a9593efeb851c4174ead915f92f",
+          "bytes": 1921
+        },
+        "registration_receipt": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/protocol-registered/registration-receipt.json",
+          "sha256": "bf2b60830340da400c6277322fe1796b2b620620d902cf7492e61a43f8ad6b66",
+          "bytes": 717
+        },
+        "extraction_manifest": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/protocol-registered/extraction-manifest.json",
+          "sha256": "731be5f1e56cd2958b9dac73f1f21a8b093d5449d444664b89d2cdbf81631a61",
+          "bytes": 839
+        },
+        "page_index": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/protocol-registered/document-extractions/original.pdf.pages.json",
+          "sha256": "8940e6c02ffe7ea83b3f367a5a44d7af571ecc6a9d8413f2262eff7e876587fd",
+          "bytes": 265126
+        }
+      }
+    },
+    {
+      "document_type": "synopsis",
+      "source_sha256": "7fc736e90f412cf99d405065ce64fcf65590a49a1210fa05068fd7a128d2f21a",
+      "source_bytes": 650829,
+      "zip_member_name": "Trial documents/Synopsis of the protocol/D1_Protocol synopsis EN 2024-511450-49-00_Redacted.PDF",
+      "page_count": 7,
+      "page_index_status": "complete",
+      "page_number_semantics": "pdf_page_1_based; page_index is zero_based; printed labels remain separate",
+      "registered_at_utc": "2026-10-27T02:40:45.623678Z",
+      "available_at": "2026-10-27T02:40:45.623678Z",
+      "review_status": "needs_human_review",
+      "eligible_for_forecast": false,
+      "local_readback_at_utc": "2026-10-27T03:45:55.919523Z",
+      "local_byte_and_index_binding_matches_acquisition_metadata": true,
+      "bindings": {
+        "original_pdf": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/synopsis-registered/original.pdf",
+          "sha256": "7fc736e90f412cf99d405065ce64fcf65590a49a1210fa05068fd7a128d2f21a",
+          "bytes": 650829
+        },
+        "registration_manifest": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/synopsis-registered/manifest.json",
+          "sha256": "077c245faf82f6538f2ae0bf6e3e3a4690072be4273b1c816f5880b0175f22d3",
+          "bytes": 1932
+        },
+        "registration_receipt": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/synopsis-registered/registration-receipt.json",
+          "sha256": "d1be0e97248b21117a831c7da5dd2cf6446900869656b1e983fcf7cd986482e5",
+          "bytes": 716
+        },
+        "extraction_manifest": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/synopsis-registered/extraction-manifest.json",
+          "sha256": "048b96512600df691ec72137730701a77bae65322e9778cca736762a929643ed",
+          "bytes": 835
+        },
+        "page_index": {
+          "local_workspace_path": "verification/triumph5-ctis-20261027/synopsis-registered/document-extractions/original.pdf.pages.json",
+          "sha256": "85cc26d2e75c75c799e9a7218716bce065825ea8b2e8aa1649dd80f7c24330f7",
+          "bytes": 9570
+        }
+      }
+    }
+  ],
+  "page_navigation": {
+    "source": "Existing acquired metadata: prior AI-assisted source observations only; no human sign-off or fresh clinical interpretation in this handoff.",
+    "protocol_pdf_page_1_based": {
+      "cover": [
+        1
+      ],
+      "primary_endpoint": [
+        13,
+        52
+      ],
+      "estimands": [
+        16,
+        17,
+        55,
+        56
+      ],
+      "overall_familywise_alpha_and_redacted_path": [
+        115
+      ],
+      "between_estimand_adjustment": [
+        118
+      ],
+      "additional_redaction_checks": [
+        114,
+        120
+      ]
+    },
+    "synopsis_pdf_page_1_based": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "synopsis_printed_pages": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "protocol_pdf114_printed_page": null,
+    "page_index_complete_does_not_mean_scientifically_complete": true
+  },
+  "remaining_unknowns": [
+    "final SAP not acquired",
+    "latest applicable global amendment not established",
+    "full multiplicity and exact overall success decision rule",
+    "redacted dose/model/missing-data details",
+    "eligibility at old historical information cutoffs"
+  ],
+  "required_review_decisions": [
+    {
+      "id": "trial_identity",
+      "question": "Confirm the declared NCT against the EUCT number, protocol code and official registry; distinguish operator declarations from verified trial identity.",
+      "source_refs": [
+        "official_ctis",
+        "official_registry",
+        "acquisition_metadata"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "current_amendment",
+      "question": "Determine whether amendment c / VV-CLIN-132835 is the applicable current global protocol for the next exact target, or obtain a later applicable amendment and change history.",
+      "source_refs": [
+        "protocol:pdf1",
+        "official_ctis"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "final_sap",
+      "question": "Obtain the operative final SAP or record a supported reason it is unavailable; verify version, date, applicability and available-at evidence before any next cutoff.",
+      "source_refs": [
+        "official_ctis",
+        "acquisition_metadata:remaining_unknowns"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "exact_hypothesis",
+      "question": "Write the exact endpoint, population, dose/arm, comparator and analysis timepoint; a readable Week80 weight endpoint does not define every component.",
+      "source_refs": [
+        "protocol:pdf13,52",
+        "acquisition_metadata:selected_ai_source_observations"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "estimand",
+      "question": "Select the prespecified primary estimand and intercurrent-event/missing-data strategy for this exact forecast event, with page-level evidence; do not choose between treatment-regimen and efficacy by assumption.",
+      "source_refs": [
+        "protocol:pdf16,17,55,56"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "success_rule",
+      "question": "Establish the exact overall success rule including multiplicity, hierarchy, alpha allocation, interim/final boundary, required comparisons and required estimand combination. Do not substitute nominal significance or overall 0.05 for the complete rule.",
+      "source_refs": [
+        "protocol:pdf114,115,118,120"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "cci_unknowns",
+      "question": "List every CCI-obscured dose/model/missing-data or decision detail needed for the target; keep it unknown and request documents if decisive. Do not reconstruct redactions.",
+      "source_refs": [
+        "protocol:pdf13,114,115,118,120",
+        "acquisition_metadata:redactions"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "source_time_and_next_cutoff",
+      "question": "Confirm source identity and availability separately. Current registration times may support only a new later cutoff; approval date, mtime and UI completion do not establish earlier availability.",
+      "source_refs": [
+        "protocol:registration_manifest",
+        "synopsis:registration_manifest",
+        "acquisition_metadata"
+      ],
+      "status": "unresolved",
+      "passed": false
+    },
+    {
+      "id": "next_packet_binding",
+      "question": "If scientific review is completed, retain an explicit signed/attributed response and produce a separate new version/target binding/cutoff only through the existing workflow. Preserve old cohort inputs, failures, predictions and timestamp proofs.",
+      "source_refs": [
+        "account_review_workflow",
+        "scientific_result_acceptance"
+      ],
+      "status": "unresolved",
+      "passed": false
+    }
+  ],
+  "review_response": {
+    "decision": null,
+    "permitted_decisions": [
+      "approve",
+      "return",
+      "request_document"
+    ],
+    "decision_scope": "Approve means only a documented decision on readiness of a specified new evidence input after required gates; it does not enroll an account, resolve a clinical outcome, authorize a model call or validate predictive performance.",
+    "reviewer_response_at_utc": null,
+    "response_artifact_sha256": null,
+    "unresolved_items_are_not_passed": true,
+    "current_gate": "blocked_pending_scientific_review"
+  },
+  "request_document_priority": [
+    "Operative final SAP with version/applicability and source-availability evidence.",
+    "Current applicable global protocol amendment/change history.",
+    "Authorized public clarification of decisive CCI-obscured multiplicity/estimand/success criteria; otherwise retain unresolved."
+  ],
+  "human_reviews_completed": 0,
+  "scientific_approval": false,
+  "eligible_for_forecast": false,
+  "old_frozen_inputs_modified": false,
+  "operations_in_this_handoff": {
+    "account_creation": 0,
+    "account_authentication": 0,
+    "reviewer_enrollment": 0,
+    "server_operations": 0,
+    "model_calls": 0,
+    "ledger_writes": 0,
+    "forecasts_generated": 0
+  },
+  "clinical_prediction_validated": false
+}

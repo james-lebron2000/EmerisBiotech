@@ -5,8 +5,11 @@
   const safe = u => {try {const x=new URL(u);return x.protocol==='https:'?x.href:'';}catch{return '';}};
   let csrf='',active=null,sourceId=null,proposalSourceId=null,activeReadout=null;
   let suggestionSourceId=null,suggestionData=null,suggestionRequest=0,linkRevision=0,linkBusy=false;
+  let proposalRevision=0,proposalBusy=false,proposalTargets=[],proposalTargetsReady=false;
+  let readoutReviewRevision=0;
   const checks={endpoint_match:'主要终点一致',population_match:'目标人群一致',comparison_match:'治疗与对照一致',source_checked:'已经打开并核对原始公开来源',prespecified_analysis:'对应预设的主要分析',earliest_result_checked:'核对了最早公开结果时间',evidence_cutoff_checked:'预测证据未越过截止日期'};
   const dateChecks={readout_not_completion:'该时间指临床读出，而不是主要完成日、研究完成日或会议日期',source_quote_supports_date:'原文摘录直接支持这个日期或窗口，没有缩小或扩大原文精度',trial_identity_confirmed:'原始来源对应同一试验及注册编号',primary_source_checked:'已打开并核对公司原始公告及其公开日期',precision_correct:'时间类型、开始/结束日期和来源精度一致'};
+  const arenaDateCheck={exact_target_applicability_confirmed:'已逐项核对冻结目标的终点、人群、比较、成功规则及分析时间，确认此日程适用于这个精确目标；同一 NCT 不足以确认适用'};
   const pages={
     intake:{url:'/api/intake/candidates',records:[],next:0,more:true,busy:false},
     outcome:{url:'/api/platform/reviews',records:[],next:0,more:true,busy:false},
@@ -35,11 +38,16 @@
   function renderOutcomes() {
     $('outcome-list').innerHTML=pages.outcome.records.length?pages.outcome.records.map(r=>`<article class="trial-card"><h3>${esc(r.outcome.trial_id)} · ${esc(r.status)}</h3><p>${esc(r.outcome.endpoint)}</p><p>实际标签：${r.outcome.label===null?'未确定':r.outcome.label===1?'达标':'未达标'}；${esc(r.outcome.readout_date)}</p><button type="button" class="button" data-review="${esc(r.id)}">打开核验记录</button></article>`).join(''):'<p>目前没有待核验结果；不展示模拟记录。</p>';
   }
-  const dateKind=p=>p.date_kind==='official_exact_date'?'官方明确公布的读出日期':'公司预计读出窗口';
+  const dateKind=p=>p.date_kind==='readout_time_unconfirmed'?'读出时间未确认':p.date_kind==='official_exact_date'?'官方明确公布的读出日期':'公司预计读出窗口';
+  const dateRange=p=>p.date_kind==='readout_time_unconfirmed'?'未确认；未填日期':(p.start||'未记录')+(p.end!==p.start?' — '+(p.end||'未记录'):'');
+  const arenaReadout=p=>typeof p?.arena_target_id==='string'&&p.arena_target_id!=='';
+  function readoutScope(p) {
+    return arenaReadout(p)?'正式 Arena 精确目标 · '+p.arena_target_id:'旧版 NCT 日历 · 不更新正式 Arena 目标';
+  }
   function renderReadouts() {
     $('readout-list').innerHTML=pages.readout.records.length?pages.readout.records.map(r=>{
       const p=r.proposal;
-      return `<article class="trial-card"><h3>${esc(p.nct_id)} · ${esc(r.status)}</h3><p>${dateKind(p)}：${esc(p.start)}${p.end!==p.start?' — '+esc(p.end):''}<br>来源精度：${esc(p.precision)} · ${esc(p.label)}</p><p class="criteria">“${esc(p.quoted_evidence)}”</p><p>提交：${esc(r.created_at)}${r.decision?'<br>审核：'+esc(r.decision.created_at):''}</p>${sourceLink(p.source)}<button type="button" class="button" data-readout-review="${esc(r.id)}">${r.can_review?'打开独立时间核验':'查看提议与审核状态'}</button>${r.status==='pending_review'&&!r.can_review?'<p class="caption">当前账号不能审核这条提议，需另一位独立审核员。</p>':''}</article>`;
+      return `<article class="trial-card"><h3>${esc(p.nct_id)} · ${esc(r.status)}</h3><p>${esc(readoutScope(p))}</p><p>${dateKind(p)}：${esc(dateRange(p))}<br>来源精度：${esc(p.precision)} · ${esc(p.label)}</p><p class="criteria">“${esc(p.quoted_evidence)}”</p><p>提交：${esc(r.created_at)}${r.decision?'<br>审核：'+esc(r.decision.created_at):''}</p>${sourceLink(p.source)}<button type="button" class="button" data-readout-review="${esc(r.id)}">${r.can_review?'打开独立时间核验':'查看提议与审核状态'}</button>${r.status==='pending_review'&&!r.can_review?'<p class="caption">当前账号不能审核这条提议，需另一位独立审核员。</p>':''}</article>`;
     }).join(''):'<p>尚无读出时间提议。请从上方公司原始公告候选提取，不依据登记完成日补造日期。</p>';
   }
   const renderers={intake:renderSources,outcome:renderOutcomes,readout:renderReadouts};
@@ -187,29 +195,86 @@
     $('link-target-reference').hidden=false;
     $('link-feedback').textContent='仅填入快照 ID。所有实际结果字段保持空白，待人工核实。';
   }
+  function selectedProposalTarget() {
+    const entry=pages.intake.records.find(s=>s.id===proposalSourceId);
+    return proposalTargetsReady&&entry&&$('readout-nct').value===entry.nct_id?proposalTargets.find(t=>t.id===$('readout-arena-target').value&&t.nct_id===entry.nct_id):null;
+  }
   function updateDateFields() {
-    const exact=$('readout-kind').value==='official_exact_date';
-    $('readout-end-label').hidden=exact;$('readout-end').disabled=exact;
-    $('readout-precision').value=exact?'day':'range';$('readout-precision').disabled=exact;
-    $('readout-precision').querySelector('[value="day"]').disabled=!exact;
+    const exact=$('readout-kind').value==='official_exact_date',unknown=$('readout-kind').value==='readout_time_unconfirmed';
+    $('readout-start').disabled=unknown;$('readout-start').required=!unknown;
+    $('readout-end-label').hidden=exact||unknown;$('readout-end').disabled=exact||unknown;$('readout-end').required=!exact&&!unknown;
+    if(unknown){$('readout-start').value='';$('readout-end').value='';}
+    const precision=$('readout-precision');
+    if(exact||unknown)precision.value=unknown?'unknown':'day';
+    else if(['day','unknown',''].includes(precision.value))precision.value='range';
+    precision.disabled=exact||unknown;
+    precision.querySelector('[value="day"]').disabled=!exact;
+    precision.querySelector('[value="unknown"]').disabled=!unknown;
+  }
+  function updateProposalTarget() {
+    const target=selectedProposalTarget();
+    $('readout-arena-scope').hidden=!target;
+    $('readout-source-granularity').disabled=!target;$('readout-source-granularity').required=!!target;
+    $('readout-arena-reference').innerHTML=target?`<h3>${esc(target.trial_name)} · ${esc(target.nct_id)}</h3><p class="hash">精确目标 ID：${esc(target.id)}</p>${targetReference(target)}<p>分析时间：${esc(target.analysis_timepoint||'未记录')}</p>`:'';
+    $('readout-kind').querySelector('[value="readout_time_unconfirmed"]').disabled=!target;
+    if(!target&&$('readout-kind').value==='readout_time_unconfirmed')$('readout-kind').value='estimated_window';
+    updateDateFields();
+  }
+  function resetProposal() {
+    ++proposalRevision;proposalSourceId=null;proposalBusy=false;proposalTargets=[];proposalTargetsReady=false;
+    $('readout-propose-form').reset();$('readout-propose-submit').disabled=false;
+    for(const field of $('readout-propose-form').elements)field.disabled=false;
+    $('readout-arena-target').innerHTML='<option value="">旧版 NCT 日历（不更新正式 Arena 目标）</option>';
+    $('readout-arena-target').disabled=true;$('readout-arena-status').textContent='尚未载入正式 Arena 精确目标。';
+    $('readout-source-detail').innerHTML='';$('readout-propose-feedback').textContent='';
+    updateProposalTarget();
+  }
+  async function loadProposalTargets(id,revision,nct) {
+    $('readout-arena-status').textContent='正在只读核对当前正式 Arena 目标；未选择时只提议旧版 NCT 日历。';
+    try {
+      const data=await request('/api/arena/public');
+      if(revision!==proposalRevision||proposalSourceId!==id||!$('readout-propose-dialog').open)return;
+      if(!Array.isArray(data.cohorts)||!Array.isArray(data.targets))throw Error('正式 Arena 目标格式不正确。');
+      const inactive=value=>['withdrawn_before_execution','withdrawn','superseded'].includes(value);
+      const cohort=data.cohorts.find(c=>c.id===data.current_cohort_id&&(c.kind==='registered_12_project_season'||c.protocol?.season_kind==='registered_12_project_season')&&!inactive(c.execution_status)&&!inactive(c.status));
+      const matches=cohort?data.targets.filter(t=>t.cohort_id===cohort.id&&t.nct_id===nct&&!inactive(t.execution_status)&&!inactive(t.status)):[];
+      if(matches.some(t=>typeof t.id!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(t.id)||typeof t.endpoint!=='string'||!t.endpoint.trim())||new Set(matches.map(t=>t.id)).size!==matches.length)throw Error('正式 Arena 目标身份不完整或重复。');
+      proposalTargets=matches;proposalTargetsReady=true;
+      $('readout-arena-target').innerHTML='<option value="">旧版 NCT 日历（不更新正式 Arena 目标）</option>'+matches.map(t=>`<option value="${esc(t.id)}">${esc(t.trial_name||t.nct_id)} · ${esc(t.endpoint)}</option>`).join('');
+      $('readout-arena-target').disabled=!matches.length;
+      $('readout-arena-status').textContent=matches.length?`找到同 NCT 的 ${matches.length} 个当前正式目标；请显式选择并核对具体分析。未选择仍为旧版 NCT 日历。`:'未找到同 NCT 的当前正式 Arena 目标；只能提议旧版 NCT 日历，不能借用其他试验或旧目标。';
+      updateProposalTarget();
+    } catch(e) {
+      if(revision!==proposalRevision||proposalSourceId!==id||!$('readout-propose-dialog').open)return;
+      proposalTargets=[];proposalTargetsReady=false;$('readout-arena-target').value='';$('readout-arena-target').disabled=true;
+      $('readout-arena-status').textContent='正式 Arena 目标读取失败：'+e.message+' 旧目标选择已清空；可继续旧版 NCT 日历，或重新打开此来源重试。';
+      updateProposalTarget();
+    }
   }
   function openProposal(id) {
     const entry=pages.intake.records.find(s=>s.id===id);
     if(!entry||entry.kind!=='official_announcement_candidate')return;
-    proposalSourceId=id;$('readout-propose-form').reset();$('readout-propose-submit').disabled=false;$('readout-nct').value=entry.nct_id;
+    resetProposal();proposalSourceId=id;const revision=proposalRevision;$('readout-nct').value=entry.nct_id;
     $('readout-source-detail').innerHTML=`<h3>${esc(entry.structured?.title||'公司原始公告')}</h3><p>${sourceLink(entry.source)} · <a href="/api/intake/candidates/${encodeURIComponent(entry.id)}/source">下载已抓取原始来源 ↓</a><br>来源公开日期：${esc(entry.source?.published_at||entry.structured?.published_at||'未知')}<br>抓取：${esc(entry.source?.retrieved_at||'未记录')}</p><span class="hash">来源 SHA-256 ${esc(entry.source?.sha256||'未记录')}</span>${officialText(entry)}`;
     updateDateFields();$('readout-propose-feedback').textContent='日期字段保持空白，请按原文填写；公告发布日期本身不是临床读出日。';
-    $('readout-propose-dialog').showModal();
+    if(!$('readout-propose-dialog').open)$('readout-propose-dialog').showModal();
+    loadProposalTargets(id,revision,entry.nct_id);
   }
   function openReadoutReview(id) {
     activeReadout=pages.readout.records.find(r=>r.id===id);if(!activeReadout)return;
+    ++readoutReviewRevision;
     const r=activeReadout,p=r.proposal;
-    $('readout-review-detail').innerHTML=`<p>${esc(p.nct_id)} · ${esc(r.status)}</p><h3>${dateKind(p)}</h3><p>${esc(p.label)} · ${esc(p.start)} — ${esc(p.end)}<br>来源精度：${esc(p.precision)}</p><blockquote>${esc(p.quoted_evidence)}</blockquote><p>${sourceLink(p.source)}<br>来源公开：${esc(p.source?.published_at||'未知')}<br>提议提交：${esc(r.created_at)}${r.decision?'<br>独立审核：'+esc(r.decision.created_at):''}</p><span class="hash">来源 SHA-256 ${esc(p.source?.sha256||'未记录')}</span><p>提议依据：${esc(p.reason)}</p>`;
-    $('readout-confirmations').innerHTML=Object.entries(dateChecks).map(([k,v])=>`<label class="check-label"><input type="checkbox" name="${k}">${esc(v)}</label>`).join('');
+    const binding=p.arena_target_binding,granularity={named_trial:'同名试验指引',exact_analysis:'明确指向精确分析'}[p.source_granularity]||'未记录';
+    const scope=arenaReadout(p)?`<section class="detail-target"><h3>服务器绑定的正式 Arena 精确目标</h3><p>目标 ID：${esc(p.arena_target_id)}<br>来源层级：${esc(granularity)}<br>适用性：${esc(p.applicability)}</p>${targetReference(binding)}<p>分析时间：${esc(binding?.analysis_timepoint||'未记录')}</p><span class="hash">目标定义 SHA-256：${esc(p.arena_target_binding_sha256||'未记录')}</span></section>`:'<p class="detail-note">旧版 NCT 日历提议，不会更新正式 Arena 的精确目标日历。</p>';
+    $('readout-review-detail').innerHTML=`<p>${esc(p.nct_id)} · ${esc(r.status)}</p><h3>${dateKind(p)}</h3><p>${esc(p.label)} · ${esc(dateRange(p))}<br>来源精度：${esc(p.precision)}</p>${scope}<blockquote>${esc(p.quoted_evidence)}</blockquote><p>${sourceLink(p.source)}<br>来源公开：${esc(p.source?.published_at||'未知')}<br>提议提交：${esc(r.created_at)}${r.decision?'<br>独立审核：'+esc(r.decision.created_at):''}</p><span class="hash">来源 SHA-256 ${esc(p.source?.sha256||'未记录')}</span><p>提议依据：${esc(p.reason)}</p>`;
+    const unknownChecks=arenaReadout(p)&&p.date_kind==='readout_time_unconfirmed'?{
+      source_quote_supports_date:'原文直接支持读出时间未确认；没有把未检到公告或登记完成日当作未确认的依据',
+      precision_correct:'日期为空、来源精度为 unknown，与原文的未确认状态一致'}:{};
+    $('readout-confirmations').innerHTML=Object.entries({...dateChecks,...unknownChecks,...(arenaReadout(p)?arenaDateCheck:{})}).map(([k,v])=>`<label class="check-label"><input type="checkbox" name="${k}">${esc(v)}</label>`).join('');
     $('readout-review-form').reset();
     for(const field of $('readout-review-form').elements)field.disabled=!r.can_review;
     $('readout-review-feedback').textContent=r.can_review?'通过后更新当前日历；不会改写原预测或自动判定临床疗效。':r.status==='pending_review'?'当前账号不能审核这条提议。提交者不可自审，请等待另一位独立审核员。':'这条提议已有不可覆盖的审核记录。';
-    $('readout-review-dialog').showModal();
+    if(!$('readout-review-dialog').open)$('readout-review-dialog').showModal();
   }
   document.addEventListener('click',e=>{
     const actions=[['data-review',openOutcome],['data-link',openLink],['data-readout-propose',openProposal],['data-readout-review',openReadoutReview],['data-suggestions',openSuggestions],['data-suggestion-select',chooseSuggestion]];
@@ -218,10 +283,13 @@
   for(const name of Object.keys(pages))$(name+'-more').onclick=()=>loadPage(name);
   for(const [button,dialog] of [['close-review','review-dialog'],['close-link','link-dialog'],['close-readout-propose','readout-propose-dialog'],['close-readout-review','readout-review-dialog']])$(button).onclick=()=>$(dialog).close();
   $('link-dialog').addEventListener('close',()=>{if(!$('link-dialog').open)resetLink();});
+  $('readout-propose-dialog').addEventListener('close',()=>{if(!$('readout-propose-dialog').open)resetProposal();});
+  $('readout-review-dialog').addEventListener('close',()=>{if(!$('readout-review-dialog').open){++readoutReviewRevision;activeReadout=null;}});
   $('close-suggestions').onclick=()=>{++suggestionRequest;suggestionData=null;$('suggestions-dialog').close();};
   $('suggestions-retry').onclick=()=>openSuggestions(suggestionSourceId);
   $('link-snapshot').addEventListener('input',()=>{$('link-target-reference').hidden=true;$('link-target-reference').innerHTML='';});
   $('readout-kind').onchange=updateDateFields;
+  $('readout-arena-target').onchange=updateProposalTarget;
   $('review-form').onsubmit=async e=>{
     e.preventDefault();const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
     try {
@@ -257,27 +325,43 @@
     } catch(e) {if(revision===linkRevision)$('link-feedback').textContent=e.message;}finally{if(revision===linkRevision){submit.disabled=false;linkBusy=false;}}
   };
   $('readout-propose-form').onsubmit=async e=>{
-    e.preventDefault();$('readout-propose-submit').disabled=true;let saved=false;
+    e.preventDefault();if(proposalBusy)return;
+    const revision=proposalRevision,id=proposalSourceId;proposalBusy=true;$('readout-propose-submit').disabled=true;let saved=false;
     try {
-      const exact=$('readout-kind').value==='official_exact_date';
-      const body={nct_id:$('readout-nct').value,candidate_id:proposalSourceId,date_kind:$('readout-kind').value,start:$('readout-start').value,end:exact?$('readout-start').value:$('readout-end').value,precision:exact?'day':$('readout-precision').value,label:$('readout-label').value,quoted_evidence:$('readout-quote').value,reason:$('readout-reason').value};
-      if(!exact&&body.end<body.start)throw Error('窗口结束不能早于开始。');
+      const entry=pages.intake.records.find(s=>s.id===id);
+      if(!$('readout-propose-dialog').open||!entry||entry.kind!=='official_announcement_candidate'||$('readout-nct').value!==entry.nct_id)throw Error('来源已切换，请重新打开公司原始公告。');
+      const exact=$('readout-kind').value==='official_exact_date',unknown=$('readout-kind').value==='readout_time_unconfirmed',target=selectedProposalTarget();
+      if($('readout-arena-target').value&&!target)throw Error('正式 Arena 目标未载入或已切换，请重新选择当前来源的精确目标。');
+      if(unknown&&!target)throw Error('只有显式选择正式 Arena 精确目标才能提议读出时间未确认。');
+      const body={nct_id:entry.nct_id,candidate_id:id,date_kind:$('readout-kind').value,start:unknown?null:$('readout-start').value,end:unknown?null:exact?$('readout-start').value:$('readout-end').value,precision:unknown?'unknown':exact?'day':$('readout-precision').value,label:$('readout-label').value,quoted_evidence:$('readout-quote').value,reason:$('readout-reason').value};
+      if(!unknown&&!exact&&body.end<body.start)throw Error('窗口结束不能早于开始。');
+      if(target){
+        const granularity=$('readout-source-granularity').value;
+        if(!['named_trial','exact_analysis'].includes(granularity))throw Error('请选择原文支持的来源适用层级。');
+        Object.assign(body,{arena_target_id:target.id,source_granularity:granularity,applicability:'exact_registered_target'});
+      }
+      for(const field of $('readout-propose-form').elements)field.disabled=true;
       await request('/api/readout-updates',body);saved=true;
+      if(revision!==proposalRevision||proposalSourceId!==id)return;
       $('readout-propose-feedback').textContent='时间提议已保存，等待另一位独立审核员；当前日历尚未据此更新。';
       await loadPage('readout',true);
-    } catch(e) {$('readout-propose-feedback').textContent=e.message;}finally{$('readout-propose-submit').disabled=saved;}
+    } catch(e) {if(revision===proposalRevision)$('readout-propose-feedback').textContent=e.message;}finally{if(revision===proposalRevision){proposalBusy=false;for(const field of $('readout-propose-form').elements)field.disabled=false;$('readout-arena-target').disabled=!proposalTargetsReady||!proposalTargets.length;updateProposalTarget();$('readout-propose-submit').disabled=saved;}}
   };
   $('readout-review-form').onsubmit=async e=>{
     e.preventDefault();if(!activeReadout?.can_review){$('readout-review-feedback').textContent='当前账号不可审核此提议。';return;}
+    const reviewing=activeReadout,revision=readoutReviewRevision;
     $('readout-review-submit').disabled=true;
     try {
       if(!$('readout-decision').value)throw Error('请选择审核结论。');
-      const confirmations=Object.fromEntries(Object.keys(dateChecks).map(k=>[k,!!$('readout-review-form').querySelector(`[name="${k}"]`).checked]));
-      await request('/api/readout-updates/'+encodeURIComponent(activeReadout.id)+'/review',{decision:$('readout-decision').value,reason:$('readout-review-reason').value,confirmations});
+      const keys=[...Object.keys(dateChecks),...(arenaReadout(reviewing.proposal)?Object.keys(arenaDateCheck):[])];
+      const confirmations=Object.fromEntries(keys.map(k=>[k,!!$('readout-review-form').querySelector(`[name="${k}"]`)?.checked]));
+      if($('readout-decision').value==='approved'&&arenaReadout(reviewing.proposal)&&!confirmations.exact_target_applicability_confirmed)throw Error('请先确认此日程适用于服务器绑定的精确目标。');
+      await request('/api/readout-updates/'+encodeURIComponent(reviewing.id)+'/review',{decision:$('readout-decision').value,reason:$('readout-review-reason').value,confirmations});
+      if(revision!==readoutReviewRevision||activeReadout?.id!==reviewing.id)return;
       $('readout-review-feedback').textContent='时间审核记录已保存。通过的更新可在当前日历核对，原始预测保持不变。';
-      activeReadout.can_review=false;for(const field of $('readout-review-form').elements)field.disabled=true;
+      reviewing.can_review=false;for(const field of $('readout-review-form').elements)field.disabled=true;
       await loadPage('readout',true);
-    } catch(e) {$('readout-review-feedback').textContent=e.message;$('readout-review-submit').disabled=false;}
+    } catch(e) {if(revision===readoutReviewRevision){$('readout-review-feedback').textContent=e.message;$('readout-review-submit').disabled=false;}}
   };
   load();
 })();

@@ -1,0 +1,119 @@
+{
+  "scope": "本地候选前端 + 线上公开记录快照，非线上1.2.9部署截图；不验证预测能力",
+  "source_gets": [
+    {
+      "url": "https://8.148.145.28/api/arena/public",
+      "method": "GET",
+      "completed_at_utc": "2026-10-26T16:00:39.815259+00:00",
+      "http_status": "200",
+      "body_bytes": 349495,
+      "body_sha256": "39b2824449992882c8147070dec0520ffff5be475db611508d0c0b397f77266b"
+    },
+    {
+      "url": "https://8.148.145.28/api/arena/public/targets/of-season-20261023-corrected-avanzar",
+      "method": "GET",
+      "completed_at_utc": "2026-10-26T16:01:01.941954+00:00",
+      "http_status": "200",
+      "body_bytes": 16199,
+      "body_sha256": "5a385ace41d0507df48b76892d8e9b520521586f4b82e6d4d211630d7cfe2cb0"
+    }
+  ],
+  "target": {
+    "id": "of-season-20261023-corrected-avanzar",
+    "trial_name": "AVANZAR",
+    "nct_id": "NCT05687266",
+    "cohort_id": "of-season-20261023-corrected-v1",
+    "status": "pending",
+    "result": null
+  },
+  "models": [
+    {
+      "id": "run-b38183512a9547bd982d50cdb936e58e",
+      "model_id": "glm-5.2",
+      "model_version": "glm-5.2",
+      "status": "failed",
+      "predicted_outcome": "Uncertain",
+      "probability": null,
+      "confidence": null,
+      "match": null,
+      "match_status": "not_evaluable"
+    },
+    {
+      "id": "run-e52e47899feb4976b3ca4b4bed1bb7a3",
+      "model_id": "kimi-k3",
+      "model_version": "kimi-k3",
+      "status": "predicted",
+      "predicted_outcome": "Failure",
+      "probability": null,
+      "confidence": null,
+      "match": null,
+      "match_status": "not_evaluable"
+    },
+    {
+      "id": "run-50edd2bc2c3148e0980ab605c50edfb0",
+      "model_id": "deepseek-v4.1-flash",
+      "model_version": "deepseek-v4.1-flash",
+      "status": "predicted",
+      "predicted_outcome": "Failure",
+      "probability": null,
+      "confidence": null,
+      "match": null,
+      "match_status": "not_evaluable"
+    },
+    {
+      "id": "run-681eda77432845c1a1eeb6307ea822ba",
+      "model_id": "deepseek-v4-pro",
+      "model_version": "deepseek-v4-pro",
+      "status": "abstained",
+      "predicted_outcome": "Uncertain",
+      "probability": null,
+      "confidence": null,
+      "match": null,
+      "match_status": "not_evaluable"
+    }
+  ],
+  "production_deployment_verified": false,
+  "predictive_performance_validated": false,
+  "assets": [
+    {
+      "name": "arena-public.html",
+      "sha256": "df675c45948283b4d5c2b931721665c9e3c223f4fee703ca651d02c894434d58",
+      "bytes": 2097
+    },
+    {
+      "name": "arena-public.js",
+      "sha256": "0f01607720e6929c6da31c56457dc89e3432302747005aa08bdb9af6150b8b3e",
+      "bytes": 26698
+    },
+    {
+      "name": "arena-public.css",
+      "sha256": "2d5f167c249ddb082ef5be53d83cfc33d97f22796057e4de1d3a1f6e6e91b089",
+      "bytes": 27456
+    },
+    {
+      "name": "design-system.css",
+      "sha256": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+      "bytes": 13004
+    },
+    {
+      "name": "theme.js",
+      "sha256": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+      "bytes": 546
+    },
+    {
+      "name": "favicon.svg",
+      "sha256": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3",
+      "bytes": 201
+    }
+  ],
+  "screenshots": {
+    "avanzar-public-snapshot-mobile.png": "fce4b7f5fc93657db6b044a4858b47c6a41ededf013c403aaec6aa434e297a98",
+    "independent-review-pending-fixture.png": "a245d42f6423d97cafa6ff6f96224cdf9ba1f60c0be826a0b85fa374cd1f003b",
+    "avanzar-public-snapshot-desktop.png": "90a183acea47334686989354c8d3ce2497eb925279d8704be7c1ceb6b014bf70"
+  },
+  "limitations": [
+    "Read-only production API snapshot rendered by candidate assets locally; no model calls.",
+    "Selected actual target was pending; the independent-review-pending branch uses a separate labelled synthetic fixture.",
+    "Original public target response bytes are preserved in public-target-snapshot.json."
+  ]
+}

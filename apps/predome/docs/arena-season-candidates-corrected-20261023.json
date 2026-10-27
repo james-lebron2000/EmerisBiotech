@@ -1,0 +1,2330 @@
+{
+  "schema_version": "arena-season-candidates-v1",
+  "cohort_id": "of-season-20261023-corrected-v1",
+  "prepared_at_utc": "2026-10-22T17:00:02.856446+00:00",
+  "information_cutoff_utc": "2026-10-22T17:00:02.856446+00:00",
+  "purpose": "Corrected prospective research proposal with original-source-bound Dato denominator and balanced riliprubart phase 2 evidence. Not registered or executed; fresh readout screening and operator review still required.",
+  "independence_limits": "12 distinct drug assets, not 12 fully independent biological hypotheses. Three oral estrogen-receptor drugs and repeated sponsors induce dependencies; retain asset, mechanism and sponsor clustering. AVANZAR has earlier separate pilot runs; season comparisons must not select the best across cohorts.",
+  "selection_notes": [
+    "9 oncology projects prioritized. No near-term gastric/colorectal trial with a sufficiently explicit still-unresolved readout was qualified in this bounded search; known MATTERHORN and AZUR-1 outcomes are excluded.",
+    "Expanded to SLE, CIDP and EGPA to reach 12 distinct assets; this is not an oncology-only benchmark.",
+    "Timing sources are sponsor guidance, never inferred registry completion dates. Coarse windows remain coarse.",
+    "No target result identified in bounded official-source English/Chinese screening is not exhaustive proof of absence.",
+    "Evidence cards are AI-curated, no physician/scientist manual review claim.",
+    "Source availability is actual retrieval time; public dates and source version separately retained. Reader extracts do not claim original document hashes.",
+    "This is a new proposal with new target IDs and a new cutoff; previous frozen catalogs and runs remain immutable.",
+    "TROPION-Lung01 nonsquamous efficacy denominator is corrected to 234 per arm using original Europe PMC full-text XML Table 2.",
+    "VITALIZE keeps MOBILIZE futility evidence and adds open-label phase 2 week-24/week-76 reports. Both phase 2 reports concern NCT04658472, not independent replications.",
+    "Fresh post-cutoff screening used six search calls and 24 queries for 12 targets, plus one targeted official-page read to disambiguate a legend. Receipt timestamps, original tool outputs and query scopes are preserved; no comprehensive absence guarantee."
+  ],
+  "candidates": [
+    {
+      "id": "of-season-20261023-corrected-avanzar",
+      "project_id": "datopotamab-deruxtecan",
+      "trial_name": "AVANZAR",
+      "nct_id": "NCT05687266",
+      "drug": "datopotamab deruxtecan",
+      "sponsor": "AstraZeneca / Daiichi Sankyo",
+      "mechanism_family": "TROP2 ADC",
+      "indication": "First-line advanced NSCLC",
+      "population": "Previously untreated advanced non-squamous NSCLC without actionable genomic alterations; analysis restricted to TROP2 biomarker-positive non-squamous patients.",
+      "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + pemetrexed + platinum chemotherapy.",
+      "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05687266",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of BICR PFS in non-squamous TROP2-positive patients reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Approximately 3 years",
+      "readout": {
+        "label": "H2 2026 sponsor guidance",
+        "start": "2026-07-01",
+        "end": "2026-12-31",
+        "precision": "half_year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "az_h1_web_extract",
+        "page_references": [
+          3
+        ],
+        "guidance_as_of": "2026-07-27",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Four primary hypotheses and biomarker enrichment; multiplicity allocation, event count and target effect unknown. Registry primary completion is not a readout date.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05687266",
+          "source_id": "NCT05687266",
+          "title": "AVANZAR frozen registered design",
+          "text": "Frozen registry NCT05687266: AVANZAR; enrollment 1350 (ACTUAL); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population. Definition: PFS is deﬁned as time from randomisation until progression per Response Evaluation Criteria in Solid Tumors, Version 1.1 (RECIST 1.1) as assessed by BICR, or death due to any cause.. Timeframe: Approximately 3 years. There are 4 registered primary-outcome entries. Four primary hypotheses and biomarker enrichment; multiplicity allocation, event count and target effect unknown. Registry primary completion is not a readout date.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "dato-lung01-nsq-corrected-20261023",
+          "target_id": "of-season-20261023-corrected-avanzar",
+          "source_id": "tropion_lung01_europepmc_xml",
+          "title": "Corrected indirect randomized Dato evidence",
+          "text": "TROPION-Lung01 was a randomized comparison of Dato-DXd monotherapy versus docetaxel after prior NSCLC therapy. Table 2 reports 234 patients per arm in the nonsquamous histology efficacy subgroup, not 229 versus 232. Median PFS was 5.5 versus 3.6 months, HR 0.63 (95% CI 0.51-0.79). In the overall population, OS was not significantly improved: HR 0.94 (95% CI 0.78-1.14), p=0.530. Histology subgroups used electronic case-report-form data. These patients do not isolate AVANZAR TROP2-positive disease. Treatment line, combination, comparator and hypothesis differ; neither the PFS signal nor the overall OS null result establishes AVANZAR efficacy.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "XML table-wrap id=tbl2, Overall Efficacy for All Patients and by Histology, nonsquamous columns; table footnotes",
+          "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+          "source_path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml",
+          "source_sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+          "source_date": "2024-09-09",
+          "available_at": "2026-10-22T16:55:00.554352+00:00",
+          "snapshot_kind": "original_http_response",
+          "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+          "human_review_count": 0,
+          "word_count": 92
+        },
+        {
+          "id": "dato-lung04-firstline-triplet",
+          "source_id": "tropion_lung04",
+          "title": "Indirect first-line combination response evidence",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "text": "In the small phase Ib TROPION-Lung04 first-line subgroup, Dato-DXd + durvalumab + carboplatin had confirmed-or-pending-confirmation responses in 10/13 patients (76.9%, 95% CI 46.2-95.0). Dato-DXd + durvalumab had 7/14 responses (50%). These are nonrandomized cohorts, response rather than PFS, with no randomized standard-care comparator or isolation of AVANZAR TROP2-positive population. The triplet safety population included 14 patients and must not be given the 13-patient first-line efficacy denominator. This does not establish an AVANZAR effect.",
+          "page_references": [],
+          "source_anchor": "TROPION-Lung04 first-line efficacy subgroup paragraphs/table; confirmed or pending confirmation"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:00:30.963000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"AVANZAR\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "astrazeneca.com",
+              "daiichisankyo.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"AVANZAR\" 2026 结果 主要终点",
+            "domains": [
+              "astrazeneca.com",
+              "astrazeneca.com.cn",
+              "daiichisankyo.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-avanzar-inavo121"
+        ],
+        "finding": "Returned material included earlier TROPION-Lung04 and references to the AVANZAR program; no exact AVANZAR TROP2-positive nonsquamous PFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:30.996565+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-avanzar-inavo121"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-avanzar"
+    },
+    {
+      "id": "of-season-20261023-corrected-inavo121",
+      "project_id": "inavolisib",
+      "trial_name": "INAVO121",
+      "nct_id": "NCT05646862",
+      "drug": "inavolisib",
+      "sponsor": "Roche / Genentech",
+      "mechanism_family": "PI3K alpha",
+      "indication": "Post-CDK4/6 HR-positive breast cancer",
+      "population": "HR-positive, HER2-negative, PIK3CA-mutated locally advanced/metastatic breast cancer progressing during or after CDK4/6 inhibitor plus endocrine therapy; main randomized study only.",
+      "comparison": "Inavolisib + fulvestrant versus alpelisib + fulvestrant.",
+      "endpoint": "Blinded Independent Central Review (BICR)-Assessed Progression Free Survival (PFS)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05646862",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of Blinded Independent Central Review (BICR)-Assessed Progression Free Survival (PFS) reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: From randomization until disease progression or death due to any cause (up to approximately 64 months)",
+      "readout": {
+        "label": "2026 sponsor guidance",
+        "start": "2026-01-01",
+        "end": "2026-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "roche_q3_2026",
+        "page_references": [
+          37
+        ],
+        "guidance_as_of": "2026-10-22",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Exclude PK substudy endpoints. Registry remains recruiting while sponsor states main-study recruitment completed Q4 2024; preserve both source versions.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05646862",
+          "source_id": "NCT05646862",
+          "title": "INAVO121 frozen registered design",
+          "text": "Frozen registry NCT05646862: INAVO121; enrollment 420 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Blinded Independent Central Review (BICR)-Assessed Progression Free Survival (PFS). Definition: . Timeframe: From randomization until disease progression or death due to any cause (up to approximately 64 months). There are 10 registered primary-outcome entries. Exclude PK substudy endpoints. Registry remains recruiting while sponsor states main-study recruitment completed Q4 2024; preserve both source versions.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "inavo120-prior",
+          "source_id": "roche_q3_2026",
+          "title": "Different-combination INAVO120 prior",
+          "text": "Roche reports INAVO120 met its primary PFS endpoint in Q4 2023. It compared inavolisib + palbociclib + fulvestrant with placebo + palbociclib + fulvestrant in PIK3CA-mutant HR-positive advanced breast cancer. INAVO121 instead compares two active PI3K inhibitors after CDK4/6 therapy, without palbociclib. The prior trial is indirect and cannot establish head-to-head superiority.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [
+            59
+          ],
+          "source_anchor": null
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:00:30.963000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"INAVO121\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "roche.com",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"INAVO121\" 2026 结果 主要终点",
+            "domains": [
+              "roche.com",
+              "roche.com.cn",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-avanzar-inavo121"
+        ],
+        "finding": "Returned study designs, anticipated 2026 readout and INAVO120 results. Primary-endpoint-met markers in multi-study presentations concerned other studies; no exact INAVO121 decisive BICR-PFS result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:31.811129+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-avanzar-inavo121"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-inavo121"
+    },
+    {
+      "id": "of-season-20261023-corrected-mevpro1",
+      "project_id": "mevrometostat",
+      "trial_name": "MEVPRO-1",
+      "nct_id": "NCT06551324",
+      "drug": "mevrometostat",
+      "sponsor": "Pfizer",
+      "mechanism_family": "EZH2 inhibition",
+      "indication": "Metastatic castration-resistant prostate cancer",
+      "population": "Metastatic castration-resistant prostate adenocarcinoma progressing after abiraterone in mCSPC or first-line mCRPC; ECOG 0-2; randomized analysis population.",
+      "comparison": "Mevrometostat 875 mg twice daily with food + enzalutamide 160 mg/day versus physician choice enzalutamide or docetaxel.",
+      "endpoint": "Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT06551324",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3) reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Randomization up to approximately 2 years.",
+      "readout": {
+        "label": "2026 sponsor guidance",
+        "start": "2026-01-01",
+        "end": "2026-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "pfizer_catalysts",
+        "page_references": [
+          1
+        ],
+        "guidance_as_of": "2026-09-30",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Protocol publication clarifies final rPFS analysis; operative SAP amendments and event maturity are not independently verified.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT06551324",
+          "source_id": "NCT06551324",
+          "title": "MEVPRO-1 frozen registered design",
+          "text": "Frozen registry NCT06551324: MEVPRO-1; enrollment 600 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3). Definition: rPFS is defined as the time from the date of randomization to first objective evidence of radiographic progression as assessed in soft tissue per Response Evaluation Criteria in Solid Tumors (RECIST) v1.1 or in bone per Prostate Cancer Clinical Trials Working Group 3 (PCWG3) guidelines by BICR, or death, whichever occurs first.. Timeframe: Randomization up to approximately 2 years.. There are 1 registered primary-outcome entries. Protocol publication clarifies final rPFS analysis; operative SAP amendments and event maturity are not independently verified.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "mevpro-protocol",
+          "source_id": "mevpro_protocol",
+          "title": "Published protocol and phase I background",
+          "text": "The sponsor-authored protocol publication reports an 81-patient dose-expansion comparison with median rPFS 14.3 months for mevrometostat + enzalutamide versus 6.2 months for enzalutamide. This is not MEVPRO-1 and does not cover its docetaxel comparator. The phase III protocol describes a stratified two-sided log-rank rPFS analysis with no rPFS interim analysis, and hierarchical rPFS then OS testing. Exact current operative SAP, event maturity and adherence remain unknown.",
+          "kind": "trial_protocol",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Sections 2.6 statistical analyses and 3 discussion"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:58.151000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"MEVPRO-1\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "pfizer.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"MEVPRO-1\" 2026 结果 主要终点",
+            "domains": [
+              "pfizer.com",
+              "pfizer.com.cn",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-mevpro1-skyglo",
+          "corrected-screen-pfizer-guidance-followup"
+        ],
+        "finding": "Returned active registry/design and anticipated catalyst listings; no exact MEVPRO-1 decisive rPFS result identified. A follow-up read of the official catalyst page shows MEVPRO-1 without a status dot; the no-longer-anticipated text is a general legend, not a target result.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:31.614819+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-mevpro1-skyglo"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-mevpro1"
+    },
+    {
+      "id": "of-season-20261023-corrected-skyglo",
+      "project_id": "glofitamab",
+      "trial_name": "SKYGLO",
+      "nct_id": "NCT06047080",
+      "drug": "glofitamab",
+      "sponsor": "Roche / Genentech",
+      "mechanism_family": "CD20 x CD3 bispecific",
+      "indication": "Previously untreated large B-cell lymphoma",
+      "population": "Previously untreated CD20-positive large B-cell lymphoma meeting protocol eligibility, IPI 2-5, ECOG 0-2; randomized population.",
+      "comparison": "Glofitamab + polatuzumab vedotin + rituximab/cyclophosphamide/doxorubicin/prednisone (Pola-R-CHP) versus Pola-R-CHP.",
+      "endpoint": "Progression-free survival (PFS) as determined by Independent Review Facility (IRF)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT06047080",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of Progression-free survival (PFS) as determined by Independent Review Facility (IRF) reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: From randomization to the first occurrence of disease progression or relapse, or death due to any cause, whichever occurs first (up to approximately 65 months)",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "roche_q3_2026",
+        "page_references": [
+          38
+        ],
+        "guidance_as_of": "2026-10-22",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Sponsor calls population DLBCL while registered eligibility is LBCL with exclusions; target uses current registry.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT06047080",
+          "source_id": "NCT06047080",
+          "title": "SKYGLO frozen registered design",
+          "text": "Frozen registry NCT06047080: SKYGLO; enrollment 1130 (ACTUAL); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Progression-free survival (PFS) as determined by Independent Review Facility (IRF). Definition: . Timeframe: From randomization to the first occurrence of disease progression or relapse, or death due to any cause, whichever occurs first (up to approximately 65 months). There are 1 registered primary-outcome entries. Sponsor calls population DLBCL while registered eligibility is LBCL with exclusions; target uses current registry.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "starglo-prior",
+          "source_id": "roche_starglo",
+          "title": "Indirect relapsed DLBCL STARGLO prior",
+          "text": "At three-year follow-up in relapsed/refractory DLBCL, glofitamab-GemOx versus rituximab-GemOx had median OS 25.5 versus 12.5 months and reported HR 0.60 (95% CI 0.43-0.8). This overall-trial OS result is indirect for frontline SKYGLO IRF-PFS with Pola-R-CHP. Subgroup efficacy must not be used as overall SKYGLO evidence.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Opening STARGLO results paragraph"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:00:47.742000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"SKYGLO\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "roche.com",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"SKYGLO\" 2026 结果 主要终点",
+            "domains": [
+              "roche.com",
+              "roche.com.cn",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-mevpro1-skyglo"
+        ],
+        "finding": "Returned registry/design, recruitment status and STARGLO results. The April 2024 endpoint-met table entry belongs to STARGLO, not SKYGLO; no exact SKYGLO IRF-PFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:32.486396+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-mevpro1-skyglo"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-skyglo"
+    },
+    {
+      "id": "of-season-20261023-corrected-ember4",
+      "project_id": "imlunestrant",
+      "trial_name": "EMBER-4",
+      "nct_id": "NCT05514054",
+      "drug": "imlunestrant",
+      "sponsor": "Eli Lilly",
+      "mechanism_family": "Oral estrogen receptor antagonist/degrader",
+      "indication": "Adjuvant ER-positive early breast cancer",
+      "population": "Resected ER-positive, HER2-negative early breast cancer at increased recurrence risk after 24-60 months adjuvant endocrine therapy; no distant metastases; randomized population.",
+      "comparison": "Imlunestrant versus investigator choice tamoxifen, anastrozole, letrozole or exemestane.",
+      "endpoint": "Invasive Disease-Free Survival (IDFS)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05514054",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of IDFS excluding second non-breast primary invasive cancers reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Randomization to recurrence or death from any cause (up to 10 years)",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "lilly_ember4",
+        "page_references": [],
+        "guidance_as_of": "2026-09-18",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Primary IDFS excludes second non-breast primary invasive cancers. Initial 2027 readout may be interim; actual alpha boundary unknown.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05514054",
+          "source_id": "NCT05514054",
+          "title": "EMBER-4 frozen registered design",
+          "text": "Frozen registry NCT05514054: EMBER-4; enrollment 8000 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Invasive Disease-Free Survival (IDFS). Definition: IDFS excluding second non-breast primary invasive cancers. Timeframe: Randomization to recurrence or death from any cause (up to 10 years). There are 1 registered primary-outcome entries. Primary IDFS excludes second non-breast primary invasive cancers. Initial 2027 readout may be interim; actual alpha boundary unknown.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "ember3-prior",
+          "source_id": "lilly_ember3",
+          "title": "Mixed monotherapy EMBER-3 evidence",
+          "text": "In advanced disease EMBER-3, imlunestrant monotherapy versus standard endocrine therapy improved PFS in ESR1-mutated patients (HR 0.62, 95% CI 0.46-0.82, p<0.001), but not all patients (HR 0.87, 95% CI 0.72-1.04, p=0.12). EMBER-4 concerns adjuvant recurrence prevention, not metastatic PFS or the abemaciclib combination. Neither subgroup benefit nor overall null result resolves the target.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "ESR1-mutated and all-patient monotherapy paragraphs"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:02.249000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"EMBER-4\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "lilly.com",
+              "investor.lilly.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"EMBER-4\" 2026 结果 主要终点",
+            "domains": [
+              "lilly.com",
+              "lilly.cn",
+              "investor.lilly.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-ember4-pionera"
+        ],
+        "finding": "Returned active study and completed-enrollment descriptions plus EMBER-3 approvals/results; sponsor still describes initial EMBER-4 results as anticipated in 2027. No exact EMBER-4 IDFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:32.991163+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-ember4-pionera"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-ember4"
+    },
+    {
+      "id": "of-season-20261023-corrected-pionera",
+      "project_id": "giredestrant",
+      "trial_name": "pionERA",
+      "nct_id": "NCT06065748",
+      "drug": "giredestrant",
+      "sponsor": "Roche / Genentech",
+      "mechanism_family": "Oral estrogen receptor antagonist/degrader",
+      "indication": "Endocrine-resistant advanced breast cancer",
+      "population": "ER-positive, HER2-negative advanced breast cancer resistant to adjuvant endocrine therapy; selected primary analysis is the ESR1-mutated population, not the full analysis population coprimary endpoint.",
+      "comparison": "Giredestrant + investigator choice CDK4/6 inhibitor versus fulvestrant + investigator choice CDK4/6 inhibitor.",
+      "endpoint": "Progression-Free Survival (PFS) in the ESR1 mutation (ESR1m) Subgroup",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT06065748",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of investigator-assessed PFS in ESR1-mutated participants reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: From randomization to first occurrence of progressive disease (PD) or death (up to 5 years)",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "roche_pionera",
+        "page_references": [],
+        "guidance_as_of": "2026-03-09",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Only ESR1-mutated primary PFS is targeted, not any-positive among ESR1 and FAS. Coprimary multiplicity and hierarchy unknown.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT06065748",
+          "source_id": "NCT06065748",
+          "title": "pionERA frozen registered design",
+          "text": "Frozen registry NCT06065748: pionERA; enrollment 1050 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Progression-Free Survival (PFS) in the ESR1 mutation (ESR1m) Subgroup. Definition: PFS is defined as the time from randomization to the first occurrence of PD, as determined by the investigator according to Response Evaluation Criteria in Solid Tumors Version 1.1 (RECIST v1.1), or death from any cause during the study.. Timeframe: From randomization to first occurrence of progressive disease (PD) or death (up to 5 years). There are 2 registered primary-outcome entries. Only ESR1-mutated primary PFS is targeted, not any-positive among ESR1 and FAS. Coprimary multiplicity and hierarchy unknown.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "persevera-null",
+          "source_id": "roche_pionera",
+          "title": "Negative same-asset first-line prior",
+          "text": "The phase III persevERA giredestrant + palbociclib trial did not significantly improve ITT PFS versus letrozole + palbociclib. It differs from pionERA in endocrine resistance, ESR1 enrichment and comparator. Numerical improvement is not statistical success.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Opening results paragraph"
+        },
+        {
+          "id": "evera-positive",
+          "source_id": "roche_evera",
+          "title": "Positive same-asset but different combination prior",
+          "text": "In evERA, giredestrant + everolimus versus standard endocrine therapy + everolimus had PFS HR 0.38 (95% CI 0.27-0.54) in ESR1-mutated patients and HR 0.56 (95% CI 0.44-0.71) in ITT, both p<0.001. Everolimus background and post-CDK setting differ from pionERA. These effects cannot be directly transferred.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "ESR1-mutated and ITT PFS paragraphs"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:02.249000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"pionERA\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "roche.com",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"pionERA\" 2026 结果 主要终点",
+            "domains": [
+              "roche.com",
+              "roche.com.cn",
+              "genentech.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-ember4-pionera"
+        ],
+        "finding": "Returned 2027 guidance, design, persevERA null result and lidERA/evERA positive results. Adjacent endpoint-met presentation text belongs to lidERA, not pionERA; no exact pionERA ESR1-mutant PFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:33.445790+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-ember4-pionera"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-pionera"
+    },
+    {
+      "id": "of-season-20261023-corrected-successor1",
+      "project_id": "mezigdomide",
+      "trial_name": "SUCCESSOR-1",
+      "nct_id": "NCT05519085",
+      "drug": "mezigdomide",
+      "sponsor": "Bristol Myers Squibb / Celgene",
+      "mechanism_family": "Cereblon modulator",
+      "indication": "Relapsed/refractory multiple myeloma",
+      "population": "Relapsed/refractory multiple myeloma with 1-3 prior lines and at least minimal response to a previous therapy; excludes prior pomalidomide/mezigdomide and specified proteasome-inhibitor refractory disease. Target is the confirmatory selected-dose randomized phase III comparison.",
+      "comparison": "Selected confirmatory mezigdomide 1.0 mg + bortezomib/dexamethasone versus pomalidomide + bortezomib/dexamethasone.",
+      "endpoint": "Progression-free Survival (PFS)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05519085",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of confirmatory selected-dose phase III randomized PFS reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: From date of randomization to date of disease progression or death due to any cause (Up to approximately 5 years)",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "bms_q1",
+        "page_references": [
+          41
+        ],
+        "guidance_as_of": "2026-04-30",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Two-stage selected-dose confirmatory comparison. Selection/multiplicity SAP details not public in packet; unclear confirmatory population leaves adjudication unresolved.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05519085",
+          "source_id": "NCT05519085",
+          "title": "SUCCESSOR-1 frozen registered design",
+          "text": "Frozen registry NCT05519085: SUCCESSOR-1; enrollment 810 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Progression-free Survival (PFS). Definition: . Timeframe: From date of randomization to date of disease progression or death due to any cause (Up to approximately 5 years). There are 1 registered primary-outcome entries. Two-stage selected-dose confirmatory comparison. Selection/multiplicity SAP details not public in packet; unclear confirmatory population leaves adjudication unresolved.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "successor2-prior",
+          "source_id": "bms_successor2",
+          "title": "Positive mezigdomide with a different backbone",
+          "text": "SUCCESSOR-2 reported a PFS HR of 0.48 and p<0.0001 for mezigdomide + carfilzomib/dexamethasone versus carfilzomib/dexamethasone. The source reports grade 3-4 treatment-emergent adverse events 83.7% versus 56.5%. SUCCESSOR-1 instead uses bortezomib and an active pomalidomide control, with different eligibility; no target treatment effect is established.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Efficacy and safety paragraphs"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:11.643000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"SUCCESSOR-1\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "bms.com",
+              "news.bms.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"SUCCESSOR-1\" 2026 结果 主要终点",
+            "domains": [
+              "bms.com",
+              "news.bms.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-successor1-topaz1"
+        ],
+        "finding": "Returned 2027 guidance and SUCCESSOR-2 results/application. SUCCESSOR-2 and SUCCESSOR-1 are separate studies; no exact SUCCESSOR-1 PFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:34.483818+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-successor1-topaz1"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-successor1"
+    },
+    {
+      "id": "of-season-20261023-corrected-topaz1",
+      "project_id": "litifilimab",
+      "trial_name": "TOPAZ-1",
+      "nct_id": "NCT04895241",
+      "drug": "litifilimab",
+      "sponsor": "Biogen",
+      "mechanism_family": "BDCA2 monoclonal antibody",
+      "indication": "Systemic lupus erythematosus",
+      "population": "Active SLE meeting 2019 EULAR/ACR criteria on stable nonbiologic standard care; target high-dose versus placebo groups of randomized TOPAZ-1, excluding TOPAZ-2 and unrelated durvalumab biliary TOPAZ-1.",
+      "comparison": "High-dose litifilimab + nonbiologic standard care versus placebo + same standard care; low-dose comparison is not this target.",
+      "endpoint": "Percentage of Participants Who Achieved a Systemic Lupus Erythematosus Responder Index of 4 (SRI-4) Response at Week 52",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT04895241",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of Week-52 SRI-4 responder proportion, high-dose litifilimab versus placebo reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Week 52",
+      "readout": {
+        "label": "2026 sponsor guidance",
+        "start": "2026-01-01",
+        "end": "2026-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "biogen_q2",
+        "page_references": [
+          12
+        ],
+        "guidance_as_of": "2026-07-29",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "High-dose group only. Milligram dose not disclosed in retrieved registry; do not guess. Low-dose success or other TOPAZ-named trial does not resolve target.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT04895241",
+          "source_id": "NCT04895241",
+          "title": "TOPAZ-1 frozen registered design",
+          "text": "Frozen registry NCT04895241: TOPAZ-1; enrollment 548 (ACTUAL); allocation RANDOMIZED; masking QUADRUPLE. Selected primary endpoint: Percentage of Participants Who Achieved a Systemic Lupus Erythematosus Responder Index of 4 (SRI-4) Response at Week 52. Definition: SRI-4 response is a composite endpoint defined by the following criteria:\n\n* Reduction from baseline of ≥4 points in systemic lupus erythematosus disease activity index 2000 (SLEDAI-2K).\n* No new organ system affected, as defined by no new organ system with British isles lupus assessment group-2004 (BILAG-2004) grade A and no more than 1 new organ system with BILAG-2004 grade B compared with Baseline.\n* No worsening from baseline in lupus disease activity as defined by \\<0.3-point increase on 3-point Physician's Global Assessment (PGA) - Visual Analog Scale (VAS).\n* No violation to protocol-specified medication rules.. Timeframe: Week 52. There are 1 registered primary-outcome entries. High-dose group only. Milligram dose not disclosed in retrieved registry; do not guess. Low-dose success or other TOPAZ-named trial does not resolve target.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "lilac-prior",
+          "source_id": "biogen_lilac",
+          "title": "LILAC phase II SLE prior",
+          "text": "Biogen reports LILAC Part A met its primary active-joint-count endpoint in SLE versus placebo. TOPAZ-1 uses the different SRI-4 composite at Week 52 and multiple dose arms. Separate LILAC CLE results and AMETHYST skin outcomes do not establish TOPAZ-1 efficacy; no numerical target effect or dose response is supplied.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Opening SLE Part A results"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:11.643000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"TOPAZ-1\" litifilimab (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "biogen.com",
+              "investors.biogen.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"TOPAZ-1\" litifilimab 2026 结果 主要终点",
+            "domains": [
+              "biogen.com",
+              "biogen.com.cn",
+              "investors.biogen.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-successor1-topaz1"
+        ],
+        "finding": "Returned design, completed enrollment, expected year-end 2026 readout and LILAC/extension references. Litifilimab target distinguished from unrelated oncology TOPAZ-1; no exact high-dose SRI-4 Week-52 decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:34.360432+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-successor1-topaz1"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-topaz1"
+    },
+    {
+      "id": "of-season-20261023-corrected-cambria1",
+      "project_id": "camizestrant",
+      "trial_name": "CAMBRIA-1",
+      "nct_id": "NCT05774951",
+      "drug": "camizestrant",
+      "sponsor": "AstraZeneca",
+      "mechanism_family": "Oral estrogen receptor antagonist/degrader",
+      "indication": "Adjuvant ER-positive early breast cancer",
+      "population": "Adults with resected ER-positive, HER2-negative early invasive breast cancer at intermediate/high recurrence risk, completed 2-5 years (+3 months) adjuvant endocrine therapy, ECOG <=1; randomized population.",
+      "comparison": "Camizestrant versus continued standard endocrine therapy (aromatase inhibitor or tamoxifen).",
+      "endpoint": "Invasive breast cancer-free survival (IBCFS)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05774951",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of invasive breast cancer-free survival reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Up to 10 years",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "az_pipeline_extract",
+        "page_references": [
+          4
+        ],
+        "guidance_as_of": "2026-02-10",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true,
+        "supporting_source_ids": [
+          "az_h1_web_extract"
+        ],
+        "source_note": "Annual pipeline explicitly gives 2027; July 2026 appendix still lists this trial among 2027 catalysts. Broad year preserved because text extraction alone does not confidently resolve the H1/H2 column layout."
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Sponsor year-only 2027 timing; no invented exact date. Post-treatment early recurrence and metastatic PFS are different outcomes.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05774951",
+          "source_id": "NCT05774951",
+          "title": "CAMBRIA-1 frozen registered design",
+          "text": "Frozen registry NCT05774951: CAMBRIA-1; enrollment 4300 (ESTIMATED); allocation RANDOMIZED; masking NONE. Selected primary endpoint: Invasive breast cancer-free survival (IBCFS). Definition: IBCFS is defined as time from randomisation until date of first occurrence of:\n\n* Invasive ipsilateral breast tumour recurrence (invasive IBTR)\n* Locoregional invasive breast cancer recurrence\n* Distant recurrence\n* Invasive contralateral breast cancer\n* Death attributable to any cause.. Timeframe: Up to 10 years. There are 1 registered primary-outcome entries. Sponsor year-only 2027 timing; no invented exact date. Post-treatment early recurrence and metastatic PFS are different outcomes.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "serena4-null",
+          "source_id": "az_serena4_update",
+          "title": "Negative metastatic PFS prior and distinct positive subgroup setting",
+          "text": "SERENA-4 camizestrant + palbociclib versus anastrozole + palbociclib did not meet primary PFS superiority in upfront first-line advanced ER-positive disease. The same announcement notes benefit/approval based on SERENA-6 in emergent ESR1 mutation. Both are advanced-disease contexts and differ from CAMBRIA-1 adjuvant switch monotherapy and invasive breast cancer-free survival.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Opening announcement and SERENA-6 qualification"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:23.175000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"CAMBRIA-1\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "astrazeneca.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"CAMBRIA-1\" 2026 结果 主要终点",
+            "domains": [
+              "astrazeneca.com",
+              "astrazeneca.com.cn",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-cambria1-vitalize"
+        ],
+        "finding": "Returned SERENA-4 null and SERENA-6 positive results plus ongoing CAMBRIA program references; no exact CAMBRIA-1 IBCFS decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:35.308961+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-cambria1-vitalize"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-cambria1"
+    },
+    {
+      "id": "of-season-20261023-corrected-vitalize",
+      "project_id": "riliprubart",
+      "trial_name": "VITALIZE",
+      "nct_id": "NCT06290141",
+      "drug": "riliprubart",
+      "sponsor": "Sanofi",
+      "mechanism_family": "Complement C1s inhibition",
+      "indication": "IVIg-treated CIDP",
+      "population": "Adults with CIDP/eligible variants, prior IVIg response, stable maintenance IVIg, residual INCAT disability 2-9 and active disease; randomized Part A population.",
+      "comparison": "Riliprubart + placebo IVIg versus maintenance IVIg + placebo riliprubart over 24 weeks.",
+      "endpoint": "Percentage of participants experiencing a response",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT06290141",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of Week-24 Part-A adjusted INCAT response (at least 1-point decrease) reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Baseline to week 24",
+      "readout": {
+        "label": "2027 CIDP药物项目指引；非VITALIZE专属承诺日期",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "sanofi_q2_sec",
+        "page_references": [
+          9
+        ],
+        "guidance_as_of": "2026-07-30",
+        "source_granularity": "drug_program",
+        "requires_refresh_before_execution": true,
+        "source_note": "Sanofi July 30 2026 release places riliprubart CIDP phase III data in 2027 at the drug-program level and separately states VITALIZE continues. Linking this window to VITALIZE is an explicit inference; it is not a named-trial promised date."
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "2027 guidance is drug/CIDP-program level, linked to VITALIZE by sponsor ongoing-study statement; not a precise trial-specific promised date. Exclude 48-week extension endpoint. The two phase 2 reports are correlated follow-up of NCT04658472, not independent studies. Week-76 proportions use conditional 40/9/7 cohorts, not original 48/18/12; open-label evidence cannot estimate IVIg superiority.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT06290141",
+          "source_id": "NCT06290141",
+          "title": "VITALIZE frozen registered design",
+          "text": "Frozen registry NCT06290141: VITALIZE; enrollment 160 (ESTIMATED); allocation RANDOMIZED; masking QUADRUPLE. Selected primary endpoint: Percentage of participants experiencing a response. Definition: A response is defined as decrease of ≥1 point from baseline in adjusted INCAT disability score at Week 24. Timeframe: Baseline to week 24. There are 2 registered primary-outcome entries. 2027 guidance is drug/CIDP-program level, linked to VITALIZE by sponsor ongoing-study statement; not a precise trial-specific promised date. Exclude 48-week extension endpoint.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "mobilize-futility",
+          "source_id": "sanofi_q2_sec",
+          "title": "Negative riliprubart prior in a different CIDP population",
+          "text": "Sanofi reports MOBILIZE in standard-care-refractory CIDP was stopped after interim futility assessment in June 2026; no new safety signal was identified. The July update says VITALIZE in IVIg-treated CIDP continues. Prior IVIg responsiveness, active comparator and residual-disability population differ. The futility result is relevant same-asset evidence but is not the VITALIZE outcome.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [
+            7,
+            8
+          ],
+          "source_anchor": "Riliprubart clinical development update"
+        },
+        {
+          "id": "riliprubart-phase2-week24",
+          "target_id": "of-season-20261023-corrected-vitalize",
+          "source_id": "sanofi_riliprubart_2024",
+          "title": "Indirect open-label riliprubart CIDP week-24 evidence",
+          "text": "Sanofi reported an open-label, multicentre phase 2 CIDP study without a randomized comparator. At week 24, 42/48 SOC-treated patients (87%), 16/18 SOC-refractory patients (89%) and 11/12 SOC-naive patients (92%) improved or remained stable. Improvement alone occurred in 25/48 treated patients (52%) and 9/18 refractory patients (50%). These combined stable-or-improved proportions are not one shared primary response endpoint: Part A primary was relapse after SOC withdrawal for treated patients, and response during treatment for refractory/naive patients. Part B was an optional 52-week extension whose primary endpoint was long-term safety/tolerability. Two deaths occurred in patients with significant comorbidities; the release does not establish drug causality. SOC included immunoglobulins or corticosteroids. Nonrandomization, cohort differences, endpoint differences and selected extension participation prevent an estimate of superiority over maintenance IVIg in VITALIZE.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Results from part A and B; About the phase 2 study",
+          "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+          "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+          "source_sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+          "source_date": "2024-06-25",
+          "available_at": "2026-10-22T16:54:58.301389+00:00",
+          "snapshot_kind": "original_http_response",
+          "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+          "human_review_count": 0,
+          "word_count": 127,
+          "study_id": "NCT04658472",
+          "study_design": "open_label_nonrandomized_phase_2",
+          "evidence_cluster_id": "riliprubart-NCT04658472",
+          "correlated_followup": true
+        },
+        {
+          "id": "riliprubart-phase2-week76",
+          "target_id": "of-season-20261023-corrected-vitalize",
+          "source_id": "sanofi_riliprubart_2025",
+          "title": "Conditional open-label riliprubart CIDP week-76 evidence",
+          "text": "Sanofi's December 2025 presentation reports phase 2 CIDP extension outcomes at week 76 only among patient groups who achieved the week-24 primary endpoint. The conditional cohorts were SOC-treated n=40, SOC-refractory n=9 and SOC-naive n=7: 80% were relapse-free, 78% had sustained response and 86% had sustained response, respectively. Non-evaluable proportions were 13%, 11% and 14%; reported relapse proportions were 7% and 11% in the first two groups. These are open-label conditional extension outcomes, not percentages of the original 48/18/12 cohorts and not randomized treatment effects. They support potential durability in selected responders but cannot estimate VITALIZE week-24 adjusted-INCAT superiority against maintenance IVIg. Part B's primary endpoint was long-term safety/tolerability, as defined in the 2024 study description.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [
+            17
+          ],
+          "source_anchor": "Printed PDF page 17: Neurology: riliprubart potential to expand in neuroinflammation; condition immediately above cohort charts",
+          "source_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+          "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf",
+          "source_sha256": "97076dc3af6a951bdc5365c7b44899e756558f59526a80ecfa49fb3ba6efcf9b",
+          "source_date": "2025-12-16",
+          "available_at": "2026-10-22T16:54:58.130014+00:00",
+          "snapshot_kind": "original_http_response",
+          "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+          "human_review_count": 0,
+          "word_count": 115,
+          "supporting_source_ids": [
+            "sanofi_riliprubart_2024"
+          ],
+          "supporting_sources": [
+            {
+              "source_id": "sanofi_riliprubart_2024",
+              "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+              "source_sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+              "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+              "source_anchor": "About the phase 2 study: Part B primary endpoint"
+            }
+          ],
+          "study_id": "NCT04658472",
+          "study_design": "open_label_nonrandomized_phase_2",
+          "evidence_cluster_id": "riliprubart-NCT04658472",
+          "correlated_followup": true
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:23.175000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"VITALIZE\" riliprubart (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "sanofi.com",
+              "sec.gov",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"VITALIZE\" riliprubart 2026 结果 主要终点",
+            "domains": [
+              "sanofi.com",
+              "sanofi.cn",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-cambria1-vitalize"
+        ],
+        "finding": "Returned MOBILIZE futility, phase 2 riliprubart results and Sanofi confirmation that VITALIZE continues. Unrelated VITALIZE DLBCL studies and non-CIDP program discontinuations are not this target; no exact randomized VITALIZE Week-24 adjusted-INCAT result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:35.313965+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-cambria1-vitalize"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-vitalize"
+    },
+    {
+      "id": "of-season-20261023-corrected-ocean",
+      "project_id": "depemokimab",
+      "trial_name": "OCEAN",
+      "nct_id": "NCT05263934",
+      "drug": "depemokimab",
+      "sponsor": "GSK",
+      "mechanism_family": "Long-acting anti-IL5",
+      "indication": "Relapsing/refractory EGPA",
+      "population": "Adults with relapsing or refractory eosinophilic granulomatosis with polyangiitis, on stable standard therapy including prednisone-equivalent 7.5-50 mg/day at baseline; randomized primary population.",
+      "comparison": "Depemokimab + placebo mepolizumab versus mepolizumab + placebo depemokimab, both with standard care.",
+      "endpoint": "Number of participants with remission (Birmingham Vasculitis Activity Score [BVAS] =0 and a dose of oral corticosteroid [OCS] less than or equal to [<=] 4 milligram [mg] per day)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT05263934",
+      "hypothesis_type": "non_inferiority",
+      "success_definition": "The first official decisive prespecified primary analysis reports that depemokimab meets the protocol/SAP non-inferiority criterion versus mepolizumab for remission (BVAS=0 and oral corticosteroid <=4 mg/day) at BOTH Week 36 and Week 52, in the specified primary analysis population. The non-inferiority margin is not inferred here and must be documented for adjudication. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary non-inferiority analysis; registry assessment timeframe: Up to Week 52",
+      "readout": {
+        "label": "H2 2026 sponsor guidance",
+        "start": "2026-07-01",
+        "end": "2026-12-31",
+        "precision": "half_year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "gsk_q2_sec",
+        "page_references": [],
+        "guidance_as_of": "2026-07-28",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Non-inferiority margin, estimand and analysis-set concordance are unknown. Superiority failure cannot be called NI failure; unclear margin/SAP prevents outcome adjudication.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT05263934",
+          "source_id": "NCT05263934",
+          "title": "OCEAN frozen registered design",
+          "text": "Frozen registry NCT05263934: OCEAN; enrollment 163 (ACTUAL); allocation RANDOMIZED; masking QUADRUPLE. Selected primary endpoint: Number of participants with remission (Birmingham Vasculitis Activity Score [BVAS] =0 and a dose of oral corticosteroid [OCS] less than or equal to [<=] 4 milligram [mg] per day). Definition: Participants must be in remission at both Weeks 36 and 52.. Timeframe: Up to Week 52. There are 1 registered primary-outcome entries. Non-inferiority margin, estimand and analysis-set concordance are unknown. Superiority failure cannot be called NI failure; unclear margin/SAP prevents outcome adjudication.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "swift-asthma",
+          "source_id": "gsk_swift",
+          "title": "Indirect placebo-controlled asthma evidence",
+          "text": "GSK reports SWIFT-1/2 severe-asthma trials each met their primary endpoint. The prespecified pooled analysis estimated exacerbation rate ratio 0.46 (95% CI 0.36-0.59) versus placebo. This differs in disease, endpoint and active comparator from OCEAN EGPA remission and cannot establish non-inferiority to mepolizumab.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [
+            48
+          ],
+          "source_anchor": null
+        },
+        {
+          "id": "ocean-ni-design",
+          "source_id": "gsk_ocean_register",
+          "title": "Sponsor confirms non-inferiority design",
+          "text": "The sponsor study register identifies OCEAN as a randomized double-dummy non-inferiority comparison of depemokimab and mepolizumab over 52 weeks. No non-inferiority margin or full operative SAP was established in this acquisition. Do not replace non-inferiority with superiority or infer a margin from another EGPA trial.",
+          "kind": "trial_protocol",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Official title and primary outcomes"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:32.997000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"OCEAN\" depemokimab (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "gsk.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"OCEAN\" depemokimab 2026 结果 主要终点",
+            "domains": [
+              "gsk.com",
+              "gsk-china.com",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-ocean-evolve"
+        ],
+        "finding": "Returned active EGPA OCEAN design/H2-2026 guidance and other depemokimab indications; same-name melflufen, epilepsy and observational studies excluded by drug/NCT. No exact depemokimab EGPA noninferiority decisive result identified.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:36.424496+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-ocean-evolve_cervical"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-ocean"
+    },
+    {
+      "id": "of-season-20261023-corrected-evolve_cervical",
+      "project_id": "volrustomig",
+      "trial_name": "eVOLVE-Cervical",
+      "nct_id": "NCT06079671",
+      "drug": "volrustomig",
+      "sponsor": "AstraZeneca",
+      "mechanism_family": "PD1 x CTLA4 bispecific",
+      "indication": "High-risk locally advanced cervical cancer",
+      "population": "Females age >=15, FIGO 2018 stage IIIA-IVA cervical cancer without distant metastasis, no progression after platinum concurrent chemoradiotherapy; all randomized full analysis set (FAS), not an older PD-L1-high subgroup definition.",
+      "comparison": "Volrustomig versus placebo after completion of concurrent chemoradiotherapy.",
+      "endpoint": "Progression-free Survival (PFS) based on the investigator assessment in all randomized participants (FAS)",
+      "registry_primary_index": 0,
+      "registry_source_id": "NCT06079671",
+      "hypothesis_type": "superiority",
+      "success_definition": "The first official decisive prespecified primary analysis of investigator-assessed PFS in all randomized FAS reports statistically qualifying superiority favoring the experimental regimen over the specified comparator in the specified analysis population, under the operative protocol/SAP including any interim and multiplicity rules. Success=1 only when that exact hypothesis qualifies; failure=0 only when an official decisive analysis states that exact primary criterion was not met (including explicit target-specific futility). Other populations/endpoints, nominal significance, non-target trial results, approval, silence, delay and commercial discontinuation without decisive endpoint assessment do not resolve the target. If SAP qualification or the exact analysis population remains unclear, outcome remains unresolved.",
+      "analysis_timepoint": "First official decisive prespecified primary superiority analysis; registry assessment timeframe: Up to approximately 7 years",
+      "readout": {
+        "label": "2027 sponsor guidance",
+        "start": "2027-01-01",
+        "end": "2027-12-31",
+        "precision": "year",
+        "basis": "sponsor_readout_guidance",
+        "source_id": "az_pipeline_extract",
+        "page_references": [
+          5
+        ],
+        "guidance_as_of": "2026-02-10",
+        "source_granularity": "named_trial",
+        "requires_refresh_before_execution": true,
+        "supporting_source_ids": [
+          "az_h1_web_extract"
+        ],
+        "source_note": "Annual pipeline explicitly gives 2027; July 2026 appendix still lists this trial among 2027 catalysts. Broad year preserved because text extraction alone does not confidently resolve the H1/H2 column layout."
+      },
+      "eligibility": "qualified_for_prospective_research",
+      "result": null,
+      "prediction": null,
+      "registered": false,
+      "human_review_count": 0,
+      "limitations": "Latest registry specifies all randomized FAS; older PD-L1-high descriptions are not used. No cervical treatment-effect estimate or complete SAP supplied.",
+      "evidence_cards": [
+        {
+          "id": "registry-NCT06079671",
+          "source_id": "NCT06079671",
+          "title": "eVOLVE-Cervical frozen registered design",
+          "text": "Frozen registry NCT06079671: eVOLVE-Cervical; enrollment 800 (ESTIMATED); allocation RANDOMIZED; masking QUADRUPLE. Selected primary endpoint: Progression-free Survival (PFS) based on the investigator assessment in all randomized participants (FAS). Definition: PFS is defined as the time from date of randomization until RECIST 1.1- defined radiological progression or histopathologically confirmed progression as assessed by the Investigator or death due to any cause, whichever occurs earlier.. Timeframe: Up to approximately 7 years. There are 1 registered primary-outcome entries. Latest registry specifies all randomized FAS; older PD-L1-high descriptions are not used. No cervical treatment-effect estimate or complete SAP supplied.",
+          "kind": "trial_registry",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "protocolSection.designModule and outcomesModule.primaryOutcomes[0]"
+        },
+        {
+          "id": "evolve-lung02-futility",
+          "source_id": "az_evolve_update",
+          "title": "Negative volrustomig phase III lung cancer prior",
+          "text": "AstraZeneca stopped eVOLVE-Lung02 after planned IDMC review concluded volrustomig + chemotherapy was unlikely to meet PFS or OS in PD-L1-negative metastatic NSCLC versus pembrolizumab + chemotherapy. No new safety signal was identified. Cervical, head-and-neck and mesothelioma trials continued. Tumour type, treatment setting, chemotherapy and comparator differ from cervical maintenance after chemoradiation.",
+          "kind": "clinical_prior",
+          "is_target_result": false,
+          "page_references": [],
+          "source_anchor": "Opening discontinuation and continuing-trials paragraphs"
+        }
+      ],
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T17:01:32.997000+00:00",
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "method": "New bounded indexed English and Chinese queries on official sponsor/registry domains after the new cutoff; returned snippets reviewed for exact drug, NCT, population and endpoint. Previously acquired raw registry inspected again; no claim of a fresh registry HTTP fetch. One official Pfizer page follow-up disambiguated a status legend. AI source check, no human review.",
+        "queries": [
+          {
+            "q": "\"eVOLVE-Cervical\" (results OR \"primary endpoint\" OR topline) 2026",
+            "domains": [
+              "astrazeneca.com",
+              "clinicaltrials.gov"
+            ]
+          },
+          {
+            "q": "\"eVOLVE-Cervical\" 2026 结果 主要终点",
+            "domains": [
+              "astrazeneca.com",
+              "astrazeneca.com.cn",
+              "clinicaltrials.gov"
+            ]
+          }
+        ],
+        "receipt_source_ids": [
+          "corrected-screen-ocean-evolve"
+        ],
+        "finding": "Returned volrustomig oncology pipeline references without an exact target decisive PFS result. Sparse returned evidence is a search limitation and does not indicate efficacy or failure.",
+        "limitations": "No exhaustive absence guarantee. Indexing delays, incomplete Chinese-domain coverage, unindexed conference disclosures and truncated source presentation may hide results. Sparse hits are not evidence of failure. Any decisive exact result found before registration must exclude or withdraw the candidate.",
+        "registry_has_results": false,
+        "registry_snapshot_retrieved_at": "2026-10-22T16:28:36.425044+00:00",
+        "supersedes_receipt_source_ids": [
+          "final-screen-ocean-evolve_cervical"
+        ],
+        "human_review_count": 0
+      },
+      "prior_proposal_target_id": "of-season-20261023-evolve_cervical"
+    }
+  ],
+  "sources": [
+    {
+      "id": "NCT05687266",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05687266.json",
+      "sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+      "bytes": 48026,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+      "retrieved_at": "2026-10-22T16:28:30.996565+00:00",
+      "public_date": "2026-10-09",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT05646862",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05646862.json",
+      "sha256": "4a35dbe05b072f1ae8dae165f51df34c16b5dcb9b91b543c388488dd03fc8b9f",
+      "bytes": 56347,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05646862",
+      "retrieved_at": "2026-10-22T16:28:31.811129+00:00",
+      "public_date": "2026-09-28",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT06551324",
+      "path": "arena_data/source_snapshots/season-20261023-NCT06551324.json",
+      "sha256": "b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+      "bytes": 56041,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+      "retrieved_at": "2026-10-22T16:28:31.614819+00:00",
+      "public_date": "2026-08-11",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT06047080",
+      "path": "arena_data/source_snapshots/season-20261023-NCT06047080.json",
+      "sha256": "30ddbe7b100c5f068e630319d3b56356bdc7e4bf14dfce3ba82c97913ef6b2c5",
+      "bytes": 48566,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06047080",
+      "retrieved_at": "2026-10-22T16:28:32.486396+00:00",
+      "public_date": "2026-09-11",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT05514054",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05514054.json",
+      "sha256": "a9eec8a679fde0f21f98da45b18ac61dcc51c22a4d30bbce675bffb22fe22d58",
+      "bytes": 112142,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05514054",
+      "retrieved_at": "2026-10-22T16:28:32.991163+00:00",
+      "public_date": "2026-04-02",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT06065748",
+      "path": "arena_data/source_snapshots/season-20261023-NCT06065748.json",
+      "sha256": "6ab04d270c66dc3d607c8c650aa31dbd2aa4645f40c55b1958788724185b158c",
+      "bytes": 63814,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06065748",
+      "retrieved_at": "2026-10-22T16:28:33.445790+00:00",
+      "public_date": "2026-09-14",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT05519085",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05519085.json",
+      "sha256": "3a55778a2ee3059992bbfdfda722cce2a8c309eef73a75b08bf5d1c4aa3cc800",
+      "bytes": 65489,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05519085",
+      "retrieved_at": "2026-10-22T16:28:34.483818+00:00",
+      "public_date": "2026-09-30",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT04895241",
+      "path": "arena_data/source_snapshots/season-20261023-NCT04895241.json",
+      "sha256": "0a6ec544e4390b81f29ece959362597b1bed062435d2d8411d6d794bf88592b2",
+      "bytes": 58016,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT04895241",
+      "retrieved_at": "2026-10-22T16:28:34.360432+00:00",
+      "public_date": "2026-02-10",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT05774951",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05774951.json",
+      "sha256": "728d823f210f4a41fbc8fc625f0535d0deadd4d53be27e97a997a4d1e97df3d4",
+      "bytes": 127389,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05774951",
+      "retrieved_at": "2026-10-22T16:28:35.308961+00:00",
+      "public_date": "2026-10-13",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT06290141",
+      "path": "arena_data/source_snapshots/season-20261023-NCT06290141.json",
+      "sha256": "9bf24093e01b36b319bfd3781af27a3a03f479004e525785bfc40e2a14ea52bd",
+      "bytes": 43967,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06290141",
+      "retrieved_at": "2026-10-22T16:28:35.313965+00:00",
+      "public_date": "2026-10-19",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT05263934",
+      "path": "arena_data/source_snapshots/season-20261023-NCT05263934.json",
+      "sha256": "408a6627fb9a015b56812dd171b73d98f335acb19d4c1e69ac992410bceb23fc",
+      "bytes": 23321,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05263934",
+      "retrieved_at": "2026-10-22T16:28:36.424496+00:00",
+      "public_date": "2026-07-08",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "NCT06079671",
+      "path": "arena_data/source_snapshots/season-20261023-NCT06079671.json",
+      "sha256": "616c4374e4c93409a130c252bc14916322140aa630c25a69b3ce016cef6ab651",
+      "bytes": 43516,
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06079671",
+      "retrieved_at": "2026-10-22T16:28:36.425044+00:00",
+      "public_date": "2026-09-30",
+      "public_date_basis": "Current registry lastUpdatePostDateStruct; snapshot availability conservatively retrieval time",
+      "snapshot_kind": "original_http_response",
+      "source_type": "trial_registry"
+    },
+    {
+      "id": "az_h1_web_extract",
+      "path": "arena_data/source_snapshots/season-20261023-az_h1_web_extract.txt",
+      "sha256": "743399eff7210132c98f3832bfe6eb8e87f74b6a71ad7986726eddf267edfd7a",
+      "bytes": 19133,
+      "source_url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+      "retrieved_at": "2026-10-22T16:35:41+00:00",
+      "public_date": "2026-07-27",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "web_tool_extracted_pdf_text",
+      "source_type": "sponsor_or_original_paper",
+      "raw_pdf_sha256": null,
+      "retrieval_limit": "Direct original PDF HTTP 403. This snapshot hashes tool-returned extracted text, not original PDF bytes."
+    },
+    {
+      "id": "az_pipeline_extract",
+      "path": "arena_data/source_snapshots/season-20261023-az_pipeline_extract.txt",
+      "sha256": "012a63ad344ecbaa1d07f2fbbbc21a66c27778d4afbf5065306a899be06e57d9",
+      "bytes": 19701,
+      "source_url": "https://www.astrazeneca.com/content/dam/az/Investor_Relations/annual-report-2025/pdf/AstraZeneca_Development_Pipeline_2025.pdf",
+      "retrieved_at": "2026-10-22T16:37:38+00:00",
+      "public_date": null,
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "web_tool_extracted_pdf_text",
+      "source_type": "sponsor_or_original_paper",
+      "raw_pdf_sha256": null,
+      "retrieval_limit": "Direct PDF HTTP 403; hash is actual web tool extracted response not original PDF bytes.",
+      "guidance_as_of": "2026-02-10"
+    },
+    {
+      "id": "roche_q3_2026",
+      "path": "arena_data/source_snapshots/season-20261023-roche_q3_2026.pdf",
+      "sha256": "b083f4cde431861768ff469c89c97041aa368e7b8408735722c0d7d95aeef281",
+      "bytes": 2893472,
+      "source_url": "https://assets.roche.com/f/176343/x/214d9ddfff/irp261022.pdf",
+      "retrieved_at": "2026-10-22T16:29:10.956918+00:00",
+      "public_date": "2026-10-22",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "pfizer_catalysts",
+      "path": "arena_data/source_snapshots/season-20261023-pfizer_catalysts.pdf",
+      "sha256": "439a2a5360c6829c616c7ff6e272e18b0491840082d7b7d1d4eeae02f8d6e512",
+      "bytes": 282207,
+      "source_url": "https://cdn.pfizer.com/pfizercom/pfizer-2026-pipeline-catalysts.pdf",
+      "retrieved_at": "2026-10-22T16:29:10.929392+00:00",
+      "public_date": "2026-09-30",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "lilly_ember4",
+      "path": "arena_data/source_snapshots/season-20261023-lilly_ember4.html",
+      "sha256": "5a70fa8a6b4fe625cc0fcd74f8840870c105c4d57d1c8ab1010b057907462b58",
+      "bytes": 138016,
+      "source_url": "https://investor.lilly.com/news-releases/news-release-details/us-fda-approves-inluriyo-imlunestrant-combination-verzenio",
+      "retrieved_at": "2026-10-22T16:29:12.110955+00:00",
+      "public_date": "2026-09-18",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "roche_pionera",
+      "path": "arena_data/source_snapshots/season-20261023-roche_pionera.html",
+      "sha256": "e151a1ccae3c4059ab01ffd77f93349bf2047ce958bf728835afb9f16227ef72",
+      "bytes": 193869,
+      "source_url": "https://www.roche.com/media/releases/med-cor-2026-03-09",
+      "retrieved_at": "2026-10-22T16:29:15.782936+00:00",
+      "public_date": "2026-03-09",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "bms_q1",
+      "path": "arena_data/source_snapshots/season-20261023-bms_q1.pdf",
+      "sha256": "4fa80108cd4189d9d6b0851518cd64b35425b432dd9f753e671bc77f92e1a1bb",
+      "bytes": 1997795,
+      "source_url": "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+      "retrieved_at": "2026-10-22T16:29:15.732794+00:00",
+      "public_date": "2026-04-30",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "biogen_q2",
+      "path": "arena_data/source_snapshots/season-20261023-biogen_q2.pdf",
+      "sha256": "9956217500040c6646e36d96cf076beb6548473e8bcff837186641459c40f204",
+      "bytes": 2745647,
+      "source_url": "https://investors.biogen.com/static-files/7df70d7b-e26f-40dd-84b3-c0ad57d3c1ed",
+      "retrieved_at": "2026-10-22T16:29:16.971417+00:00",
+      "public_date": "2026-07-29",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "sanofi_q2_sec",
+      "path": "arena_data/source_snapshots/season-20261023-sanofi_q2_sec.html",
+      "sha256": "676acb939e120a0775d854b7f6e52b68e6da2dc06fc6bf995578edea885eec77",
+      "bytes": 1162374,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1121404/000112140426000008/pressreleaseq22026english.htm",
+      "retrieved_at": "2026-10-22T16:29:17.391767+00:00",
+      "public_date": "2026-07-30",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "gsk_q2_sec",
+      "path": "arena_data/source_snapshots/season-20261023-gsk_q2_sec.html",
+      "sha256": "77e46cef9e0414097f3afdc8ae1a2ce361123006a75b3089d1ed03260f10435b",
+      "bytes": 1939884,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1131399/000165495426006949/a1493o.htm",
+      "retrieved_at": "2026-10-22T16:29:19.596401+00:00",
+      "public_date": "2026-07-28",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "mevpro_protocol",
+      "path": "arena_data/source_snapshots/season-20261023-mevpro_protocol.html",
+      "sha256": "8d5da045f675761c4e0e7a0576902c7da2f5c6ce3635f4487f5ead1fdb38b558",
+      "bytes": 213311,
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13203012/",
+      "retrieved_at": "2026-10-22T16:34:12.691305+00:00",
+      "public_date": "2026-05-10",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "biogen_lilac",
+      "path": "arena_data/source_snapshots/season-20261023-biogen_lilac.html",
+      "sha256": "81f9a59efa851dd7ddf34803b0c24297102679ade4d2029dc7e650ad2783f30f",
+      "bytes": 111256,
+      "source_url": "https://investors.biogen.com/news-releases/news-release-details/new-england-journal-medicine-publishes-second-manuscript",
+      "retrieved_at": "2026-10-22T16:34:12.157058+00:00",
+      "public_date": "2022-09-07",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "gsk_ocean_register",
+      "path": "arena_data/source_snapshots/season-20261023-gsk_ocean_register.html",
+      "sha256": "707035b1129e8ac2de5bf7d47b37fd67711ac4116c8b8a3436d3a7892c6491fb",
+      "bytes": 479836,
+      "source_url": "https://www.gsk-studyregister.com/trials/217102",
+      "retrieved_at": "2026-10-22T16:34:13.970280+00:00",
+      "public_date": null,
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "az_evolve_update",
+      "path": "arena_data/source_snapshots/season-20261023-az_evolve_update.txt",
+      "sha256": "d16aedaff58a8328aef79a8883897dd2712a1c31102b5497154e7e896558dbbc",
+      "bytes": 14039,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2026/update-on-evolve-lung02-phase-iii-trial.html",
+      "retrieved_at": "2026-10-22T16:37:18+00:00",
+      "public_date": "2026-08-17",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "web_tool_extracted_html_text",
+      "source_type": "sponsor_or_original_paper",
+      "raw_html_sha256": null,
+      "retrieval_limit": "Direct HTML HTTP 403; hash covers actual web-tool extracted response, not original HTML."
+    },
+    {
+      "id": "az_serena4_update",
+      "path": "arena_data/source_snapshots/season-20261023-az_serena4_update.txt",
+      "sha256": "a9af902c12f58294b9edf3e35b2d1c35340fd3da19ac8e56ae8681807125b8b6",
+      "bytes": 17645,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2026/update-serena-4-phase-iii-trial.html",
+      "retrieved_at": "2026-10-22T16:37:20+00:00",
+      "public_date": "2026-09-11",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "web_tool_extracted_html_text",
+      "source_type": "sponsor_or_original_paper",
+      "raw_html_sha256": null,
+      "retrieval_limit": "Direct HTML HTTP 403; hash covers actual web-tool extracted response, not original HTML."
+    },
+    {
+      "id": "gsk_swift",
+      "path": "arena_data/source_snapshots/season-20261023-gsk_swift.pdf",
+      "sha256": "f0eacf0901006c0e68a50f6225824470d73997679db6fdd4fa834a03ca876fcc",
+      "bytes": 1024986,
+      "source_url": "https://www.gsk.com/media/ymchlx2f/q3-2024-results-announcement.pdf",
+      "retrieved_at": "2026-10-22T16:36:42.900201+00:00",
+      "public_date": "2024-10-30",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "roche_starglo",
+      "path": "arena_data/source_snapshots/season-20261023-roche_starglo.html",
+      "sha256": "fa6bd8361161d2757fee525eaee30a7a7ae288292ca4279631315d405011dd6a",
+      "bytes": 179063,
+      "source_url": "https://www.roche.com/investors/updates/inv-update-2025-12-08",
+      "retrieved_at": "2026-10-22T16:36:46.509612+00:00",
+      "public_date": "2025-12-08",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "roche_evera",
+      "path": "arena_data/source_snapshots/season-20261023-roche_evera.html",
+      "sha256": "1298cb35c1dbe7cd547bbbbd1c70e282d81f9099b400ba39f46cd52e3e80bb7f",
+      "bytes": 187236,
+      "source_url": "https://www.roche.com/media/releases/med-cor-2026-10-01",
+      "retrieved_at": "2026-10-22T16:36:47.172344+00:00",
+      "public_date": "2026-10-01",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "lilly_ember3",
+      "path": "arena_data/source_snapshots/season-20261023-lilly_ember3.html",
+      "sha256": "68db0a20805757785421fc0dc76ec56e720eb1a8cbb5acf15c71c545e9d1fd0f",
+      "bytes": 144374,
+      "source_url": "https://investor.lilly.com/news-releases/news-release-details/lillys-imlunestrant-oral-serd-significantly-improved-progression",
+      "retrieved_at": "2026-10-22T16:36:47.209166+00:00",
+      "public_date": "2024-12-11",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "id": "bms_successor2",
+      "path": "arena_data/source_snapshots/season-20261023-bms_successor2.html",
+      "sha256": "52961339372ee640a062c9cb5564c3a219b17b21026f093cb043aba7ad830336",
+      "bytes": 55679,
+      "source_url": "https://news.bms.com/news/corporate-financial/2026/Bristol-Myers-Squibb-Announces-CELMoD-Mezigdomide-Reduces-Risk-of-Disease-Progression-or-Death-by-More-than-50-vs--Standard-of-Care-in-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx",
+      "retrieved_at": "2026-10-22T16:36:48.454996+00:00",
+      "public_date": "2026-05-29",
+      "public_date_basis": "Document explicit release date or cover date; null means not established",
+      "snapshot_kind": "original_http_response",
+      "source_type": "sponsor_or_original_paper"
+    },
+    {
+      "path": "arena_data/source_snapshots/avanzar-tropion-lung04.web.json",
+      "sha256": "c06283aa46646a0d6c52c2db4ee1f6d132f37724792227946fa4546385f9acfb",
+      "bytes": 25264,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2023/datopotamab-deruxtecan-plus-imfinzi-showed-promising-clinical-activity-in-the-first-line-advanced-non-small-cell-lung-cancer-setting.html",
+      "retrieved_at": "2026-10-22T16:40:35.200284+00:00",
+      "publication_date": "2023-09-10",
+      "snapshot_kind": "web_tool_extracted_snapshot",
+      "original_document_sha256": null,
+      "original_http_download": "403",
+      "id": "tropion_lung04",
+      "public_date": "2023-09-10",
+      "public_date_basis": "Sponsor explicit release date; archived current web-tool extract",
+      "source_type": "sponsor_primary_extract"
+    },
+    {
+      "id": "final-screen-avanzar-inavo121",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-avanzar-inavo121.json",
+      "sha256": "009ee5810f3d0fb41bfb7190b704c700dc10f4f0c41f05e2d13b0917211c78b6",
+      "bytes": 31214,
+      "source_url": "https://medically.roche.com/content/dam/sh/esmo-2023/inavo121.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:00+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://medically.roche.com/content/dam/sh/esmo-2023/inavo121.pdf",
+        "https://www.daiichisankyo.com/files/investors/library/quarterly_result/2025/Q2/FY2025Q2_Reference_Data_E.pdf",
+        "https://forpatients.roche.com/bin/medically/download-clinical-trial?id=NCT05646862-2022-502322-41-00-WO43919",
+        "https://medically.roche.com/global/en/oncology/esmo-2023/breast-cancer/INAVO121.html",
+        "https://medically.roche.com/content/dam/pdmahub/restricted/oncology/annual-meeting-2023/oncology-annual-meeting-2023-poster-juric-INAVO121-phase-iii-study-of-inavolisib.pdf",
+        "https://assets.roche.com/f/176343/x/a22e1c7d2f/irp251023.pdf",
+        "https://assets.roche.com/f/176343/x/55a0097f19/final_20251211_sabcs-roche-s-virtual-oncology-investor-event.pdf",
+        "https://www.roche.com/media/releases/med-cor-2025-01-28",
+        "https://www.astrazeneca.com.cn/zh/media/press-releases/2023/09-12-02.html",
+        "https://diagnostics.roche.com/global/en/diagnostics-insights/computational-pathology-a-new-era-for-cancer-treatment.html",
+        "https://medically.roche.com/global/en/oncology/sabcs-2023/medical-material/SABCS-2023-poster-juric-INAVO121-phase-lll-study-of-inavolisib-pdf.html",
+        "https://www.astrazeneca.com/our-therapy-areas/pipeline.html",
+        "https://www.roche.com/media/releases/med-cor-2023-12-08",
+        "https://medically.roche.com/es/en/oncology/congresses/oncology-annual-meeting-2024.html?hcpdi=aGNwX2Rpc2MuR0w%3D",
+        "https://www.astrazeneca.com.cn/zh/media/press-releases/2024/05-23-01.html",
+        "https://www.astrazeneca.com/content/az-se/media/pressmeddelanden/svenska_pressmeddelanden/2023/astraZeneca-data-at-wclc-advance-ambition-to-have-an-astrazeneca-medicine-for-more-than-half-of-all-patients-treated-for-lung-cancer-by-2030.html",
+        "https://www.lilly.com/es/"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "final-screen-cambria1-vitalize",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-cambria1-vitalize.json",
+      "sha256": "3c18cee3b67091721fa46012bfccb3801079e13c4b9ba1438996249adb3d6099",
+      "bytes": 32907,
+      "source_url": "https://www.sanofi.com/assets/dotcom/pressreleases/2026/2026-06-10-05-00-00-3309444-en.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:12+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.sanofi.com/assets/dotcom/pressreleases/2026/2026-06-10-05-00-00-3309444-en.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2026/2026-q1-2026-results/sanofi-q1-2026-results.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2025/2025-q2-2025-results/2025_07_31_Sanofi_Q2_2025_Results.pdf",
+        "https://www.sanofi.com/en/media-room/press-releases/2026/2026-06-10-05-00-00-3309444",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2026/2025-q4-and-full-year-2025-results/2026_01_29_Sanofi_Q4FY_2025_Results.pdf",
+        "https://www.sanofi.com/fr/media-room/communiques-de-presse/2026/2026-06-10-05-00-00-3309444",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2023/r-and-d-day-2023/Presentation.pdf",
+        "https://www.sanofi.com/en/media-room/press-releases/2025/2025-06-25-05-00-00-3104793",
+        "https://www.astrazeneca.com.cn/zh/media/press-releases/2026/06-03-02.html",
+        "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+        "https://www.astrazeneca.com/our-therapy-areas/pipeline.html",
+        "https://www.astrazeneca.com/media-centre/press-releases/2026/update-serena-4-phase-iii-trial.html?trk=article-ssr-frontend-pulse_little-text-block",
+        "https://www.sanofi.com/en/media-room/press-releases/2025/2025-06-30-05-00-00-3107129",
+        "https://www.astrazeneca.com/media-centre/press-releases/2026/us-fda-decision-date-camizestrant-extended.html",
+        "https://www.astrazeneca.com/our-therapy-areas/oncology/medicines-portfolio-and-pipeline.html.md",
+        "https://clinicaltrials.gov/study/NCT05952557?id=D8535C00001&rank=1",
+        "https://www.astrazeneca.com/media-centre/press-releases/2026/camizestrant-combination-delayed-time-to-first-progression-in-patients-with-advanced-hr-positive-breast-cancer-with-an-ESR1-tumour-mutation.html"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "final-screen-ember4-pionera",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-ember4-pionera.json",
+      "sha256": "3c5d5ce487984a1a81d93ff0c019a611b86af832bfe0e78314770b7c5a75aac7",
+      "bytes": 35472,
+      "source_url": "https://clinicaltrials.gov/study/NCT05514054",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:06+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://clinicaltrials.gov/study/NCT05514054",
+        "https://clinicaltrials.gov/find-studies/for-patients/how-to-join",
+        "https://clinicaltrials.gov/find-studies/for-patients/common-questions",
+        "https://clinicaltrials.gov/study-basics/how-to-read-study-record",
+        "https://trials.lilly.com/en-US/trial/356295",
+        "https://www.roche.com/media/releases/med-cor-2026-03-09",
+        "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+        "https://assets.roche.com/f/176343/502c041510/01-mediainvestor-release-giredestrant-persevera-english.pdf",
+        "https://investor.lilly.com/news-releases/news-release-details/us-fda-approves-inluriyo-imlunestrant-combination-verzenio",
+        "https://investor.lilly.com/static-files/ecfe166b-dd40-45df-afd7-ddb81fe2cb33",
+        "https://assets.roche.com/f/176343/x/dea78e334b/irp260129.pdf",
+        "https://investor.lilly.com/node/53541/pdf",
+        "https://www.roche.com/investors/updates/inv-update-2026-06-02",
+        "https://trials.lilly.com/es-ES/trial/356295",
+        "https://forpatients.roche.com/en/trials/cancer/bc/a-study-to-evaluate-efficacy-and-safety-of-giredestrant-50902.html",
+        "https://www.roche.com/media/releases/med-cor-2026-10-01",
+        "https://trials.lilly.com/de-DE/trial/356295",
+        "https://www.roche.com/media/releases/med-cor-2026-02-20",
+        "https://trials.lilly.com/es-US/trial/356295",
+        "https://trials.lilly.com/pl-PL/find"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "final-screen-mevpro1-skyglo",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-mevpro1-skyglo.json",
+      "sha256": "9accb786299a4e864aa72111dc770b4dc48e9319bb4e958735ac2272b9e5f4a7",
+      "bytes": 33517,
+      "source_url": "https://clinicaltrials.gov/study/NCT06551324?rank=1&term=AREA%5BNCTIdSearch%5D%28NCT06551324%29",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:03+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://clinicaltrials.gov/study/NCT06551324?rank=1&term=AREA%5BNCTIdSearch%5D%28NCT06551324%29",
+        "https://clinicaltrials.gov/study-basics/how-to-read-study-record#contacts-and-locations",
+        "https://clinicaltrials.gov/study/NCT06551324?rank=7&term=AREA%5BInterventionSearch%5D%28ENZALUTAMIDE%29+AND+AREA%5BStudyType%5D%28INTERVENTIONAL%29",
+        "https://medlineplus.gov/",
+        "https://medlineplus.gov/prostatecancer.html",
+        "https://dailymed.nlm.nih.gov/dailymed/",
+        "https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=human&query=Docetaxel",
+        "https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=human&query=Enzalutamide",
+        "https://assets.roche.com/f/176343/x/dea78e334b/irp260129.pdf",
+        "https://cdn.pfizer.com/pfizercom/product-pipeline/Q1%202026%20Pipeline%20Update_vFinal_0.pdf",
+        "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+        "https://cdn.pfizer.com/pfizercom/product-pipeline/Q4%202025%20Pipeline%20Update_vFinal3.pdf?VersionId=XSLcQ04JnYn3Py.PPsUP_5lAboV.fDPh",
+        "https://www.pfizer.com/science/oncology-cancer/pipeline",
+        "https://cdn.pfizer.com/pfizercom/PFE_Key_Anticipated_2026_Catalysts_05MAY2026.pdf",
+        "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts",
+        "https://www.roche.com/media/releases/med-cor-2025-02-28",
+        "https://www.pfizer.com/science/oncology-cancer/pipeline?page=4",
+        "https://www.roche.com/investors/updates/inv-update-2025-12-08",
+        "https://clinicaltrials.gov/study/NCT06629779?rank=1&term=MEVPRO-2+%28C2321003%29",
+        "https://www.roche.com/investors/updates/inv-update-2024-06-15",
+        "https://www.roche.com/investors/updates/inv-update-2025-07-18",
+        "https://www.pfizer.com/science/oncology-cancer/pipeline?page=0",
+        "https://www.roche.com/media/releases/med-cor-2025-05-23"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "final-screen-ocean-evolve_cervical",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-ocean-evolve_cervical.json",
+      "sha256": "902983a226b4efd93bfa26d5f391a8dbd40b2eb4ccfb7ed677c9ddf203582f65",
+      "bytes": 30532,
+      "source_url": "https://www.gsk.com/media/hpgfxwxv/q1-2026-results-announcement.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:16+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.gsk.com/media/hpgfxwxv/q1-2026-results-announcement.pdf",
+        "https://www.gsk.com/media/g0lnid23/fy-2025-results-announcement.pdf",
+        "https://www.gsk.com/media/snycbnpn/q3-2025-results-announcement.pdf",
+        "https://www.gsk.com/media/40yljs4u/q1-2026-pipeline-assets-and-clinical-trials-report.pdf",
+        "https://www.gsk.com/media/0qfjbtd3/q3-2025-results-slides.pdf",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-by-the-european-commission/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-japan/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-china-for-the-treatment-of-severe-asthma/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-china/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-the-uk-for-treatment-of-asthma-with-type-2-inflammation-and-chronic-rhinosinusitis-with-nasal-polyps/",
+        "https://us.gsk.com/en-us/media/press-releases/exdensur-depemokimab-approved-by-us-fda-for-the-treatment-of-severe-asthma/",
+        "https://www.astrazeneca.com/our-therapy-areas/pipeline.html",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-by-us-fda-for-the-treatment-of-severe-asthma/",
+        "https://www.gsk.com/en-gb/media/press-releases/depemokimab-late-breaking-data-presented-at-ers-show-a-54-reduction-in-severe-asthma-exacerbations/",
+        "https://jp.gsk.com/ja-jp/news/press-releases/20251222-exdensur/",
+        "https://www.astrazeneca.com/our-therapy-areas/oncology/medicines-portfolio-and-pipeline.html.md",
+        "https://www.gsk.com/en-gb/media/press-releases/depemokimab-applications-accepted-for-review-by-the-us-fda/"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "final-screen-successor1-topaz1",
+      "path": "arena_data/source_snapshots/season-20261023-final-screen-successor1-topaz1.json",
+      "sha256": "e387a69660a5f6e627f618dd6e3a4937cc02c8317fc52f5fb89adf8297427d71",
+      "bytes": 30651,
+      "source_url": "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T16:43:10+00:00",
+      "public_date": null,
+      "public_date_basis": "Search receipt created at retrieval; returned sources retain their own dates in receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+        "https://investors.biogen.com/static-files/c69e63ba-3b7d-4930-8a32-f7fc166249a4",
+        "https://investors.biogen.com/static-files/8040fdc2-0c9c-4c4a-b427-3e91df0596cd",
+        "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2024/BMY-2024-Q3-Results-Investor-Presentation-with-Appendix.pdf",
+        "https://investors.biogen.com/static-files/46900c9d-795d-4963-9431-728f4f846252",
+        "https://clinicaltrials.gov/study/NCT05352919",
+        "https://clinicaltrials.gov/find-studies/for-patients/how-to-join",
+        "https://clinicaltrials.gov/find-studies/for-patients/common-questions",
+        "https://clinicaltrials.gov/study-basics/how-to-read-study-record",
+        "https://vivli.org/",
+        "https://investors.bms.com/iframes/press-releases/press-release-details/2026/Bristol-Myers-Squibb-Announces-CELMoD-Mezigdomide-Reduces-Risk-of-Disease-Progression-or-Death-by-More-than-50-vs--Standard-of-Care-in-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx",
+        "https://clinicaltrials.gov/study/NCT05519085?tab=history",
+        "https://news.bms.com/news/details/2025/Bristol-Myers-Squibb-Presents-Data-Across-Targeted-Protein-Degradation-Research-Including-CELMoD-Agents-and-BCL6-Ligand-Directed-Degrader-at-EHA-2025/default.aspx?_sp=a3eecd21-754a-4ddb-9aa2-0f34b56f2598",
+        "https://news.bms.com/news/corporate-financial/2026/Bristol-Myers-Squibb-Announces-CELMoD-Mezigdomide-Reduces-Risk-of-Disease-Progression-or-Death-by-More-than-50-vs--Standard-of-Care-in-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx?_sp=ebffaeb2-843c-4346-ad47-f6dda86c85ec",
+        "https://news.bms.com/news/details/2026/U-S--Food-and-Drug-Administration-Accepts-Bristol-Myers-Squibbs-New-Drug-Application-for-Mezigdomide-in-Patients-with-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx?_sp=c7906479-453b-46a7-a50e-08a19506036f",
+        "https://www.biogen.com/science-and-innovation/pipeline.html",
+        "https://investors.biogen.com/node/30481/html",
+        "https://investors.biogen.com/news-releases/news-release-details/biogen-highlights-multiple-assets-and-indications-lupus",
+        "https://investors.biogen.com/news-releases/news-release-details/new-england-journal-medicine-publishes-second-manuscript",
+        "https://investors.biogen.com/node/25761",
+        "https://www.bms.com/medical-resources/healthcare-providers/doctorx-unscripted.html"
+      ],
+      "original_document_sha256": null
+    },
+    {
+      "id": "tropion_lung01_europepmc_xml",
+      "path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml",
+      "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+      "resolved_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+      "retrieved_at": "2026-10-22T16:55:00.554352+00:00",
+      "sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+      "bytes": 184527,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "application/xml",
+      "response_last_modified": null,
+      "http_status": 200,
+      "public_date": "2024-09-09",
+      "source_date": "2024-09-09",
+      "public_date_basis": "Article XML article-meta/pub-date",
+      "source_type": "peer_reviewed_article",
+      "available_at": "2026-10-22T16:55:00.554352+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml.receipt.json",
+      "receipt_sha256": "c409c239083d0a76f3e2de8d0be11f446876243cd59d3d66556024ec6031dc63",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    },
+    {
+      "id": "sanofi_riliprubart_2024",
+      "path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+      "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+      "resolved_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+      "retrieved_at": "2026-10-22T16:54:58.301389+00:00",
+      "sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+      "bytes": 194157,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "text/html",
+      "response_last_modified": null,
+      "http_status": 200,
+      "public_date": "2024-06-25",
+      "source_date": "2024-06-25",
+      "public_date_basis": "Official release dated Paris, June 25, 2024",
+      "source_type": "sponsor_press_release",
+      "available_at": "2026-10-22T16:54:58.301389+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html.receipt.json",
+      "receipt_sha256": "4044db851f3ed9d7c64aea624153fabe23913126841f733dc987a7d588ebf4ef",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    },
+    {
+      "id": "sanofi_riliprubart_2025",
+      "path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf",
+      "source_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+      "resolved_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+      "retrieved_at": "2026-10-22T16:54:58.130014+00:00",
+      "sha256": "97076dc3af6a951bdc5365c7b44899e756558f59526a80ecfa49fb3ba6efcf9b",
+      "bytes": 1891309,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "application/pdf",
+      "response_last_modified": "Tue, 16 Dec 2025 14:03:08 GMT",
+      "http_status": 200,
+      "public_date": "2025-12-16",
+      "source_date": "2025-12-16",
+      "public_date_basis": "Official year-end presentation dated December 16, 2025; HTTP Last-Modified corroborates date",
+      "source_type": "sponsor_presentation",
+      "available_at": "2026-10-22T16:54:58.130014+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf.receipt.json",
+      "receipt_sha256": "4672dea94411a2a2dad6e7172d641e79733dec59b276500e06725e98ae6230c1",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    },
+    {
+      "id": "corrected-screen-avanzar-inavo121",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-avanzar-inavo121.web.json",
+      "sha256": "0e3e59d31bcb6a07e0c113f97658cb0bfce2afe0f690974720351ca7854c893b",
+      "bytes": 23240,
+      "source_url": "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:00:30.963000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+        "https://medically.roche.com/content/dam/sh/esmo-2023/inavo121.pdf",
+        "https://assets.roche.com/f/176343/x/55a0097f19/final_20251211_sabcs-roche-s-virtual-oncology-investor-event.pdf",
+        "https://medically.roche.com/global/en/oncology/esmo-2023/breast-cancer/INAVO121.html",
+        "https://assets.cwp.roche.com/f/176343/x/14b2fa29c8/irp240424.pdf",
+        "https://medically.roche.com/content/dam/pdmahub/restricted/oncology/annual-meeting-2023/oncology-annual-meeting-2023-poster-juric-INAVO121-phase-iii-study-of-inavolisib.pdf",
+        "https://www.roche.com/media/releases/med-cor-2024-10-31",
+        "https://www.roche.com/media/releases/med-cor-2025-01-28",
+        "https://www.roche.com/media/releases/med-cor-2023-12-05",
+        "https://classic.clinicaltrials.gov/ct2/show/NCT05646862",
+        "https://www.roche.com/media/releases/med-cor-2025-07-23",
+        "https://www.roche.com/media/releases/med-cor-2024-10-11",
+        "https://www.roche.com/investors/updates/inv-update-2025-05-23c",
+        "https://www.roche.com/investors/updates/inv-update-2025-05-31",
+        "https://www.roche.com/media/releases/med-cor-2024-05-21",
+        "https://www.astrazeneca.com.cn/zh/media/press-releases/2023/09-12-02.html",
+        "https://www.roche.com/investors/updates/inv-update-2024-05-29",
+        "https://www.roche.com/media/releases/med-cor-2023-12-08"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-cambria1-vitalize",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-cambria1-vitalize.web.json",
+      "sha256": "2e21f1b1e155ffb0035042b6dfc931f21d8c4917028a9037d3a6976c86121ca1",
+      "bytes": 24458,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1121404/000162828026050803/exhibit992-2026halfyearman.htm",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:01:23.175000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1121404/000162828026050803/exhibit992-2026halfyearman.htm",
+        "https://www.sanofi.com/assets/dotcom/pressreleases/2026/2026-06-10-05-00-00-3309444-en.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1121404/000112140426000008/pressreleaseq22026english.htm",
+        "https://www.sanofi.com/en/our-science/our-pipeline.",
+        "https://www.sec.gov/Archives/edgar/data/1690585/000169058526000029/dnth-ex99_1.htm",
+        "https://argenx.com/news/2026/press-release-3289577",
+        "https://www.sanofi.com/en/media-room/press-releases/2026/2026-06-10-05-00-00-3309444",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2025/2025-q2-2025-results/2025_07_31_Sanofi_Q2_2025_Results.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2026/2026-q1-2026-results/sanofi-q1-2026-results.pdf",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2026/2025-q4-and-full-year-2025-results/2026_01_29_Sanofi_Q4FY_2025_Results.pdf",
+        "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+        "https://www.sanofi.com/assets/dotcom/content-app/events/quaterly-results/2025/2025-q3-2025-results/2025_10_24_Sanofi_Q3_2025_Results.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1121404/000112140425000010/sny-20241231.htm",
+        "https://www.sec.gov/Archives/edgar/data/1734768/000117625622000305/exhibit99-2.htm",
+        "https://www.sec.gov/Archives/edgar/data/1121404/000112140424000018/pressreleaseq22024english.htm",
+        "https://www.sanofi.com/fr/media-room/communiques-de-presse/2026/2026-06-10-05-00-00-3309444",
+        "https://www.astrazeneca.com/media-centre/press-releases/2026/update-serena-4-phase-iii-trial.html?trk=article-ssr-frontend-pulse_little-text-block",
+        "https://www.astrazeneca.com.cn/zh/media/press-releases/2026/06-03-02.html",
+        "https://www.sec.gov/Archives/edgar/data/1734768/000117625622000012/exhibit99-1.htm"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-ember4-pionera",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-ember4-pionera.web.json",
+      "sha256": "321e3da39529e579baa8cf98ddff46d8c2d335202420e6c635865a3db469d260",
+      "bytes": 24019,
+      "source_url": "https://clinicaltrials.gov/study/NCT05514054",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:01:02.249000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://clinicaltrials.gov/study/NCT05514054",
+        "https://clinicaltrials.gov/find-studies/for-patients/how-to-join",
+        "https://clinicaltrials.gov/find-studies/for-patients/common-questions",
+        "https://clinicaltrials.gov/study-basics/how-to-read-study-record",
+        "https://investor.lilly.com/news-releases/news-release-details/us-fda-approves-inluriyo-imlunestrant-combination-verzenio",
+        "https://trials.lilly.com/en-US/trial/356295",
+        "https://www.roche.com/media/releases/med-cor-2026-03-09",
+        "https://assets.roche.com/f/176343/x/dea78e334b/irp260129.pdf",
+        "https://assets.cwp.roche.com/f/176343/x/14b2fa29c8/irp240424.pdf",
+        "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+        "https://assets.roche.com/f/176343/18a766167c/01-mediainvestor-release-giredestrant-persevera-english.pdf",
+        "https://assets.roche.com/f/176343/x/55a0097f19/final_20251211_sabcs-roche-s-virtual-oncology-investor-event.pdf",
+        "https://trials.lilly.com/es-ES/trial/356295",
+        "https://www.roche.com/media/releases/med-cor-2026-02-20",
+        "https://trials.lilly.com/pl-PL/find",
+        "https://forpatients.roche.com/en/trials/cancer/bc/a-study-to-evaluate-efficacy-and-safety-of-giredestrant-50902.html",
+        "https://www.roche.com/media/releases/med-cor-2026-06-02",
+        "https://trials.lilly.com/de-DE/trial/356295",
+        "https://trials.lilly.com/pl-PL/trial/356295",
+        "https://trials.lilly.com/es-US/trial/356295"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-mevpro1-skyglo",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-mevpro1-skyglo.web.json",
+      "sha256": "1dc1aab31d8bdd0546611ac7b0607dc0d6c05e1a143d1a2cfeea54608dfd1b66",
+      "bytes": 20598,
+      "source_url": "https://assets.roche.com/f/176343/x/dea78e334b/irp260129.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:00:47.742000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://assets.roche.com/f/176343/x/dea78e334b/irp260129.pdf",
+        "https://clinicaltrials.gov/study/NCT06551324?rank=1&term=AREA%5BNCTIdSearch%5D%28NCT06551324%29",
+        "https://assets.roche.com/f/176343/x/059c686d27/20250922_pharma-day-2025_vf_online.pdf",
+        "https://cdn.pfizer.com/pfizercom/product-pipeline/Q1%202026%20Pipeline%20Update_vFinal_0.pdf",
+        "https://clinicaltrials.gov/study/NCT06551324?rank=7&term=AREA%5BInterventionSearch%5D%28ENZALUTAMIDE%29+AND+AREA%5BStudyType%5D%28INTERVENTIONAL%29",
+        "https://cdn.pfizer.com/pfizercom/PFE_Key_Anticipated_2026_Catalysts_05MAY2026.pdf",
+        "https://assets.roche.com/f/176343/x/68fa0fb258/roche-virtual-hematology-ir-event-june-16.pdf",
+        "https://www.pfizer.com/science/oncology-cancer/pipeline",
+        "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts",
+        "https://www.roche.com/investors/updates/inv-update-2025-12-08",
+        "https://www.pfizer.com/science/oncology-cancer/pipeline?page=4",
+        "https://www.roche.com/investors/updates/inv-update-2024-06-15",
+        "https://clinicaltrials.gov/study/NCT06629779?rank=1&term=MEVPRO-2+%28C2321003%29",
+        "https://www.roche.com/media/releases/med-cor-2025-05-20",
+        "https://www.roche.com/investors/updates/inv-update-2025-07-18",
+        "https://www.roche.com/media/releases/med-cor-2025-02-28",
+        "https://www.roche.com/media/releases/med-cor-2025-04-14"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-ocean-evolve",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-ocean-evolve.web.json",
+      "sha256": "50bf63a64a3b1c90a98225ecfe21d55b2a14ed3467b9f75ac7f17841f811a71a",
+      "bytes": 21140,
+      "source_url": "https://www.gsk.com/media/hpgfxwxv/q1-2026-results-announcement.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:01:32.997000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.gsk.com/media/hpgfxwxv/q1-2026-results-announcement.pdf",
+        "https://www.gsk.com/media/g0lnid23/fy-2025-results-announcement.pdf",
+        "https://www.gsk.com/media/snycbnpn/q3-2025-results-announcement.pdf",
+        "https://www.gsk.com/media/11776/fy-2024-results-announcement.pdf",
+        "https://clinicaltrials.gov/study/NCT06719141?rank=2&term=AREA%5BSponsorSearch%5D%28Longboard+Pharmaceuticals%29",
+        "https://clinicaltrials.gov/study/NCT03151811",
+        "https://pubmed.ncbi.nlm.nih.gov/41437395",
+        "https://clinicaltrials.gov/study/NCT07577115",
+        "https://www.astrazeneca.com/our-therapy-areas/oncology/medicines-portfolio-and-pipeline.html.md",
+        "https://www.gsk.com/en-gb/media/press-releases/depemokimab-late-breaking-data-presented-at-ers-show-a-54-reduction-in-severe-asthma-exacerbations/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-by-the-european-commission/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-china-for-the-treatment-of-severe-asthma/",
+        "https://www.gsk-china.com/zh-cn/media/press-releases/%E6%98%93%E9%80%82%E6%9D%A5-%E5%BE%B7%E8%8E%AB%E5%A5%87%E5%8D%95%E6%8A%97-%E5%9C%A8%E4%B8%AD%E5%9B%BD%E8%8E%B7%E6%89%B9%E7%94%A8%E4%BA%8E%E6%B2%BB%E7%96%97%E6%85%A2%E6%80%A7%E9%BC%BB%E7%AA%A6%E7%82%8E%E4%BC%B4%E9%BC%BB%E6%81%AF%E8%82%89%E6%88%90%E4%BA%BA%E6%82%A3%E8%80%85/",
+        "https://www.gsk.com/en-gb/media/press-releases/exdensur-depemokimab-approved-in-japan/",
+        "https://doi.org/10.1056/nejmoa2406673.",
+        "https://clinicaltrials.gov/study/NCT02891551",
+        "https://clinicaltrials.gov/study/NCT03151811?a=72&tab=history",
+        "https://clinicaltrials.gov/show/NCT02891551"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-pfizer-guidance-followup",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-pfizer-guidance-followup.web.json",
+      "sha256": "4dfbc848b8f9626f477f45a2093aef1d9255f1ab1ea3675a4c07f9eaf3045141",
+      "bytes": 11796,
+      "source_url": "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts",
+      "source_url_role": "reader_target_url",
+      "retrieved_at": "2026-10-22T17:01:58.151000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "official_page_reader_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    },
+    {
+      "id": "corrected-screen-successor1-topaz1",
+      "path": "arena_data/source_snapshots/season-20261023-corrected-screen-successor1-topaz1.web.json",
+      "sha256": "322211ccd7561ce5048c39425e3acb30494b584d2c222ef80da5df700ad75d29",
+      "bytes": 23330,
+      "source_url": "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+      "source_url_role": "first_returned_primary_reference_not_receipt_origin",
+      "retrieved_at": "2026-10-22T17:01:11.643000+00:00",
+      "public_date": null,
+      "public_date_basis": "New actual tool receipt acquisition time; underlying indexed documents retain their own publication dates in the receipt",
+      "snapshot_kind": "bounded_bilingual_web_search_tool_receipt",
+      "source_type": "screening_receipt",
+      "search_result_urls": [
+        "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+        "https://investors.biogen.com/static-files/8040fdc2-0c9c-4c4a-b427-3e91df0596cd",
+        "https://investors.biogen.com/static-files/c69e63ba-3b7d-4930-8a32-f7fc166249a4",
+        "https://investors.biogen.com/node/23621/pdf",
+        "https://clinicaltrials.gov/study/NCT05352919",
+        "https://medlineplus.gov/genetics/",
+        "https://medlineplus.gov/genetics/condition/systemic-lupus-erythematosus",
+        "https://medlineplus.gov/",
+        "https://medlineplus.gov/connectivetissuedisorders.html",
+        "https://medlineplus.gov/immunesystemanddisorders.html",
+        "https://medlineplus.gov/lupus.html",
+        "https://clinicaltrials.gov/fda-links",
+        "https://investors.biogen.com/node/23621",
+        "https://clinicaltrials.gov/study/NCT05519085?tab=history",
+        "https://news.bms.com/news/details/2026/U-S--Food-and-Drug-Administration-Accepts-Bristol-Myers-Squibbs-New-Drug-Application-for-Mezigdomide-in-Patients-with-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx?_sp=c7906479-453b-46a7-a50e-08a19506036f",
+        "https://investors.bms.com/iframes/press-releases/press-release-details/2026/Bristol-Myers-Squibb-Announces-CELMoD-Mezigdomide-Reduces-Risk-of-Disease-Progression-or-Death-by-More-than-50-vs--Standard-of-Care-in-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx",
+        "https://www.biogen.com/stories/advancing-lupus-research.html",
+        "https://investors.biogen.com/news-releases/news-release-details/biogen-highlights-multiple-assets-and-indications-lupus",
+        "https://news.bms.com/news/details/2025/Bristol-Myers-Squibb-Presents-Data-Across-Targeted-Protein-Degradation-Research-Including-CELMoD-Agents-and-BCL6-Ligand-Directed-Degrader-at-EHA-2025/default.aspx?_sp=a3eecd21-754a-4ddb-9aa2-0f34b56f2598",
+        "https://www.biogen.com/science-and-innovation/pipeline.html",
+        "https://investors.biogen.com/node/25761",
+        "https://investors.biogen.com/news-releases/news-release-details/new-england-journal-medicine-publishes-second-manuscript",
+        "https://investors.biogen.com/node/30481/html"
+      ],
+      "original_document_sha256": null,
+      "human_review_count": 0
+    }
+  ],
+  "exclusions": [
+    {
+      "trial": "MATTERHORN",
+      "drug": "durvalumab",
+      "reason": "Already published/approved; not prospective unknown",
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2026/imfinzi-approved-in-eu-for-early-gastric-cancer.html"
+    },
+    {
+      "trial": "AZUR-1",
+      "drug": "dostarlimab",
+      "reason": "Q2 2026 sponsor release already describes positive data and regulatory review",
+      "source_id": "gsk_q2_sec"
+    },
+    {
+      "trial": "MOBILIZE",
+      "drug": "riliprubart",
+      "reason": "June 2026 target futility disclosed; only distinct VITALIZE eligible",
+      "source_id": "sanofi_q2_sec"
+    },
+    {
+      "trial": "eVOLVE-Lung02",
+      "drug": "volrustomig",
+      "reason": "August 2026 target futility disclosed; distinct cervical target remains candidate",
+      "source_id": "az_evolve_update"
+    },
+    {
+      "trial": "SERENA-4",
+      "drug": "camizestrant",
+      "reason": "September 2026 failed primary PFS disclosed; distinct adjuvant CAMBRIA target remains candidate",
+      "source_id": "az_serena4_update"
+    },
+    {
+      "trial": "SUCCESSOR-2",
+      "drug": "mezigdomide",
+      "reason": "Positive PFS already announced; target is SUCCESSOR-1 with different active comparator",
+      "source_id": "bms_successor2"
+    },
+    {
+      "trial": "MagnetisMM-5 / TALAPRO-3 / TRANQUILLO / SigVie-002",
+      "reason": "Current Pfizer catalyst PDF marks these data readouts completed, including negative development outcome for SigVie-002",
+      "source_id": "pfizer_catalysts"
+    }
+  ],
+  "candidate_count": 12,
+  "independent_asset_clusters": 12,
+  "source_snapshot_count": 49,
+  "registration_status": "prepared_only",
+  "review_status": "independent_agent_raw_source_check_and_fresh_bounded_bilingual_screen_completed_pending_root_registration_review",
+  "provenance": {
+    "base_commit": "24d8bd20b10881f3433f2c853799649af94c745d",
+    "base_catalog_path": "docs/arena-season-candidates-20261023.json",
+    "base_catalog_file_sha256": "5d4998d06d9ea4ac272443d61dda3900620ab2114373a4f0f3f4709d0e3c1c1c",
+    "base_catalog_canonical_sha256": "783e8e6ee72627f0743f48d5d39c55dfb3bd463213331fad3003451968d40748",
+    "corrections_path": "docs/arena-source-corrections-20261023.json",
+    "corrections_file_sha256": "36ff3c2299efc5e3ac75ee67e68876773492cc0181f066b38e102ed9e3a780cc",
+    "corrections_canonical_sha256": "9b7c7ea600580c84cf2daeea294b36fb110f61800401adcde45f7cc886619eca",
+    "canonical_method": "ArenaLedger canonical JSON: UTF-8, sorted keys, compact separators, ensure_ascii=False, allow_nan=False; no Unicode normalization",
+    "prior_frozen_records_mutated": false,
+    "target_id_mapping": {
+      "of-season-20261023-avanzar": "of-season-20261023-corrected-avanzar",
+      "of-season-20261023-inavo121": "of-season-20261023-corrected-inavo121",
+      "of-season-20261023-mevpro1": "of-season-20261023-corrected-mevpro1",
+      "of-season-20261023-skyglo": "of-season-20261023-corrected-skyglo",
+      "of-season-20261023-ember4": "of-season-20261023-corrected-ember4",
+      "of-season-20261023-pionera": "of-season-20261023-corrected-pionera",
+      "of-season-20261023-successor1": "of-season-20261023-corrected-successor1",
+      "of-season-20261023-topaz1": "of-season-20261023-corrected-topaz1",
+      "of-season-20261023-cambria1": "of-season-20261023-corrected-cambria1",
+      "of-season-20261023-vitalize": "of-season-20261023-corrected-vitalize",
+      "of-season-20261023-ocean": "of-season-20261023-corrected-ocean",
+      "of-season-20261023-evolve_cervical": "of-season-20261023-corrected-evolve_cervical"
+    }
+  },
+  "fresh_screen_summary": {
+    "search_calls": 6,
+    "queries": 24,
+    "targets_screened": 12,
+    "official_page_followups": 1,
+    "first_receipt_at": "2026-10-22T17:00:30.963000+00:00",
+    "last_receipt_at": "2026-10-22T17:01:58.151000+00:00",
+    "decisive_exact_target_results_identified": 0,
+    "no_absence_guarantee": true,
+    "human_review_count": 0
+  }
+}

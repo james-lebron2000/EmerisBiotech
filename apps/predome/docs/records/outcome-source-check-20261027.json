@@ -1,0 +1,120 @@
+{
+  "schema_version": "predome-bounded-outcome-source-observations-1",
+  "as_of_local_date": "2026-10-27",
+  "timezone": "Asia/Taipei",
+  "sources": [
+    {
+      "trial_name": "AVANZAR",
+      "nct_id": "NCT05687266",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+      "retrieved_at_utc": "2026-10-26T19:48:56.940308+00:00",
+      "source_sha256": "01ecf76165274891716c8622a595f24e81e2c061c19aba4c71b50e9a256a60ca",
+      "bytes": 48026,
+      "hash_scope": "original_http_response_bytes",
+      "registry_last_update_posted": {
+        "date": "2026-10-09",
+        "type": "ACTUAL"
+      },
+      "registry_has_results": false,
+      "registry_results_section_present": false,
+      "check_scope": "exact_registry_response; limited official search did not establish an outcome",
+      "outcome_label": null,
+      "first_public_at": null
+    },
+    {
+      "trial_name": "MEVPRO-1",
+      "nct_id": "NCT06551324",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+      "retrieved_at_utc": "2026-10-26T19:48:56.940741+00:00",
+      "source_sha256": "7f2d02e96cc9efe07b4b2a355e8c17c0e897a5193240f7e0d76057b5c46e465b",
+      "bytes": 56041,
+      "hash_scope": "original_http_response_bytes",
+      "registry_last_update_posted": {
+        "date": "2026-08-11",
+        "type": "ACTUAL"
+      },
+      "registry_has_results": false,
+      "registry_results_section_present": false,
+      "check_scope": "exact_registry_response; limited official search did not establish an outcome",
+      "outcome_label": null,
+      "first_public_at": null
+    },
+    {
+      "trial_name": "OCEAN",
+      "nct_id": "NCT05263934",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05263934",
+      "retrieved_at_utc": "2026-10-26T19:48:56.940884+00:00",
+      "source_sha256": "33a57a4b6a2d9b71d2ef79f6aafa547fdf3fce6f39001cabf5c100c4485f1a9f",
+      "bytes": 23321,
+      "hash_scope": "original_http_response_bytes",
+      "registry_last_update_posted": {
+        "date": "2026-07-08",
+        "type": "ACTUAL"
+      },
+      "registry_has_results": false,
+      "registry_results_section_present": false,
+      "check_scope": "exact_registry_response; limited official search did not establish an outcome",
+      "outcome_label": null,
+      "first_public_at": null
+    },
+    {
+      "trial_name": "INAVO121",
+      "nct_id": "NCT05646862",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05646862",
+      "retrieved_at_utc": "2026-10-26T19:47:00.150537+00:00",
+      "source_sha256": "73d2d410ec46ae71347b25e2d38f92ac0201156da2e3dd1e3fde5cb4e70f15d9",
+      "bytes": 56335,
+      "hash_scope": "original_http_response_bytes",
+      "registry_last_update_posted": {
+        "date": "2026-10-26",
+        "type": "ACTUAL"
+      },
+      "registry_has_results": false,
+      "registry_results_section_present": false,
+      "check_scope": "exact_registry_and_bounded_official_sponsor_search",
+      "outcome_label": null,
+      "first_public_at": null
+    },
+    {
+      "trial_name": "TOPAZ-1",
+      "nct_id": "NCT04895241",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT04895241",
+      "retrieved_at_utc": "2026-10-26T19:47:00.948788+00:00",
+      "source_sha256": "b7cfe3baea3c8213de72b286da3038eb11aae061d56b888480fb41afbdb927ab",
+      "bytes": 58016,
+      "hash_scope": "original_http_response_bytes",
+      "registry_last_update_posted": {
+        "date": "2026-02-10",
+        "type": "ACTUAL"
+      },
+      "registry_has_results": false,
+      "registry_results_section_present": false,
+      "check_scope": "exact_registry_and_bounded_official_sponsor_search",
+      "outcome_label": null,
+      "first_public_at": null
+    }
+  ],
+  "other_trials_excluded": [
+    {
+      "target_nct_id": "NCT04895241",
+      "source_url": "https://investors.biogen.com/news-releases/news-release-details/biogens-litifilimab-demonstrates-rapid-and-durable-efficacy-new",
+      "document_publication_date": "2026-10-02",
+      "actual_study": "AMETHYST (NCT05531565), Phase 2 part, cutaneous lupus erythematosus",
+      "exclusion_reason": "Different trial and indication; skin disease endpoints cannot resolve TOPAZ-1 SRI-4 at Week 52."
+    },
+    {
+      "target_nct_id": "NCT05646862",
+      "source_url": "https://www.gene.com/media/press-releases/15065/2025-05-31/new-data-show-genentechs-itovebi-signifi",
+      "document_publication_date": "2025-05-31",
+      "actual_study": "INAVO120 final overall survival analysis",
+      "exclusion_reason": "Different trial, treatment combination, population setting and endpoint; does not resolve INAVO121 BICR-PFS."
+    }
+  ],
+  "meaning": "Registry hasResults=false applies only to the acquired registry response. Limited search did not establish an exact outcome. Neither is evidence that no announcement exists or that a trial failed.",
+  "information_cutoff_note": "New monitoring observations are not backfilled into frozen prediction inputs.",
+  "outcome_adjudications": 0,
+  "provider_calls": 0,
+  "forecast_changes": 0,
+  "ledger_writes": 0,
+  "clinical_prediction_validated": false
+}
