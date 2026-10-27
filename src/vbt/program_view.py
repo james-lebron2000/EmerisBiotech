@@ -40,7 +40,7 @@ def render(app,q):
             body+=field('author','记录人（本地声明）','text')+'<p><button>建立研究项目</button></p></form>'
         return body
     p=store.get(pid)
-    body+='<nav class="asset-page-nav" aria-label="同一项目的研究工作"><a href="#scientific-review">原版对照与风险审阅</a><a href="#ai-research">AI 研究草案</a><a href="#validation-results">研发验证与结果</a><a href="#asset-diligence">资产与 BD 尽调</a></nav>'
+    body+='<nav class="asset-page-nav" aria-label="同一项目的研究工作"><a href="#scientific-review">原版对照与风险审阅</a><a href="#ai-research">AI 研究草案</a><a href="#research-batches">任务批次与预算</a><a href="#validation-results">研发验证与结果</a><a href="#asset-diligence">资产与 BD 尽调</a></nav>'
     body+='<a href="/programs">← 所有研发项目</a><h2>'+e(p['title'])+'</h2><div class="page-actions"><a class="button secondary" href="/program/export?id='+quote(pid)+'">导出完整决策包 JSON</a></div>'
     gaps=store.gaps(p)
     body+='<section class="card"><h2>下一步需要解决什么</h2><p>'+e('；'.join(gaps) if gaps else '准备项已记录，可提交研究计划决定；不代表科学审查通过')+'</p><p class="data-note">本地署名与“已审阅”均为记录人的声明。预算是估算，保存不会支付费用、预约实验或启动分析。</p></section>'
@@ -143,6 +143,18 @@ def submit(app,q):
     elif operation=='ai_run':
         from .ai_research import run_tool
         run_tool(store,pid,q.get('proposal_id'),q.get('task_id'),author,revision)
+    elif operation=='batch_enqueue':
+        import json
+        from .research_queue import enqueue
+        try:deps=json.loads(q.get('dependencies_json','{}'))
+        except (ValueError,TypeError,RecursionError):raise ValueError('依赖 JSON 格式错误') from None
+        enqueue(store,pid,q.get('proposal_id'),q.get('task_ids',[]),deps,{k:q.get(k) for k in ('max_attempts','max_seconds','per_task_seconds')},author,revision)
+    elif operation in ('batch_run','batch_cancel','batch_recover','batch_retry'):
+        from .research_queue import run_batch,cancel,recover,retry
+        if operation=='batch_run':run_batch(store,pid,q.get('batch_id'),author,revision)
+        elif operation=='batch_cancel':cancel(store,pid,q.get('batch_id'),author,revision,q.get('reason'))
+        elif operation=='batch_recover':recover(store,pid,q.get('batch_id'),author,revision,q.get('reason'))
+        else:retry(store,pid,q.get('batch_id'),q.get('task_id'),author,revision,q.get('reason'))
     elif operation=='decision':store.decide(pid,q,author,revision)
     else:raise ValueError('未知研发操作')
     return '/programs?id='+quote(pid)+'&saved=1'

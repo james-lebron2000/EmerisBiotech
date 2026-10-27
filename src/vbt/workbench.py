@@ -191,6 +191,10 @@ def handler(app, public_origin=None):
                     from .ai_research import packet
                     from .programs import Programs
                     self.send(200,json.dumps(packet(Programs(app.state),q.get('id','')),ensure_ascii=False,indent=2),'application/json; charset=utf-8',True);return
+                if u.path=='/program/task-batches':
+                    from .research_queue import export_batches
+                    from .programs import Programs
+                    self.send_bytes(200,export_batches(Programs(app.state),q.get('id','')),'application/json; charset=utf-8',True);return
                 if u.path=='/program/comparison-report':
                     from .scientific_review import export_report
                     from .programs import Programs
@@ -257,6 +261,7 @@ def handler(app, public_origin=None):
                     from .program_view import submit
                     q['evidence_ids']=parsed.get('evidence_ids',[])
                     q['result_ids']=parsed.get('result_ids',[])
+                    q['task_ids']=parsed.get('task_ids',[])
                     dest=submit(app,q)
                 elif self.path.startswith('/market/'):
                     from .market import Market

@@ -100,24 +100,5 @@ def interaction_card(store,pid):
     return dict(kind='reported_interaction_card',source=receipt,rows=cards,scope='仅提取封存模型的结果，未重算模型；不得由 P 值较大推断不存在交互，亦不得外推 OSMR 阻断疗效')
 
 def run_tool(store,pid,proposal_id,task_id,author,revision):
-    current=store.get(pid)
-    if revision!=current['revision']: raise Conflict('项目已更新，请重新查看任务后运行')
-    proposal=next((p for p in proposals(store,pid) if p['event_id']==proposal_id),None)
-    if not proposal or proposal['stale']: raise ValueError('草案不存在或已过期，不能运行')
-    task=next((t for t in proposal['proposal']['tasks'] if t['id']==task_id),None)
-    if not task or task['tool'] not in TOOLS: raise ValueError('该任务没有主机授权的只读工具，需人工研究')
-    # Capture request before actual execution. A crash retains a requested event;
-    # it is never synthesized into a successful receipt on restart.
-    store._append(pid,'ai_tool_request',dict(proposal_id=proposal_id,task_id=task_id,tool=task['tool'],packet_hash=proposal['proposal']['packet_hash']),author,revision)
-    request=next(e for e in store.events(pid) if e['previous']==revision)
-    try:
-        output=({'audit_bound_sources':audit_sources,'extract_interaction_evidence':interaction_card}[task['tool']])(store,pid)
-        status='succeeded';error=None
-    except (OSError,ValueError,TypeError,KeyError,UnicodeError,OverflowError,csv.Error):
-        output=None;status='blocked';error='输入缺失、版本变化或格式不符合契约；没有产生成功结果'
-    final=store.get(pid)
-    if packet(store,pid)['packet_hash']!=proposal['proposal']['packet_hash']:
-        status='stale';error='执行期间项目内容变化，输出不能用于当前项目';output=None
-    receipt=dict(request_id=request['id'],proposal_id=proposal_id,task_id=task_id,tool=task['tool'],packet_hash=proposal['proposal']['packet_hash'],status=status,error=error,output=output,scientific_review='pending',execution_scope='host_defined_read_only_no_model_or_shell_call')
-    store._append(pid,'ai_tool_receipt',receipt,author,final['revision'])
-    return receipt
+    from .research_queue import single_tool
+    return single_tool(store,pid,proposal_id,task_id,author,revision)
