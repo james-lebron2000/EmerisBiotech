@@ -2,7 +2,6 @@
 import argparse
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-from vbt.workbench import Workbench, handler
 
 
 def main():
@@ -13,6 +12,8 @@ def main():
     args = parser.parse_args()
     if not 0 <= args.port <= 65535:
         parser.error('port must be between 0 and 65535')
+    print('Patient Lab initializing local workbench...', flush=True)
+    from vbt.workbench import Workbench, handler
     app = Workbench(args.workspace, args.state_dir)
     with ThreadingHTTPServer(('127.0.0.1', args.port), handler(app)) as server:
         print(f'Patient Lab ready: http://127.0.0.1:{server.server_port}/patient-lab', flush=True)

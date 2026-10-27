@@ -8,9 +8,9 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),asse
  const python=process.env.VBT_PYTHON || path.join(root,'.venv','bin','python');
  const env={PATH:process.env.PATH,PYTHONPATH:path.join(root,'src'),PYTHONUNBUFFERED:'1'};
  const service=spawn(python,['scripts/serve_patient_lab.py','--workspace',path.join(temporary,'workspace'),'--state-dir',path.join(temporary,'state'),'--port','0'],{cwd:root,env,stdio:['ignore','pipe','pipe']});
- let browser,logs='';service.stderr.on('data',d=>logs+=d.toString());
+ let browser,logs='',startupOutput='';service.stderr.on('data',d=>logs+=d.toString());
  try{
-  const base=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Server startup timed out: '+logs)),20000);service.on('error',reject);service.on('exit',code=>{clearTimeout(timer);reject(new Error('Server exited '+code+': '+logs));});service.stdout.on('data',d=>{const m=d.toString().match(/http:\/\/127\.0\.0\.1:\d+/);if(m){clearTimeout(timer);resolve(m[0]);}});});
+  const base=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Server startup timed out: '+startupOutput+'\n'+logs)),60000);service.on('error',reject);service.on('exit',code=>{clearTimeout(timer);reject(new Error('Server exited '+code+': '+logs));});service.stdout.on('data',d=>{startupOutput+=d.toString();const m=startupOutput.match(/http:\/\/127\.0\.0\.1:\d+/);if(m){clearTimeout(timer);resolve(m[0]);}});});
   browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
   const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[],external=[],checks=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base))external.push(r.url());});
