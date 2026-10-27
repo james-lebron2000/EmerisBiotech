@@ -5,11 +5,28 @@ import json
 
 import pytest
 
+from emeris_live import arena_store
 from emeris_live.arena_public import result_view
 from emeris_live.arena_review_auth import enroll_reviewer, resolve_enrollment
 from emeris_live.arena_store import AUTHENTICATED_REVIEW_PREFIX, sha
 from test_arena_result_reviews import result
 from test_arena_review_auth import workspace
+
+
+PUBLICATION_NOW = datetime(2026, 10, 26, 23, 59, 59, tzinfo=timezone.utc)
+
+
+@pytest.fixture
+def publication_clock(workspace, monkeypatch):
+    # Freeze only the owning validator, after normal workspace registration.
+    # Collection and execution must use the same UTC date across real midnight.
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return PUBLICATION_NOW.astimezone(tz) if tz is not None else PUBLICATION_NOW.replace(tzinfo=None)
+
+    monkeypatch.setattr(arena_store, 'datetime', FixedDateTime)
+    return PUBLICATION_NOW
 
 
 def enroll(ledger, account='account-one', principal='person-one', targets=None, **changes):
@@ -190,16 +207,28 @@ def test_historical_legacy_alias_cannot_block_an_authenticated_principal(workspa
 
 
 @pytest.mark.parametrize('date_value', [None, '2026-2-01', '2026-02-30', '0000-01-01',
-    (datetime.now(timezone.utc).date() + timedelta(days=1)).isoformat()])
-def test_source_publication_date_is_required_valid_and_not_future(workspace, date_value):
+    (PUBLICATION_NOW.date() + timedelta(days=1)).isoformat()])
+def test_source_publication_date_is_required_valid_and_not_future(workspace, publication_clock, date_value):
     _, ledger, target, _ = workspace
-    enroll(ledger); body = result(target); details = context(body)
+    enroll(ledger); body = result(target)
+    body['first_public_at'] = publication_clock.isoformat()
+    details = context(body)
     if date_value is None: details.pop('source_publication_date')
     else: details['source_publication_date'] = date_value
     before = ledger.events()
     with pytest.raises(ValueError):
         vote(ledger, target, body, review_context=details)
     assert ledger.events() == before
+
+
+def test_source_publication_date_today_is_allowed(workspace, publication_clock):
+    _, ledger, target, _ = workspace
+    enroll(ledger); body = result(target)
+    body['first_public_at'] = publication_clock.isoformat()
+    details = context(body)
+    details['source_publication_date'] = publication_clock.date().isoformat()
+    assert vote(ledger, target, body, review_context=details) == 'announced_pending_adjudication'
+    assert reviews(ledger)[-1]['payload']['review_context']['source_publication_date'] == details['source_publication_date']
 
 
 def test_public_result_projection_excludes_private_authentication_and_context(workspace):
