@@ -1,7 +1,7 @@
 'use strict';
 const $=s=>document.querySelector(s),esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sha=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))),v=>v.toString(16).padStart(2,'0')).join('');
-let data,bundle,frame=null,selected=null,bindings=[],maxY=100;
+let data,bundle,frame=null,selected=null,bindings=[],maxY=100,appliedOrder='id';
 const percent=index=>(index>=100?'+':'')+(index-100).toFixed(0)+'%';
 // View interpolation only. Treatment-line events stay at their discrete modeled review week.
 function sample(points,time){const a=points[Math.floor(time)],b=points[Math.min(Math.ceil(time),points.length-1)];return {...a,burden_index:a.burden_index+(b.burden_index-a.burden_index)*(time-Math.floor(time))};}
@@ -12,7 +12,7 @@ function draw(){const time=+$('#week').value;$('#week-value').textContent=time.t
  const a=sample(item.row.pathways.A.trajectory,time),b=sample(item.row.pathways.B.trajectory,time);item.gap.textContent='Δ'+Math.abs(a.burden_index-b.burden_index).toFixed(0);}
  for(const key of ['A','B']){const s=data.summaries[key][Math.floor(time)];$('#counts-'+key).textContent='1L '+s.line_counts['1']+' · 2L '+s.line_counts['2']+' · 3L '+s.line_counts['3']+' / 120';}
 }
-function renderMatrix(){const time=+$('#week').value,order=$('#order').value;
+function renderMatrix(){const time=+$('#week').value,order=$('#order').value;appliedOrder=order;
  const metric=row=>{const a=sample(row.pathways.A.trajectory,time).burden_index,b=sample(row.pathways.B.trajectory,time).burden_index;return order==='difference'?Math.abs(a-b):a;};
  const rows=[...data.patients];if(order!=='id')rows.sort((a,b)=>metric(b)-metric(a)||a.patient.patient_id.localeCompare(b.patient.patient_id));
  $('#patients').innerHTML=rows.map(row=>{const id=row.patient.patient_id;return '<button class="patient" data-patient="'+id+'" aria-pressed="'+(id===selected)+'" aria-label="Inspect '+id+' under pathways A and B"><div class="patient-title"><span>'+id+'</span><span class="gap"></span></div><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="clip-'+id+'"><rect width="0" height="26"/></clipPath></defs><line x1="0" x2="100" y1="'+(24-100/maxY*22)+'" y2="'+(24-100/maxY*22)+'" stroke="#d9d3c6" stroke-dasharray="2 3"/>'+['A','B'].map(key=>{const points=row.pathways[key].trajectory;return '<path class="sparkline '+key.toLowerCase()+'" clip-path="url(#clip-'+id+')" d="'+points.map((p,i)=>(i?'L':'M')+(p.week/data.horizon_weeks*100).toFixed(2)+','+(24-p.burden_index/maxY*22).toFixed(2)).join(' ')+'"/><circle class="tip-'+key+'" r="1.2" fill="'+(key==='A'?'#ad5139':'#426878')+'"/>';}).join('')+'</svg><div class="patient-values">'+['A','B'].map(key=>'<span class="'+key.toLowerCase()+'">'+key+' <span class="val-'+key+'"></span> <span class="line-badge badge-'+key+'"></span></span>').join('')+'</div></button>';}).join('');
@@ -31,6 +31,6 @@ async function start(){const response=await fetch('scenarios.json');if(!response
  $('#play').onclick=()=>frame===null?play():stop();$('#replay').onclick=()=>{stop();$('#week').value=0;draw();play();};$('#week').oninput=()=>{stop();draw();};$('#reorder').onclick=()=>{stop();renderMatrix();};$('#patients').onclick=e=>{const b=e.target.closest('[data-patient]');if(b)showPatient(b.dataset.patient);};
  $('#methods').onclick=()=>{stop();$('#method-dialog').showModal();};for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
  $('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{ $('#fullscreen').textContent='Use browser full screen'; }};
- $('#export').onclick=()=>{const payload={run_id:crypto.randomUUID(),created_at:new Date().toISOString(),view:{week:+$('#week').value,highlight_patient:selected,order:$('#order').value},canonical_template:bundle.canonical_result,template_sha256:bundle.sha256,checksum_scope:'canonical_template UTF-8 only; metadata is not signed',result:data};const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='regimen-cohort-'+payload.run_id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+ $('#export').onclick=()=>{const payload={run_id:crypto.randomUUID(),created_at:new Date().toISOString(),view:{week:+$('#week').value,highlight_patient:selected,order:appliedOrder},canonical_template:bundle.canonical_result,template_sha256:bundle.sha256,checksum_scope:'canonical_template UTF-8 only; metadata is not signed',result:data};const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='regimen-cohort-'+payload.run_id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)play();}
 start().catch(fail);
