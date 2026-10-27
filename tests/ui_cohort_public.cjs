@@ -1,5 +1,6 @@
 'use strict';
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const {collectHostingHashes,classifyConsole}=require('./hosting_console.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {spawn,spawnSync}=require('node:child_process');
 (async()=>{
@@ -20,12 +21,13 @@ const {spawn,spawnSync}=require('node:child_process');
  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
  try{
   const context=await browser.newContext({viewport:{width:1440,height:1100}}),page=await context.newPage(),errors=[];
+  const consoleMessages=[],hostingHashes=new Set();
   page.on('pageerror',e=>errors.push(e.message));
-  page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-  await page.goto(base);assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  page.on('console',m=>{if(m.type()==='error')consoleMessages.push(m.text());});
+  await page.goto(base);await collectHostingHashes(page,new URL(base).origin,hostingHashes);assert.equal(await page.locator('html').getAttribute('lang'),'en');
   assert.equal(await page.locator('#resistance').count(),0);assert(await page.getByRole('link',{name:'Open Virtual Trial Cohort',exact:true}).isVisible());
   assert(await page.getByText('MNC customer value',{exact:true}).isVisible());
-  await page.goto(base.replace(/\/$/,'')+'/cohort-lab/');await page.locator('#play:enabled').waitFor();
+  await page.goto(base.replace(/\/$/,'')+'/cohort-lab/');await page.locator('#play:enabled').waitFor();await collectHostingHashes(page,new URL(base).origin,hostingHashes);
   assert.equal(await page.locator('html').getAttribute('lang'),'en');
   assert(!/[\u3400-\u9fff]/.test(await page.locator('body').innerText()));
   assert.equal(await page.locator('.patient-card').count(),24);
@@ -75,10 +77,12 @@ const {spawn,spawnSync}=require('node:child_process');
   await page.locator('#play').click();await page.waitForFunction(()=>document.querySelector('#day-value').textContent==='1');await page.locator('#play').click();
   const out=process.env.PATIENT_LAB_QA_DIR;if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,'cohort-desktop.png'),fullPage:true});}
   for(const width of [390,320]){await page.setViewportSize({width,height:1100});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(out&&width===390){await page.locator('#summary').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'cohort-mobile.png')});}}
-  assert.deepEqual(errors,[]);
   await page.route('**/cohort-lab/scenarios.json',async route=>{const response=await route.fetch();const bundle=await response.json();bundle.templates['7'].sha256='0'.repeat(64);await route.fulfill({json:bundle});});
   await page.reload();await page.locator('#error').waitFor();assert(await page.locator('#play').isDisabled());assert(await page.locator('#export').isDisabled());
-  const receipt={checks:['keyboard focus retained','evidence stays open during playback','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','offline verifier accepts real browser export and rejects tampering','download CSV equals independently reproduced CSV','English only','desktop/390px/320px','corrupt template fails closed'],errors};
+  await collectHostingHashes(page,new URL(base).origin,hostingHashes);
+  const {applicationErrors,hostingWarnings}=classifyConsole(consoleMessages,hostingHashes);
+  assert.deepEqual(errors,[]);assert.deepEqual(applicationErrors,[]);
+  const receipt={checks:['keyboard focus retained','evidence stays open during playback','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','offline verifier accepts real browser export and rejects tampering','download CSV equals independently reproduced CSV','English only','desktop/390px/320px','corrupt template fails closed','unknown console/script/resource failures remain fatal'],errors,application_errors:applicationErrors,hosting_warnings:hostingWarnings};
   if(out)fs.writeFileSync(path.join(out,'cohort-browser.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));await context.close();
  }finally{await browser.close();if(service){service.kill('SIGTERM');await new Promise(resolve=>service.exitCode!==null||service.signalCode?resolve():service.once('exit',resolve));}if(temporary)fs.rmSync(temporary,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exit(1)});
