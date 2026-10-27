@@ -33,3 +33,22 @@ The full-screen control expands the simulation section itself. On desktop, the
 120-patient matrix remains visible together when that section is in view; mobile
 keeps a readable scrolling grid. Header navigation and calls to action connect the
 three parts without introducing another application or account flow.
+
+## Ten examples plus the complete cohort
+
+The simulation now displays fixed cases P001–P010 beside an overview of all 120
+patients. This is a presentation subset, not a smaller model cohort or an outcome-
+selected representative sample. Ordering operates within those ten cases only.
+JSON/CSV exports continue to contain the original complete 120-patient result.
+
+`public_cohort_overview()` generates a separate versioned overview asset in Python,
+with a checksum and the SHA-256 of its source canonical result. It contains weekly
+all-120 medians, inclusive patient quartiles and counts below baseline. The browser
+verifies both assets and their source linkage, then only interpolates their display.
+Patient counts use the last completed week. The IQR describes the distribution of
+patient indices; it is not a confidence or prediction interval. The overview and
+individual panels label their axes separately; all ten individual plots share the
+same scale derived from the full 120-patient range.
+
+No existing trajectory, clinical endpoint, regimen, fixture version or export schema
+changes. The first two presentation sections and Chinese/English switching remain.

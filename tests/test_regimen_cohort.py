@@ -89,3 +89,26 @@ def test_export_round_trip_csv_and_checksum(result):
 def test_invalid_export_view_rejected(result,change):
     record=envelope(result);record['view'].update(change)
     with pytest.raises(ValueError):verify_export(record)
+
+
+def test_overview_uses_all_120_while_display_selection_stays_fixed(result):
+    from statistics import quantiles
+    from vbt.regimen_cohort import public_cohort_overview
+    envelope=public_cohort_overview()
+    overview=json.loads(envelope['canonical_overview'])
+    assert digest(overview)==envelope['sha256']
+    assert overview['source_result_sha256']==digest(result)
+    assert overview['total_patients']==120
+    assert overview['displayed_patient_ids']==[f'P{i:03}' for i in range(1,11)]
+    for key in PATHWAYS:
+        for week in range(73):
+            values=[row['pathways'][key]['trajectory'][week]['burden_index'] for row in result['patients']]
+            q25,_,q75=quantiles(values,n=4,method='inclusive')
+            point=overview['groups'][key][week]
+            assert point['n']==120 and point['median_index']==round(median(values),6)
+            # Independent algorithms may straddle a binary rounding tie at the sixth decimal.
+            assert point['q25']==pytest.approx(q25,rel=0,abs=0.50001e-6)
+            assert point['q75']==pytest.approx(q75,rel=0,abs=0.50001e-6)
+            assert point['below_baseline']==sum(v<100 for v in values)
+        ten=[row['pathways'][key]['trajectory'][72]['burden_index'] for row in result['patients'][:10]]
+        assert overview['groups'][key][72]['median_index']!=round(median(ten),6)
