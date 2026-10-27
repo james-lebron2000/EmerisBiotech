@@ -17,11 +17,12 @@ from urllib.parse import urlsplit, quote
 
 import httpx
 
+from .arena_attempt_diagnostics import MAX_RESPONSE_BYTES, new_diagnostics, sanitize_diagnostics
 
-VERSION = 'arena-providers-1.1.0'
+
+VERSION = 'arena-providers-1.2.0'
 MAX_CONFIG_BYTES = 65536
 MAX_PACKET_BYTES = 120000
-MAX_RESPONSE_BYTES = 524288
 DEFAULT_TIMEOUT = 90
 WORKFLOWS = ('single_pass', 'evidence_review', 'review_only')
 MAX_REVIEW_CHARS = 4096
@@ -56,19 +57,83 @@ def digest(value):
     return hashlib.sha256(canonical(value).encode()).hexdigest()
 
 
-def _load_json(raw):
+def provider_implementation_sha256():
+    """Freeze the provider and its diagnostic contract at registration time."""
+    provider = Path(__file__)
+    return digest({'provider': hashlib.sha256(provider.read_bytes()).hexdigest(),
+                   'attempt_diagnostics': hashlib.sha256(
+                       provider.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest()})
+
+
+def _load_json(raw, *, diagnostics=None, failure_stage=None):
+    # Configuration also uses this loader. Only an explicitly supplied attempt
+    # context receives diagnostics; errors retain their original fixed codes.
+    if diagnostics is not None:
+        diagnostics['failure_stage'] = failure_stage
+        diagnostics['json_error'] = None
+
+    def error(kind, exc=None):
+        if diagnostics is not None:
+            diagnostics['json_error'] = {
+                'kind': kind,
+                'line': exc.lineno if exc is not None else None,
+                'column': exc.colno if exc is not None else None,
+                'position': exc.pos if exc is not None else None,
+            }
+
     def unique(pairs):
         result = {}
         for key, value in pairs:
             if key in result:
+                error('duplicate_key')
                 raise ProviderError('duplicate_json_key')
             result[key] = value
         return result
+
+    def nonfinite(_):
+        error('nonfinite_constant')
+        raise ProviderError('nonfinite_json')
+
     try:
-        return json.loads(raw, object_pairs_hook=unique,
-                          parse_constant=lambda _: (_ for _ in ()).throw(ProviderError('nonfinite_json')))
-    except (ValueError, TypeError, UnicodeError, RecursionError):
+        return json.loads(raw, object_pairs_hook=unique, parse_constant=nonfinite)
+    except json.JSONDecodeError as exc:
+        error('syntax_error', exc)
         raise ProviderError('invalid_json') from None
+    except UnicodeError:
+        error('unicode_error')
+        raise ProviderError('invalid_json') from None
+    except TypeError:
+        error('type_error')
+        raise ProviderError('invalid_json') from None
+    except RecursionError:
+        error('recursion_limit')
+        raise ProviderError('invalid_json') from None
+    except ValueError:
+        # For example, the interpreter's integer-string digit limit. Do not
+        # invent a JSONDecodeError position/category from its exception text.
+        raise ProviderError('invalid_json') from None
+
+
+def _visible_format(raw):
+    if not isinstance(raw, str):
+        return {'empty': None, 'starts_with_object': None, 'outer_code_fence': None, 'top_level_type': None}
+    stripped = raw.strip()
+    return {'empty': not stripped, 'starts_with_object': stripped.startswith('{'),
+            'outer_code_fence': len(stripped) >= 6 and stripped.startswith('```') and stripped.endswith('```'),
+            'top_level_type': None}
+
+
+def _visible_json(raw, diagnostics, stage):
+    if diagnostics is not None:
+        diagnostics['visible_format'] = _visible_format(raw)
+    value = _load_json(raw, diagnostics=diagnostics, failure_stage=stage + '_json')
+    if diagnostics is not None:
+        diagnostics['visible_format']['top_level_type'] = (
+            'null' if value is None else 'boolean' if type(value) is bool else
+            'object' if isinstance(value, dict) else 'array' if isinstance(value, list) else
+            'string' if isinstance(value, str) else 'number' if type(value) in (int, float) else None)
+        diagnostics['failure_stage'] = stage + '_schema'
+    return value
 
 
 def _number(value, *, minimum=0, maximum=1000000):
@@ -328,8 +393,8 @@ def _ids(value, allowed):
     return value
 
 
-def _forecast_output(raw, packet):
-    value = _load_json(raw)
+def _forecast_output(raw, packet, *, diagnostics=None):
+    value = _visible_json(raw, diagnostics, 'forecast')
     fields = {'status', 'probability', 'target_definition', 'reasoning', 'evidence_ids', 'supporting_evidence_ids',
               'opposing_evidence_ids', 'key_assumptions', 'key_unknowns'}
     if not isinstance(value, dict) or set(value) != fields or value['status'] not in ('predicted', 'abstain'):
@@ -349,11 +414,13 @@ def _forecast_output(raw, packet):
         raise ProviderError('prediction_without_evidence')
     for key in ('key_assumptions', 'key_unknowns'):
         _text_list(value[key])
+    if diagnostics is not None:
+        diagnostics['failure_stage'] = None
     return value
 
 
-def _review_output(raw, packet):
-    value = _load_json(raw)
+def _review_output(raw, packet, *, diagnostics=None):
+    value = _visible_json(raw, diagnostics, 'evidence_review')
     if not isinstance(value, dict) or set(value) != {'findings', 'key_unknowns'}:
         raise ProviderError('invalid_review')
     rows = value['findings']
@@ -368,6 +435,8 @@ def _review_output(raw, packet):
     _text_list(value['key_unknowns'], limit=MAX_REVIEW_UNKNOWNS)
     if any(len(item) > MAX_REVIEW_ITEM_CHARS for item in value['key_unknowns']) or len(canonical(value)) > MAX_REVIEW_CHARS:
         raise ProviderError('invalid_review')
+    if diagnostics is not None:
+        diagnostics['failure_stage'] = None
     return value
 
 
@@ -513,8 +582,50 @@ def _cost(row, usage):
                   + reads * pricing.get('cache_read_per_million', 0) + writes * pricing.get('cache_write_per_million', 0)) / 1000000, 10)
 
 
+def _content_type_class(value):
+    """Discard arbitrary header text and parameters before persistence."""
+    if not isinstance(value, str) or not value or len(value) > 256:
+        return 'unknown'
+    mime = value.split(';', 1)[0].strip().lower()
+    if not re.fullmatch(r'[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+', mime):
+        return 'unknown'
+    if mime == 'application/json' or mime.endswith('+json'):
+        return 'json'
+    if mime in ('text/html', 'application/xhtml+xml'):
+        return 'html'
+    if mime == 'text/plain':
+        return 'plain'
+    return 'other'
+
+
+def _envelope_shape(row, value):
+    """Observe structure for diagnostics without adding acceptance rules."""
+    if not isinstance(value, dict):
+        return False
+    if row['provider'] == 'anthropic':
+        content = value.get('content')
+        return isinstance(content, list) and all(
+            isinstance(part, dict) and (part.get('type') != 'text' or isinstance(part.get('text'), str))
+            for part in content)
+    if row['provider'] == 'gemini':
+        candidates = value.get('candidates')
+        if not isinstance(candidates, list) or len(candidates) != 1 or not isinstance(candidates[0], dict):
+            return False
+        content = candidates[0].get('content')
+        return isinstance(content, dict) and isinstance(content.get('parts'), list)
+    choices = value.get('choices')
+    if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
+        return False
+    message = choices[0].get('message')
+    return isinstance(message, dict) and isinstance(message.get('content'), str)
+
+
 def _call(row, system, data, max_output_tokens, timeout_seconds, stage, attempts):
     url, body, headers, request_hash = _request(row, system, data, max_output_tokens)
+    diagnostics = new_diagnostics(
+        body.get('generationConfig', {}).get('responseMimeType') == 'application/json'
+        if row['provider'] == 'gemini' else body.get('response_format', {}).get('type') in ('json_object', 'json_schema'))
+    diagnostics['failure_stage'] = 'transport'
     entry = {'stage': stage, 'request_sha256': request_hash, 'prompt_sha256': hashlib.sha256(system.encode()).hexdigest(),
              'input_sha256': digest(data), 'input_chars': len(canonical(data)), 'input_bytes': len(canonical(data).encode()),
              'max_output_tokens': max_output_tokens, 'timeout_seconds': timeout_seconds,
@@ -522,7 +633,8 @@ def _call(row, system, data, max_output_tokens, timeout_seconds, stage, attempts
              'requested_model': row['model'], 'returned_model': None, 'response_sha256': None,
              'usage': {}, 'cost_usd': None, 'cost_amount': None,
              'cost_currency': row['pricing']['currency'] if row.get('pricing') else None,
-             'latency_ms': None, 'status': 'started', 'error_code': None}
+             'latency_ms': None, 'status': 'started', 'error_code': None,
+             'diagnostics': None}
     attempts.append(entry)
     started = time.monotonic()
     try:
@@ -530,23 +642,37 @@ def _call(row, system, data, max_output_tokens, timeout_seconds, stage, attempts
         with httpx.Client(timeout=httpx.Timeout(timeout_seconds, connect=min(15, timeout_seconds)),
                           follow_redirects=False, trust_env=False) as client:
             with client.stream('POST', url, json=body, headers=headers) as response:
+                diagnostics.update(failure_stage='http_response', http_status=response.status_code,
+                                   content_type_class=_content_type_class(response.headers.get('content-type')))
                 if response.status_code != 200:
                     code = ('provider_authentication' if response.status_code in (401, 403) else
                             'provider_rate_limited' if response.status_code == 429 else
                             'provider_redirect_rejected' if 300 <= response.status_code < 400 else 'provider_http_error')
                     raise ProviderError(code)
+                diagnostics['failure_stage'] = 'transport'
+                diagnostics['body_read'] = {'state': 'partial', 'observed_bytes': 0}
                 raw = bytearray()
                 for chunk in response.iter_bytes():
+                    observed = len(raw) + len(chunk)
+                    diagnostics['body_read'] = {
+                        'state': 'limit_exceeded' if observed > MAX_RESPONSE_BYTES else 'partial',
+                        'observed_bytes': min(observed, MAX_RESPONSE_BYTES + 1)}
                     if time.monotonic() - started > timeout_seconds:
                         raise ProviderError('provider_timeout')
                     raw.extend(chunk)
                     if len(raw) > MAX_RESPONSE_BYTES:
                         raise ProviderError('provider_response_too_large')
+                diagnostics['body_read'] = {'state': 'complete', 'observed_bytes': len(raw)}
         entry['response_sha256'] = hashlib.sha256(raw).hexdigest()
         entry['response_bytes'] = len(raw)
-        value = _load_json(raw)
+        value = _load_json(raw, diagnostics=diagnostics, failure_stage='provider_envelope_json')
+        diagnostics['failure_stage'] = 'provider_envelope_shape'
+        shape_valid = _envelope_shape(row, value)
         text, returned, usage, complete, finish_reason = _decode(row, value)
         amount = _cost(row, usage)
+        if shape_valid:
+            diagnostics['failure_stage'] = 'visible_output_guard'
+            diagnostics['visible_format'] = _visible_format(text)
         entry.update(returned_model=returned, usage=usage, cost_amount=amount,
                      cost_usd=amount if entry['cost_currency'] == 'USD' else None,
                      finish_reason=finish_reason, visible_output_bytes=len(text.encode()) if isinstance(text, str) else None)
@@ -575,6 +701,7 @@ def _call(row, system, data, max_output_tokens, timeout_seconds, stage, attempts
         raise ProviderError('invalid_provider_response') from None
     finally:
         entry['latency_ms'] = round((time.monotonic() - started) * 1000)
+        entry['diagnostics'] = sanitize_diagnostics(diagnostics)
 
 
 def forecast(model_id, packet, *, workflow='single_pass', budget=None, evidence_review=None):
@@ -693,18 +820,23 @@ def forecast(model_id, packet, *, workflow='single_pass', budget=None, evidence_
                 raise ProviderError('input_budget_exceeded')
             raw, returned = _call(row, REVIEW_PROMPT if is_review else SYSTEM_PROMPT, data,
                 stage['max_output_tokens'], min(stage['timeout_seconds'], remaining_seconds), stage['stage'], result['attempts'])
+            diagnostics = result['attempts'][-1].get('diagnostics')
             if time.monotonic() - execution_started > total_seconds:
+                if diagnostics is not None:
+                    diagnostics['failure_stage'] = 'workflow_guard'
                 raise ProviderError('workflow_timeout')
             prior_models = {a['returned_model'] for a in result['attempts'][:-1] if a['returned_model']}
             if returned and prior_models and returned not in prior_models:
+                if diagnostics is not None:
+                    diagnostics['failure_stage'] = 'workflow_guard'
                 raise ProviderError('stage_model_version_changed')
             if is_review:
-                review = _review_output(raw, clean)
+                review = _review_output(raw, clean, diagnostics=diagnostics)
                 result.update(evidence_review=review, evidence_review_sha256=digest(review))
                 if workflow == 'review_only':
                     result.update(status='reviewed', returned_model=returned)
             else:
-                value = _forecast_output(raw, clean)
+                value = _forecast_output(raw, clean, diagnostics=diagnostics)
                 result.update(value, returned_model=returned)
             result['attempts'][-1]['status'] = 'validated'
         result['workflow_complete'] = True
@@ -718,6 +850,8 @@ def forecast(model_id, packet, *, workflow='single_pass', budget=None, evidence_
     finally:
         attempts = result['attempts']
         if attempts:
+            for attempt in attempts:
+                attempt['diagnostics'] = sanitize_diagnostics(attempt.get('diagnostics'))
             result['prompt_sha256'] = digest([a['prompt_sha256'] for a in attempts])
             result['request_sha256'] = digest([a['request_sha256'] for a in attempts])
             result['provider_response_sha256'] = digest([a['response_sha256'] for a in attempts]) if all(a['response_sha256'] for a in attempts) else None

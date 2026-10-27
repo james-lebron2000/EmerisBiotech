@@ -115,6 +115,12 @@ uv run pytest -q tests
 
 定位时读取实际计算样式和行高：既有43像素下限使padding调整无效，较后的摘要间距规则又覆盖了原有紧凑值。依据实测调整桌面行高下限、标签留白与间距，并保留诊断输出；不把声明的CSS值或本机测试通过当成跨平台布局已通过。
 
+### 单次请求诊断的合同边界
+
+本轮继续应用已采用的 OpenCode 边界、schema 与真实实现测试原则：标准库模块拥有固定诊断合同，provider 只收集有界的已观察元数据，Agent 和 operator 在各自复制／写入边界复用同一 sanitizer。任意嵌套字典不能直接作为诊断入库；非法诊断置空，原终态、用量和未知费用保留。冻结 hash 也覆盖共享 helper，避免只检查入口文件而遗漏传递依赖变更。
+
+验证使用实际 adapter／Agent、临时文件和 SQLite，并在传输边界使用 fixture；同时核对私有 receipt、公开 API、brief、campaign 和旧 receipt 字节兼容。新 Provider／Agent 版本仅供未来新登记执行，不重写旧失败、扩大时间凭证覆盖或产生重试；本轮仅更新 GitHub 候选，未正式打包、stage 或部署，不操作服务器后台。字段与范围见[单次请求安全诊断](ARENA_ATTEMPT_DIAGNOSTICS.md)。
+
 ## 未迁移的设置
 
 OpenCode 的 Bun、TypeScript、Effect、Drizzle、TUI 故事、后台会话服务和 `dev` 分支设置不适用于本项目。这里也没有采用其禁止所有根目录测试的约定、强制动画 SVG，或为了风格统一全面改写 Python 变量与控制流。开发流程的变化不代表新增临床预测、模型训练、独立审核或服务器部署已经完成。

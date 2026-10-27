@@ -11,6 +11,7 @@ The repository-root evidence, credential and sandbox requirements also apply to 
 - Validate incoming API/provider/file data at its owning boundary. Do not remove later checks that enforce another boundary, such as source-byte hashes, authenticated access, frozen-target identity or result-publication eligibility.
 - Keep exact clinical target, source time, forecast time, model version and original result distinguishable. Missing calibration remains unknown; model confidence must not become a fabricated success probability.
 - Preserve sealed inputs, ledger history, failed calls and old forecasts. A changed input or analysis requires a new version/run; a workflow cleanup does not authorize rewriting them.
+- Optional attempt diagnostics use the shared, closed contract in `arena_attempt_diagnostics.py`. Persist observed metadata only; keep unavailable values unknown and old missing fields absent. Internal diagnostics must not enter public projections or reports, and adding them must not change prediction acceptance, retry policy or accounting.
 
 ## Package checks
 

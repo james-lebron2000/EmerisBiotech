@@ -1,6 +1,8 @@
 """Transport-isolated adapter tests, not live API or forecasting validation."""
 from copy import deepcopy
+import hashlib
 import json
+from pathlib import Path
 
 import httpx
 import pytest
@@ -93,6 +95,13 @@ def test_all_protocols_normalize_valid_response_and_hide_thoughts(monkeypatch, t
     assert result['cost_usd'] == pytest.approx(.000026)
     assert result['cost_basis'] == 'configured_rates_estimate'
     assert result['attempts'][0]['status'] == 'validated' and len(calls) == 1
+    diagnostics = result['attempts'][0]['diagnostics']
+    assert diagnostics['failure_stage'] is None and diagnostics['http_status'] == 200
+    assert diagnostics['content_type_class'] == 'json'
+    assert diagnostics['body_read'] == {'state': 'complete', 'observed_bytes': result['attempts'][0]['response_bytes']}
+    assert diagnostics['visible_format'] == {'empty': False, 'starts_with_object': True,
+                                             'outer_code_fence': False, 'top_level_type': 'object'}
+    assert diagnostics['json_mode_requested'] is (provider != 'anthropic')
     assert all(len(result[k]) == 64 for k in ('input_sha256', 'config_sha256', 'request_sha256', 'prompt_sha256', 'provider_response_sha256'))
     serialized = json.dumps(result)
     assert KEY not in serialized and 'HIDDEN-REASONING' not in serialized
@@ -167,6 +176,7 @@ def test_abstention_is_valid_and_keeps_null_probability(monkeypatch, tmp_path):
     transport(monkeypatch, lambda r: httpx.Response(200, json=envelope('openai', answer(status='abstain', probability=None))))
     result = svc.forecast('fixture', packet())
     assert result['status'] == 'abstain' and result['probability'] is None and result['error_code'] is None
+    assert result['attempts'][0]['diagnostics']['failure_stage'] is None
 
 
 @pytest.mark.parametrize('change,code', [
@@ -234,12 +244,18 @@ def test_absent_provenance_preserves_legacy_request_and_does_not_default_review(
     assert result['status'] == 'predicted' and len(calls) == 1
     sent = request_data(calls[0])
     assert not (set(review_metadata()) & set(sent['evidence'][0]))
-    # Captured from this legacy fixture before the provenance projection change.
-    assert result['adapter_version'] == 'arena-providers-1.1.0'
-    assert result['workflow_version'] == 'arena-providers-1.1.0:single_pass'
+    # Input and prompt remain exact legacy fixtures. Request-body hashes use a
+    # new adapter version; reconstruct the old wrapper only to compare content.
+    assert result['adapter_version'] == 'arena-providers-1.2.0'
+    assert result['workflow_version'] == 'arena-providers-1.2.0:single_pass'
     assert result['input_sha256'] == 'e334018da83ffdd7d507e483ec11172105948fcce850391156cae3c006e511ae'
     assert result['prompt_sha256'] == '72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b'
-    assert result['request_sha256'] == 'cc257aacb882bf9f2ea822fca06d279776138bde37f844eef029c884afce5d08'
+    body = json.loads(calls[0].content)
+    legacy_request = svc.digest({'adapter': 'arena-providers-1.1.0', 'provider': 'openai',
+                                 'api_version': None, 'body': body})
+    assert svc.digest([legacy_request]) == 'cc257aacb882bf9f2ea822fca06d279776138bde37f844eef029c884afce5d08'
+    current_request = svc.digest({'adapter': svc.VERSION, 'provider': 'openai', 'api_version': None, 'body': body})
+    assert result['request_sha256'] == svc.digest([current_request])
 
 
 @pytest.mark.parametrize('metadata', [
@@ -440,10 +456,14 @@ def test_truncated_response_and_credential_echo_are_not_published(monkeypatch, t
     transport(monkeypatch, lambda r: httpx.Response(200, json=response))
     result = svc.forecast('fixture', packet())
     assert result['error_code'] == 'provider_response_incomplete' and result['cost_usd'] is not None
+    assert result['attempts'][0]['diagnostics']['failure_stage'] == 'visible_output_guard'
+    assert result['attempts'][0]['diagnostics']['json_error'] is None
     response['choices'][0]['finish_reason'] = 'stop'
     response['choices'][0]['message']['content'] = json.dumps(answer(reasoning=KEY))
     result = svc.forecast('fixture', packet())
     assert result['error_code'] == 'credential_echo_rejected' and KEY not in json.dumps(result)
+    assert result['attempts'][0]['diagnostics']['failure_stage'] == 'visible_output_guard'
+    assert result['attempts'][0]['diagnostics']['json_error'] is None
 
 
 def test_exact_gateway_model_ids_may_contain_dots(tmp_path,monkeypatch):
@@ -474,7 +494,7 @@ def test_explicit_stage_limits_across_native_and_gateway_protocols(monkeypatch,t
     calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
     result=svc.forecast('fixture',packet(),workflow='evidence_review',budget=stage_budget())
     assert result['status']=='predicted' and result['workflow_complete'] is True and len(calls)==2
-    assert result['adapter_version']=='arena-providers-1.1.0'
+    assert result['adapter_version']=='arena-providers-1.2.0'
     assert result['evidence_review_sha256']==svc.digest(compact_review())
     assert result['budget']['max_total_output_tokens']==7168
     for i,(tokens,seconds) in enumerate([(4096,120),(3072,90)]):
@@ -535,6 +555,7 @@ def test_review_exhaustion_preserves_cost_without_salvage_or_second_call(monkeyp
     assert result['error_code']=='provider_response_incomplete' and result['evidence_review'] is None
     assert result['attempts'][0]['finish_reason']==finish_value
     assert result['cost_usd']==pytest.approx(.000026) and result['workflow_complete'] is False
+    assert result['attempts'][0]['diagnostics']['failure_stage']=='visible_output_guard'
 
 
 def test_review_only_then_external_review_forecast_are_two_distinct_auditable_calls(monkeypatch,tmp_path):
@@ -597,6 +618,8 @@ def test_stage_model_version_change_is_visible_failure(monkeypatch,tmp_path):
     assert result['error_code']=='stage_model_version_changed' and result['probability'] is None
     assert len(calls)==2 and result['cost_usd']==pytest.approx(.000052)
     assert {a['returned_model'] for a in result['attempts']}=={'fixture-returned-v1','different-returned-version'}
+    assert result['attempts'][0]['diagnostics']['failure_stage'] is None
+    assert result['attempts'][1]['diagnostics']['failure_stage']=='workflow_guard'
 
 
 def test_reasoning_token_counts_are_preserved_without_hidden_content(monkeypatch,tmp_path):
@@ -617,3 +640,291 @@ def test_unknown_finish_reason_does_not_leak_provider_private_string(monkeypatch
     result=svc.forecast('fixture',packet())
     assert result['attempts'][0]['finish_reason']=='unknown'
     assert KEY not in json.dumps(result) and result['status']=='failed'
+
+
+def visible_envelope(provider, text):
+    value = envelope(provider)
+    if provider == 'anthropic':
+        value['content'][-1]['text'] = text
+    elif provider == 'gemini':
+        value['candidates'][0]['content']['parts'][-1]['text'] = text
+    else:
+        value['choices'][0]['message']['content'] = text
+    return value
+
+
+class ObservedStream(httpx.SyncByteStream):
+    """An external HTTP response fixture, never a replacement parser."""
+    def __init__(self, chunks=(), error=None):
+        self.chunks = chunks
+        self.error = error
+        self.iterations = 0
+        self.closed = False
+
+    def __iter__(self):
+        self.iterations += 1
+        yield from self.chunks
+        if self.error is not None:
+            raise self.error
+
+    def close(self):
+        self.closed = True
+
+
+def diagnostic(result, index=0):
+    value = result['attempts'][index]['diagnostics']
+    assert value is not None and value == svc.sanitize_diagnostics(value)
+    assert len(json.dumps(value).encode()) <= 2048
+    return value
+
+
+@pytest.mark.parametrize('provider', ['openai', 'openai_compatible', 'deepseek', 'anthropic', 'gemini'])
+@pytest.mark.parametrize('layer', ['envelope', 'forecast', 'review'])
+def test_malformed_json_preserves_exact_layer_and_safe_parser_offsets(monkeypatch, tmp_path, provider, layer):
+    configure(monkeypatch, tmp_path, provider)
+    # Non-ASCII characters make byte/character offsets differ. Store only the
+    # JSON parser's observed character offset, never its input or message.
+    malformed = '{\n"私密-fixture": "VALUE-CANARY",\n"unfinished": }'
+    raw = (malformed.encode() if layer == 'envelope' else
+           json.dumps(visible_envelope(provider, malformed), ensure_ascii=False).encode())
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, content=raw, headers={'content-type': 'application/json'}))
+    result = svc.forecast('fixture', packet(), workflow='review_only' if layer == 'review' else 'single_pass')
+    assert result['error_code'] == 'invalid_json' and result['probability'] is None and len(calls) == 1
+    info = diagnostic(result)
+    expected_stage = {'envelope': 'provider_envelope_json', 'forecast': 'forecast_json', 'review': 'evidence_review_json'}[layer]
+    assert info['failure_stage'] == expected_stage
+    with pytest.raises(json.JSONDecodeError) as caught:
+        json.loads(malformed)
+    assert info['json_error'] == {'kind': 'syntax_error', 'line': caught.value.lineno,
+                                  'column': caught.value.colno, 'position': caught.value.pos}
+    assert result['attempts'][0]['response_sha256'] == hashlib.sha256(raw).hexdigest()
+    assert info['body_read'] == {'state': 'complete', 'observed_bytes': len(raw)}
+    if layer == 'envelope':
+        assert all(v is None for v in info['visible_format'].values())
+        assert result['cost_usd'] is None and result['usage']['input_tokens'] is None
+    else:
+        assert info['visible_format']['starts_with_object'] is True
+        assert result['usage']['input_tokens'] == 10 and result['cost_usd'] == pytest.approx(.000026)
+    encoded = json.dumps(result)
+    assert 'VALUE-CANARY' not in encoded and 'unfinished' not in encoded and KEY not in encoded
+
+
+@pytest.mark.parametrize('layer', ['envelope', 'forecast', 'review'])
+@pytest.mark.parametrize('raw,code,kind', [
+    ('{"PRIVATE-KEY": 1, "PRIVATE-KEY": 2}', 'duplicate_json_key', 'duplicate_key'),
+    ('{"PRIVATE-KEY": NaN}', 'nonfinite_json', 'nonfinite_constant'),
+    ('{"PRIVATE-KEY": Infinity}', 'nonfinite_json', 'nonfinite_constant'),
+    ('{"PRIVATE-KEY": -Infinity}', 'nonfinite_json', 'nonfinite_constant'),
+    ('[' * 2000 + '0' + ']' * 2000, 'invalid_json', 'recursion_limit'),
+])
+def test_strict_json_categories_have_no_invented_positions_or_secret_keys(monkeypatch, tmp_path, layer, raw, code, kind):
+    configure(monkeypatch, tmp_path, 'openai_compatible')
+    body = raw.encode() if layer == 'envelope' else json.dumps(visible_envelope('openai', raw)).encode()
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, content=body))
+    result = svc.forecast('fixture', packet(), workflow='review_only' if layer == 'review' else 'single_pass')
+    info = diagnostic(result)
+    assert result['error_code'] == code and result['probability'] is None and len(calls) == 1
+    assert info['failure_stage'] == {'envelope': 'provider_envelope_json', 'forecast': 'forecast_json', 'review': 'evidence_review_json'}[layer]
+    assert info['json_error'] == {'kind': kind, 'line': None, 'column': None, 'position': None}
+    assert 'PRIVATE-KEY' not in json.dumps(result)
+
+
+def test_invalid_envelope_unicode_is_diagnosed_without_replacement_decoding(monkeypatch, tmp_path):
+    configure(monkeypatch, tmp_path)
+    raw = b'{"PRIVATE-KEY":"\xff"}'
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, content=raw))
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['error_code'] == 'invalid_json' and len(calls) == 1
+    assert info['failure_stage'] == 'provider_envelope_json'
+    assert info['json_error'] == {'kind': 'unicode_error', 'line': None, 'column': None, 'position': None}
+    assert all(v is None for v in info['visible_format'].values())
+    assert result['attempts'][0]['response_sha256'] == hashlib.sha256(raw).hexdigest()
+    assert 'PRIVATE-KEY' not in json.dumps(result)
+
+
+def test_type_error_at_existing_parser_boundary_has_null_offsets_and_fixed_code():
+    info = svc.new_diagnostics()
+    with pytest.raises(svc.ProviderError, match='^invalid_json$'):
+        svc._forecast_output({'PRIVATE-KEY': 'PRIVATE-VALUE'}, packet(), diagnostics=info)
+    info = svc.sanitize_diagnostics(info)
+    assert info['failure_stage'] == 'forecast_json'
+    assert info['json_error'] == {'kind': 'type_error', 'line': None, 'column': None, 'position': None}
+    assert all(v is None for v in info['visible_format'].values())
+    assert 'PRIVATE' not in json.dumps(info)
+
+
+def test_registry_parse_failure_never_acquires_a_forecast_attempt(monkeypatch, tmp_path):
+    path = configure(monkeypatch, tmp_path)
+    path.write_text('{"models": PRIVATE-CONFIG-CANARY}')
+    calls = transport(monkeypatch, lambda r: pytest.fail('Invalid config cannot call a model'))
+    result = svc.forecast('fixture', packet())
+    assert result['error_code'] == 'invalid_json' and result['attempts'] == [] and calls == []
+    assert svc.registry_status() == {'configured': False, 'error_code': 'invalid_json', 'models': []}
+    assert 'PRIVATE-CONFIG' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('provider,value', [
+    ('openai', []), ('openai', {'choices': []}),
+    ('openai_compatible', {'choices': [{'message': 'PRIVATE-SHAPE'}]}),
+    ('anthropic', {'content': [{'type': 'text', 'text': []}], 'stop_reason': 'end_turn'}),
+    ('gemini', {'candidates': [{'content': 'PRIVATE-SHAPE'}]}),
+])
+def test_provider_envelope_shape_is_not_mislabeled_forecast_json(monkeypatch, tmp_path, provider, value):
+    configure(monkeypatch, tmp_path, provider)
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, json=value))
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['status'] == 'failed' and result['probability'] is None and len(calls) == 1
+    assert result['error_code'] in ('invalid_provider_response', 'provider_response_incomplete')
+    assert info['failure_stage'] == 'provider_envelope_shape' and info['json_error'] is None
+    assert all(v is None for v in info['visible_format'].values())
+    assert 'PRIVATE-SHAPE' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('text,stage,code,flags', [
+    ('```json\n{}\n```', 'forecast_json', 'invalid_json', (False, False, True, None)),
+    ('PRIVATE-LEADING-TEXT {}', 'forecast_json', 'invalid_json', (False, False, False, None)),
+    ('  \n ', 'visible_output_guard', 'provider_output_missing', (True, False, False, None)),
+    ('[]', 'forecast_schema', 'invalid_output', (False, False, False, 'array')),
+    ('"PRIVATE-STRING"', 'forecast_schema', 'invalid_output', (False, False, False, 'string')),
+    ('42', 'forecast_schema', 'invalid_output', (False, False, False, 'number')),
+    ('true', 'forecast_schema', 'invalid_output', (False, False, False, 'boolean')),
+    ('null', 'forecast_schema', 'invalid_output', (False, False, False, 'null')),
+    ('{}', 'forecast_schema', 'invalid_output', (False, True, False, 'object')),
+])
+def test_visible_format_is_observation_not_json_salvage(monkeypatch, tmp_path, text, stage, code, flags):
+    configure(monkeypatch, tmp_path)
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, json=visible_envelope('openai', text)))
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['error_code'] == code and result['probability'] is None and len(calls) == 1
+    assert info['failure_stage'] == stage
+    assert tuple(info['visible_format'][k] for k in ('empty', 'starts_with_object', 'outer_code_fence', 'top_level_type')) == flags
+    assert result['usage']['input_tokens'] == 10 and result['cost_usd'] is not None
+    assert 'PRIVATE-LEADING-TEXT' not in json.dumps(result) and 'PRIVATE-STRING' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('value,workflow,code', [
+    (answer(target_definition='PRIVATE-WRONG-TARGET'), 'single_pass', 'target_mismatch'),
+    (answer(evidence_ids=['PRIVATE-UNSUPPLIED-ID']), 'single_pass', 'unsupported_citation'),
+    (answer(probability=True), 'single_pass', 'invalid_probability'),
+    ({'findings': [{'evidence_id': 'PRIVATE-UNSUPPLIED-ID', 'kind': 'support', 'statement': 'Unknown'}],
+      'key_unknowns': []}, 'review_only', 'invalid_review'),
+    ([], 'review_only', 'invalid_review'),
+])
+def test_schema_failure_is_distinct_from_valid_json(monkeypatch, tmp_path, value, workflow, code):
+    configure(monkeypatch, tmp_path)
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, json=envelope('openai', value)))
+    result = svc.forecast('fixture', packet(), workflow=workflow)
+    info = diagnostic(result)
+    assert result['error_code'] == code and len(calls) == 1
+    assert info['failure_stage'] == ('evidence_review_schema' if workflow == 'review_only' else 'forecast_schema')
+    assert info['json_error'] is None and info['visible_format']['top_level_type'] in ('object', 'array')
+    assert 'PRIVATE-' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('status,code', [(401, 'provider_authentication'), (403, 'provider_authentication'),
+    (429, 'provider_rate_limited'), (302, 'provider_redirect_rejected'), (500, 'provider_http_error'), (503, 'provider_http_error')])
+@pytest.mark.parametrize('provider', ['openai_compatible', 'anthropic', 'gemini'])
+def test_http_status_is_retained_without_error_body_drain(monkeypatch, tmp_path, status, code, provider):
+    configure(monkeypatch, tmp_path, provider)
+    stream = ObservedStream([b'PRIVATE-ERROR-BODY ' + KEY.encode()])
+    calls = transport(monkeypatch, lambda r: httpx.Response(status, stream=stream,
+        headers={'content-type': 'text/html; private=' + KEY,
+                 'location': 'https://private.example/error?token=' + KEY}))
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['error_code'] == code and len(calls) == 1 and stream.iterations == 0 and stream.closed
+    assert info['failure_stage'] == 'http_response' and info['http_status'] == status
+    assert info['content_type_class'] == 'html' and info['body_read'] == {'state': 'unread', 'observed_bytes': None}
+    assert result['cost_usd'] is None and result['known_cost_usd'] is None
+    assert result['usage']['input_tokens'] is None and result['returned_model'] is None
+    assert result['provider_response_sha256'] is None and result['attempts'][0]['response_bytes'] is None
+    encoded = json.dumps(result)
+    assert KEY not in encoded and 'PRIVATE-ERROR-BODY' not in encoded and 'private.example' not in encoded
+
+
+@pytest.mark.parametrize('header,expected', [
+    (None, 'unknown'), ('application/json; charset=utf-8', 'json'), ('application/problem+json', 'json'),
+    ('TEXT/HTML; private=PRIVATE-HEADER-CANARY', 'html'), ('text/plain', 'plain'),
+    ('image/png', 'other'), ('https://private.example/?key=PRIVATE-HEADER-CANARY', 'unknown'),
+    ('application/json; private=' + 'x' * 300, 'unknown'), ('text/plain\nPRIVATE-HEADER-CANARY', 'unknown'),
+])
+def test_content_type_is_bounded_classification_not_a_header_copy(monkeypatch, tmp_path, header, expected):
+    configure(monkeypatch, tmp_path)
+    headers = {} if header is None else {'content-type': header}
+    calls = transport(monkeypatch, lambda r: httpx.Response(503, stream=ObservedStream(), headers=headers))
+    result = svc.forecast('fixture', packet())
+    assert diagnostic(result)['content_type_class'] == expected and len(calls) == 1
+    assert 'PRIVATE-HEADER-CANARY' not in json.dumps(result) and 'private.example' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('error,code', [
+    (httpx.ReadTimeout('PRIVATE-EXCEPTION ' + KEY), 'provider_timeout'),
+    (httpx.ConnectError('PRIVATE-EXCEPTION ' + KEY), 'provider_transport_error'),
+])
+def test_failure_before_headers_has_no_invented_http_state(monkeypatch, tmp_path, error, code):
+    configure(monkeypatch, tmp_path)
+    def respond(request):
+        raise error
+    calls = transport(monkeypatch, respond)
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['error_code'] == code and len(calls) == 1
+    assert info['failure_stage'] == 'transport' and info['http_status'] is None
+    assert info['content_type_class'] is None and info['body_read'] == {'state': 'unread', 'observed_bytes': None}
+    assert KEY not in json.dumps(result) and 'PRIVATE-EXCEPTION' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('chunks,error,state,count,code', [
+    ([b'{"PRIVATE-PARTIAL":'], httpx.ReadTimeout('PRIVATE-EXCEPTION'), 'partial', 19, 'provider_timeout'),
+    ([b'{"PRIVATE-PARTIAL":'], httpx.ReadError('PRIVATE-EXCEPTION'), 'partial', 19, 'provider_transport_error'),
+    ([b'x' * 100, b'y' * svc.MAX_RESPONSE_BYTES], None, 'limit_exceeded', svc.MAX_RESPONSE_BYTES + 1, 'provider_response_too_large'),
+])
+def test_partial_and_oversized_body_never_claim_complete_size_hash_or_free_cost(monkeypatch, tmp_path, chunks, error, state, count, code):
+    configure(monkeypatch, tmp_path)
+    stream = ObservedStream(chunks, error)
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, stream=stream, headers={'content-type': 'application/json'}))
+    result = svc.forecast('fixture', packet())
+    info = diagnostic(result)
+    assert result['error_code'] == code and len(calls) == stream.iterations == 1 and stream.closed
+    assert info['http_status'] == 200 and info['failure_stage'] == 'transport'
+    assert info['body_read'] == {'state': state, 'observed_bytes': count}
+    assert result['attempts'][0]['response_sha256'] is None and result['attempts'][0]['response_bytes'] is None
+    assert result['provider_response_sha256'] is None and result['cost_usd'] is None
+    assert result['usage']['input_tokens'] is None
+    assert 'PRIVATE-' not in json.dumps(result)
+
+
+def test_json_mode_diagnostic_describes_the_actual_request_without_forcing_it(monkeypatch, tmp_path):
+    configure(monkeypatch, tmp_path, 'openai_compatible', json_mode=False)
+    calls = transport(monkeypatch, lambda r: httpx.Response(200, json=envelope('openai')))
+    result = svc.forecast('fixture', packet())
+    assert diagnostic(result)['json_mode_requested'] is False and len(calls) == 1
+    assert 'response_format' not in json.loads(calls[0].content)
+
+
+def test_diagnostics_preserve_known_subtotal_when_second_stage_http_usage_is_unknown(monkeypatch, tmp_path):
+    configure(monkeypatch, tmp_path)
+    stream = ObservedStream([b'PRIVATE-HTTP-ERROR'])
+    def respond(request):
+        return (httpx.Response(200, json=envelope('openai', compact_review())) if len(calls) == 1 else
+                httpx.Response(503, stream=stream, headers={'content-type': 'text/plain'}))
+    calls = transport(monkeypatch, respond)
+    result = svc.forecast('fixture', packet(), workflow='evidence_review')
+    assert len(calls) == 2 and result['status'] == 'failed' and not result['workflow_complete']
+    assert diagnostic(result, 0)['failure_stage'] is None
+    assert diagnostic(result, 1)['failure_stage'] == 'http_response' and diagnostic(result, 1)['http_status'] == 503
+    assert result['usage']['input_tokens'] is None and result['cost_usd'] is None
+    assert result['known_cost_usd'] == pytest.approx(.000026) and result['known_cost_amount'] == pytest.approx(.000026)
+    assert result['attempts'][0]['usage']['input_tokens'] == 10 and result['attempts'][1]['usage'] == {}
+    assert result['attempts'][1]['returned_model'] is None and stream.iterations == 0
+
+
+def test_shared_diagnostic_implementation_is_in_future_contract_hash_without_import_io():
+    provider_path = Path(svc.__file__)
+    expected = svc.digest({'provider': hashlib.sha256(provider_path.read_bytes()).hexdigest(),
+        'attempt_diagnostics': hashlib.sha256(provider_path.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest()})
+    assert svc.provider_implementation_sha256() == expected
+    assert svc.provider_implementation_sha256() != hashlib.sha256(provider_path.read_bytes()).hexdigest()

@@ -12,9 +12,10 @@ import re
 import time
 
 from . import arena_providers as providers
+from .arena_attempt_diagnostics import sanitize_diagnostics
 
 
-VERSION = 'arena-agents-1.0.0'
+VERSION = 'arena-agents-1.1.0'
 WORKFLOW = 'frozen_lookup_review_forecast'
 TOOLS = ('frozen_evidence.list', 'frozen_evidence.lookup')
 USAGE_FIELDS = ('input_tokens', 'output_tokens', 'reasoning_tokens', 'cache_read_input_tokens', 'cache_write_input_tokens')
@@ -24,7 +25,7 @@ ATTEMPT_FIELDS = ('stage', 'requested_model', 'returned_model', 'request_sha256'
                   'response_sha256', 'input_sha256', 'usage', 'cost_usd', 'cost_amount',
                   'cost_currency', 'cost_basis', 'latency_ms', 'status', 'error_code', 'input_chars',
                   'input_bytes', 'max_output_tokens', 'timeout_seconds', 'finish_reason',
-                  'visible_output_bytes', 'response_bytes')
+                  'visible_output_bytes', 'response_bytes', 'diagnostics')
 MODEL_FIELDS = ('id', 'name', 'provider', 'requested_model', 'config_sha256', 'adapter_version', 'cost_currency')
 BUDGET_FIELDS = {'max_requests', 'max_output_tokens', 'timeout_seconds', 'max_input_chars',
                  'max_cost_usd', 'max_cost_amount', 'cost_currency', 'budget_policy', 'stage_budgets',
@@ -154,7 +155,7 @@ def freeze_agent_contract(spec, packet, budget, models):
     if (budget.get('max_cost_usd') is not None or budget.get('max_cost_amount') is not None) and any(c['cost_currency'] != currency for c in components):
         raise AgentContractError('component_budget_currency_mismatch')
     agent_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-    provider_hash = hashlib.sha256(Path(providers.__file__).read_bytes()).hexdigest()
+    provider_hash = providers.provider_implementation_sha256()
     prompt_hashes = [hashlib.sha256(p.encode()).hexdigest() for p in (providers.REVIEW_PROMPT, providers.SYSTEM_PROMPT)]
     config = {'agent_spec': spec, 'components': components, 'provider_version': providers.VERSION}
     identity = _sha({'agent_id': spec['agent_id'], 'components': [(c['role'], c['id'], c['requested_model']) for c in components]})
@@ -235,7 +236,10 @@ def _stage_record(component, raw, input_hash):
         row = {}
         for key in ATTEMPT_FIELDS:
             value = attempt.get(key)
-            if key == 'usage':
+            if key == 'diagnostics':
+                if key in attempt:
+                    row[key] = sanitize_diagnostics(value)
+            elif key == 'usage':
                 row[key] = _usage(value)
             elif value is None or type(value) in (str, int, bool) or (type(value) is float and math.isfinite(value)):
                 row[key] = value

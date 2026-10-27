@@ -35,12 +35,12 @@ ASSAY_DATA_DIRECTORY = 'patent_data/versions/assays-20261027-v2'
 PRIVATE_CONFIGS = frozenset((Path('/etc/emeris-live.env'), Path('/etc/emeris-arena.env')))
 FILES = frozenset((
     'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/patent_identity.py', 'emeris_live/arena_metrics.py',
-    'emeris_live/arena_providers.py',
+    'emeris_live/arena_providers.py', 'emeris_live/arena_attempt_diagnostics.py', 'emeris_live/arena_agents.py',
     'emeris_live/arena_api.py', 'emeris_live/arena_public.py', 'emeris_live/arena_public_contract.py',
     'emeris_live/arena_public_brief.py', 'emeris_live/arena_store.py', 'emeris_live/arena_report.py',
     'emeris_live/arena_review_auth.py', 'emeris_live/arena_review_api.py', 'emeris_live/arena_acquired.py',
     'emeris_live/arena_imports.py', 'emeris_live/arena_records.py', 'scripts/sync_arena_records.py',
-    'emeris_live/arena_result_assurance.py', 'scripts/arena_scientific_acceptance.py',
+    'emeris_live/arena_result_assurance.py', 'scripts/arena_scientific_acceptance.py', 'scripts/arena_admin.py',
     'emeris_live/official_intake.py', 'emeris_live/intake_api.py', 'scripts/ingest_patents.py',
     'emeris_live/readout_updates.py', 'emeris_live/readout_updates_api.py',
     'scripts/arena_learning_report.py', 'scripts/arena_outcome_inbox.py', 'scripts/arena_result_review.py',

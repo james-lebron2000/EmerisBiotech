@@ -23,6 +23,8 @@ tests/test_arena_import_store.py
 tests/test_arena_import_public.py
 tests/test_arena_import_review.py
 tests/test_arena_providers.py
+tests/test_arena_attempt_diagnostics.py
+tests/test_arena_diagnostics_public.py
 tests/test_arena_api.py
 tests/test_patent_evidence.py
 tests/test_patent_identity.py

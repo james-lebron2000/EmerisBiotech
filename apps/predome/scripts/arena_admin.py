@@ -10,6 +10,7 @@ import uuid
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from emeris_live.arena_store import ArenaLedger, sha
 from emeris_live import arena_providers, arena_agents
+from emeris_live.arena_attempt_diagnostics import sanitize_diagnostics
 from emeris_live.arena_providers import forecast, list_models
 
 
@@ -51,7 +52,7 @@ def execution_contract(slot, budget):
     return {'workflow_version': version,'runner_implementation_sha256':runner_hash,
         'expected_provider_input_sha256': sha(arena_providers._packet(slot['packet'])),
         'expected_prompt_sha256': sha([hashlib.sha256(p.encode()).hexdigest() for p in prompts]),
-        'provider_implementation_sha256': hashlib.sha256(Path(arena_providers.__file__).read_bytes()).hexdigest(),
+        'provider_implementation_sha256': arena_providers.provider_implementation_sha256(),
         'execution_budget_sha256': sha(budget)}
 
 
@@ -85,7 +86,7 @@ RECEIPT_FIELDS = frozenset(('status probability reasoning evidence_ids supportin
     'clinical_prediction_validated evidence_review provider requested_model config_sha256 stage_plan workflow_complete evidence_review_sha256 agent_trace agent_trace_sha256 agent_calls_dispatched cost_breakdown '
     'input_sha256 model_id budget preflight_cost_upper_estimate billing_status').split())
 ATTEMPT_FIELDS = frozenset(('stage requested_model returned_model prompt_sha256 request_sha256 '
-    'response_sha256 usage cost_usd cost_amount cost_currency cost_basis latency_ms status error_code input_sha256 input_chars input_bytes max_output_tokens timeout_seconds finish_reason visible_output_bytes response_bytes agent_step model_id').split())
+    'response_sha256 usage cost_usd cost_amount cost_currency cost_basis latency_ms status error_code input_sha256 input_chars input_bytes max_output_tokens timeout_seconds finish_reason visible_output_bytes response_bytes agent_step model_id diagnostics').split())
 ACCOUNTING_FIELDS = frozenset(('attempts usage cost_usd known_cost_usd cost_amount known_cost_amount '
     'cost_currency cost_basis cost_note latency_ms returned_model request_sha256 provider_response_sha256').split())
 
@@ -99,16 +100,28 @@ def _json_value(value):
     if isinstance(value, list):
         return [_json_value(v) for v in value]
     if isinstance(value, dict):
-        return {k: _json_value(v) for k, v in value.items() if isinstance(k, str)
+        return {k: sanitize_diagnostics(v) if k == 'diagnostics' else _json_value(v)
+                for k, v in value.items() if isinstance(k, str)
                 and k.lower() not in ('api_key', 'authorization', 'token', 'secret', 'password',
                                       'endpoint', 'base_url', 'raw_response', 'raw_error', 'headers')}
     return None
 
 
+def _diagnostics_copy(value):
+    """Check optional metadata before ledger writes; preserve all other values."""
+    if isinstance(value, dict):
+        return {k: sanitize_diagnostics(v) if k == 'diagnostics' else _diagnostics_copy(v)
+                for k, v in value.items()}
+    if isinstance(value, list):
+        return [_diagnostics_copy(v) for v in value]
+    return value
+
+
 def save_result_receipt(data_dir, run_id, result):
     """Persist sanitized adapter fields before ledger validation; never overwrite."""
     safe = {k: _json_value(v) for k, v in result.items() if k in RECEIPT_FIELDS}
-    safe['attempts'] = [{k: _json_value(v) for k, v in attempt.items() if k in ATTEMPT_FIELDS}
+    safe['attempts'] = [{k: sanitize_diagnostics(v) if k == 'diagnostics' else _json_value(v)
+                         for k, v in attempt.items() if k in ATTEMPT_FIELDS}
                         for attempt in result.get('attempts', []) if isinstance(attempt, dict)]
     document = {'schema_version': 'arena-result-receipt-v1', 'run_id': run_id, 'result': safe}
     raw = json.dumps(document, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
@@ -127,6 +140,7 @@ def save_result_receipt(data_dir, run_id, result):
 
 
 def finish_with_receipt(ledger, data_dir, run_id, slot, result):
+    result = _diagnostics_copy(result)
     safe, link = save_result_receipt(data_dir, run_id, result)
     try:
         ledger.finish(run_id, {**result, **link})
