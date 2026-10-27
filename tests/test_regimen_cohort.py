@@ -99,7 +99,7 @@ def test_overview_uses_all_120_while_display_selection_stays_fixed(result):
     assert digest(overview)==envelope['sha256']
     assert overview['source_result_sha256']==digest(result)
     assert overview['total_patients']==120
-    assert overview['displayed_patient_ids']==[f'P{i:03}' for i in range(1,11)]
+    assert overview['displayed_patient_ids']==[f'P{i:03}' for i in range(1,21)]
     for key in PATHWAYS:
         for week in range(73):
             values=[row['pathways'][key]['trajectory'][week]['burden_index'] for row in result['patients']]
