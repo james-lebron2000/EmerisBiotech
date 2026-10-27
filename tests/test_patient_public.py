@@ -28,3 +28,18 @@ def test_new_patient_source_is_english():
     for name in ['src/vbt/patient_lab.py', 'src/vbt/patient_lab_view.py', 'docs/PATIENT_LAB.md',
                  'web/patient-lab/index.html', 'web/patient-lab/app.js']:
         assert not re.search(r'[\u3400-\u9fff]', (root / name).read_text()), name
+
+
+def test_review_entry_is_english_and_does_not_present_legacy_resistance(tmp_path):
+    import subprocess
+    import sys
+    root=Path(__file__).resolve().parents[1]
+    subprocess.run([sys.executable,str(root/'scripts/build_patient_site.py'),'--out',str(tmp_path)],check=True)
+    html=(tmp_path/'index.html').read_text()
+    assert 'Research Preview' in html and 'MNC customer value' in html
+    assert 'id="resistance"' not in html and 'style="' not in html
+    assert 'scenario-archive/' in html and 'cohort-lab/' in html and 'molecule-lab/' in html
+    assert (tmp_path/'scenario-archive/scenarios.json').exists()
+    for cutoff in (3,5,7):assert (tmp_path/f'cohort-lab/trajectories-cutoff-{cutoff}.csv').exists()
+    for path in [root/'README.md',root/'web/product-review/index.html',root/'docs/PRODUCT_REVIEW_2026-10-27.md']:
+        assert not re.search(r'[\u3400-\u9fff]',path.read_text())
