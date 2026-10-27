@@ -1,10 +1,11 @@
 'use strict';
 const $=s=>document.querySelector(s),esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const COLORS=['#14716e','#8961b0'];let templates={},current,timer=null;
+const COLORS=['#14716e','#8961b0'];let templates={},current,timer=null,evidenceKey=null;
 const sha=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))),v=>v.toString(16).padStart(2,'0')).join('');
 function stop(){clearInterval(timer);timer=null;$('#play').textContent='Play timeline';$('#play').setAttribute('aria-pressed','false');}
 function fail(e){stop();$('#error').hidden=false;$('#error').textContent=e.message;for(const id of ['play','day','cutoff','population','focus','export'])$('#'+id).disabled=true;}
 function render(){
+ const activePatient=document.activeElement.closest?.('[data-patient]')?.dataset.patient;
  const day=+$('#day').value,pop=$('#population').value,focus=$('#focus').value,cutoff=current.cutoff_day;
  const molecules=Object.keys(current.molecules),paired=new Set(current.paired_patient_ids);
  const included=row=>pop==='available'||paired.has(row.patient.patient_id);
@@ -29,8 +30,13 @@ function render(){
   return '<section class="stage"><h2>'+esc(current.molecules[m].label)+'</h2><p class="muted">'+seen.length+' summarized patients'+(focus?' · gold: '+esc(focus):'')+'</p>'+svg+'</section>';
  }).join('');
  $('#patients').innerHTML=current.patients.map(row=>'<button class="patient-card" data-patient="'+row.patient.patient_id+'" aria-pressed="'+(focus===row.patient.patient_id)+'"><strong>'+row.patient.patient_id+'</strong><span class="muted">'+(paired.has(row.patient.patient_id)?'Complete pair':'Incomplete pair · excluded from paired summary')+'</span>'+molecules.map((m,i)=>{const r=row.responses[m],p=r.trajectory[day];return '<span class="muted '+(p?'':'missing')+'">'+esc(current.molecules[m].label)+' · '+(p?p.viability_percent.toFixed(1)+'%':'Not estimable')+'</span><div class="bar-track"><div class="bar-fill" style="width:'+(p?Math.min(100,p.viability_percent/maxY*100):0)+'%;background:'+COLORS[i]+'"></div></div>';}).join('')+'</button>').join('');
+ if(activePatient)document.querySelector('[data-patient="'+activePatient+'"]')?.focus({preventScroll:true});
  const row=current.patients.find(r=>r.patient.patient_id===focus);
+ const nextEvidenceKey=current.input_sha256+'/'+focus;
+ if(nextEvidenceKey!==evidenceKey){
+ evidenceKey=nextEvidenceKey;
  $('#evidence').innerHTML=row?'<p><strong>'+esc(focus)+'</strong> · '+esc(row.patient.sample_id)+' · Synthetic functional assay</p>'+molecules.map(m=>{const r=row.responses[m];return '<details><summary>'+esc(current.molecules[m].label)+' · '+(r.status==='estimable'?'paired evidence':'missing pair')+'</summary>'+(r.status==='estimable'?'<p class="muted">'+esc(r.assay.exposure)+'</p>'+r.assay.rows.map(p=>'<p class="muted">'+esc(p.source_id)+'<br>Day '+p.day+' · drug: '+p.drug_counts.join(', ')+' · vehicle: '+p.vehicle_counts.join(', ')+'</p>').join(''):'<p>'+esc(r.reason)+'</p>')+'</details>';}).join('')+'<p class="muted">Resistance fraction and clinical outcomes remain unresolved.</p>':'<p class="muted">Choose a patient to inspect paired source records.</p>';
+ }
 }
 async function start(){
  const response=await fetch('scenarios.json');if(!response.ok)throw Error('Unable to load cohort assets.');const bundle=await response.json();
