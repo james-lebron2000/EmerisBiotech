@@ -17,16 +17,21 @@ function render(){
  $('#plots').innerHTML=molecules.map((m,i)=>{
   const x=d=>42+d/maxDay*492,y=v=>260-v/maxY*235,pts=values=>values.map((p,j)=>(j?'L':'M')+x(p.day).toFixed(2)+','+y(p.viability_percent??p.median).toFixed(2)).join(' ');
   const summaries=current.summaries[pop][m],seen=current.patients.filter(included).filter(r=>r.responses[m].status==='estimable');
-  const band=summaries.map((p,j)=>(j?'L':'M')+x(p.day)+','+y(p.q75)).join(' ')+summaries.slice().reverse().map(p=>'L'+x(p.day)+','+y(p.q25)).join(' ')+'Z';
-  const paths=(values,color,width,opacity)=>'<path d="'+pts(values.filter(p=>p.day<=cutoff))+'" fill="none" stroke="'+color+'" stroke-width="'+width+'" opacity="'+opacity+'"/><path d="'+pts(values.filter(p=>p.day>=cutoff))+'" fill="none" stroke="'+color+'" stroke-width="'+width+'" opacity="'+opacity+'" stroke-dasharray="5 4"/>';
-  let svg='<svg class="chart" viewBox="0 0 550 295" role="img" aria-label="'+esc(current.molecules[m].label)+' patient trajectories"><title>'+esc(current.molecules[m].label)+' paired assay trajectories</title>';
+  const visibleSummaries=summaries.filter(p=>p.day<=day);
+  const band=visibleSummaries.map((p,j)=>(j?'L':'M')+x(p.day)+','+y(p.q75)).join(' ')+visibleSummaries.slice().reverse().map(p=>'L'+x(p.day)+','+y(p.q25)).join(' ')+'Z';
+  const paths=(values,color,width,opacity)=>{
+   const visible=values.filter(p=>p.day<=day),tip=visible.at(-1);
+   const segment=(points,phase)=>points.length<2?'':'<path class="trajectory-segment" data-phase="'+phase+'" d="'+pts(points)+'" fill="none" stroke="'+color+'" stroke-width="'+width+'" opacity="'+opacity+'"'+(phase==='extrapolated'?' stroke-dasharray="5 4"':'')+'/>';
+   return segment(visible.filter(p=>p.day<=cutoff),'observed')+segment(visible.filter(p=>p.day>=cutoff),'extrapolated')+(tip?'<circle class="trajectory-tip" cx="'+x(tip.day)+'" cy="'+y(tip.viability_percent??tip.median)+'" r="'+(width===1?2:4)+'" fill="'+color+'" opacity="'+opacity+'"/>':'');
+  };
+  let svg='<svg class="chart" viewBox="0 0 550 295" role="img" aria-label="'+esc(current.molecules[m].label)+' patient trajectories through day '+day+'"><title>'+esc(current.molecules[m].label)+' paired assay trajectories</title>';
   svg+=[0,Math.round(maxY/2),maxY].map(v=>'<line class="gridline" x1="42" x2="534" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="0" y="'+(y(v)+4)+'">'+v+'%</text>').join('');
-  svg+='<path d="'+band+'" fill="'+COLORS[i]+'" opacity=".12"/>';
+  if(visibleSummaries.length>1)svg+='<path class="patient-iqr" d="'+band+'" fill="'+COLORS[i]+'" opacity=".12"/>';
   svg+=seen.filter(r=>r.patient.patient_id!==focus).map(r=>paths(r.responses[m].trajectory,COLORS[i],1,.26)).join('');
   svg+=paths(summaries,COLORS[i],3,1);
   const selected=current.patients.find(r=>r.patient.patient_id===focus);
   if(selected&&selected.responses[m].status==='estimable')svg+=paths(selected.responses[m].trajectory,'#b26718',3,1);
-  svg+='<line x1="'+x(day)+'" x2="'+x(day)+'" y1="20" y2="260" stroke="#283f4b" stroke-dasharray="3 3"/>';
+  svg+='<line class="timeline-cursor" x1="'+x(day)+'" x2="'+x(day)+'" y1="20" y2="260" stroke="#283f4b" stroke-dasharray="3 3"/>';
   svg+=[...new Set([0,cutoff,maxDay])].map(d=>'<text x="'+x(d)+'" y="282">'+d+'</text>').join('')+'</svg>';
   return '<section class="stage"><h2>'+esc(current.molecules[m].label)+'</h2><p class="muted">'+seen.length+' summarized patients'+(focus?' · gold: '+esc(focus):'')+'</p>'+svg+'</section>';
  }).join('');
@@ -45,7 +50,7 @@ async function start(){
  for(const cutoff of ['3','5','7']){const t=bundle.templates[cutoff];if(await sha(t.canonical_result)!==t.sha256)throw Error('Cohort template checksum failed.');const result=JSON.parse(t.canonical_result);if(result.cutoff_day!==+cutoff||result.clinical_use!==false||result.source_kind!=='synthetic'||result.total_patients!==24)throw Error('Cohort template mismatch.');templates[cutoff]={...t,result};}
  current=templates['7'].result;$('#focus').innerHTML+=current.patients.map(r=>'<option>'+r.patient.patient_id+'</option>').join('');
  for(const id of ['play','day','cutoff','population','focus','export'])$('#'+id).disabled=false;
- $('#cutoff').addEventListener('change',()=>{stop();current=templates[$('#cutoff').value].result;$('#day').max=current.cutoff_day+3;$('#day').value=Math.min(+$('#day').value,current.cutoff_day+3);render();});
+ $('#cutoff').addEventListener('change',()=>{stop();current=templates[$('#cutoff').value].result;$('#day').max=current.cutoff_day+3;$('#day').value=0;render();});
  $('#population').addEventListener('change',render);$('#focus').addEventListener('change',render);$('#day').addEventListener('input',()=>{stop();render();});
  $('#patients').addEventListener('click',e=>{const button=e.target.closest('[data-patient]');if(button){$('#focus').value=$('#focus').value===button.dataset.patient?'':button.dataset.patient;render();}});
  $('#play').addEventListener('click',()=>{if(timer){stop();return;}if(+$('#day').value>=+$('#day').max)$('#day').value=0;$('#play').textContent='Pause timeline';$('#play').setAttribute('aria-pressed','true');render();timer=setInterval(()=>{$('#day').value=+$('#day').value+1;render();if(+$('#day').value>=+$('#day').max)stop();},700);});
