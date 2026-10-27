@@ -36,7 +36,9 @@ TARGET_KEYS = {'id','cohort_id','trial_name','nct_id','drug','sponsor','indicati
     'scope','registered_at','execution_status','information_cutoff_utc','record_kind',
     'verification_note','status','registry_url','phase','design','registry_status',
     'readout','current_readout','result','sources','consensus'}
-SOURCE_KEYS = {'id','title','source_url','source_snapshot_url','publication_date','kind','page'}
+LOCATION_KEYS = {'page_references','source_anchor','document_version'}
+LEGACY_SOURCE_KEYS = {'id','title','source_url','source_snapshot_url','publication_date','kind','page'}
+SOURCE_KEYS = LEGACY_SOURCE_KEYS | LOCATION_KEYS
 POLICY_KEYS = {'calibration_status','probability','confidence','direction_rule','consensus_rule',
     'comparison_scope','clinical_prediction_validated'}
 CONSENSUS_KEYS = {'predicted_outcome','assigned','counts','agreement','agreement_denominator',
@@ -44,7 +46,8 @@ CONSENSUS_KEYS = {'predicted_outcome','assigned','counts','agreement','agreement
 LEGACY_RESULT_KEYS = {'status','label','first_public_at','source_url','summary','effect_size',
     'confidence_interval','p_value','numeric_source_url','verification_note'}
 RESULT_KEYS = LEGACY_RESULT_KEYS | {'review_status','scoring_eligible'}
-VERSION = 'arena-clinical-public-1.3'
+VERSION = 'arena-clinical-public-1.4'
+RETURNED_JUDGMENT_VERSION = 'arena-clinical-public-1.3'
 CALENDAR_VERSION = 'arena-clinical-public-1.2'
 PREVIOUS_VERSION = 'arena-clinical-public-1.1'
 LEGACY_VERSION = 'arena-clinical-public-1.0'
@@ -93,7 +96,7 @@ def validate_record(record, selected, *, allow_legacy=False):
     check_public(record)
     if not isinstance(record,dict) or set(record)!=ROOT_KEYS:raise ValueError('Unexpected public record schema')
     legacy = record['version'] == LEGACY_VERSION
-    if record['version'] != VERSION and not (record['version'] in (LEGACY_VERSION, PREVIOUS_VERSION, CALENDAR_VERSION) and allow_legacy):
+    if record['version'] != VERSION and not (record['version'] in (LEGACY_VERSION, PREVIOUS_VERSION, CALENDAR_VERSION, RETURNED_JUDGMENT_VERSION) and allow_legacy):
         raise ValueError('Unsupported public record version; legacy records are verification-only')
     target=record['target'];runs=record['runs']
     if 'current_readout' in target:
@@ -101,7 +104,7 @@ def validate_record(record, selected, *, allow_legacy=False):
             from emeris_live.arena_public_contract import validate_current_readout
         except ImportError:
             raise ValueError('Reviewed calendar bundles require the complete Predome repository and its runtime publication contract; the historical three-script tool copy cannot validate this new format') from None
-        if record['version'] not in (VERSION, CALENDAR_VERSION):raise ValueError('Legacy records cannot carry a later calendar update')
+        if record['version'] not in (VERSION, RETURNED_JUDGMENT_VERSION, CALENDAR_VERSION):raise ValueError('Legacy records cannot carry a later calendar update')
         validate_current_readout(target['current_readout'])
     if set(target)-TARGET_KEYS or target!=selected:raise ValueError('Target changed during export; start a new snapshot')
     if (set(record['public_policy'])!=POLICY_KEYS or set(record['consensus'])!=CONSENSUS_KEYS
@@ -160,7 +163,7 @@ def validate_record(record, selected, *, allow_legacy=False):
     c=record['consensus']
     if c!=target['consensus']:
         raise ValueError('Consensus does not match the assigned records')
-    if record['version'] == VERSION:
+    if record['version'] in (VERSION, RETURNED_JUDGMENT_VERSION):
         try:
             from emeris_live.arena_public_contract import validate_consensus
         except ImportError:
@@ -172,7 +175,14 @@ def validate_record(record, selected, *, allow_legacy=False):
         raise ValueError('Consensus does not match the original legacy assigned records')
     if record['result']!=target['result']:raise ValueError('Result does not match the exact target')
     for source in record['sources']+record['evidence']+target['sources']+[s for r in runs for s in r['sources']]:
-        if not isinstance(source,dict) or set(source)-SOURCE_KEYS:raise ValueError('Unknown source metadata')
+        allowed = SOURCE_KEYS if record['version'] == VERSION else LEGACY_SOURCE_KEYS
+        if not isinstance(source,dict) or set(source)-allowed:raise ValueError('Unknown source metadata')
+        if record['version'] == VERSION:
+            from emeris_live.arena_evidence_locations import validate_locations
+            from emeris_live.arena_public_contract import credential_like
+            validate_locations(source)
+            if any(isinstance(source.get(key), str) and credential_like(source[key]) for key in LOCATION_KEYS):
+                raise ValueError('Credential-like source location is not public campaign material')
     return historical
 
 
@@ -195,7 +205,7 @@ def report_text(record):
         ('Success definition','success_definition'),('Information cutoff','information_cutoff_utc')]:
         lines.append(f'| {label} | {cell(t.get(key))} |')
     lines += [f"| Expected readout / archived readout | {cell(t.get('readout',{}).get('label'))} |"]
-    update=t.get('current_readout') if record['version'] in (VERSION, CALENDAR_VERSION) else None
+    update=t.get('current_readout') if record['version'] in (VERSION, RETURNED_JUDGMENT_VERSION, CALENDAR_VERSION) else None
     if update is not None:
         original=t['readout']
         window='Readout unconfirmed' if update['precision']=='unknown' else str(update['start'])+' to '+str(update['end'])+'; '+update['precision']
@@ -216,13 +226,13 @@ def report_text(record):
     lines += ['','These are actual stored records. Probability and confidence are not clinically calibrated. Refusals and failures remain in the assigned denominator.', '',
         '## Consensus and actual result','',f"Majority prediction: {cell(record['consensus']['predicted_outcome'])}.",
         f"Assigned model records: {record['consensus']['assigned']}."]
-    if record['version'] == VERSION:
+    if record['version'] in (VERSION, RETURNED_JUDGMENT_VERSION):
         c=record['consensus']
         agreement='N/A (fewer than two returned judgments)' if c['agreement'] is None else format(c['agreement']*100,'.1f').rstrip('0').rstrip('.')+'%'
         lines += [f"Model agreement: {agreement}; returned judgments: {c['agreement_denominator']}/{c['assigned']}.",
             'Majority uses all assigned records. Agreement excludes technical failures and unexecuted slots; explicit abstentions count as Uncertain judgments.']
     result=t.get('result')
-    if result and record['version'] in (VERSION, CALENDAR_VERSION, PREVIOUS_VERSION):
+    if result and record['version'] in (VERSION, RETURNED_JUDGMENT_VERSION, CALENDAR_VERSION, PREVIOUS_VERSION):
         review=result['review_status']
         if review=='accepted':
             lines += [f"Actual result: {cell(result.get('label'))}; public date: {cell(result.get('first_public_at'))}.",
@@ -245,6 +255,15 @@ def report_text(record):
     lines += ['','Public sources:']
     for source in record['sources']:
         lines.append(f"- {cell(source.get('title'))}: {cell(source.get('source_url'))}")
+        if record['version'] == VERSION:
+            if source.get('page_references'):
+                lines.append('  Recorded pages: '+', '.join(str(page) for page in source['page_references'])+'.')
+            if source.get('source_anchor'):
+                lines.append('  Source anchor: '+cell(source['source_anchor'])+'.')
+            if source.get('document_version'):
+                lines.append('  Document version: '+cell(source['document_version'])+'.')
+    if record['version'] == VERSION and any(any(source.get(key) for key in LOCATION_KEYS) for source in record['sources']):
+        lines += ['', 'Locations are frozen evidence-card metadata. They do not establish that a model read an original document or that the recorded location was scientifically verified.']
     return ('\n'.join(lines)+'\n').encode()
 
 

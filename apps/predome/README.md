@@ -16,6 +16,8 @@
 
 [方案与 SAP 原件接入](docs/TRIAL_DOCUMENT_SOURCES.md)提供官方附件清单、显式原件采集、逐页索引与待人工审核的 OCR 补录。真实 INAVO120 原件用于验证采集路径；资料获取、完整文字提取和精确预测目标资格分别记录，不回填旧运行。
 
+[原文位置传递](docs/RECORDED_EVIDENCE_LOCATIONS.md)让新模型输入、公开引用、Clinical Brief 与 Campaign 报告保留已记录的页码、章节和文档版本。缺失不推断，旧预测和原件不改写；位置元数据不证明模型读过完整原件或已获科学审核。
+
 [逐模型引用报告](docs/launch/model-references-20261027/README.md)将已有公开摘要、每个模型自己的原文／快照引用与空状态一起展示。公开页面在 `Rationale & sources` 内查看；[实际记录截图](docs/images/model-references-20261027/provenance.json)来自本地候选版本，不代表线上部署或引用已获独立科学支持。新专利候选的名称／别名合同见[专利资料说明](patent_data/README.md#new-candidate-identifiers)，候选标签不授予药物身份或冻结资格。
 
 [公开读出日历](docs/READOUT_CALENDAR.md)按已记录窗口组织赛程，每项显示原模型方向分布、锁定时间和来源。项目级指引及未确认公告时间单列；历史回放不计为事前命中，未公布结果不排名。

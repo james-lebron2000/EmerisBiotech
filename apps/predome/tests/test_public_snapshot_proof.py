@@ -35,10 +35,15 @@ def test_public_bundle_can_be_independently_rebuilt_after_json_roundtrip(records
 @pytest.mark.parametrize('state,label',[('pending','success'),('agreement','success'),
     ('accepted','success'),('accepted','mixed')])
 def test_new_schema_proof_validation_uses_actual_ledger_projection(tmp_path,monkeypatch,state,label):
-    ledger,before,index,_,client=real_public_record(tmp_path,monkeypatch,state,label)
+    locations={'page_references':[3,8], 'source_anchor':'Synthetic section 4.2',
+               'document_version':'Synthetic protocol v2'}
+    ledger,before,index,record,client=real_public_record(tmp_path,monkeypatch,state,label,evidence_locations=locations)
+    assert record['version']=='arena-clinical-public-1.4'
     raw,m=proof.campaign.bundle(index,lambda path:client.get(path).json())
     assert m['schema_version']=='predome-public-launch-bundle-3'
     assert proof.validate_bundle(raw)==m
+    public_record=proof.decode(proof.zip_members(raw)['records/target-test.json'])
+    assert {key:public_record['runs'][0]['sources'][0][key] for key in locations}==locations
     assert ledger.events()==before
 
 
@@ -256,7 +261,7 @@ def test_non_sha256_message_imprint_is_rejected_after_actual_signature_checks(si
         proof.verify(directory)
 
 
-@pytest.mark.parametrize('bundle_version,record_version',[('predome-public-launch-bundle-1','arena-clinical-public-1.0'),('predome-public-launch-bundle-2','arena-clinical-public-1.1'),('predome-public-launch-bundle-3','arena-clinical-public-1.2')])
+@pytest.mark.parametrize('bundle_version,record_version',[('predome-public-launch-bundle-1','arena-clinical-public-1.0'),('predome-public-launch-bundle-2','arena-clinical-public-1.1'),('predome-public-launch-bundle-3','arena-clinical-public-1.2'),('predome-public-launch-bundle-3','arena-clinical-public-1.3')])
 def test_previous_bundle_contracts_verify_offline_but_cannot_reissue_attestation(records,tmp_path,monkeypatch,bundle_version,record_version):
     """Synthetic legacy contract fixture; original signed archives stay untouched."""
     index,_,_,fetch=records
@@ -271,7 +276,7 @@ def test_previous_bundle_contracts_verify_offline_but_cannot_reissue_attestation
         if name.startswith('records/'):
             from emeris_live.arena_public_contract import public_consensus
             record=proof.decode(files[name]);record['version']=record_version
-            record['consensus']=public_consensus(record['runs'],legacy=True)
+            record['consensus']=public_consensus(record['runs'],legacy=record_version!=proof.campaign.RETURNED_JUDGMENT_VERSION)
             record['target']['consensus']=deepcopy(record['consensus'])
             if record_version==proof.campaign.CALENDAR_VERSION and name=='records/fixture-0.json':
                 from test_public_campaign_export import synthetic_current_readout

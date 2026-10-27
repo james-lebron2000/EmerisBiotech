@@ -82,6 +82,6 @@ python3.11 scripts/ocr_trial_document_pages.py \
 
 采集、文字提取和 OCR 都不是科学批准。需要先核对精确试验、研究人群、治疗与对照、适用 amendment、主要终点和分析时间，再确认 estimand、分析集、alpha、期中和多重性规则。INAVO120 的方法不能移植为 INAVO121 的参数，旧 AVANZAR 记录也不能覆盖当前冻结目标。
 
-既有 `prepare_arena_season.py` 支持 `trial_protocol` 卡片，并要求来源获取时间不晚于新的信息截止时间。操作者仍须单独撰写有原文页码的证据卡；当前模型投影使用卡片的文字与来源字段，不会自动把附件或旁路页索引送入模型。因此试验编号、版本、页码、关键条件和未知项要在经核对的卡片正文中写清楚。
+既有 `prepare_arena_season.py` 支持 `trial_protocol` 卡片，并要求来源获取时间不晚于新的信息截止时间。操作者仍须单独撰写有原文位置的证据卡。新模型版本可保留卡片显式提供的 `page_references`、`source_anchor` 和 `document_version`，见[定位字段合同](RECORDED_EVIDENCE_LOCATIONS.md)；它不会自动把 PDF 附件、完整逐页索引或 OCR 文本送入模型。试验编号、适用范围、已核对摘录、关键条件和未知项仍须在卡片正文写清楚，定位元数据不能替代科学内容或审核。
 
 新资料只能进入单独准备的新输入与截止时间，不回填旧预测、失败、事件或时间凭证。正式科学接纳、前瞻校准、独立模型／Agent／专利增益比较仍需各自证据。

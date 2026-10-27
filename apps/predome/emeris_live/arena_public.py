@@ -15,10 +15,11 @@ from . import arena_api
 from .arena_store import ArenaLedger, result_target_binding
 from .arena_result_assurance import result_assurance
 from .arena_public_contract import credential_like, public_url, validate_current_readout, public_consensus
+from .arena_evidence_locations import validate_locations
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
-VERSION = 'arena-clinical-public-1.3'
+VERSION = 'arena-clinical-public-1.4'
 POLICY = {
     'calibration_status': 'not_established',
     'probability': None, 'confidence': None,
@@ -34,13 +35,23 @@ def text(value, limit=2000):
 
 
 def source_view(value, snapshot_urls=None):
-    return {'id': text(value.get('id') or value.get('source_id'), 200),
+    result = {'id': text(value.get('id') or value.get('source_id'), 200),
             'title': text(value.get('title') or value.get('id') or value.get('source_id'), 300),
             'source_url': public_url(value.get('source_url') or value.get('url')),
             'source_snapshot_url': None if value.get('archive_only_source') else (snapshot_urls or {}).get(value.get('source_sha256')),
             'publication_date': text(value.get('public_date') or value.get('availability_date'), 80),
             'kind': text(value.get('kind'), 80),
             'page': value.get('page') if type(value.get('page')) is int else None}
+    # These are recorded card metadata, not proof that a model read an original
+    # document. Invalid or credential-like locations must not block old records.
+    for key in ('page_references', 'source_anchor', 'document_version'):
+        if key not in value or isinstance(value[key], str) and credential_like(value[key]):
+            continue
+        try:
+            result.update(validate_locations({key: value[key]}))
+        except ValueError:
+            continue
+    return result
 
 
 def read_frozen(store):

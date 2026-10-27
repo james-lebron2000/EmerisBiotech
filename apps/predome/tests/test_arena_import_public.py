@@ -58,7 +58,7 @@ def test_imported_public_record_keeps_two_controls_original_time_and_formal_scop
     overview = c.get('/api/arena/public')
     assert overview.status_code == 200
     value = overview.json()
-    assert value['version'] == 'arena-clinical-public-1.3'
+    assert value['version'] == 'arena-clinical-public-1.4'
     assert value['current_cohort_id'] == 'existing-formal-season'
     pilot = next(v for v in value['cohorts'] if v['id'] == sample['payload']['source_cohort_id'])
     assert pilot['kind'] == 'registered_patent_pair_pilot'

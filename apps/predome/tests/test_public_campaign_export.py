@@ -132,12 +132,15 @@ def test_report_rebuild_is_stable_after_canonical_json_sorts_registry_fields(rec
     assert export.report_text(record)==export.report_text(json.loads(export.canonical(record)))
 
 
-def real_public_record(tmp_path, monkeypatch, state, label='success'):
+def real_public_record(tmp_path, monkeypatch, state, label='success', *, evidence_locations=None):
     """Actual four-model ledger and public API; no provider or live-state access."""
     raw,slots=trial_spec()
     for model in ('C','D'):
         slot=deepcopy(slots[0]);slot.update(model_id=model,requested_model=model+'-fixed')
         slots.append(slot)
+    if evidence_locations is not None:
+        for slot in slots:
+            slot['packet']['evidence'][0].update(deepcopy(evidence_locations))
     ledger=ArenaLedger(tmp_path/'runtime')
     ids=ledger.register('c1',[raw],slots,{'season_kind':'registered_12_project_season'})
     for ident,probability in zip(ids,(.8,.2,.6,.4)):
@@ -178,6 +181,38 @@ def test_actual_ledger_public_record_exports_exact_review_state_without_writes(t
             assert ('Formal binary scoring eligibility: Yes.' in report)==(label in ('success','failure'))
             assert record['result']['label']==label
     assert ledger.events()==before
+
+
+def test_actual_ledger_locations_survive_public_record_campaign_json_and_report(tmp_path,monkeypatch):
+    locations={'page_references':[3,8],'source_anchor':'Synthetic section 4.2 / Table 3',
+               'document_version':'Synthetic protocol v2 / 2020-01-01'}
+    ledger,before,index,record,client=real_public_record(tmp_path,monkeypatch,'pending',evidence_locations=locations)
+    assert record['version']=='arena-clinical-public-1.4'
+    for run in record['runs']:
+        assert {key:run['sources'][0][key] for key in locations}==locations
+    raw,_=export.bundle(index,lambda path:client.get(path).json())
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        assert json.loads(archive.read('records/target-test.json'))==record
+        report=archive.read('reports/target-test.md').decode()
+        assert 'Recorded pages: 3, 8.' in report
+        assert 'Source anchor: '+locations['source_anchor'] in report
+        assert 'Document version: '+locations['document_version'] in report
+        assert 'Locations are frozen evidence-card metadata' in report
+        assert '#page=' not in report and 'PDF pages' not in report
+    assert ledger.events()==before
+
+
+@pytest.mark.parametrize('field,value',[
+    ('page_references',[1,1]),('page_references',[True]),('page_references','2'),
+    ('source_anchor','anchor\nnext'),('document_version',''),
+    ('source_anchor','sk-'+'S'*32),('document_version','-----BEGIN OPENSSH PRIVATE KEY-----'),
+])
+def test_campaign_rejects_invalid_and_credential_like_locations(records,field,value):
+    index,data,_,fetch=records
+    data['fixture-0']['runs'][0]['sources']=[{'id':'synthetic',field:value}]
+    before=deepcopy(data)
+    with pytest.raises(ValueError):export.bundle(index,fetch)
+    assert data==before
 
 
 @pytest.mark.parametrize('fault',['false_eligibility','raw_adjudicated','leaked_label','fake_hit',
@@ -248,16 +283,50 @@ def test_current_calendar_export_rejects_unapproved_or_unsafe_contract(records,c
     with pytest.raises(ValueError):export.bundle(deepcopy(index),fetch)
 
 
-@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION,export.CALENDAR_VERSION])
+@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION,export.CALENDAR_VERSION,export.RETURNED_JUDGMENT_VERSION])
 def test_old_record_contracts_are_only_offline_verification_inputs(records,version):
     index,data,_,fetch=records
     record=data['fixture-0'];record['version']=version
-    record['consensus']=public_consensus(record['runs'],legacy=True)
+    record['consensus']=public_consensus(record['runs'],legacy=version!=export.RETURNED_JUDGMENT_VERSION)
     record['target']['consensus']=deepcopy(record['consensus'])
     with pytest.raises(ValueError,match='verification-only'):export.bundle(index,fetch)
     assert export.validate_record(record,record['target'],allow_legacy=True) is False
     record['target']['current_readout']=synthetic_current_readout()
-    if version==export.CALENDAR_VERSION:
+    if version in (export.CALENDAR_VERSION,export.RETURNED_JUDGMENT_VERSION):
         assert export.validate_record(record,record['target'],allow_legacy=True) is False
     else:
         with pytest.raises(ValueError,match='Legacy records'):export.validate_record(record,record['target'],allow_legacy=True)
+
+
+@pytest.mark.parametrize('version',[export.LEGACY_VERSION,export.PREVIOUS_VERSION,export.CALENDAR_VERSION,export.RETURNED_JUDGMENT_VERSION])
+def test_campaign_legacy_source_schema_cannot_gain_new_location_fields(records,version):
+    _,data,_,_=records
+    record=data['fixture-0'];record['version']=version
+    record['consensus']=public_consensus(record['runs'],legacy=version!=export.RETURNED_JUDGMENT_VERSION)
+    record['target']['consensus']=deepcopy(record['consensus'])
+    record['runs'][0]['sources']=[{'id':'synthetic','page_references':[2]}]
+    with pytest.raises(ValueError,match='Unknown source metadata'):
+        export.validate_record(record,record['target'],allow_legacy=True)
+
+
+@pytest.mark.parametrize('calendar,expected_hash,expected_bytes',[
+    (False,'0d9d442056c787c56f1203a46e101dc74e5fecdf3065e2eb27b5de810913e40d',1710),
+    (True,'85b9ff66cc64d9b765233ccc652618c7e3f3c7cbcb633926e95349820677bc6a',2353),
+])
+def test_legacy_13_report_bytes_match_pre_location_producer(records,calendar,expected_hash,expected_bytes):
+    """Pinned from a985543's actual report producer on these synthetic records."""
+    _,data,_,_=records
+    record=deepcopy(data['fixture-0']);record['version']=export.RETURNED_JUDGMENT_VERSION
+    if calendar:record['target']['current_readout']=synthetic_current_readout()
+    raw=export.report_text(record)
+    assert len(raw)==expected_bytes and export.digest(raw)==expected_hash
+
+
+def test_legacy_13_cannot_use_pre_13_assigned_agreement_rule(records):
+    _,data,_,_=records
+    record=data['fixture-0'];record['version']=export.RETURNED_JUDGMENT_VERSION
+    assert export.validate_record(record,record['target'],allow_legacy=True) is False
+    record['consensus']=public_consensus(record['runs'],legacy=True)
+    record['target']['consensus']=deepcopy(record['consensus'])
+    with pytest.raises(ValueError,match='consensus'):
+        export.validate_record(record,record['target'],allow_legacy=True)

@@ -2,6 +2,7 @@
 from copy import deepcopy
 import hashlib
 import json
+from pathlib import Path
 
 import httpx
 import pytest
@@ -289,7 +290,10 @@ def test_reported_review_output_over_stage_budget_stops_before_second_call():
     assert result['error_code'] == 'agent_stage_output_budget_exceeded'
 
 
-def test_real_provider_adapter_interface_with_mock_transport_only(monkeypatch, tmp_path):
+@pytest.mark.parametrize('locations', [{}, {'page_references': [9, 10],
+    'source_anchor': 'Table2 primary estimand', 'document_version': 'SAP2023-09-18'},
+    {'page_references': [], 'source_anchor': None, 'document_version': None}])
+def test_real_provider_adapter_interface_with_mock_transport_only(monkeypatch, tmp_path, locations):
     """Exercise both real adapter entrypoints while prohibiting live transport."""
     # Match production identifier syntax, including version dots.
     ids = ('kimi-k3', 'deepseek-v4.1-flash')
@@ -303,10 +307,15 @@ def test_real_provider_adapter_interface_with_mock_transport_only(monkeypatch, t
     calls = []
     def handler(request):
         body = json.loads(request.content); calls.append(body)
+        actual = json.loads(body['messages'][1]['content'])
+        sent = actual['evidence'][0]
+        assert {key: sent[key] for key in ('page_references', 'source_anchor', 'document_version') if key in sent} == locations
+        assert sent['text'] == source['evidence'][0]['text']
+        assert sent['source_sha256'] == source['evidence'][0]['source_sha256']
+        assert b'LEAKED-LOCATION-EXTRA' not in request.content
         if body['messages'][0]['content'] == providers.REVIEW_PROMPT:
             answer = review_value()
         else:
-            actual = json.loads(body['messages'][1]['content'])
             assert actual['structured_evidence_review'] == review_value()
             answer = {'status':'predicted','probability':.57,'target_definition':packet()['target']['success_definition'],
                 'reasoning':'来源证据有限，尚待结果裁定。','evidence_ids':['phase2'],'supporting_evidence_ids':[],
@@ -321,10 +330,79 @@ def test_real_provider_adapter_interface_with_mock_transport_only(monkeypatch, t
     monkeypatch.setattr(providers.httpx,'Client',mock_client)
     configured = providers.list_models()
     agent = svc.make_agent_spec('agent-kimi-deepseek', *ids)
-    contract = svc.freeze_agent_contract(agent,packet(),budget(),configured)
-    result = svc.run_agent(agent,packet(),budget=budget(),models=configured,frozen_contract=contract)
+    source = packet()
+    source['evidence'][0].update(locations, raw_location_details={'prompt': 'LEAKED-LOCATION-EXTRA'})
+    before = deepcopy(source)
+    contract = svc.freeze_agent_contract(agent,source,budget(),configured)
+    result = svc.run_agent(agent,source,budget=budget(),models=configured,frozen_contract=contract)
     assert len(calls) == 2 and result['status'] == 'predicted' and result['probability'] == .57
     assert result['prompt_sha256'] == contract['expected_prompt_sha256']
     assert [s['returned_model'] for s in result['agent_trace']['stages']] == [name+'-v1' for name in ids]
     assert result['cost_amount'] is None and 'NEVER-EXPORT-THOUGHT' not in providers.canonical(result)
     assert result['cost_basis'] == 'unpriced'
+    assert source == before and result['clinical_prediction_validated'] is False
+    assert result['input_sha256'] == contract['expected_provider_input_sha256']
+    assert result['agent_trace']['stages'][0]['input_sha256'] == contract['expected_provider_input_sha256']
+    assert result['adapter_version'] == 'arena-agents-1.2.0'
+
+
+def test_frozen_lookup_returns_detached_locations_without_normalizing_source_page_numbering():
+    source = packet()
+    source['evidence'][0].update(page_references=[20, 9], source_anchor='Printed table2', document_version=None)
+    clean = providers._packet(source)
+    tools = svc.FrozenEvidenceTools(clean, 3)
+    found = tools.call(svc.TOOLS[1], evidence_id='phase2')
+    assert found['page_references'] == [20, 9] and found['document_version'] is None
+    found['page_references'].append(99)
+    again = tools.call(svc.TOOLS[1], evidence_id='phase2')
+    assert again['page_references'] == source['evidence'][0]['page_references'] == [20, 9]
+    assert tools.trace[0]['result_sha256'] == tools.trace[1]['result_sha256']
+
+
+@pytest.mark.parametrize('field,value', [('page_references', [10]),
+    ('source_anchor', 'Different printed table'), ('document_version', 'Amendment2')])
+def test_changed_location_requires_new_agent_contract_before_either_provider_call(field, value):
+    source = packet()
+    source['evidence'][0].update(page_references=[9], source_anchor='Printed table', document_version='Amendment1')
+    frozen = svc.freeze_agent_contract(spec(), source, budget(), models())
+    changed = deepcopy(source)
+    changed['evidence'][0][field] = value
+    current = svc.freeze_agent_contract(spec(), changed, budget(), models())
+    assert current['expected_provider_input_sha256'] != frozen['expected_provider_input_sha256']
+    assert current['expected_prompt_sha256'] == frozen['expected_prompt_sha256']
+    result, calls = execute(evidence=changed, frozen=frozen)
+    assert result['error_code'] == 'agent_frozen_contract_changed' and calls == []
+    assert result['agent_calls_dispatched'] == 0
+
+
+@pytest.mark.parametrize('metadata', [{'page_references': [True]}, {'source_anchor': 'PRIVATE\nINSTRUCTION'},
+    {'document_version': {'raw_prompt': 'PRIVATE-INSTRUCTION'}}])
+def test_invalid_locations_stop_agent_with_fixed_code_and_untouched_frozen_source(metadata):
+    frozen = svc.freeze_agent_contract(spec(), packet(), budget(), models())
+    source = packet()
+    source['evidence'][0].update(metadata)
+    before = deepcopy(source)
+    with pytest.raises(svc.AgentContractError, match='^invalid_evidence_location$'):
+        svc.freeze_agent_contract(spec(), source, budget(), models())
+    result, calls = execute(evidence=source, frozen=frozen)
+    assert calls == [] and result['agent_calls_dispatched'] == 0
+    assert result['error_code'] == 'invalid_evidence_location' and result['probability'] is None
+    assert 'PRIVATE' not in providers.canonical(result)
+    assert source == before
+
+
+def test_location_helper_only_byte_change_invalidates_registered_agent_without_any_call(tmp_path, monkeypatch):
+    provider_path = Path(providers.__file__)
+    for name in ('arena_providers.py', 'arena_attempt_diagnostics.py', 'arena_evidence_locations.py'):
+        (tmp_path / name).write_bytes(provider_path.with_name(name).read_bytes())
+    frozen = svc.freeze_agent_contract(spec(), packet(), budget(), models())
+    monkeypatch.setattr(providers, '__file__', str(tmp_path / 'arena_providers.py'))
+    assert svc.freeze_agent_contract(spec(), packet(), budget(), models()) == frozen
+    helper = tmp_path / 'arena_evidence_locations.py'
+    helper.write_bytes(helper.read_bytes() + b'\n# Synthetic local helper-only version change\n')
+    current = svc.freeze_agent_contract(spec(), packet(), budget(), models())
+    assert current['expected_provider_input_sha256'] == frozen['expected_provider_input_sha256']
+    assert current['expected_prompt_sha256'] == frozen['expected_prompt_sha256']
+    assert current['component_implementation_sha256'] != frozen['component_implementation_sha256']
+    result, calls = execute(frozen=frozen)
+    assert calls == [] and result['error_code'] == 'agent_frozen_contract_changed'

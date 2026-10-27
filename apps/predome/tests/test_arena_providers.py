@@ -200,6 +200,84 @@ def test_packet_projection_excludes_peer_forecasts_and_actual_results(monkeypatc
     assert b'LEAKED-' not in calls[0].content
 
 
+def evidence_locations():
+    return {'page_references': [9, 10], 'source_anchor': 'Table2 primary estimand',
+            'document_version': 'SAP2023-09-18'}
+
+
+@pytest.mark.parametrize('provider', ['openai', 'openai_compatible', 'deepseek', 'anthropic', 'gemini'])
+@pytest.mark.parametrize('workflow', ['single_pass', 'evidence_review', 'review_only'])
+def test_recorded_locations_survive_actual_native_review_and_forecast_payloads(monkeypatch, tmp_path, provider, workflow):
+    configure(monkeypatch, tmp_path, provider)
+    stages = [compact_review()] if workflow == 'review_only' else [compact_review(), answer()] if workflow == 'evidence_review' else [answer()]
+    responses = iter(stages)
+    calls = transport(monkeypatch, lambda request: httpx.Response(200, json=envelope(provider, next(responses))))
+    original = packet()
+    original['evidence'][0].update(evidence_locations(), source_sha256='a' * 64,
+        pdf_page_1_based=9, text='Same source text; recorded page numbering remains the source numbering.',
+        raw_prompt='LEAKED-PRIVATE-INSTRUCTION', location_details={'secret': 'LEAKED-INTERNAL-STRUCTURE'},
+        page_numbering_inference='LEAKED-UNSUPPORTED-SCHEME')
+    before = deepcopy(original)
+    result = svc.forecast('fixture', original, workflow=workflow)
+    assert result['status'] == ('reviewed' if workflow == 'review_only' else 'predicted')
+    assert len(calls) == len(stages) and original == before
+    for request in calls:
+        sent = request_data(request, provider)
+        item = sent['evidence'][0]
+        assert {key: item[key] for key in evidence_locations()} == evidence_locations()
+        assert item['pdf_page_1_based'] == 9 and item['source_sha256'] == 'a' * 64
+        assert item['text'] == before['evidence'][0]['text']
+        assert b'LEAKED-' not in request.content
+        assert not any(key in item for key in ('human_review_count', 'clinical_prediction_validated', 'review_status'))
+    assert result['input_sha256'] == svc.digest(svc._packet(original))
+    assert result['clinical_prediction_validated'] is False
+
+
+@pytest.mark.parametrize('metadata', [{'page_references': []}, {'page_references': None},
+    {'source_anchor': None, 'document_version': None},
+    {'page_references': None, 'source_anchor': None, 'document_version': None}])
+def test_explicit_empty_and_null_locations_remain_present_without_new_defaults(monkeypatch, tmp_path, metadata):
+    configure(monkeypatch, tmp_path)
+    calls = transport(monkeypatch, lambda request: httpx.Response(200, json=envelope('openai')))
+    original = packet()
+    original['evidence'][0].update(metadata)
+    result = svc.forecast('fixture', original)
+    sent = request_data(calls[0])['evidence'][0]
+    assert {key: sent[key] for key in evidence_locations() if key in sent} == metadata
+    assert result['status'] == 'predicted'
+
+
+@pytest.mark.parametrize('workflow', ['single_pass', 'review_only', 'evidence_review'])
+@pytest.mark.parametrize('field,value', [('page_references', [True]), ('page_references', [1, 1]),
+    ('page_references', list(range(1, 102))), ('page_references', [10001]),
+    ('source_anchor', 'LEAKED-SECRET\nDirective'), ('source_anchor', 'x' * 1001),
+    ('document_version', {'prompt': 'LEAKED-SECRET'}), ('document_version', '')])
+def test_invalid_locations_fail_with_fixed_error_before_any_transport(monkeypatch, tmp_path, workflow, field, value):
+    configure(monkeypatch, tmp_path)
+    calls = transport(monkeypatch, lambda request: pytest.fail('Invalid locations must never reach transport'))
+    original = packet()
+    original['evidence'][0][field] = value
+    before = deepcopy(original)
+    result = svc.forecast('fixture', original, workflow=workflow)
+    assert result['error_code'] == 'invalid_evidence_location'
+    assert result['status'] == 'failed' and result['probability'] is None
+    assert result['attempts'] == [] and calls == [] and original == before
+    assert 'LEAKED-SECRET' not in json.dumps(result)
+
+
+def test_location_projection_is_detached_and_never_overrides_eligibility(monkeypatch, tmp_path):
+    original = packet()
+    original['evidence'][0].update(evidence_locations())
+    clean = svc._packet(original)
+    clean['evidence'][0]['page_references'].append(99)
+    assert original['evidence'][0]['page_references'] == [9, 10]
+    configure(monkeypatch, tmp_path)
+    calls = transport(monkeypatch, lambda request: pytest.fail('Locations are not a source/review approval'))
+    original['evidence'][0]['eligible_for_forecast'] = False
+    result = svc.forecast('fixture', original)
+    assert result['error_code'] == 'evidence_not_eligible' and calls == []
+
+
 def review_metadata():
     return {'review_status': 'verified', 'review_basis': 'two_agent_visual_source_check',
             'human_review_count': 0, 'review_receipt': 'a' * 64,
@@ -246,8 +324,8 @@ def test_absent_provenance_preserves_legacy_request_and_does_not_default_review(
     assert not (set(review_metadata()) & set(sent['evidence'][0]))
     # Input and prompt remain exact legacy fixtures. Request-body hashes use a
     # new adapter version; reconstruct the old wrapper only to compare content.
-    assert result['adapter_version'] == 'arena-providers-1.2.0'
-    assert result['workflow_version'] == 'arena-providers-1.2.0:single_pass'
+    assert result['adapter_version'] == 'arena-providers-1.3.0'
+    assert result['workflow_version'] == 'arena-providers-1.3.0:single_pass'
     assert result['input_sha256'] == 'e334018da83ffdd7d507e483ec11172105948fcce850391156cae3c006e511ae'
     assert result['prompt_sha256'] == '72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b'
     body = json.loads(calls[0].content)
@@ -494,7 +572,7 @@ def test_explicit_stage_limits_across_native_and_gateway_protocols(monkeypatch,t
     calls=transport(monkeypatch,lambda r:httpx.Response(200,json=next(responses)))
     result=svc.forecast('fixture',packet(),workflow='evidence_review',budget=stage_budget())
     assert result['status']=='predicted' and result['workflow_complete'] is True and len(calls)==2
-    assert result['adapter_version']=='arena-providers-1.2.0'
+    assert result['adapter_version']=='arena-providers-1.3.0'
     assert result['evidence_review_sha256']==svc.digest(compact_review())
     assert result['budget']['max_total_output_tokens']==7168
     for i,(tokens,seconds) in enumerate([(4096,120),(3072,90)]):
@@ -925,6 +1003,23 @@ def test_diagnostics_preserve_known_subtotal_when_second_stage_http_usage_is_unk
 def test_shared_diagnostic_implementation_is_in_future_contract_hash_without_import_io():
     provider_path = Path(svc.__file__)
     expected = svc.digest({'provider': hashlib.sha256(provider_path.read_bytes()).hexdigest(),
-        'attempt_diagnostics': hashlib.sha256(provider_path.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest()})
+        'attempt_diagnostics': hashlib.sha256(provider_path.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest(),
+        'evidence_locations': hashlib.sha256(provider_path.with_name('arena_evidence_locations.py').read_bytes()).hexdigest()})
     assert svc.provider_implementation_sha256() == expected
     assert svc.provider_implementation_sha256() != hashlib.sha256(provider_path.read_bytes()).hexdigest()
+
+
+def test_helper_only_change_updates_future_provider_contract_and_keeps_diagnostics_bound(tmp_path, monkeypatch):
+    original = Path(svc.__file__)
+    for name in ('arena_providers.py', 'arena_attempt_diagnostics.py', 'arena_evidence_locations.py'):
+        (tmp_path / name).write_bytes(original.with_name(name).read_bytes())
+    baseline = svc.provider_implementation_sha256()
+    monkeypatch.setattr(svc, '__file__', str(tmp_path / 'arena_providers.py'))
+    assert svc.provider_implementation_sha256() == baseline
+    helper = tmp_path / 'arena_evidence_locations.py'
+    helper.write_bytes(helper.read_bytes() + b'\n# Synthetic local helper-only change\n')
+    changed = svc.provider_implementation_sha256()
+    assert changed != baseline
+    diagnostic = tmp_path / 'arena_attempt_diagnostics.py'
+    diagnostic.write_bytes(diagnostic.read_bytes() + b'\n# Synthetic local diagnostic-only change\n')
+    assert svc.provider_implementation_sha256() not in (baseline, changed)

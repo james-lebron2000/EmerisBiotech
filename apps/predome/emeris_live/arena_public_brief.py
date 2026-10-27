@@ -14,11 +14,13 @@ from urllib.parse import quote
 import zipfile
 
 from .arena_public_contract import credential_like, public_url, validate_current_readout, validate_consensus
+from .arena_evidence_locations import validate_locations
 
 
 SCHEMA_VERSION = 'predome-public-clinical-brief-1'
-RECORD_VERSION = 'arena-clinical-public-1.3'
-PREVIOUS_RECORD_VERSION = 'arena-clinical-public-1.2'
+RECORD_VERSION = 'arena-clinical-public-1.4'
+PREVIOUS_RECORD_VERSION = 'arena-clinical-public-1.3'
+CALENDAR_RECORD_VERSION = 'arena-clinical-public-1.2'
 PUBLIC_ORIGIN = 'https://8.148.145.28'
 ROOT_FIELDS = {'version', 'target', 'runs', 'consensus', 'sources', 'evidence', 'result', 'public_policy'}
 TARGET_FIELDS = {'id', 'cohort_id', 'trial_name', 'nct_id', 'drug', 'sponsor', 'indication',
@@ -28,7 +30,9 @@ TARGET_FIELDS = {'id', 'cohort_id', 'trial_name', 'nct_id', 'drug', 'sponsor', '
 RUN_FIELDS = {'id', 'target_id', 'cohort_id', 'model_id', 'requested_model', 'scope', 'track', 'condition',
     'generated_at_utc', 'locked_at_utc', 'model_version', 'status', 'predicted_outcome', 'probability',
     'confidence', 'calibration_status', 'brief_reason', 'reason', 'sources', 'match', 'match_status'}
-SOURCE_FIELDS = {'id', 'title', 'source_url', 'source_snapshot_url', 'publication_date', 'kind', 'page'}
+LOCATION_FIELDS = {'page_references', 'source_anchor', 'document_version'}
+LEGACY_SOURCE_FIELDS = {'id', 'title', 'source_url', 'source_snapshot_url', 'publication_date', 'kind', 'page'}
+SOURCE_FIELDS = LEGACY_SOURCE_FIELDS | LOCATION_FIELDS
 READOUT_FIELDS = {'label', 'start', 'end', 'precision', 'source_url', 'source_title', 'source_granularity', 'source_note'}
 DESIGN_FIELDS = {'allocation', 'intervention_model', 'masking', 'primary_purpose', 'enrollment'}
 RESULT_FIELDS = {'status', 'review_status', 'scoring_eligible', 'label', 'first_public_at', 'source_url',
@@ -73,12 +77,14 @@ def _scalars(value):
         raise ValueError('Unsupported public clinical value')
 
 
-def _sources(value):
+def _sources(value, *, allow_locations):
     if not isinstance(value, list):
         raise ValueError('A public source list is required')
     for source in value:
-        _object(source, SOURCE_FIELDS)
-        _flat(source)
+        _object(source, SOURCE_FIELDS if allow_locations else LEGACY_SOURCE_FIELDS)
+        _flat(source, ('page_references',) if allow_locations else ())
+        if allow_locations:
+            validate_locations(source)
         if any(source.get(key) is not None and _safe_url(source[key]) is None
                for key in ('source_url', 'source_snapshot_url')):
             raise ValueError('A source link does not satisfy the public URL policy')
@@ -88,7 +94,7 @@ def validate_record(record, *, allow_legacy=False):
     """Validate the export boundary; forecast/score calculations remain upstream."""
     _object(record, ROOT_FIELDS)
     if (set(record) != ROOT_FIELDS or record['version'] != RECORD_VERSION
-            and not (allow_legacy and record['version'] == PREVIOUS_RECORD_VERSION)):
+            and not (allow_legacy and record['version'] in (PREVIOUS_RECORD_VERSION, CALENDAR_RECORD_VERSION))):
         raise ValueError('Current sanitized public record required')
     target = _object(record['target'], TARGET_FIELDS)
     _flat(target, ('design', 'readout', 'current_readout', 'sources', 'result', 'consensus'))
@@ -109,7 +115,7 @@ def validate_record(record, *, allow_legacy=False):
         if design.get('enrollment') is not None:
             _flat(_object(design['enrollment'], {'count', 'type'}))
     for source_list in (record['sources'], record['evidence'], target.get('sources')):
-        _sources(source_list)
+        _sources(source_list, allow_locations=record['version'] == RECORD_VERSION)
     if record['sources'] != record['evidence'] or record['sources'] != target['sources']:
         raise ValueError('Public sources changed within the selected record')
     consensus = _object(record['consensus'], CONSENSUS_FIELDS)
@@ -160,7 +166,7 @@ def validate_record(record, *, allow_legacy=False):
                 or run.get('predicted_outcome') not in ('Success', 'Failure', 'Uncertain')):
             raise ValueError('Assignments must share the exact public clinical-only question')
         identifiers.add(run['id'])
-        _sources(run.get('sources'))
+        _sources(run.get('sources'), allow_locations=record['version'] == RECORD_VERSION)
         if run.get('status') != 'predicted' and run['predicted_outcome'] != 'Uncertain':
             raise ValueError('A missing or failed prediction cannot become a directional judgment')
         if run.get('match') is not None:
@@ -171,7 +177,7 @@ def validate_record(record, *, allow_legacy=False):
                 raise ValueError('The public brief cannot assign an unsupported prediction match')
         elif run.get('match_status') not in ('not_evaluable', 'historical_replay'):
             raise ValueError('A missing public comparison cannot become a hit or miss')
-    validate_consensus(consensus, runs, legacy=record['version'] == PREVIOUS_RECORD_VERSION)
+    validate_consensus(consensus, runs, legacy=record['version'] == CALENDAR_RECORD_VERSION)
     _scalars(record)
     raw = canonical(record)
     if len(raw) > MAX_RECORD_BYTES:
@@ -250,6 +256,12 @@ def _source_list(sources, empty):
             metadata.append('Published '+_text(source['publication_date']))
         if type(source.get('page')) is int and source['page'] > 0:
             metadata.append('Page '+str(source['page']))
+        if source.get('page_references'):
+            metadata.append('Recorded pages '+', '.join(str(page) for page in source['page_references']))
+        if source.get('source_anchor'):
+            metadata.append('Source anchor '+source['source_anchor'])
+        if source.get('document_version'):
+            metadata.append('Document version '+source['document_version'])
         suffix = ' · '+' · '.join(metadata) if metadata else ''
         links = [(name, _safe_url(source.get(key))) for name, key in
                  (('Original source', 'source_url'), ('Captured snapshot', 'source_snapshot_url'))]
@@ -324,6 +336,8 @@ def build_brief(record, *, cohort_kind=None, exported_at_utc=None):
     md += ['', '## AI Clinical Trial Predictions', '', '| '+' | '.join(headers)+' |', '| '+' | '.join('---' for _ in headers)+' |']
     md.extend('| '+' | '.join(_md(value) for value in row)+' |' for row in rows)
     reference_note = 'These are references recorded for each model, not an independent claim-by-claim support review. A citation does not establish that a judgment is correct.'
+    if any(any(source.get(key) for key in LOCATION_FIELDS) for source in record['sources']):
+        reference_note += ' Locations are frozen evidence-card metadata; they do not establish that a model read an original document or that the recorded location was scientifically verified.'
     md += ['', calibration, '', '### Model rationales and recorded references', '', reference_note]
     html_models = []
     for run, row in zip(runs, rows):

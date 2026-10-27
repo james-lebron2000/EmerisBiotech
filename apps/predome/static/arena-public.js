@@ -146,9 +146,24 @@
     const note=replay?'Historical replay · excluded from prospective standings':!reported?'Forecasts recorded. Rankings await verified outcomes.':adjudicated?'Exact endpoint result · independently accepted for comparison':waiting?'Independent review pending · excluded from scoring':'No scores until the exact endpoint is independently reviewed.';
     return `<div class="arena-reveal arena-reveal-${stage}" data-reveal-stage="${stage}"><span class="arena-reveal-symbol" aria-hidden="true">${!reported?'◷':adjudicated?'✓':'◌'}</span><div><strong>${label}</strong><span>${note}</span></div></div>`;
   }
+  function referenceText(value,limit){
+    return typeof value==='string'&&value.trim()&&[...value].length<=limit&&!/[\p{Cc}\p{Cf}\p{Cs}\u2028\u2029]/u.test(value)&&!/(?<![A-Za-z])sk-[A-Za-z0-9_-]{24,}|-----BEGIN .*PRIVATE KEY-----/.test(value)?value:'';
+  }
+  function referenceMetadata(source){
+    const pages=source.page_references,validPages=Array.isArray(pages)&&pages.length<=100&&pages.every(p=>Number.isInteger(p)&&p>=1&&p<=10000)&&new Set(pages).size===pages.length;
+    const recordedPages=validPages&&pages.length?pages.join(', '):'',page=Number.isInteger(source.page)&&source.page>0?source.page:null;
+    const section=referenceText(source.source_anchor,1000),version=referenceText(source.document_version,200),date=referenceText(source.publication_date,80),items=[];
+    if(recordedPages)items.push(['pages','Recorded pages: '+recordedPages]);
+    if(page!==null)items.push(['page','Recorded page: '+page]);
+    if(section)items.push(['section','Recorded section: '+section]);
+    if(!recordedPages&&page===null&&!section)items.push(['location-empty','Location not recorded']);
+    items.push([version?'version':'version-empty',version?'Document version: '+version:'Version not recorded']);
+    if(date)items.push(['date','Recorded date: '+date]);
+    return `<span class="public-reference-metadata">${items.map(([key,value])=>`<span data-reference-meta="${key}">${esc(value)}</span>`).join('')}</span>`;
+  }
   function recordedReferences(run){
     const sources=arr(run.sources).filter(source=>source&&typeof source==='object'&&!Array.isArray(source));
-    return `<div class="public-model-references"><h3>Recorded references</h3><p class="public-reference-note">References recorded with this model response; individual claims have not been independently verified.</p>${sources.length?`<ul>${sources.map(source=>{const links=[['Original source',source.source_url],['Captured snapshot',source.source_snapshot_url]].filter(([,url])=>safeURL(url));return `<li><span class="public-reference-title">${esc(str(source.title)||str(source.id)||'Untitled reference')}</span><span class="public-reference-links">${links.length?links.map(([label,url])=>link(url,label)).join(' · '):'No public link recorded.'}</span></li>`;}).join('')}</ul>`:'<p class="public-reference-empty">No references recorded for this response.</p>'}</div>`;
+    return `<div class="public-model-references"><h3>Recorded references</h3><p class="public-reference-note">References and locations recorded with this response; individual claims have not been independently verified. Location metadata is not proof that the model read the original.</p>${sources.length?`<ul>${sources.map(source=>{const links=[['Original source',source.source_url],['Captured snapshot',source.source_snapshot_url]].filter(([,url])=>safeURL(url));return `<li><span class="public-reference-title">${esc(referenceText(source.title,300)||referenceText(source.id,200)||'Untitled reference')}</span>${referenceMetadata(source)}<span class="public-reference-links">${links.length?links.map(([label,url])=>link(url,label)).join(' · '):'No public link recorded.'}</span></li>`;}).join('')}</ul>`:'<p class="public-reference-empty">No references recorded for this response.</p>'}</div>`;
   }
   function forecastTable(runs){
     const rows=[...runs].sort((a,b)=>safeModel(a).localeCompare(safeModel(b))),replay=state.detail?.target?.scope==='archived_research';

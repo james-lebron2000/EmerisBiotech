@@ -15,7 +15,7 @@ from . import arena_providers as providers
 from .arena_attempt_diagnostics import sanitize_diagnostics
 
 
-VERSION = 'arena-agents-1.1.0'
+VERSION = 'arena-agents-1.2.0'
 WORKFLOW = 'frozen_lookup_review_forecast'
 TOOLS = ('frozen_evidence.list', 'frozen_evidence.lookup')
 USAGE_FIELDS = ('input_tokens', 'output_tokens', 'reasoning_tokens', 'cache_read_input_tokens', 'cache_write_input_tokens')
@@ -130,7 +130,11 @@ def _components(spec, models):
 def _packet(packet):
     try:
         clean = providers._packet(packet)
-    except (ValueError, TypeError, providers.ProviderError):
+    except providers.ProviderError as error:
+        if str(error) == 'invalid_evidence_location':
+            raise AgentContractError('invalid_evidence_location') from None
+        raise AgentContractError('invalid_frozen_evidence_packet') from None
+    except (ValueError, TypeError):
         raise AgentContractError('invalid_frozen_evidence_packet') from None
     if any(not HASH.fullmatch(str(e.get('source_sha256'))) for e in clean['evidence']):
         raise AgentContractError('source_hash_required')

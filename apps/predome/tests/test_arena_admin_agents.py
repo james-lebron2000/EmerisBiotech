@@ -96,7 +96,7 @@ def test_agent_diagnostics_survive_trace_receipt_accounting_and_contract_rejecti
     def attach(value):value['attempts'][0]['diagnostics']=deepcopy(diagnostic)
     value,calls=execute_agent(change_review=attach,change_forecast=attach)
     assert len(calls)==2 and value['status']=='predicted'
-    assert arena_agents.VERSION=='arena-agents-1.1.0'
+    assert arena_agents.VERSION=='arena-agents-1.2.0'
     assert all(a['diagnostics']==diagnostic for a in value['attempts'])
     assert all(s['attempts'][0]['diagnostics']==diagnostic for s in value['agent_trace']['stages'])
     original=deepcopy(value)
@@ -164,12 +164,15 @@ def test_missing_historical_diagnostics_stay_missing_and_old_agent_cannot_execut
 
 
 @pytest.mark.parametrize('track',['same_evidence','open_agent'])
-def test_helper_only_change_rejects_registered_execution_before_start(tmp_path,monkeypatch,track):
+@pytest.mark.parametrize('helper_name',['arena_attempt_diagnostics.py','arena_evidence_locations.py'])
+def test_helper_only_change_rejects_registered_execution_before_start(tmp_path,monkeypatch,track,helper_name):
     admin=admin_module();models=[{k:v for k,v in m.items() if k!='api_key'} for m in agent_models()]
     monkeypatch.setattr(admin,'list_models',lambda:deepcopy(models))
-    provider_shadow=tmp_path/'arena_providers.py';helper_shadow=tmp_path/'arena_attempt_diagnostics.py'
+    provider_original=Path(arena_providers.__file__)
+    provider_shadow=tmp_path/'arena_providers.py';helper_shadow=tmp_path/helper_name
     provider_shadow.write_bytes(Path(arena_providers.__file__).read_bytes())
-    helper_shadow.write_bytes(Path(arena_providers.__file__).with_name(helper_shadow.name).read_bytes())
+    for name in ('arena_attempt_diagnostics.py','arena_evidence_locations.py'):
+        (tmp_path/name).write_bytes(provider_original.with_name(name).read_bytes())
     monkeypatch.setattr(arena_providers,'__file__',str(provider_shadow))
     target,slots=spec();slot=slots[0];slot.pop('workflow_version');slot['track']=track
     slot['model_id']='reviewer'

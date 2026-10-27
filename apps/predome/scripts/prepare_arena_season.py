@@ -58,6 +58,9 @@ def verify_sources(catalog, root):
 
 
 def prepare(catalog, root=ROOT, now=None, minimum_projects=12, workflow_version=None):
+    sys.path.insert(0, str(ROOT))
+    from emeris_live.arena_evidence_locations import validate_locations
+
     current = now or datetime.now(timezone.utc)
     sources = verify_sources(catalog, root)
     cutoff = instant(catalog['information_cutoff_utc'])
@@ -120,11 +123,15 @@ def prepare(catalog, root=ROOT, now=None, minimum_projects=12, workflow_version=
                 raise ValueError('Evidence snapshot was acquired after cutoff')
             if card.get('is_target_result') or card['kind'] not in ('trial_registry','clinical_prior','trial_protocol'):
                 raise ValueError('Target outcomes or unsupported evidence kind prohibited')
-            evidence.append({'id':card['id'],'kind':card['kind'],'title':card['title'],'text':card['text'],
+            item = {'id':card['id'],'kind':card['kind'],'title':card['title'],'text':card['text'],
                 'source_url':source['source_url'],'source_sha256':source['sha256'],'available_at':source['retrieved_at'],
                 'public_date':source.get('public_date'),'snapshot_kind':source['snapshot_kind'],'source_path':source['path'],
                 'page_references':card.get('page_references',[]),'source_anchor':card.get('source_anchor'),
-                'is_target_result':False,'human_review_count':0})
+                'is_target_result':False,'human_review_count':0}
+            if 'document_version' in card:
+                item['document_version'] = card['document_version']
+            item.update(validate_locations(item))
+            evidence.append(item)
         if not any(e['kind']=='trial_registry' for e in evidence) or not any(e['kind'] in ('clinical_prior','trial_protocol') for e in evidence):
             raise ValueError('Registry and bounded prior/protocol evidence both required')
         target['evidence_ids']=[e['id'] for e in evidence]

@@ -62,6 +62,59 @@ def test_prepares_four_equal_input_slots_without_execution(proposal):
     assert spec['protocol']['clinical_prediction_validated'] is False
 
 
+def test_recorded_locations_survive_preparation_and_actual_provider_projection(proposal):
+    from emeris_live import arena_providers
+
+    doc, _, _ = proposal
+    card = doc['candidates'][0]['evidence_cards'][1]
+    locations = {'page_references': [9, 11], 'source_anchor': 'Synthetic Table 2',
+                 'document_version': 'Synthetic SAP v2'}
+    card.update(deepcopy(locations))
+    original = deepcopy(doc)
+    spec, _ = prepare(proposal)
+    for slot in spec['slots']:
+        item = next(e for e in slot['packet']['evidence'] if e['id'] == 'prior')
+        assert {key: item[key] for key in locations} == locations
+        sent = arena_providers._packet(slot['packet'])
+        projected = next(e for e in sent['evidence'] if e['id'] == 'prior')
+        assert {key: projected[key] for key in locations} == locations
+        assert projected['text'] == card['text']
+        assert 'source_path' not in projected
+    assert doc == original
+    # The checked location is copied, never linked to the input catalog.
+    spec['slots'][0]['packet']['evidence'][1]['page_references'].append(12)
+    assert card['page_references'] == [9, 11]
+
+
+def test_locations_preserve_unknown_without_guessing_version_from_title(proposal):
+    doc, _, _ = proposal
+    card = doc['candidates'][0]['evidence_cards'][1]
+    card.update(title='Synthetic SAP v2, page 99', page_references=None,
+                source_anchor=None, document_version=None)
+    spec, _ = prepare(proposal)
+    item = spec['slots'][0]['packet']['evidence'][1]
+    assert all(item[key] is None for key in ('page_references', 'source_anchor', 'document_version'))
+    del card['document_version']
+    card['page_references'] = []
+    spec, _ = prepare(proposal)
+    item = spec['slots'][0]['packet']['evidence'][1]
+    assert item['page_references'] == [] and 'document_version' not in item
+
+
+@pytest.mark.parametrize('change', [
+    {'page_references': [True]}, {'page_references': [9, 9]},
+    {'page_references': ['9']}, {'source_anchor': 'Table 2\nRun command'},
+    {'document_version': {'version': 'v2'}}, {'document_version': ''},
+])
+def test_invalid_locations_are_rejected_during_offline_preparation(proposal, change):
+    doc, _, _ = proposal
+    doc['candidates'][0]['evidence_cards'][1].update(change)
+    original = deepcopy(doc)
+    with pytest.raises(ValueError):
+        prepare(proposal)
+    assert doc == original
+
+
 def test_duplicate_drug_project_rejected(proposal):
     doc,_,_=proposal
     extra=deepcopy(doc['candidates'][0]);extra['id']='other';extra['nct_id']='NCT87654321'

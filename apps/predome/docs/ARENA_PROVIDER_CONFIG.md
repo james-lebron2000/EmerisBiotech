@@ -97,6 +97,15 @@ forecasts, actual outcomes, profiles and arbitrary metadata are excluded. This
 reduces accidental leakage but cannot detect a future outcome embedded inside
 supplied evidence text, or exclude pretrained memory in retrospective tasks.
 
+Provider1.3.0 also preserves optional checked `page_references`, `source_anchor`
+and `document_version` in both evidence-review and forecast requests. Missing,
+null and empty-page-list values remain distinct. Recorded page numbers do not
+establish a universal PDF numbering scheme; no location or version is inferred.
+Invalid locations fail before transport. The shared standard-library contract
+and its raw implementation hash are included in new frozen execution identities.
+This does not establish source correctness or upgrade historical inputs. See
+[recorded evidence locations](RECORDED_EVIDENCE_LOCATIONS.md).
+
 `single_pass` makes one request. `evidence_review` makes a structured evidence
 review followed by a forecast using the same model and original evidence. Review
 findings must reference original evidence IDs. Both calls are retained, counted

@@ -18,9 +18,10 @@ from urllib.parse import urlsplit, quote
 import httpx
 
 from .arena_attempt_diagnostics import MAX_RESPONSE_BYTES, new_diagnostics, sanitize_diagnostics
+from .arena_evidence_locations import validate_locations
 
 
-VERSION = 'arena-providers-1.2.0'
+VERSION = 'arena-providers-1.3.0'
 MAX_CONFIG_BYTES = 65536
 MAX_PACKET_BYTES = 120000
 DEFAULT_TIMEOUT = 90
@@ -58,11 +59,13 @@ def digest(value):
 
 
 def provider_implementation_sha256():
-    """Freeze the provider and its diagnostic contract at registration time."""
+    """Freeze provider, diagnostics and evidence-location contracts at registration."""
     provider = Path(__file__)
     return digest({'provider': hashlib.sha256(provider.read_bytes()).hexdigest(),
                    'attempt_diagnostics': hashlib.sha256(
-                       provider.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest()})
+                       provider.with_name('arena_attempt_diagnostics.py').read_bytes()).hexdigest(),
+                   'evidence_locations': hashlib.sha256(
+                       provider.with_name('arena_evidence_locations.py').read_bytes()).hexdigest()})
 
 
 def _load_json(raw, *, diagnostics=None, failure_stage=None):
@@ -374,6 +377,10 @@ def _packet(packet):
                                     'publication_date', 'evidence_kind', 'section_type', 'publication_number',
                                     'pdf_page_1_based', 'example_id', 'source_sha256') if k in item}
         value.update(_evidence_review_metadata(item))
+        try:
+            value.update(validate_locations(item))
+        except ValueError:
+            raise ProviderError('invalid_evidence_location') from None
         projected.append(value)
     result = {'target': {k: target[k] for k in required}, 'evidence': projected, 'data_cutoff': cutoff_text}
     if len(canonical(result).encode()) > MAX_PACKET_BYTES:

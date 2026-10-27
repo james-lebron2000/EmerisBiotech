@@ -36,6 +36,7 @@ PRIVATE_CONFIGS = frozenset((Path('/etc/emeris-live.env'), Path('/etc/emeris-are
 FILES = frozenset((
     'emeris_live/main.py', 'emeris_live/patent_evidence.py', 'emeris_live/patent_identity.py', 'emeris_live/arena_metrics.py',
     'emeris_live/arena_providers.py', 'emeris_live/arena_attempt_diagnostics.py', 'emeris_live/arena_agents.py',
+    'emeris_live/arena_evidence_locations.py',
     'emeris_live/arena_api.py', 'emeris_live/arena_public.py', 'emeris_live/arena_public_contract.py',
     'emeris_live/arena_public_brief.py', 'emeris_live/arena_store.py', 'emeris_live/arena_report.py',
     'emeris_live/arena_review_auth.py', 'emeris_live/arena_review_api.py', 'emeris_live/arena_acquired.py',

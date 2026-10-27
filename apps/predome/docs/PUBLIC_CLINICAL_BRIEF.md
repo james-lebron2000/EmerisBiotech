@@ -17,7 +17,7 @@
 
 前瞻公开比较仅使用同一目标下的 `same_evidence / clinical_only` 条件；历史回放保留其原始范围说明。方向计数和多数判断保留所有 assigned 模型，技术失败、缺失或未执行记为 Uncertain；一个类别须超过全部 assigned 的半数才构成多数。未知校准的概率和置信度保持 N/A；未揭晓不标命中、不排名。混合结果、结果来源待核对、待独立科学接纳等状态保留各自的含义。
 
-公开记录 `arena-clinical-public-1.3` 将模型一致率与上述分母分开。只有 `predicted`、`abstain` 或 `abstained` 才算返回判断，合法 abstention 作为 Uncertain 判断参与；`agreement_denominator` 是返回判断数。至少两个返回判断时，`agreement` 为返回判断中最大方向类别的比例，否则为 null，报告展示 N/A。共同技术失败或共同未执行不能形成“100% 一致”；一致率也不是准确率、置信度或成功概率。
+公开记录自 `arena-clinical-public-1.3` 起将模型一致率与上述分母分开。只有 `predicted`、`abstain` 或 `abstained` 才算返回判断，合法 abstention 作为 Uncertain 判断参与；`agreement_denominator` 是返回判断数。至少两个返回判断时，`agreement` 为返回判断中最大方向类别的比例，否则为 null，报告展示 N/A。共同技术失败或共同未执行不能形成“100% 一致”；一致率也不是准确率、置信度或成功概率。
 
 例如四个 assigned 中两个模型返回 Success、另两个失败，多数判断仍为 Uncertain，方向计数为 Success 2 / Uncertain 2；一致率为返回的两项判断之间的 100%，并明确显示 returned judgments 2/4。四个失败时一致率为 N/A，返回数 0/4。投影、简报和 campaign 导出共用标准库中的统计与校验函数，防止摘要和 JSON 使用不同分母。
 
@@ -27,7 +27,9 @@
 
 JSON 快照和可读报告来自一次公开投影，避免在两次读取之间跨越结果审核轮次。原 `/api/arena/public/targets/{target_id}/record` 接口保持兼容；之后重新下载可能包含后来追加的公开结果审核，不能用后来的资料冒充更早的版本。
 
-四文件及清单字段合同保持兼容，公开 record 版本明确升至 1.3。以前生成的简报、哈希与原时间不改写。旧 1.2 brief record 可显式开启只读校验，不能作为新简报重新导出。campaign 外层仍为 `predome-public-launch-bundle-3`，因为文件和清单结构未变；验证器按 record 版本核验 1.2 的原分母或 1.3 的新分母，不混用版本。旧 1.0／1.1／1.2 campaign 可离线验证和重建原报告，不能创建新的导出或时间凭证。新下载内容与导出时间具有新的内容哈希。
+四文件及清单字段合同保持兼容，公开 record 当前为 1.4，新增[已记录来源位置与文档版本](RECORDED_EVIDENCE_LOCATIONS.md)。以前生成的简报、哈希与原时间不改写。旧 brief record 可显式开启只读校验，不能作为新简报重新导出。Campaign 外层仍为 `predome-public-launch-bundle-3`，文件和清单结构未变；验证器按 record 版本区分 1.2 的原分母与 1.3／1.4 的返回判断分母。旧 1.0–1.3 Campaign 可离线验证和重建原报告，不能创建新的导出或时间凭证。新下载内容与导出时间具有新的内容哈希。
+
+引用位置仅来自对应模型冻结包的元数据：`Recorded pages` 不统一表示 PDF 一基页号，章节和版本未提供就保持未知。报告不从文件名、标题或日期推断位置，不为旧模型添加“已读完整原件”的证明，也不改变引用支持审核或预测结果。
 
 报告只显示公开字段，不包含内部推理、原 Prompt、模型 API 配置、密钥、Token、私有审核身份或未公开数据。外部链接须符合公开 URL 规则，HTML 与 Markdown 内容按输出上下文转义。
 

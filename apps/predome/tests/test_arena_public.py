@@ -93,6 +93,55 @@ def test_allowlist_removes_internal_metadata_at_every_level(fixture):
     assert view['targets'][0]['phase'] is None and view['targets'][0]['design'] is None
 
 
+@pytest.mark.parametrize('locations',[
+    {'page_references':[3, 8], 'source_anchor':'Section 4.2 / Table 3', 'document_version':'Protocol v2 / 2020-01-01'},
+    {'page_references':None, 'source_anchor':None, 'document_version':None},
+    {},
+])
+def test_public_locations_are_only_recorded_metadata_without_inference_or_record_writes(fixture,locations):
+    client,frozen,_=fixture
+    frozen['runs'][0]['packet']['evidence'][0].update(deepcopy(locations))
+    before=deepcopy(frozen)
+    views=[client.get('/api/arena/public').json(),
+           client.get('/api/arena/public/targets/t1/record').json()]
+    for view in views:
+        source=view['runs'][0]['sources'][0]
+        for key in ('page_references','source_anchor','document_version'):
+            assert (key in source)==(key in locations)
+            if key in locations:assert source[key]==locations[key]
+        assert source['page'] is None
+        assert source['source_url']=='https://example.org/frozen-source'
+        assert view['runs'][0]['predicted_outcome']=='Success'
+        assert view['runs'][0]['generated_at_utc']==before['runs'][0]['generated_at_utc']
+    assert frozen==before
+
+
+@pytest.mark.parametrize('field,value',[
+    ('page_references',[3,3]),('page_references',[True]),('page_references',[0]),
+    ('page_references','3'),('page_references',list(range(1,102))),
+    ('source_anchor',''),('source_anchor','section\nprivate'),('source_anchor','x'*1001),
+    ('document_version','v1\x00secret'),('document_version','x'*201),
+    ('source_anchor','sk-'+'S'*32),('document_version','-----BEGIN OPENSSH PRIVATE KEY-----'),
+])
+def test_public_drops_invalid_or_credential_like_location_without_changing_prediction(fixture,field,value):
+    client,frozen,_=fixture
+    source=frozen['runs'][0]['packet']['evidence'][0]
+    source.update(page_references=[4],source_anchor='Section 4',document_version='Protocol v1')
+    source[field]=value
+    before=deepcopy(frozen)
+    for path in ('/api/arena/public','/api/arena/public/targets/t1/record'):
+        response=client.get(path)
+        assert response.status_code==200
+        view=response.json()
+        public_source=view['runs'][0]['sources'][0]
+        assert field not in public_source
+        for key in ('page_references','source_anchor','document_version'):
+            if key!=field:assert public_source[key]==source[key]
+        assert view['runs'][0]['predicted_outcome']=='Success'
+        assert view['runs'][0]['model_version']=='kimi-k3-fixed'
+    assert frozen==before
+
+
 @pytest.mark.parametrize('value,expected',[(0,'Failure'),(.49,'Failure'),(.5,'Uncertain'),(.51,'Success'),(1,'Success'),
     (None,'Uncertain'),(True,'Uncertain'),('0.8','Uncertain'),(float('nan'),'Uncertain'),(float('inf'),'Uncertain'),(-.1,'Uncertain'),(1.1,'Uncertain')])
 def test_direction_never_turns_invalid_or_uncalibrated_value_into_probability(value,expected):

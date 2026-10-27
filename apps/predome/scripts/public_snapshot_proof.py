@@ -85,7 +85,7 @@ def validate_bundle(raw):
         legacy=record['version']!=campaign.VERSION
         expected_versions={'predome-public-launch-bundle-1':(campaign.LEGACY_VERSION,),
             'predome-public-launch-bundle-2':(campaign.PREVIOUS_VERSION,),
-            campaign.BUNDLE_VERSION:(campaign.CALENDAR_VERSION,campaign.VERSION)}[m['schema_version']]
+            campaign.BUNDLE_VERSION:(campaign.CALENDAR_VERSION,campaign.RETURNED_JUDGMENT_VERSION,campaign.VERSION)}[m['schema_version']]
         if record['version'] not in expected_versions:raise ValueError('Public export and record versions differ')
         record_versions.add(record['version'])
         replay=campaign.validate_record(record,target,allow_legacy=legacy)

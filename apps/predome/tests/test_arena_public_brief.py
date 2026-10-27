@@ -87,7 +87,9 @@ def native_references(native):
             'source_url': 'https://example.org/synthetic-'+ident,
             'source_sha256': hashlib.sha256(ident.encode()).hexdigest(),
             'available_at': date+'T00:00:00+00:00', 'availability_date': date,
-            'kind': 'clinical_prior', 'page': page})
+            'kind': 'clinical_prior', 'page': page,
+            'page_references': [page, page + 1], 'source_anchor': 'Synthetic section '+ident,
+            'document_version': 'Synthetic v2, 2020-01-01'})
     third = deepcopy(slots[1])
     third.update(model_id='C', requested_model='C-fixed')
     slots.append(third)
@@ -160,7 +162,7 @@ def test_actual_ledger_agreement_contract_matches_api_json_brief_and_campaign(
     app=FastAPI();app.state.store=SimpleNamespace(path=root);app.include_router(public.router)
     client=TestClient(app);base='/api/arena/public/targets/'+target['id']
     record=client.get(base+'/record').json()
-    assert record['version']=='arena-clinical-public-1.3'
+    assert record['version']=='arena-clinical-public-1.4'
     consensus=record['consensus']
     assert consensus['assigned']==4 and consensus['counts']==counts and consensus['predicted_outcome']==majority
     assert consensus['agreement_denominator']==denominator and consensus['agreement']==agreement
@@ -196,10 +198,11 @@ def test_brief_and_campaign_reject_fabricated_agreement_denominators_and_majorit
     with pytest.raises(ValueError,match='consensus'):export.validate_record(record,record['target'])
 
 
-def test_old_brief_record_can_be_verified_but_not_exported_with_new_semantics(native):
+@pytest.mark.parametrize('version',[brief.PREVIOUS_RECORD_VERSION,brief.CALENDAR_RECORD_VERSION])
+def test_old_brief_record_can_be_verified_but_not_exported_with_new_semantics(native,version):
     record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
-    record['version']=brief.PREVIOUS_RECORD_VERSION
-    record['consensus']=public_contract.public_consensus(record['runs'],legacy=True)
+    record['version']=version
+    record['consensus']=public_contract.public_consensus(record['runs'],legacy=version==brief.CALENDAR_RECORD_VERSION)
     record['target']['consensus']=deepcopy(record['consensus'])
     assert brief.validate_record(record,allow_legacy=True)==brief.canonical(record)
     with pytest.raises(ValueError,match='Current sanitized'):brief.build_brief(record)
@@ -272,6 +275,15 @@ def test_native_api_groups_actual_citations_by_model_without_borrowing_global_so
         assert 'Synthetic uncited source' not in text and 'Synthetic uncited source' not in section
         assert 'Published '+date in text and 'Published '+date in section
         assert 'Page '+str(page) in text and 'Page '+str(page) in section
+        assert 'Recorded pages '+str(page)+', '+str(page+1) in text
+        assert 'Recorded pages '+str(page)+', '+str(page+1) in section
+        assert 'Source anchor Synthetic section '+source_id in text
+        assert 'Document version Synthetic v2, 2020-01-01' in text
+        source = runs[ident]['sources'][0]
+        assert source['page_references'] == [page, page+1]
+        assert source['source_anchor'] == 'Synthetic section '+source_id
+        assert source['document_version'] == 'Synthetic v2, 2020-01-01'
+        assert source['source_url'] == 'https://example.org/synthetic-'+source_id
         assert article['links'] == ['https://example.org/synthetic-'+source_id]
     failure = document.model_articles[sample.ids[2]]
     failure_text = ' '.join(failure['text'])
@@ -284,6 +296,8 @@ def test_native_api_groups_actual_citations_by_model_without_borrowing_global_so
     assert 'Synthetic Alpha evidence' not in failure_text + failure_markdown
     assert 'Synthetic Beta evidence' not in failure_text + failure_markdown
     assert 'not an independent claim-by-claim support review' in markdown
+    assert 'Locations are frozen evidence-card metadata' in markdown
+    assert 'do not establish that a model read an original document' in markdown
     assert sample.ledger.events() == before
 
 
@@ -300,7 +314,8 @@ def test_model_rationale_and_reference_titles_escape_both_contexts_and_keep_safe
         for source in sources:
             if source['id'] == 'e1':
                 source.update(title=synthetic_text, source_url=original_url,
-                              source_snapshot_url=snapshot)
+                              source_snapshot_url=snapshot, source_anchor=synthetic_text,
+                              document_version=synthetic_text)
     input_before = deepcopy(record)
     raw, _ = brief.build_brief(record)
     with zipfile.ZipFile(BytesIO(raw)) as bundle:
@@ -320,8 +335,34 @@ def test_model_rationale_and_reference_titles_escape_both_contexts_and_keep_safe
     assert '[Original source](https://example.org/synthetic-e1?range=%281%29&label=x%20y)' in section
     assert '[Captured snapshot](https://8.148.145.28' + snapshot + ')' in section
     assert 'Published 2020-01-02' in section and 'Page 3' in section
+    assert 'Recorded pages 3, 4' in section
+    assert 'Source anchor &lt;img' in html and 'Document version &lt;img' in html
+    assert '#page=' not in html+markdown
     assert record == input_before
     assert sample.ledger.events() == events_before
+
+
+@pytest.mark.parametrize('field,value',[
+    ('page_references',[1,1]),('page_references',[False]),('page_references','3'),
+    ('source_anchor','anchor\nnext'),('document_version',''),
+    ('source_anchor','sk-'+'S'*32),('document_version','-----BEGIN OPENSSH PRIVATE KEY-----'),
+])
+def test_brief_rejects_invalid_or_credential_like_locations_at_export_boundary(native_references,field,value):
+    record=native_references.client.get('/api/arena/public/targets/'+native_references.target['id']+'/record').json()
+    record['runs'][0]['sources'][0][field]=value
+    before=deepcopy(record)
+    with pytest.raises(ValueError):brief.build_brief(record)
+    assert record==before
+
+
+@pytest.mark.parametrize('version',[brief.PREVIOUS_RECORD_VERSION,brief.CALENDAR_RECORD_VERSION])
+def test_new_locations_cannot_be_injected_into_legacy_brief_record(native,version):
+    record=native.client.get('/api/arena/public/targets/'+native.target['id']+'/record').json()
+    record['version']=version
+    record['consensus']=public_contract.public_consensus(record['runs'],legacy=version==brief.CALENDAR_RECORD_VERSION)
+    record['target']['consensus']=deepcopy(record['consensus'])
+    record['runs'][0]['sources']=[{'id':'synthetic','page_references':[2]}]
+    with pytest.raises(ValueError,match='Unexpected fields'):brief.validate_record(record,allow_legacy=True)
 
 
 def test_predicted_model_with_missing_summary_keeps_its_own_references(native_references):
@@ -415,7 +456,8 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, sys.argv[1])
 class PureBriefImports(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
-        allowed = {'emeris_live.arena_public_brief', 'emeris_live.arena_public_contract'}
+        allowed = {'emeris_live.arena_public_brief', 'emeris_live.arena_public_contract',
+                   'emeris_live.arena_evidence_locations'}
         if (fullname.startswith('emeris_live.') and fullname not in allowed
                 or fullname.split('.')[0] in {'fastapi', 'starlette', 'sqlite3', '_sqlite3',
                     'httpx', 'requests', 'socket', '_socket', 'subprocess'}):

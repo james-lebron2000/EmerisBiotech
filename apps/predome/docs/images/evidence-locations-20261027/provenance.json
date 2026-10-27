@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-27T02:04:26.132Z",
+  "scope": "SYNTHETIC controlled offline public DTO1.4 fixture rendered using shipped assets; no actual protocol inclusion, forecast or clinical evidence",
+  "browser": "141.0.7390.37",
+  "deployed": false,
+  "model_calls": 0,
+  "source_requests": 0,
+  "files": [
+    {
+      "file": "synthetic-evidence-locations-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "synthetic-evidence-locations-1280.png",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      }
+    },
+    {
+      "file": "synthetic-evidence-locations-375.png",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "static/arena-public.js",
+      "sha256": "f4b35fb196e374ef3145a62dae8465cf956586ec483abaae7c35c54ffc93a5d2"
+    },
+    {
+      "path": "static/arena-public.css",
+      "sha256": "40ba810c837e0bf1b1aaf1d98c2c4f061b33ab2437ea9908e5fb60218e99dff3"
+    },
+    {
+      "path": "static/arena-public.html",
+      "sha256": "e8c4935300b621b9e318b0c7159d391030c2209befc11ca10bf1be2f63bb69aa"
+    }
+  ],
+  "focused_browser_checks": 36,
+  "focused_browser_errors": [],
+  "node_version": "22.22.3",
+  "playwright_module_version": "1.62.1",
+  "chromium_build": "1194",
+  "visual_review": {
+    "reviewed": true,
+    "viewports": [
+      1440,
+      1280,
+      375
+    ],
+    "scope": "Expanded synthetic reference area only; no horizontal overflow observed"
+  },
+  "screenshot_hashes": [
+    {
+      "file": "synthetic-evidence-locations-1440.png",
+      "sha256": "21e35a32b5b0d821b3854e275264b33019cf5a019390fc3e7b2d395f3e432d08"
+    },
+    {
+      "file": "synthetic-evidence-locations-1280.png",
+      "sha256": "b926822d123b6d473b8c26a6461c4a8142500dcc047c68da5479b3b177031844"
+    },
+    {
+      "file": "synthetic-evidence-locations-375.png",
+      "sha256": "6fc6ea60937316d6c52cabcfc6865c41725fec80d43a83dcc74410c7f5e9a944"
+    }
+  ]
+}
