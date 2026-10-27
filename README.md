@@ -102,3 +102,10 @@ uv run pytest tests/test_workbench.py tests/test_cloud.py -q
 - [两套应用的CI](.github/workflows/ci.yml)
 
 源码整合不等于临床预测效能已得到验证，也不等于两套应用的用户和数据库已合并。
+
+### Patient × Molecule Lab (development branch)
+
+Patient-specific paired functional assays replace manual resistance settings in the new workflow.
+Run `/molecule-lab` in the workbench or open `molecule-lab/` in the public site build.
+Three synthetic patients, two named molecules, explicit missing-pair abstention and traceable assay forecasts.
+Clinical response and survival remain unavailable. See [design and validation gates](docs/PATIENT_MOLECULE_LAB.md).

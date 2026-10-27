@@ -1,0 +1,105 @@
+# Patient × Molecule Lab
+
+Development branch: `patient-molecule-response`. The English successor workflow is
+available at `/molecule-lab` in the workbench and `molecule-lab/` in the public
+build. It has no manual resistance input. The existing v1 scenario archive and
+its immutable records remain reproducible. This branch is not a production release.
+
+## Product decision
+
+Replace an arbitrary low/high resistance choice with a read-only patient–molecule
+evidence summary. A scalar cannot honestly be inferred from absent DNA, RNA or
+single-cell measurements. Every requested patient–molecule pair therefore has an
+explicit state: paired assay estimable, paired assay missing, or input rejected.
+Residual viability and resistance are different endpoints. The current estimator
+reports the former and leaves resistant-cell fraction unresolved.
+
+## Current executable scope
+
+Three synthetic patients (P001–P003), two named molecules (fluorouracil and
+oxaliplatin), and three available-data cutoffs (assay days 3, 5 and 7).
+P001 and P002 deliberately have different response patterns. P003 has no
+oxaliplatin assay and must return **not estimable**. Molecule names resolve to
+[NCI fluorouracil](https://www.cancer.gov/publications/dictionaries/cancer-drug/def/fluorouracil)
+and [NCI oxaliplatin](https://www.cancer.gov/publications/dictionaries/cancer-drug/def/oxaliplatin).
+These links support molecule identity only. They are not sources for any simulated
+measurement or a claim about a treatment's clinical efficacy.
+
+No real patient measurements have been imported. No clinical prediction model is
+trained. No real regimen, administration schedule or human dose is represented.
+Exposure X1 is a synthetic fixed assay condition; it cannot be translated into
+human exposure or used to compare clinical regimens.
+
+## Data contract and computation
+
+Each assay records patient ID, sample ID, molecule ID, exposure, source kind,
+assay version, measurement day, availability day and three matched technical
+replicate counts for drug and vehicle. Patient/sample/molecule mismatches and
+nonpositive or nonfinite counts fail closed. At least baseline plus two
+post-exposure timepoints are required. Missing assay pairs abstain without borrowing
+another patient's data or using a default fraction.
+
+For matched replicate j at time t:
+
+`viability_j(t) = 100 × (drug_j(t) / vehicle_j(t)) / (drug_j(0) / vehicle_j(0))`
+
+The displayed point is the replicate mean; min–max is technical measurement
+spread, not independent-patient uncertainty or a predictive confidence interval.
+Values between measurements use linear interpolation. Beyond the cutoff, at most
+three assay days are extrapolated with the slope between the last two log means:
+
+`k = log(mean_last / mean_previous) / (day_last - day_previous)`
+
+`forecast(t) = mean_last × exp(k × (t - day_last))`
+
+This is an explicitly unvalidated short-term assay forecast, not a mechanistic
+resistance model. An assay day is never relabeled as a clinical week. No synthetic
+survival curve is shown. The output fields for objective response, tumor burden,
+PFS, OS and toxicity remain null. Clinical and omics context are visible but not
+fitted as predictive inputs. There is no automated drug ranking or recommendation.
+
+## Presentation and reproducibility
+
+1. Select a patient and a molecule; the state panel recalculates automatically.
+2. Read residual viability, unresolved resistance status and missing evidence.
+3. Inspect observed points, solid interpolated curve and dashed three-day tail.
+4. Open raw matched counts and source identifiers.
+5. Switch the availability cutoff; future rows are removed before hashing/export.
+6. Save a new immutable browser record, then export the exact canonical template,
+   its SHA-256 and the selected patient/molecule/cutoff. Prior browser records are
+   preserved; visitor data stays in that browser. Export metadata is not signed.
+
+The authoritative engine is Python. The public build precomputes 18 templates;
+JavaScript verifies their checksums and renders them without implementing another
+response model. Browser records use a separate v1 molecule-lab storage key and
+cannot overwrite earlier scenario records. SHA-256 detects accidental template
+corruption; it is not authentication against a malicious server or browser owner.
+The workbench provides a script-free read-only view of the same engine.
+
+## Development and validation gates
+
+| Stage | Deliverable | Acceptance gate | Status |
+| --- | --- | --- | --- |
+| 1 | Paired patient–molecule workflow | Distinct paired results; missing pairs abstain; no resistance selector; raw evidence and cutoff reproducible | Synthetic prototype in this branch |
+| 2 | Real assay adapter | Approved de-identified mapping, assay/exposure metadata, QC, batch controls, biological replication and locked unit tests | Not started |
+| 3 | Drug-specific cellular state model | Time-resolved cell-state evidence, identifiable parameters, held-out assay trajectories, calibrated predictive intervals and baseline comparison | Not started |
+| 4 | Clinical translation | Human exposure/PK–PD bridge, clinical endpoint definitions, independent patient-level outcomes and leakage-free external validation | Not started |
+| 5 | Clinical deployment | Approved scope, prospective evaluation, qualified oversight and monitored performance | Not started |
+
+Macro information (organ function, disease sites, prior therapies and imaging) and
+micro information (DNA, RNA, protein, spatial/single-cell state and functional
+assays) should eventually enter a versioned feature manifest. Every field must
+state whether it is context, eligibility, a measured model input or unavailable.
+Future models must specify their training cohort, applicable tumor/drug/exposure,
+endpoint, data cutoff, calibration and abstention rules before showing patient
+clinical probabilities. Genotype alone must not be assigned an invented universal
+resistance percentage. Combination treatments need their own paired measurements
+and model; never add single-molecule effects to manufacture combination efficacy.
+
+## Run locally
+
+Build with `uv run python scripts/build_patient_site.py --out /tmp/patient-molecule-site`.
+Serve that directory on loopback and open `/molecule-lab/`. For the integrated
+workbench use the existing patient lab server with a fresh local state directory,
+then open `/molecule-lab`. The deployed production link is unchanged until this
+branch is reviewed and an explicit release is made.

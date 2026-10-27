@@ -3,6 +3,7 @@ import argparse
 import json
 import shutil
 from pathlib import Path
+from vbt.molecule_lab import public_bundle
 from vbt.patient_lab import PLANS, ScenarioRequest, canonical, digest, result
 
 
@@ -26,6 +27,13 @@ def main():
     for name in ('index.html', 'app.js', 'styles.css'):
         shutil.copyfile(source / name, args.out / name)
     (args.out / 'scenarios.json').write_text(json.dumps(bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
+    molecule_out = args.out / 'molecule-lab'
+    molecule_out.mkdir(exist_ok=True)
+    molecule_source = source.parent / 'molecule-lab'
+    for name in ('index.html', 'app.js'):
+        shutil.copyfile(molecule_source / name, molecule_out / name)
+    shutil.copyfile(source / 'styles.css', molecule_out / 'styles.css')
+    (molecule_out / 'scenarios.json').write_text(json.dumps(public_bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
     print(f'Built English patient showcase: {args.out}')
 
 

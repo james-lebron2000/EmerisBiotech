@@ -134,7 +134,7 @@ def frame(body):
     from .ui_shell import STYLE as shell_style
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>Patient Scenario Lab · EmerisBiotech</title><style>' + shell_style + '</style></head><body>'
+            '<title>Patient Scenario Lab · EmerisBiotech</title><style>' + shell_style + '</style></head><body><p style="padding:12px"><a href="/molecule-lab">Patient × Molecule Lab · data-derived assay response</a></p>'
             '<a class="skip-link" href="#main-content">Skip to content</a>'
             '<header class="topbar" style="margin:0"><a class="brand" href="/patient-lab" style="color:#163c49">EmerisBiotech</a>'
             '<span>Patient Scenario Lab</span><span class="context-pill">Synthetic research · English</span></header>'

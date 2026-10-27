@@ -75,3 +75,18 @@ def test_rendering_does_not_create_runs(tmp_path):
         body = page(app, '/patient-lab', {'id': run['run_id'], 'view': view})
         assert '<script' not in body
     assert before == app.patient_lab.history()
+
+
+def test_molecule_page_uses_paired_engine_without_manual_resistance(live):
+    app, base = live
+    response = urllib.request.urlopen(base + '/molecule-lab?patient=P002&molecule=oxaliplatin&cutoff=7')
+    body = response.read().decode()
+    assert '<html lang="en">' in body and '20.0%' in body
+    assert 'name="resistance"' not in body and '<script' not in body
+    assert 'default-src' in response.headers['Content-Security-Policy']
+    assert 'Not estimable' in urllib.request.urlopen(base + '/molecule-lab?patient=P003&molecule=oxaliplatin').read().decode()
+    assert not app.patient_lab.history()
+    for query in ('patient=REAL', 'molecule=unknown', 'cutoff=4', 'resistance=low', 'cutoff=NaN'):
+        with pytest.raises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(base + '/molecule-lab?' + query)
+        assert error.value.code == 404

@@ -37,6 +37,7 @@ jobs:
           "$RUNNER_TEMP/patient-lab-ui/node_modules/.bin/playwright" install --with-deps chromium
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/patient-lab-ui/node_modules/playwright" node tests/ui_patient_lab.cjs
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/patient-lab-ui/node_modules/playwright" node tests/ui_patient_public.cjs
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/patient-lab-ui/node_modules/playwright" node tests/ui_molecule_public.cjs
 
   predome:
     name: Predome public source and browser fixtures
