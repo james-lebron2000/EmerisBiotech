@@ -67,7 +67,12 @@ def ingest(store,pid,proposal,author,revision,origin):
 
 def proposals(store,pid):
     context=packet(store,pid)
-    return [dict(e['payload'],event_id=e['id'],created=e['created'],stale=e['payload']['proposal']['packet_hash']!=context['packet_hash']) for e in store.events(pid) if e['kind']=='ai_proposal']
+    records=[]
+    for e in store.events(pid):
+        draft=e['payload'] if e['kind']=='ai_proposal' else e['payload'].get('draft') if e['kind']=='ai_model_receipt' and e['payload'].get('status')=='succeeded' else None
+        if draft:
+            records.append(dict(draft,event_id=e['id'],created=e['created'],stale=draft['proposal']['packet_hash']!=context['packet_hash']))
+    return records
 
 def _read(store,pid,name):
     raw,sha=store.attachment(pid,name,max_bytes=1024*1024)

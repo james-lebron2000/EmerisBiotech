@@ -137,6 +137,9 @@ def submit(app,q):
         import json
         from .ai_research import ingest
         ingest(store,pid,json.loads(q.get('proposal_json','')),author,revision,{'kind':q.get('origin_kind'),'model_label':q.get('model_label')})
+    elif operation=='ai_generate':
+        from .research_model import generate
+        generate(store,pid,author,revision,q.get('packet_hash'),q.get('config_hash'),q.get('send_context')=='yes')
     elif operation=='ai_run':
         from .ai_research import run_tool
         run_tool(store,pid,q.get('proposal_id'),q.get('task_id'),author,revision)

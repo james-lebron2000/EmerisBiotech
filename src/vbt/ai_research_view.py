@@ -5,7 +5,9 @@ from .ai_research import DOMAINS,TOOLS,proposals,packet
 
 def render(app,store,p):
     from .program_view import e,field,form
-    body='<section class="section-head" id="ai-research"><h2>AI 研究草案与工具</h2><span>依据冻结证据提出任务，执行权限由主机限定</span></section><p class="data-note">草案是待审阅建议。此入口不自动调用外部模型、不上传研究资料；可导出本地上下文并录入会话或其他来源生成的结构化草案。来源模型由录入者声明，未独立认证。</p><p><a class="button secondary" href="/program/research-packet?id='+quote(p['id'])+'">导出冻结研究上下文 JSON</a></p>'
+    body='<section class="section-head" id="ai-research"><h2>AI 研究草案与工具</h2><span>依据冻结证据提出任务，执行权限由主机限定</span></section><p class="data-note">草案是待审阅建议。不自动调用外部模型；主机配置完成且记录人选择发送后，才单次提交所示冻结上下文。可继续导入会话或其他来源草案；录入模型标记不构成独立认证。</p><p><a class="button secondary" href="/program/research-packet?id='+quote(p['id'])+'">导出冻结研究上下文 JSON</a></p>'
+    from .research_model_view import render as model_section
+    body+=model_section(app,store,p,packet(store,p['id']))
     drafts=proposals(store,p['id'])
     for draft in reversed(drafts):
         proposal=draft['proposal']
