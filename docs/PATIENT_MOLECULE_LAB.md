@@ -148,3 +148,26 @@ The complete-pair selection is explicit and can itself be unrepresentative.
 The browser verifies all three cohort templates before enabling playback/export.
 The page makes no real patient uploads, creates no real trial enrollment and does
 not change clinical or experimental treatment assignments.
+
+## Independent export review and CSV
+
+The public entry now describes supported capabilities; the original mathematical
+scenario page lives at `scenario-archive/`. Its browser storage key is unchanged.
+The paired/cohort routes and earlier immutable Python fixture outputs are preserved.
+
+Use `uv run python -m vbt.patient_exports /absolute/export.json` to verify a
+single-patient or cohort export offline. It checks the canonical checksum,
+duplicate result, installed approved synthetic fixture and selected view/record
+consistency. Unsupported or altered exports fail with a nonzero exit. This does
+not authenticate unsigned browser metadata, establish a signature or perform
+scientific review. A different future model needs its own versioned verifier;
+unknown models must not be silently accepted.
+
+For a cohort, add `--csv /tmp/new-cohort.csv`; existing output files are never
+overwritten. The browser also links the same precomputed CSV at each cutoff.
+Each row is one patient × molecule × assay day, retaining sample, cutoff, source
+kind, model/cohort versions, input fingerprint, paired-summary inclusion,
+estimation status and phase. Missing values are empty, never zero. All patients
+remain in the CSV regardless of the selected summary population. The 24-patient
+cutoff-7 CSV therefore has 528 rows, including 22 missing patient–molecule time rows.
+The cohort UI's selected day and population remain in the JSON view metadata.

@@ -21,6 +21,9 @@ const {spawn,spawnSync}=require('node:child_process');
  try{
   const context=await browser.newContext({viewport:{width:1440,height:1100}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base);assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  assert.equal(await page.locator('#resistance').count(),0);assert(await page.getByRole('link',{name:'Open Virtual Trial Cohort',exact:true}).isVisible());
+  assert(await page.getByText('MNC customer value',{exact:true}).isVisible());
   await page.goto(base.replace(/\/$/,'')+'/cohort-lab/');await page.locator('#play:enabled').waitFor();
   assert.equal(await page.locator('html').getAttribute('lang'),'en');
   assert(!/[\u3400-\u9fff]/.test(await page.locator('body').innerText()));

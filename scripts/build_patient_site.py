@@ -26,9 +26,14 @@ def main():
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[1] / 'web' / 'patient-lab'
     args.out.mkdir(parents=True, exist_ok=True)
+    archive_out = args.out / 'scenario-archive'
+    archive_out.mkdir(exist_ok=True)
     for name in ('index.html', 'app.js', 'styles.css'):
-        shutil.copyfile(source / name, args.out / name)
-    (args.out / 'scenarios.json').write_text(json.dumps(bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
+        shutil.copyfile(source / name, archive_out / name)
+    (archive_out / 'scenarios.json').write_text(json.dumps(bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
+    shutil.copyfile(source.parent / 'product-review' / 'index.html', args.out / 'index.html')
+    shutil.copyfile(source / 'styles.css', args.out / 'styles.css')
+    shutil.copyfile(source.parent / 'product-review' / 'review.css', args.out / 'review.css')
     molecule_out = args.out / 'molecule-lab'
     molecule_out.mkdir(exist_ok=True)
     molecule_source = source.parent / 'molecule-lab'
