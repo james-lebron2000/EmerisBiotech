@@ -3,6 +3,7 @@ import argparse
 import json
 import shutil
 from pathlib import Path
+from vbt.regimen_cohort import public_regimen_bundle, regimen_cohort_result, regimen_csv
 from vbt.cohort_lab import public_cohort_bundle, cohort_result
 from vbt.patient_exports import cohort_csv
 from vbt.molecule_lab import public_bundle
@@ -42,14 +43,20 @@ def main():
         shutil.copyfile(molecule_source / name, molecule_out / name)
     shutil.copyfile(source / 'styles.css', molecule_out / 'styles.css')
     (molecule_out / 'scenarios.json').write_text(json.dumps(public_bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
-    cohort_out = args.out / 'cohort-lab'
+    cohort_out = args.out / 'assay-cohort-archive'
     cohort_out.mkdir(exist_ok=True)
     for name in ('index.html', 'app.js', 'cohort.css'):
-        shutil.copyfile(source.parent / 'cohort-lab' / name, cohort_out / name)
+        shutil.copyfile(source.parent / 'assay-cohort-archive' / name, cohort_out / name)
     shutil.copyfile(source / 'styles.css', cohort_out / 'styles.css')
     (cohort_out / 'scenarios.json').write_text(json.dumps(public_cohort_bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
     for cutoff in (3, 5, 7):
         (cohort_out / f'trajectories-cutoff-{cutoff}.csv').write_text(cohort_csv(cohort_result(cutoff)), encoding='utf-8')
+    regimen_out = args.out / 'cohort-lab'
+    regimen_out.mkdir(exist_ok=True)
+    for name in ('index.html', 'app.js', 'cohort.css'):
+        shutil.copyfile(source.parent / 'cohort-lab' / name, regimen_out / name)
+    (regimen_out / 'scenarios.json').write_text(json.dumps(public_regimen_bundle(), separators=(',', ':')) + '\n')
+    (regimen_out / 'trajectories.csv').write_text(regimen_csv(regimen_cohort_result()), encoding='utf-8')
     print(f'Built English patient showcase: {args.out}')
 
 

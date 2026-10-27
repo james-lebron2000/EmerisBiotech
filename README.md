@@ -51,17 +51,19 @@ links to:
 
 - `molecule-lab/`: automatic state summaries from matched patient/drug assay counts,
   raw evidence, data cutoffs, browser-only saved runs and JSON export.
-- `cohort-lab/`: 24 virtual patients under two molecule exposures, synchronized
-  playback, individual trajectories, patient highlighting and descriptive summaries.
+- `cohort-lab/`: 120 synthetic mCRC patients under two 1L/2L/3L treatment pathways,
+  a compact paired patient matrix, continuous playback and source-backed regimen names.
+  All burden trajectories are fictional and uncalibrated; see [methods](docs/REGIMEN_COHORT.md).
+- `assay-cohort-archive/`: the unchanged 24-patient paired-exposure cohort and exports.
 - `scenario-archive/`: the original fictional A/B/A+B mathematical demonstration.
   Earlier browser records remain at the same origin/storage key. Its parameters
   and independent survival illustrations do not enter the newer assay workflow.
 
-The default cohort summaries use the same 22 complete-pair patients. Available-case
+The archived assay cohort summaries use the same 22 complete-pair patients. Available-case
 summaries use 23 patients per molecule with different missing patients. Three
 technical wells are never counted as three patients. All linked measurements are
 synthetic; clinical response, PFS, OS and toxicity remain unavailable. There is no
-human dose equivalence, combination-regimen model or treatment recommendation.
+human dose equivalence, clinically calibrated combination-regimen model or treatment recommendation.
 See the [design, equations and validation gates](docs/PATIENT_MOLECULE_LAB.md).
 
 ## Independently check an exported patient record
