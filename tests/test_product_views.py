@@ -14,9 +14,9 @@ def app(tmp_path):
 def test_empty_workspace_has_demo_without_fake_runs(app):
     assert app.records() == []
     for key in CASES:
-        assert '判断时间线' in page(app, '/case', {'id':key})
-    assert '还没有匹配' in page(app, '/records', {})
-    assert '六分钟' in page(app, '/guide', {})
+        assert 'Decision timeline' in page(app, '/case', {'id':key})
+    assert 'No matching' in page(app, '/records', {})
+    assert 'six-minute' in page(app, '/guide', {})
     with pytest.raises(ValueError): page(app, '/case', {'id':'missing'})
 
 def test_decision_persists_and_is_separate(app):
@@ -51,7 +51,7 @@ def test_http_decision_roundtrip(app):
         data=urlencode(dict(token=app.token,case_id='osmr-uc',action='revise',author='Demo',reason='Record a clear evidence boundary')).encode()
         response=urllib.request.urlopen(urllib.request.Request(base+'/decision',data=data,headers={'Origin':base}))
         assert response.url.endswith('/case?id=osmr-uc&saved=1')
-        assert '已保存' in response.read().decode()
+        assert 'Saved' in response.read().decode()
         assert len(app.rows('decisions'))==1
     finally:
         server.shutdown();server.server_close()
@@ -72,5 +72,5 @@ def test_detail_reports_malformed_sections_without_replacing_originals(app,kind,
   target=path/extra[0];target.parent.mkdir(parents=True,exist_ok=True);target.write_text(json.dumps(extra[1]))
  before={str(p):p.read_bytes() for p in path.rglob('*') if p.is_file()}
  body=page(app,'/record',{'kind':kind,'id':'malformed-detail'})
- assert '格式待核实' in body and '研究摘要' in body
+ assert 'format requires review' in body and 'Research summary' in body
  assert {str(p):p.read_bytes() for p in path.rglob('*') if p.is_file()}==before

@@ -43,7 +43,7 @@ def test_filters_are_composable_and_independent(query, expected):
     body = render(RECORDS, query)
     assert links(body) == expected
     assert RECORDS == before
-    assert '全部研究记录' in body and '没有记录的状态保留未知' in body
+    assert 'All research records' in body and 'unrecorded states remain unknown' in body
 
 
 def test_filter_labels_and_retained_values():
@@ -76,8 +76,8 @@ def test_keyboard_scroll_and_column_scopes():
 
 def test_empty_history_is_explicit_and_not_a_completed_research():
     body = render([], {})
-    assert '没有匹配的研究记录' in body
-    assert '0 / 0 条' in body
+    assert 'No matching research records' in body
+    assert '0 / 0 records' in body
     assert 'record-title' not in body
 
 
@@ -95,9 +95,9 @@ def test_legacy_pass_values_have_one_filter_and_preserve_raw_records():
 def test_explicit_synthetic_marker_is_visible_and_not_a_real_outcome():
     rows = [dict(RECORDS[0], title='SYNTHETIC ENGINEERING TEST: baseline OSM'), RECORDS[1]]
     body = render(rows, {})
-    assert '包含 1 条明确标记的合成工程测试' in body
-    assert '<span class="badge pending">合成工程测试</span>' in body
-    assert '不能计为真实临床研究或预测成绩' in body
+    assert 'Includes 1 explicitly marked synthetic engineering tests' in body
+    assert '<span class="badge pending">Synthetic engineering test</span>' in body
+    assert 'not real clinical research or forecast performance' in body
     assert links(body) == ['one', 'two']
 
 
@@ -106,7 +106,7 @@ def test_sample_scope_does_not_call_unmarked_records_validated():
     assert links(render(rows, {'scope': 'synthetic'})) == ['one']
     body = render(rows, {'scope': 'unmarked'})
     assert links(body) == ['two']
-    assert '不代表真实临床验证或预测准确性已获确认' in body
+    assert 'does not establish clinical validation or forecasting accuracy' in body
     with pytest.raises(ValueError):
         render(rows, {'scope': '<script>'})
 
@@ -140,7 +140,7 @@ def test_removing_one_filter_keeps_other_filters_and_resets_page():
     page = Page(render(rows, query))
     chips = [a for t, a in page.tags if t == 'a' and a.get('class') == 'asset-clear-chip']
     assert len(chips) == 5
-    target = next(a['href'] for a in chips if a['aria-label'].startswith('移除筛选 科学审查：'))
+    target = next(a['href'] for a in chips if a['aria-label'].startswith('Remove filter Scientific review: '))
     parsed = urlsplit(target)
     assert parsed.path == '/records' and parsed.fragment == 'history-results'
     remaining = {key: values[0] for key, values in parse_qs(parsed.query).items()}
@@ -153,13 +153,13 @@ def test_history_top_and_bottom_pagination_follow_same_filtered_records():
     rows = [dict(RECORDS[0], id=str(i)) for i in range(43)]
     page = Page(render(rows, {'q': 'OSMR', 'review': 'revise', 'offset': '20'}))
     navs = [a for t, a in page.tags if t == 'nav' and 'history-pagination' in a.get('class', '')]
-    assert [a['aria-label'] for a in navs] == ['研究历史分页 · 顶部', '研究历史分页 · 底部']
+    assert [a['aria-label'] for a in navs] == ['Research history pages · Top', 'Research history pages · Bottom']
     targets = [a['href'] for t, a in page.tags if t == 'a' and a.get('rel') == 'next']
     assert len(targets) == 2 and targets[0] == targets[1]
     parsed = urlsplit(targets[0])
     assert parsed.fragment == 'history-results'
     assert links(render(rows, {k: v[0] for k, v in parse_qs(parsed.query).items()})) == ['40', '41', '42']
-    assert '第 2 / 3 页' in render(rows, {'offset': '20'})
+    assert 'Page 2 / 3' in render(rows, {'offset': '20'})
     assert any(t == 'section' and a.get('id') == 'history-results' and a.get('tabindex') == '-1'
                for t, a in page.tags)
 
@@ -184,7 +184,7 @@ def test_mobile_record_labels_do_not_change_state_semantics():
     page = Page(record_table(RECORDS))
     assert any(t == 'table' and a.get('role') == 'table' for t, a in page.tags)
     assert {a['data-label'] for t, a in page.tags if t == 'td'} == {
-        '研究问题与版本', '记录类型', '执行 / 记录状态', '科学审查'}
+        'Research question and version', 'Record type', 'Execution / record state', 'Scientific review'}
 
 
 def test_run_times_use_saved_start_and_end_fields_with_explicit_timezone():
@@ -193,18 +193,18 @@ def test_run_times_use_saved_start_and_end_fields_with_explicit_timezone():
     body = record_table([row])
     clocks = [a for t, a in Page(body).tags if t == 'time']
     assert [a['datetime'] for a in clocks] == [row['data']['started_at'], row['data']['finished_at']]
-    assert '开始时间：<time' in body and '>2026-10-18 01:20 UTC+8</time>' in body
-    assert '结束时间：<time' in body and '>2026-10-18 01:25 UTC+8</time>' in body
-    assert '保存字段 started_at' in clocks[0]['title']
-    assert '保存字段 finished_at' in clocks[1]['title']
+    assert 'Started: <time' in body and '>2026-10-18 01:20 UTC+8</time>' in body
+    assert 'Finished: <time' in body and '>2026-10-18 01:25 UTC+8</time>' in body
+    assert 'Saved field  started_at' in clocks[0]['title']
+    assert 'Saved field  finished_at' in clocks[1]['title']
 
 
 def test_cycle_uses_created_at_and_a_portfolio_without_saved_time_stays_unknown():
     cycle = dict(RECORDS[2], data={'created_at': '2026-10-17T20:00:00+08:00'})
-    assert '创建时间：<time' in record_table([cycle])
+    assert 'Created: <time' in record_table([cycle])
     portfolio = dict(RECORDS[3], id='2026-10-17T120000+0000-fake-id', data={'items': []})
     body = record_table([portfolio])
-    assert '记录时间未知' in body
+    assert 'Record time unknown' in body
     assert not any(t == 'time' for t, _ in Page(body).tags)
 
 
@@ -214,7 +214,7 @@ def test_cycle_uses_created_at_and_a_portfolio_without_saved_time_stays_unknown(
     '<img src=x onerror=evil()>', '2026-10-17T12:00:00Z\n', 1792224000, True])
 def test_missing_invalid_naive_and_overflowing_timestamps_are_unknown(value):
     body = record_table([dict(RECORDS[2], data={'created_at': value})])
-    assert '记录时间未知' in body
+    assert 'Record time unknown' in body
     assert not any(t in ('time', 'img', 'script') for t, _ in Page(body).tags)
 
 
@@ -223,27 +223,27 @@ def test_record_time_never_infers_from_number_path_or_filesystem(data):
     row = dict(RECORDS[0], id='2026-10-17T190000+0000-12345678', data=data,
                started_at='2026-10-17T01:00:00Z', path='/unrelated/path')
     body = record_table([row])
-    assert '记录时间未知' in body
+    assert 'Record time unknown' in body
     assert not any(t == 'time' for t, _ in Page(body).tags)
 
 
 def test_end_time_does_not_invent_a_start_or_a_successful_review():
     row = dict(RECORDS[1], data={'finished_at': '2026-10-17T03:04:00Z'})
     body = record_table([row])
-    assert '开始时间未知' in body and '结束时间：<time' in body
-    assert '<span class="badge failed">执行失败</span>' in body
-    assert '<span class="badge pending">待科学审查</span>' in body
-    assert '执行成功' not in body and '创建时间' not in body
+    assert 'Started unknown' in body and 'Finished: <time' in body
+    assert '<span class="badge failed">Execution failed</span>' in body
+    assert '<span class="badge pending">Scientific review pending</span>' in body
+    assert 'Execution succeeded' not in body and 'Created' not in body
 
 
 def test_conflicting_start_and_end_times_are_flagged_without_changing_execution():
     row = dict(RECORDS[0], data={'started_at': '2026-10-17T02:00:00Z',
                                'finished_at': '2026-10-17T01:00:00Z'})
     body = record_table([row])
-    assert '保存的开始与结束时间冲突' in body
+    assert 'Saved start/end timestamps conflict' in body
     assert not any(t == 'time' for t, _ in Page(body).tags)
-    assert '<span class="badge succeeded">执行成功</span>' in body
-    assert '<span class="badge revise">需修订</span>' in body
+    assert '<span class="badge succeeded">Execution succeeded</span>' in body
+    assert '<span class="badge revise">Revision required</span>' in body
 
 
 def test_time_display_preserves_synthetic_state_boundaries_filters_and_return_context():
@@ -253,13 +253,13 @@ def test_time_display_preserves_synthetic_state_boundaries_filters_and_return_co
     before = copy.deepcopy(row)
     body = render([row], {'scope': 'synthetic', 'review': 'revise', 'status': 'succeeded'})
     assert row == before and links(body) == ['one']
-    assert '合成工程测试</span>' in body and '执行成功</span>' in body and '需修订</span>' in body
-    assert '完整性通过' not in body and '人工签署通过' not in body
+    assert 'Synthetic engineering test</span>' in body and 'Execution succeeded</span>' in body and 'Revision required</span>' in body
+    assert '完整性Passed' not in body and 'Human sign-offPassed' not in body
     target = next(a['href'] for t, a in Page(body).tags if t == 'a' and a.get('class') == 'record-title')
     back = parse_qs(urlsplit(parse_qs(urlsplit(target).query)['return'][0]).query)
     assert back['scope'] == ['synthetic'] and back['review'] == ['revise']
     assert {a['data-label'] for t, a in Page(body).tags if t == 'td'} == {
-        '研究问题与版本', '记录类型', '执行 / 记录状态', '科学审查'}
+        'Research question and version', 'Record type', 'Execution / record state', 'Scientific review'}
 
 
 def test_actual_workbench_record_shape_renders_explicit_run_and_cycle_times(tmp_path):
@@ -278,4 +278,4 @@ def test_actual_workbench_record_shape_renders_explicit_run_and_cycle_times(tmp_
     body = record_table(rows)
     clocks = [a['datetime'] for t, a in Page(body).tags if t == 'time']
     assert set(clocks) == {'2026-10-17T01:00:00Z', '2026-10-17T02:00:00Z'}
-    assert body.count('记录时间未知') == 1
+    assert body.count('Record time unknown') == 1

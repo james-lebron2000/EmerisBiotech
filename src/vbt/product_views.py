@@ -1,89 +1,145 @@
 """Human-facing research pages. Bundled cases are retrospective demonstrations."""
 import html
 
-def e(value):return html.escape(str(value if value is not None else '未记录'),quote=True)
-CASES={
- 'osmr-uc':{'title':'OSMR × 溃疡性结肠炎','tag':'回顾性反证案例','question':'表达关联，足以支持一个临床成功判断吗？','summary':'观察性关联提供线索；特定干预的临床反证要求收窄结论。','decision':'停止把表达关联单独作为临床成功或投资信号。保留探索性标志物研究。','support':'既有 GSE92415 分析包含 59 名患者。OSM 中位数差为 0.314，95% CI 0.011–0.644；OSMR 为 0.287，95% CI −0.103–0.641（无响应减响应）。','opposition':'Roche 的 vixarelimab UC 二期摘要报告缓解人数为 3/27、1/26，安慰剂为 3/26；报告称未观察到获益并提前结束。','limits':['观察性队列的治疗是 golimumab，不能直接外推 OSMR 阻断疗效。','GEO 第六周响应定义尚待协议级核对；未完成因果调整。','此处结局已知，不能计入前瞻预测成绩或投资业绩。','结果来自既有分析的摘要；没有在本页重新执行分析。原运行编号：2026-09-25T085153-545299+0000-515a3584；原始文件不随公开仓库发布。'], 'sources':[('GSE92415 原始队列','https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE92415','观察性来源'),('Roche GA44839 结果摘要','https://forpatients.roche.com/content/dam/patient-platform/lps/global/ga44839/LPS_GA44839_final-results_November2025_English.pdf','2025-11-05，页 1、5')], 'next':'先核对队列终点和混杂因素，再做独立队列验证。'},
- 'bcma-autoimmune':{'title':'BCMA × 自身免疫','tag':'未验证研究草案','question':'致病抗体是否依赖 BCMA 阳性细胞？','summary':'把细胞依赖、功能性抗体和材料可得性拆成可检验问题。','decision':'证据不足，暂不形成成功概率或投资判断。','support':'已有研究问题与拟议实验比较；本演示未提供经独立审查的科学支持来源。','opposition':'尚未完成反证检索。未知不能视为没有反证。','limits':['没有已落实的样本材料、预算或负责人。','没有候选分子、临床结果或经校准概率。'], 'sources':[], 'next':'明确患者范围、材料来源，检索支持及相反证据。'},
- 'napi2b-adc':{'title':'NaPi2b × 卵巢癌 ADC','tag':'未验证研究草案','question':'表达、内化和载荷敏感性如何影响治疗窗？','summary':'把靶点表达与药物形式、安全窗分别评价。','decision':'证据不足，先确认差异化假设与可用模型。','support':'已有问题定义及对照思路；本演示未提供经独立审查的科学支持来源。','opposition':'正常组织表达、载荷非特异毒性和耐药是需要核查的问题，尚无本项目实验结果。','limits':['不是自有药物资产；未落实药物、模型或权利。','未完成反证检索，不输出成功概率。'], 'sources':[], 'next':'核对肿瘤与正常模型、内化指标、载荷对照和材料授权。'}
-}
-ACTIONS={'follow_up':'继续补证据','revise':'修订研究假设','stop':'停止该推断'}
+def e(value):return html.escape(str(value if value is not None else 'Not recorded'),quote=True)
+CASES={'osmr-uc': {'title': 'OSMR × Ulcerative colitis',
+             'tag': 'Retrospective counterevidence case',
+             'question': 'Is an expression association sufficient to support a clinical-success judgment?',
+             'summary': 'Observational associations provide leads; intervention-specific clinical '
+                        'counterevidence narrows the conclusion.',
+             'decision': 'Stop using expression association alone as a clinical-success or investment '
+                         'signal. Retain exploratory biomarker research.',
+             'support': 'The existing GSE92415 analysis included 59 patients. The median difference was '
+                        '0.314 for OSM (95% CI 0.011–0.644) and 0.287 for OSMR (95% CI −0.103–0.641), '
+                        'nonresponders minus responders.',
+             'opposition': 'The Roche phase II vixarelimab UC summary reported remission counts of 3/27 and '
+                           '1/26, versus 3/26 with placebo; it reported no observed benefit and early '
+                           'termination.',
+             'limits': ['The observational cohort received golimumab; its results cannot establish '
+                        'OSMR-blockade efficacy.',
+                        'The GEO week-6 response definition still requires protocol-level verification; '
+                        'causal adjustment is incomplete.',
+                        'The outcome is already known and is excluded from prospective forecasting or '
+                        'investment performance.',
+                        'This is a summary of earlier analysis, not a rerun on this page. Original run: '
+                        '2026-09-25T085153-545299+0000-515a3584. Original files are not redistributed in '
+                        'this public repository.'],
+             'sources': [('GSE92415 original cohort',
+                          'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE92415',
+                          'Observational source'),
+                         ('Roche GA44839 results summary',
+                          'https://forpatients.roche.com/content/dam/patient-platform/lps/global/ga44839/LPS_GA44839_final-results_November2025_English.pdf',
+                          '2025-11-05, pages 1 and 5')],
+             'next': 'Verify cohort endpoints and confounding before independent-cohort validation.'},
+ 'bcma-autoimmune': {'title': 'BCMA × Autoimmunity',
+                     'tag': 'Unvalidated research draft',
+                     'question': 'Do pathogenic antibodies depend on BCMA-positive cells?',
+                     'summary': 'Separate cell dependence, functional antibodies and material availability '
+                                'into testable questions.',
+                     'decision': 'Evidence is insufficient for a success probability or investment judgment.',
+                     'support': 'A research question and proposed experimental comparison exist; this '
+                                'demonstration supplies no independently reviewed scientific support source.',
+                     'opposition': 'Counterevidence searching is incomplete. Unknown does not mean no '
+                                   'counterevidence.',
+                     'limits': ['Sample materials, budget and an accountable lead are not confirmed.',
+                                'No candidate molecule, clinical result or calibrated probability is '
+                                'provided.'],
+                     'sources': [],
+                     'next': 'Define the patient scope and material sources, then search supporting and '
+                             'opposing evidence.'},
+ 'napi2b-adc': {'title': 'NaPi2b × Ovarian cancer ADC',
+                'tag': 'Unvalidated research draft',
+                'question': 'How do expression, internalization and payload sensitivity affect the '
+                            'therapeutic window?',
+                'summary': 'Evaluate target expression, drug format and safety window separately.',
+                'decision': 'Evidence is insufficient; first confirm the differentiation hypothesis and '
+                            'available models.',
+                'support': 'A question and comparator concept exist; this demonstration supplies no '
+                           'independently reviewed scientific support source.',
+                'opposition': 'Normal-tissue expression, nonspecific payload toxicity and resistance require '
+                              'investigation; this project has no experimental results for these questions.',
+                'limits': ['This is not an owned drug asset; drug, model and rights are unconfirmed.',
+                           'Counterevidence searching is incomplete; no success probability is produced.'],
+                'sources': [],
+                'next': 'Check tumor/normal models, internalization endpoints, payload controls and material '
+                        'authorization.'}}
+ACTIONS={'follow_up':'Collect further evidence','revise':'Revise the research hypothesis','stop':'Stop this inference'}
 
 def cards():
- return ''.join('<a class="case-card" href="/case?id='+key+'"><span class="eyebrow">'+e(v['tag'])+'</span><h3>'+e(v['title'])+'</h3><p>'+e(v['question'])+'</p><span class="text-link">进入研究 →</span></a>' for key,v in CASES.items())
+ return ''.join('<a class="case-card" href="/case?id='+key+'"><span class="eyebrow">'+e(v['tag'])+'</span><h3>'+e(v['title'])+'</h3><p>'+e(v['question'])+'</p><span class="text-link">Open research →</span></a>' for key,v in CASES.items())
 
 def home_intro():
- return '<section class="hero"><div class="eyebrow">EMERIS BIOTECH · RESEARCH WORKSPACE</div><h1>让每一个临床判断<br>都有可复核的依据。</h1><p>查看证据、面对反证，留下每一次判断与修订。</p><a class="button" href="/case?id=osmr-uc">体验一轮研究</a> <a class="secondary" href="/guide">查看演示路线</a><div class="hero-note">研究原型 · 尚未验证临床预测或投资收益</div></section><section class="section-head"><h2>从一个具体问题开始</h2><span>1 个回顾案例 · 2 个待验证草案</span></section><div class="case-grid">'+cards()+'</div>'
+ return '<section class="hero"><div class="eyebrow">EMERIS BIOTECH · RESEARCH WORKSPACE</div><h1>Give each clinical judgment<br>a reviewable evidence trail.</h1><p>Review evidence and counterevidence, and retain every decision and revision.</p><a class="button" href="/case?id=osmr-uc">Explore a research workflow</a> <a class="secondary" href="/guide">View the walkthrough</a><div class="hero-note">Research prototype · Clinical forecasting and investment returns are not validated</div></section><section class="section-head"><h2>Start with a specific question</h2><span>1 retrospective case · 2 unvalidated drafts</span></section><div class="case-grid">'+cards()+'</div>'
 
 def case_page(app,key):
- if key not in CASES:raise ValueError('研究案例不存在')
+ if key not in CASES:raise ValueError('Research case not found')
  c=CASES[key];events=[r for r in app.rows('decisions') if r['case_id']==key]
- body='<a href="/">← 返回工作台</a><div class="section-head"><div><span class="eyebrow">'+e(c['tag'])+'</span><h1>'+e(c['title'])+'</h1></div><span class="badge">演示资料 · 截至 2026-09-25</span></div><p class="lead">'+e(c['question'])+'</p><div class="notice">本页使用固定的回顾案例／草案，不是实时预测。这里保存的判断单独标为演示记录，不计入正式研究审批。</div><div class="card conclusion"><span class="eyebrow">当前研究结论</span><h2>'+e(c['decision'])+'</h2><p>'+e(c['summary'])+'</p></div><div class="split"><div class="card"><span class="eyebrow">支持与线索</span><h2>已知的证据</h2><p>'+e(c['support'])+'</p></div><div class="card counter"><span class="eyebrow">反证与未知</span><h2>需要面对的限制</h2><p>'+e(c['opposition'])+'</p></div></div><div class="card"><h2>来源与边界</h2>'
+ body='<a href="/">← Back to workbench</a><div class="section-head"><div><span class="eyebrow">'+e(c['tag'])+'</span><h1>'+e(c['title'])+'</h1></div><span class="badge">Demonstration material · As of 2026-09-25</span></div><p class="lead">'+e(c['question'])+'</p><div class="notice">This page uses fixed retrospective cases and drafts, not live forecasts. Saved decisions are marked as demonstration records and are excluded from formal research approval.</div><div class="card conclusion"><span class="eyebrow">Current research conclusion</span><h2>'+e(c['decision'])+'</h2><p>'+e(c['summary'])+'</p></div><div class="split"><div class="card"><span class="eyebrow">Supporting evidence and leads</span><h2>Known evidence</h2><p>'+e(c['support'])+'</p></div><div class="card counter"><span class="eyebrow">Counterevidence and unknowns</span><h2>Limitations to address</h2><p>'+e(c['opposition'])+'</p></div></div><div class="card"><h2>Sources and limitations</h2>'
  for title,url,loc in c['sources']:body+='<p><a target="_blank" rel="noopener noreferrer" href="'+e(url)+'">'+e(title)+' ↗</a><br><span class="muted">'+e(loc)+'</span></p>'
- if not c['sources']:body+='<p class="muted">尚无可供独立复核的来源；需要补充证据。</p>'
- body+='<ul>'+''.join('<li>'+e(x)+'</li>' for x in c['limits'])+'</ul><p><b>下一步：</b>'+e(c['next'])+'</p></div><form class="card" method="post" action="/decision"><h2>记录你的判断</h2><p class="muted">演示记录只追加，不覆盖此前判断。</p><input type="hidden" name="token" value="'+app.token+'"><input type="hidden" name="case_id" value="'+e(key)+'"><label for="decision-author">记录人</label><input id="decision-author" name="author" required maxlength="100" placeholder="填写姓名或演示昵称"><label for="decision-action">研究动作</label><select id="decision-action" name="action">'+''.join('<option value="'+k+'">'+v+'</option>' for k,v in ACTIONS.items())+'</select><label for="decision-reason">判断依据</label><textarea id="decision-reason" name="reason" required minlength="10" maxlength="5000" placeholder="哪条证据改变了你的判断？还需要验证什么？"></textarea><button>保存演示判断</button></form><h2>判断时间线</h2>'
- for x in events:body+='<div class="card"><span class="badge">演示记录</span> <b>'+e(ACTIONS[x['action']])+'</b><p class="body">'+e(x['reason'])+'</p><p class="ref">'+e(x['author'])+' · '+e(x['created'])+'</p></div>'
- if not events:body+='<div class="empty">还没有判断记录。先查看证据，再留下你的第一条判断。</div>'
+ if not c['sources']:body+='<p class="muted">No independently reviewable source is available; further evidence is required.</p>'
+ body+='<ul>'+''.join('<li>'+e(x)+'</li>' for x in c['limits'])+'</ul><p><b>Next step: </b>'+e(c['next'])+'</p></div><form class="card" method="post" action="/decision"><h2>Record your decision</h2><p class="muted">Demonstration records are append-only; earlier decisions remain unchanged.</p><input type="hidden" name="token" value="'+app.token+'"><input type="hidden" name="case_id" value="'+e(key)+'"><label for="decision-author">Recorder</label><input id="decision-author" name="author" required maxlength="100" placeholder="Enter a name or demonstration alias"><label for="decision-action">Research action</label><select id="decision-action" name="action">'+''.join('<option value="'+k+'">'+v+'</option>' for k,v in ACTIONS.items())+'</select><label for="decision-reason">Decision rationale</label><textarea id="decision-reason" name="reason" required minlength="10" maxlength="5000" placeholder="Which evidence changed the decision? What still needs testing?"></textarea><button>Save demonstration decision</button></form><h2>Decision timeline</h2>'
+ for x in events:body+='<div class="card"><span class="badge">Demonstration record</span> <b>'+e(ACTIONS[x['action']])+'</b><p class="body">'+e(x['reason'])+'</p><p class="ref">'+e(x['author'])+' · '+e(x['created'])+'</p></div>'
+ if not events:body+='<div class="empty">No decisions recorded yet. Review the evidence before saving a first decision.</div>'
  return body
 
 def guide():
- return '<span class="eyebrow">PRODUCT WALKTHROUGH</span><h1>六分钟，走完一轮研究。</h1><p class="lead">适合首次使用和现场产品演示。无需模型密钥。</p><div class="card"><h2>01 · 明确问题</h2><p>从 OSMR 回顾案例开始，先说明这是已知结局的流程演示。</p><a href="/case?id=osmr-uc">打开案例 →</a></div><div class="card"><h2>02 · 对照证据与反证</h2><p>同时查看观察性关联、临床反证、来源定位与尚未解决的限制。</p></div><div class="card"><h2>03 · 记录判断</h2><p>填写演示昵称与至少十个字符的依据，选择继续、修订或停止；保存后查看时间线。</p></div><div class="card"><h2>04 · 查看历史和任务</h2><p>有历史快照时，可进入详情并发起完整性校验；新安装的空环境会明确提示没有记录。</p><a href="/records">历史记录 →</a> · <a href="/jobs">任务观测 →</a></div><div class="card"><h2>05 · 说明下一阶段</h2><p>展示临床预测、投资验证与云端交付的验收条件。不要把工程测试或演示案例当成预测业绩。</p><a href="/mission">目标与里程碑 →</a></div>'
+ return '<span class="eyebrow">PRODUCT WALKTHROUGH</span><h1>A six-minute research walkthrough.</h1><p class="lead">For first-time use and product demonstrations. No model key required.</p><div class="card"><h2>01 · Define the question</h2><p>Start with the OSMR retrospective case and state that its outcome is already known.</p><a href="/case?id=osmr-uc">Open the case →</a></div><div class="card"><h2>02 · Compare evidence and counterevidence</h2><p>Inspect observational associations, clinical counterevidence, source locations and unresolved limitations together.</p></div><div class="card"><h2>03 · Record a decision</h2><p>Enter a demonstration alias and a rationale of at least ten characters, choose follow-up, revision or stopping, then inspect the saved timeline.</p></div><div class="card"><h2>04 · Inspect history and tasks</h2><p>Open a historical snapshot to inspect details and start integrity verification. A fresh installation explicitly shows an empty state.</p><a href="/records">History →</a> · <a href="/jobs">Monitor tasks →</a></div><div class="card"><h2>05 · Explain the next stage</h2><p>Review acceptance criteria for clinical forecasting, investment validation and cloud delivery. Engineering tests and demonstrations are not forecasting performance.</p><a href="/mission">Goals and milestones →</a></div>'
 
 def record_gates(record,read):
  data=record.get('data') if isinstance(record.get('data'),dict) else {}
  integrity=data.get('record_integrity')
  if not isinstance(integrity,str):integrity=None
- integrity_labels={'complete':'保存状态：记录完整','incomplete':'保存状态：记录不完整','pending':'保存状态：待核对'}
+ integrity_labels={'complete':'Saved state: complete record','incomplete':'Saved state: incomplete record','pending':'Saved state: review required'}
  review={}
  if record['kind']=='run' and (record['path']/'review.json').is_file():
   saved=read(record['path']/'review.json')
   if isinstance(saved,dict):review=saved
  signature=review.get('human_signature')
- if 'human_signature' not in review:human='签署状态未知'
- elif signature is None or signature=='':human='未记录人工签署'
- elif isinstance(signature,str) and signature.strip() and review.get('reviewer_type')=='human':human='签署字段已记录 · 尚未核验'
- else:human='签署字段待核对'
- executions={'succeeded':'执行成功','failed':'执行失败','blocked':'执行受阻','interrupted':'任务中断','running':'执行中','pending':'待执行','completed':'循环已完成','snapshot':'已冻结','recorded':'已记录'}
- reviews={'pass':'保存状态：通过','passed':'保存状态：通过','revise':'保存状态：需修订','insufficient_evidence':'保存状态：证据不足','pending':'保存状态：待审查'}
+ if 'human_signature' not in review:human='Sign-off state unknown'
+ elif signature is None or signature=='':human='No human sign-off recorded'
+ elif isinstance(signature,str) and signature.strip() and review.get('reviewer_type')=='human':human='Sign-off field recorded · Not verified'
+ else:human='Sign-off field requires review'
+ executions={'succeeded':'Execution succeeded','failed':'Execution failed','blocked':'Execution blocked','interrupted':'Task interrupted','running':'Running','pending':'Execution pending','completed':'Cycle completed','snapshot':'Frozen','recorded':'Recorded'}
+ reviews={'pass':'Saved state: passed','passed':'Saved state: passed','revise':'Saved state: revision required','insufficient_evidence':'Saved state: insufficient evidence','pending':'Saved state: review pending'}
  status=record.get('status') if isinstance(record.get('status'),str) else None
  scientific=record.get('review') if isinstance(record.get('review'),str) else None
- values=[('执行 / 记录',executions.get(status,'执行状态未知')),
-         ('记录完整性',integrity_labels.get(integrity,'完整性状态未知')),
-         ('科学审查',reviews.get(scientific,'科学审查状态未知')),
-         ('人工签署',human)]
- return '<section class="record-gates" aria-label="研究记录的四项独立状态">'+''.join('<div><span>'+e(label)+'</span><strong>'+e(value)+'</strong></div>' for label,value in values)+'</section><p class="data-note">以上转录该版本保存字段，尚未在此页面重新核验；四项状态分别记录。签署字段存在不代表签名有效或研究已获批准。</p>'
+ values=[('Execution / record',executions.get(status,'Execution state unknown')),
+         ('Record integrity',integrity_labels.get(integrity,'Integrity state unknown')),
+         ('Scientific review',reviews.get(scientific,'Scientific-review state unknown')),
+         ('Human sign-off',human)]
+ return '<section class="record-gates" aria-label="Four independent research-record states">'+''.join('<div><span>'+e(label)+'</span><strong>'+e(value)+'</strong></div>' for label,value in values)+'</section><p class="data-note">These are saved fields for this version, not new verification. The four states are separate; a sign-off field does not establish a valid signature or research approval.</p>'
 
 
 def record_summary(record,read):
- data=record['data'];path=record['path'];kind=record['kind'];body='<div class="card"><h2>研究摘要</h2>'
+ data=record['data'];path=record['path'];kind=record['kind'];body='<div class="card"><h2>Research summary</h2>'
  if kind=='run':
   errors=data.get('errors',[])
   if not isinstance(errors,list):
-   body+='<p class="notice">错误记录格式待核实；不能视为没有执行问题。</p>';errors=[]
-  body+='<p>'+('本次分析有需要处理的问题。' if errors else '查看下方结果与科学审查；执行完成不代表结论通过。')+'</p>'
+   body+='<p class="notice">Error record format requires review; this does not establish absence of execution issues.</p>';errors=[]
+  body+='<p>'+('This analysis has issues that require attention.' if errors else 'Review the results and scientific review below; completion does not mean the conclusions passed.')+'</p>'
   for error in errors:body+='<p class="notice">'+e(error)+'</p>'
   results=read(path/'work/results.json')
   if isinstance(results,list) and results:
    unreadable=sum(not isinstance(row,dict) for row in results)
-   if unreadable:body+='<p class="notice">结果中有 '+str(unreadable)+' 条记录格式待核实；以下仅转录可读行，不代表完整结果。</p>'
-   body+='<div class="scroll"><table><tr><th>基因</th><th>队列</th><th>无响应 / 响应</th><th>中位数差</th><th>95% CI</th></tr>'
+   if unreadable:body+='<p class="notice">Results contain '+str(unreadable)+' rows whose format requires review; only readable rows are transcribed below, not a complete result.</p>'
+   body+='<div class="scroll"><table><tr><th>Gene</th><th>Cohort</th><th>Nonresponders / responders</th><th>Median difference</th><th>95% CI</th></tr>'
    for r in results:
     if not isinstance(r,dict):continue
     def fmt(k):
-     value=r.get(k);return f'{value:.3f}' if isinstance(value,(int,float)) else '未估计'
-    body+='<tr><td>'+e(r.get('gene'))+'</td><td>'+e(r.get('cohort'))+'</td><td>'+e(r.get('n_nonresponder'))+' / '+e(r.get('n_responder'))+'</td><td>'+fmt('median_difference')+'</td><td>'+fmt('ci_low')+' ～ '+fmt('ci_high')+'</td></tr>'
+     value=r.get(k);return f'{value:.3f}' if isinstance(value,(int,float)) else 'Not estimated'
+    body+='<tr><td>'+e(r.get('gene'))+'</td><td>'+e(r.get('cohort'))+'</td><td>'+e(r.get('n_nonresponder'))+' / '+e(r.get('n_responder'))+'</td><td>'+fmt('median_difference')+'</td><td>'+fmt('ci_low')+' – '+fmt('ci_high')+'</td></tr>'
    body+='</table></div>'
-  else:body+='<p class="data-note">统计结果为空、尚未提供或格式待核实，不能据此推定阴性结果。</p>'
+  else:body+='<p class="data-note">Statistical results are empty, unavailable or in an unverified format; a negative result cannot be inferred.</p>'
  elif kind=='cycle':
   d=data.get('decision',{})
-  if not isinstance(d,dict):body+='<p class="notice">决策记录格式待核实。</p>';d={}
-  body+='<h3>'+e(d.get('scope','查看完整决策记录'))+'</h3><p>'+e(d.get('retained_work',''))+'</p><p class="muted">回顾性研究；不计为前瞻预测业绩。</p>'
+  if not isinstance(d,dict):body+='<p class="notice">Decision record format requires review.</p>';d={}
+  body+='<h3>'+e(d.get('scope','View the complete decision record'))+'</h3><p>'+e(d.get('retained_work',''))+'</p><p class="muted">Retrospective research; excluded from prospective forecast performance.</p>'
  else:
   plan=read(path/'plan.json')
-  if not isinstance(plan,dict):body+='<p class="notice">研究计划格式待核实。</p>';plan={}
+  if not isinstance(plan,dict):body+='<p class="notice">Research plan format requires review.</p>';plan={}
   hypotheses=plan.get('hypotheses',[])
-  if not isinstance(hypotheses,list):body+='<p class="notice">研究假设列表格式待核实。</p>';hypotheses=[]
+  if not isinstance(hypotheses,list):body+='<p class="notice">Research hypothesis list format requires review.</p>';hypotheses=[]
   for h in hypotheses:
    if isinstance(h,dict):body+='<h3>'+e(h.get('title'))+'</h3><p>'+e(h.get('question'))+'</p>'
-   else:body+='<p class="notice">研究假设记录格式待核实。</p>'
+   else:body+='<p class="notice">Research hypothesis record format requires review.</p>'
  return body+'</div>'

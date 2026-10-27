@@ -11,18 +11,18 @@ from urllib.parse import urlsplit
 
 
 NAV_GROUPS = (
-    ("研究入口", (("/", "研究首页", "01"), ("/market", "市场与管线", "02"),
-                  ("/assets", "临床资产", "03"), ("/patient-lab", "Patient scenarios", "12"), ("/disclosures", "公司披露与登记核对", "04"))),
-    ("数据覆盖", (("/coverage", "覆盖进度与缺口", "05"), ("/mapping", "申办方关联", "06"))),
-    ("工作记录", (("/records", "历史记录", "07"), ("/jobs", "完整性校验", "08"),
-                  ("/notes", "问题与笔记", "09"), ("/mission", "目标与里程碑", "10"),
-                  ("/guide", "演示路线", "11"))),
+    ("Research entry", (("/", "Research home", "01"), ("/market", "Market and pipeline", "02"),
+                  ("/assets", "Clinical assets", "03"), ("/patient-lab", "Patient scenarios", "12"), ("/disclosures", "Company disclosures and registry checks", "04"))),
+    ("Data coverage", (("/coverage", "Coverage and gaps", "05"), ("/mapping", "Sponsor mapping", "06"))),
+    ("Work records", (("/records", "History", "07"), ("/jobs", "Integrity checks", "08"),
+                  ("/notes", "Questions and notes", "09"), ("/mission", "Goals and milestones", "10"),
+                  ("/guide", "Walkthrough", "11"))),
 )
 
 ROUTE_NAMES = {route: label for _, links in NAV_GROUPS for route, label, _ in links}
 ALIASES = {"/market/export": "/market", "/market/progress": "/coverage",
            "/record": "/records", "/case": "/records"}
-SUBPAGE_NAMES = {"/market/export": "研究数据导出", "/record": "研究记录详情", "/case": "研究案例"}
+SUBPAGE_NAMES = {"/market/export": "Research data export", "/record": "Research record detail", "/case": "Research case"}
 
 
 STYLE = r"""
@@ -81,12 +81,12 @@ def _route(path):
     try:
         parsed = urlsplit(str(path))
     except ValueError:
-        return "", "研究工作台"
+        return "", "Research workbench"
     if parsed.scheme or parsed.netloc:
-        return "", "研究工作台"
+        return "", "Research workbench"
     route = parsed.path
     active = ALIASES.get(route, route)
-    return active, SUBPAGE_NAMES.get(route, ROUTE_NAMES.get(active, "研究工作台"))
+    return active, SUBPAGE_NAMES.get(route, ROUTE_NAMES.get(active, "Research workbench"))
 
 
 def _navigation(active):
@@ -119,23 +119,23 @@ def frame(body, path, refresh=""):
     active, title = _route(path)
     safe_title = html.escape(title, quote=True)
     navigation = _navigation(active)
-    return ('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             + _refresh_meta(refresh) + '<title>' + safe_title
             + ' · EmerisBiotech</title><style>' + STYLE + '</style></head><body>'
-            '<a class="skip-link" href="#main-content">跳至主要内容</a>'
-            '<aside class="sidebar" aria-label="工作台侧栏">'
-            '<a class="brand" href="/" aria-label="EmerisBiotech 研究首页">'
+            '<a class="skip-link" href="#main-content">Skip to main content</a>'
+            '<aside class="sidebar" aria-label="Workbench sidebar">'
+            '<a class="brand" href="/" aria-label="EmerisBiotech Research home">'
             '<span class="brand-mark" aria-hidden="true">E</span><span class="brand-name">EmerisBiotech'
             '<span class="brand-subtitle">CLINICAL ASSET RESEARCH</span></span></a>'
-            '<nav class="sidebar-nav" aria-label="主要导航">' + navigation + '</nav>'
+            '<nav class="sidebar-nav" aria-label="Primary navigation">' + navigation + '</nav>'
             '<div class="sidebar-footer"><strong><span class="status-dot" aria-hidden="true"></span>'
-            '本地研究工作区</strong><p>单用户 · 研究用途<br>无自动交易</p></div></aside>'
+            'Local research workspace</strong><p>Single user · Research use<br>No automated trading</p></div></aside>'
             '<div class="workspace"><header class="topbar"><div class="breadcrumb">'
-            '<span class="breadcrumb-label">临床资产研究</span><span class="breadcrumb-divider" aria-hidden="true">/</span>'
+            '<span class="breadcrumb-label">Clinical asset research</span><span class="breadcrumb-divider" aria-hidden="true">/</span>'
             '<strong>' + safe_title + '</strong></div><div class="topbar-meta">'
-            '<span class="context-pill">证据与研究记录</span><span>研究用途</span></div>'
-            '<details class="mobile-nav"><summary>导航</summary><nav class="mobile-menu" aria-label="移动端导航">'
+            '<span class="context-pill">Evidence and research records</span><span>Research use</span></div>'
+            '<details class="mobile-nav"><summary>Navigation</summary><nav class="mobile-menu" aria-label="Mobile navigation">'
             + navigation + '</nav></details></header><main id="main-content" class="main-content" tabindex="-1">'
-            + body + '<footer class="page-footer"><span>EmerisBiotech · 临床资产研究工作台</span>'
-            '<span>保留来源、版本与判断记录</span></footer></main></div></body></html>')
+            + body + '<footer class="page-footer"><span>EmerisBiotech · Clinical asset research workbench</span>'
+            '<span>Preserve sources, versions and decision records</span></footer></main></div></body></html>')

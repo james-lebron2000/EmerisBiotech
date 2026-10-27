@@ -4,7 +4,7 @@ from vbt.workbench import Workbench,page
 @pytest.fixture
 def app(tmp_path):return Workbench(tmp_path/'workspace',tmp_path/'state')
 def test_empty_is_unknown(app):
- text=page(app,'/mission',{});assert '尚无进展记录' in text and '投资优势' in text;assert not app.rows('milestones')
+ text=page(app,'/mission',{});assert 'No progress recorded' in text and 'investment advantage' in text;assert not app.rows('milestones')
 def test_append_restart_export(app):
  app.update_milestone('data','in_progress','TEST','Starting a test data contract')
  app.update_milestone('data','blocked','TEST','Missing historical timestamps')
@@ -17,7 +17,7 @@ def test_no_false_completion(app,state,ref):
 def test_linked_evidence_is_not_approval(app):
  p=app.workspace/'artifacts/runs/example';p.mkdir(parents=True);(p/'status.json').write_text('{}')
  app.update_milestone('clinical','evidence_submitted','TEST','<script>not approved</script>','example')
- text=page(app,'/mission',{});assert '&lt;script&gt;' in text and '<script>' not in text;assert '待独立审查' in text
+ text=page(app,'/mission',{});assert '&lt;script&gt;' in text and '<script>' not in text;assert 'independent review pending' in text
 def test_existing_notes_survive_migration(app):
  app.add('TEST','note','Existing note retained')
  with app.db() as db:db.execute('DROP TABLE milestones')

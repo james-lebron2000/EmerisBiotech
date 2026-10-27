@@ -38,7 +38,7 @@ def test_native_menu_is_collapsed_and_main_is_keyboard_target():
     assert ('main', {'id': 'main-content', 'class': 'main-content', 'tabindex': '-1'}) in parser.tags
     assert any(tag == 'a' and attrs.get('class') == 'skip-link' and attrs.get('href') == '#main-content'
                for tag, attrs in parser.tags)
-    assert any(tag == 'nav' and attrs.get('aria-label') == '移动端导航' for tag, attrs in parser.tags)
+    assert any(tag == 'nav' and attrs.get('aria-label') == 'Mobile navigation' for tag, attrs in parser.tags)
     assert not any(tag in ('script', 'iframe', 'img', 'link') for tag, _ in parser.tags)
     assert '@media(max-width:900px)' in STYLE and '.sidebar{display:none}' in STYLE
     assert '.mobile-nav:not([open])>.mobile-menu{display:none}' in STYLE
@@ -47,7 +47,7 @@ def test_native_menu_is_collapsed_and_main_is_keyboard_target():
 @pytest.mark.parametrize('path', ['/<script>alert(1)</script>', 'https://evil.test/market', '//evil.test/notes', '/[broken', 'http://[bad'])
 def test_unknown_route_is_not_interpolated(path):
     document = frame('<p>Trusted rendered body</p>', path)
-    assert '<title>研究工作台 · EmerisBiotech</title>' in document
+    assert '<title>Research workbench · EmerisBiotech</title>' in document
     assert '<script>' not in document and 'evil.test' not in document
     assert 'aria-current="page"' not in document
     assert '<p>Trusted rendered body</p>' in document
