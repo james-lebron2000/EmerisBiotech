@@ -1,0 +1,16 @@
+{
+  "url": "http://127.0.0.1:64344",
+  "checks": [
+    "English interface and export",
+    "verified templates",
+    "save and compare",
+    "two follow-ups",
+    "export",
+    "reload and original preserved",
+    "duplicate follow-up",
+    "visitor isolation",
+    "desktop/390px/320px"
+  ],
+  "errors": [],
+  "external_requests": []
+}

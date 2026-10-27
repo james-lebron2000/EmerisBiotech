@@ -4,6 +4,10 @@
 
 **状态：** 可运行的研究软件；尚未建立经过验证的二期/三期预测能力或投资收益优势。本地容器已完成隔离运行验收，远端 HTTPS、客户账号与上线验收尚未完成。
 
+## Patient Scenario Lab
+
+Open `/patient-lab` for the English-only patient showcase. Anonymous patient **P001** is synthetic. Compare 24-week scenarios for fictional A, B and A+B; save runs, export JSON and create new versions from week-6/week-12 synthetic follow-ups. Earlier forecasts remain unchanged. Survival curves are independent mathematical illustrations; clinical response, PFS, OS and toxicity remain unavailable. See the [English guide](docs/PATIENT_LAB.md).
+
 ## 安装与启动
 
 需要 Python 3.11，推荐使用 uv。

@@ -19,3 +19,4 @@ cache-info.json
 
 # Public source snapshots travel only through their pinned acquisition manifest.
 apps/predome/arena_data/source_snapshots/
+node_modules/
