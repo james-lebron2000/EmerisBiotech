@@ -113,7 +113,7 @@ def _refresh_meta(refresh):
 
 def frame(body, path, refresh=""):
     """Wrap trusted renderer HTML in the responsive, accessible app shell."""
-    if path in ("/patient-lab", "/molecule-lab"):
+    if path in ("/patient-lab", "/molecule-lab", "/cohort-lab"):
         from .patient_lab_view import frame as patient_frame
         return patient_frame(body)
     active, title = _route(path)

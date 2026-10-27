@@ -21,8 +21,14 @@ DAYS = (0, 1, 3, 5, 7)
 def patient_snapshot(patient_id):
     if patient_id not in FIXTURE_VALUES:
         raise ValueError('Unknown synthetic patient')
+    return assay_snapshot(patient_id, FIXTURE_VALUES[patient_id],
+                          {'P001': '58 / 1', 'P002': '64 / 0', 'P003': '61 / unavailable'}[patient_id])
+
+
+def assay_snapshot(patient_id, paired_values, age_performance):
+    """Build explicit synthetic paired counts shared by single and cohort views."""
     assays = {}
-    for molecule, values in FIXTURE_VALUES[patient_id].items():
+    for molecule, values in paired_values.items():
         rows = []
         for i, (day, value) in enumerate(zip(DAYS, values)):
             vehicle = [1000 + 160 * day] * 3
@@ -36,7 +42,7 @@ def patient_snapshot(patient_id):
                             'rows': rows}
     return {'patient_id': patient_id, 'source_kind': 'synthetic', 'fixture_version': 'paired-assays-v1',
             'sample_id': patient_id + '-T01', 'clinical': {'Diagnosis': 'Colorectal cancer (synthetic)',
-                'Age / ECOG': {'P001': '58 / 1', 'P002': '64 / 0', 'P003': '61 / unavailable'}[patient_id],
+                'Age / ECOG': age_performance,
                 'Imaging / organ function': 'Unavailable; not assumed normal'},
             'molecular': {'DNA / RNA / protein': 'Unavailable', 'Single-cell / spatial': 'Unavailable',
                           'Functional assay': 'Synthetic matched drug / vehicle viable-cell counts'},

@@ -105,6 +105,9 @@ def page(app,path,q):
     if path=='/':
         from .dashboard_view import render
         body=render(app,records,table)
+    elif path=='/cohort-lab':
+        from .cohort_lab_view import render
+        body=render(app,q)
     elif path=='/molecule-lab':
         from .molecule_lab_view import render
         body=render(app,q)
@@ -224,7 +227,7 @@ def handler(app, public_origin=None):
                     p=within(r['path']/name,r['path']);text=p.read_text();self.send(200,text,'text/html; charset=utf-8' if name.endswith('.html') else 'text/plain; charset=utf-8',True);return
                 self.send(200,page(app,u.path,q))
             except (ValueError,OSError) as e:
-                self.send(404,('<h1>Unable to open scenario</h1><p>'+esc(e)+'</p><a href="/patient-lab">Back to Patient Lab</a>') if u.path.startswith(('/patient-lab', '/molecule-lab')) else '<h1>暂时无法读取</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
+                self.send(404,('<h1>Unable to open scenario</h1><p>'+esc(e)+'</p><a href="/patient-lab">Back to Patient Lab</a>') if u.path.startswith(('/patient-lab', '/molecule-lab', '/cohort-lab')) else '<h1>暂时无法读取</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
         def do_POST(self):
             origin=public_origin or f'http://127.0.0.1:{self.server.server_port}'
             if not self.safehost() or self.headers.get('Origin')!=origin:self.send(403,'Origin rejected');return

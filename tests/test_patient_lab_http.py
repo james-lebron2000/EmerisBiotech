@@ -90,3 +90,15 @@ def test_molecule_page_uses_paired_engine_without_manual_resistance(live):
         with pytest.raises(urllib.error.HTTPError) as error:
             urllib.request.urlopen(base + '/molecule-lab?' + query)
         assert error.value.code == 404
+
+
+def test_cohort_http_same_timeline_and_missing_pairs(live):
+    app, base=live
+    response=urllib.request.urlopen(base+'/cohort-lab?day=10&cutoff=7')
+    body=response.read().decode()
+    assert '<html lang="en">' in body and '22 complete pairs / 24 patients' in body
+    assert 'P024' in body and 'Not estimable' in body and 'Extrapolated, unvalidated' in body
+    assert '<script' not in body and not app.patient_lab.history()
+    for query in ['day=11','cutoff=4','population=unknown','drug=unknown']:
+        with pytest.raises(urllib.error.HTTPError) as error:urllib.request.urlopen(base+'/cohort-lab?'+query)
+        assert error.value.code==404

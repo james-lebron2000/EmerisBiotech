@@ -109,3 +109,9 @@ Patient-specific paired functional assays replace manual resistance settings in 
 Run `/molecule-lab` in the workbench or open `molecule-lab/` in the public site build.
 Three synthetic patients, two named molecules, explicit missing-pair abstention and traceable assay forecasts.
 Clinical response and survival remain unavailable. See [design and validation gates](docs/PATIENT_MOLECULE_LAB.md).
+
+The same branch includes a **Virtual Trial Cohort** at `cohort-lab/` in the public
+build and `/cohort-lab` in the workbench: 24 synthetic patients, two simultaneous
+molecule panels, synchronized playback, paired denominators, patient highlighting
+and evidence-preserving JSON export. It is a virtual assay cohort, not a clinical
+trial or a validated clinical efficacy simulation.

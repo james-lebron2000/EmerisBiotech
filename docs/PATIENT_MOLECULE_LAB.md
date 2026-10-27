@@ -103,3 +103,48 @@ Serve that directory on loopback and open `/molecule-lab/`. For the integrated
 workbench use the existing patient lab server with a fresh local state directory,
 then open `/molecule-lab`. The deployed production link is unchanged until this
 branch is reviewed and an explicit release is made.
+
+## Virtual Trial Cohort extension
+
+The new `cohort-lab/` public page (and read-only `/cohort-lab` workbench route)
+displays **24 synthetic patients under both molecule exposures simultaneously**.
+This is a paired virtual assay cohort, not a randomized clinical trial. Treatment
+arms, RECIST outcomes, survival and drug combinations are not manufactured.
+
+The cohort includes the original three cases and 21 additional synthetic cases.
+Their paired count fixtures are authored deterministically using recipe
+`synthetic-paired-cohort-24-v1`, seed `20261027`. The seed is reproducibility metadata,
+not a source of predictive uncertainty. Added cases include decline, persistent
+viability and rebound patterns. Patient P003 lacks oxaliplatin measurements and
+P014 lacks fluorouracil measurements. The original single-patient engine and the
+cohort use the same matched-count normalization and short-tail estimator.
+
+The English interface provides:
+
+- Two side-by-side molecule panels with shared axes, all individual trajectories,
+  a median curve, descriptive patient interquartile band and synchronized cursor.
+- Play, pause, restart and a shared assay-day slider. Current group summaries and
+  all 24 patient cards update together. Measured/interpolated and extrapolated
+  timepoints are explicitly distinguished.
+- Patient highlighting across both panels, with raw paired counts and source IDs
+  in the evidence panel. All patient cards remain visible even when the patient
+  is excluded from a summary because a paired measurement is missing.
+- A default complete-pair summary using the **same 22 patients for each molecule**.
+  An optional available-case summary uses **23 patients per molecule** with
+  different missing patients; a warning prohibits causal interpretation.
+- Three data cutoffs (days 3, 5, 7). Future observations are removed before result
+  generation, input hashing and export. Forecast horizon is cutoff + three days.
+- JSON export of the full cohort, raw evidence, model and cohort versions,
+  canonical-template checksum, selected population, assay day and highlighted
+  patient. Each download gets a fresh run ID; no existing record is overwritten.
+
+Patients are the independent descriptive unit. Three technical wells never become
+three patients. Median and 25th–75th patient percentiles are computed in Python;
+JavaScript only renders precomputed values. Percentiles use linear interpolation
+at `(n - 1) × p`. The band is neither a confidence interval nor a calibrated
+prediction interval. Available-case summaries do not establish a treatment effect.
+The complete-pair selection is explicit and can itself be unrepresentative.
+
+The browser verifies all three cohort templates before enabling playback/export.
+The page makes no real patient uploads, creates no real trial enrollment and does
+not change clinical or experimental treatment assignments.
