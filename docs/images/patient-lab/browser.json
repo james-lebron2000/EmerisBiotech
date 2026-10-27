@@ -1,0 +1,13 @@
+{
+  "scope": "synthetic fixture; real loopback HTTP, no provider or production access",
+  "checks": [
+    "create persisted synthetic run",
+    "plan and time selection",
+    "prognosis and evidence boundaries",
+    "two followup versions",
+    "reload and original immutability",
+    "390px and 320px real layout"
+  ],
+  "errors": [],
+  "external_requests": []
+}

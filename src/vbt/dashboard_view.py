@@ -20,7 +20,7 @@ def render(app,records,record_table):
         last=db.execute("SELECT max(finished) FROM runs WHERE source='ClinicalTrials.gov' AND status='succeeded'").fetchone()[0]
         has_jobs=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='collection_jobs'").fetchone()
         jobs={r['status']:r['n'] for r in db.execute('SELECT status,count(*) n FROM collection_jobs GROUP BY status')} if has_jobs else {}
-    body='<header class="page-header"><div><span class="eyebrow">RESEARCH OVERVIEW</span><h1>临床资产研究控制台</h1><p class="lead">从市场线索出发，核对来源，留下可复查的研究判断。</p></div><div class="page-actions"><a class="button" href="/assets">检索临床资产</a><a class="button secondary" href="/notes">记录研究问题</a></div></header>'
+    body='<header class="page-header"><div><span class="eyebrow">RESEARCH OVERVIEW</span><h1>临床资产研究控制台</h1><p class="lead">从市场线索出发，核对来源，留下可复查的研究判断。</p></div><div class="page-actions"><a class="button" href="/assets">检索临床资产</a><a class="button secondary" href="/notes">记录研究问题</a><a class="button secondary" href="/patient-lab">患者治疗情景</a></div></header>'
     body+='<div class="grid" aria-label="当前工作区指标">'
     synthetic_count=sum(is_synthetic(r) for r in records)
     history_detail='含 '+str(synthetic_count)+' 条明确标记的合成工程测试' if synthetic_count else '包含成功、失败和受阻记录'

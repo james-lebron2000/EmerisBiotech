@@ -28,6 +28,14 @@ jobs:
         run: uv sync --extra dev --frozen
       - name: Preserve full workbench regression
         run: uv run pytest -q tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check patient showcase with real HTTP and isolated state
+        run: |
+          npm install --prefix "$RUNNER_TEMP/patient-lab-ui" --no-save --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/patient-lab-ui/node_modules/.bin/playwright" install --with-deps chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/patient-lab-ui/node_modules/playwright" node tests/ui_patient_lab.cjs
 
   predome:
     name: Predome public source and browser fixtures

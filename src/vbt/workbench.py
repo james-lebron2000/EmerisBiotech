@@ -7,6 +7,7 @@ from .io import ensure_storage,now,write,within
 from .mission import MISSION,MILESTONES,STATES,validate_update
 from .product_views import CASES,ACTIONS,home_intro,case_page,guide,record_summary,record_gates
 from .sqlite_connections import ClosingConnection
+from .patient_lab import PatientLab
 
 def esc(x):return html.escape(str(x if x is not None else '未记录'),quote=True)
 def read(path):
@@ -19,7 +20,7 @@ class Workbench:
         tag=hashlib.sha256(str(self.workspace).encode()).hexdigest()[:12]
         self.state=Path(state or Path.home()/'Library/Application Support/VirtualBiotech'/tag).resolve()
         if self.state.is_relative_to('/Volumes'):raise ValueError('State must be local')
-        self.state.mkdir(parents=True,exist_ok=True);self.dbpath=self.state/'workbench.sqlite3';self.token=secrets.token_urlsafe(32);self.lock=threading.Lock()
+        self.state.mkdir(parents=True,exist_ok=True);self.dbpath=self.state/'workbench.sqlite3';self.token=secrets.token_urlsafe(32);self.lock=threading.Lock();self.patient_lab=PatientLab(self.state)
         with self.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS decisions (id TEXT PRIMARY KEY, created TEXT, case_id TEXT, action TEXT, author TEXT, reason TEXT)')
             db.execute('CREATE TABLE IF NOT EXISTS entries (id TEXT PRIMARY KEY, created TEXT, author TEXT, kind TEXT, body TEXT, reference TEXT)')
@@ -104,6 +105,9 @@ def page(app,path,q):
     if path=='/':
         from .dashboard_view import render
         body=render(app,records,table)
+    elif path=='/patient-lab':
+        from .patient_lab_view import render
+        body=render(app,q)
     elif path=='/market/export':
         from .market_export import export_page
         body=export_page(app,q)
@@ -183,6 +187,10 @@ def handler(app, public_origin=None):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/patient-lab/export':
+                    if set(q)!={'id'}:raise ValueError('Expected scenario ID')
+                    record=app.patient_lab.get(q['id'])
+                    self.send(200,json.dumps(record,ensure_ascii=False,indent=2),'application/json; charset=utf-8');return
                 if u.path=='/market/disclosure-evidence':
                     from .market import Market
                     from .disclosures import evidence_file
@@ -271,6 +279,13 @@ def handler(app, public_origin=None):
                     elif self.path=='/market/schedule':market.schedule(q.get('enabled')=='1')
                     else:raise ValueError('Unknown market operation')
                     dest=('/disclosures' if self.path=='/market/disclosure/enqueue' else '/mapping' if self.path in ('/market/resolve','/market/resolve-batch','/market/resolve-all','/market/identity-batch','/market/identity-schedule','/market/proposal-review') else '/coverage' if self.path in ('/market/discover','/market/expand','/market/batch','/market/cancel','/market/review') else '/market')+'?saved=1'
+                elif self.path=='/patient-lab/run':
+                    record=app.patient_lab.run({k:v for k,v in q.items() if k!='token'})
+                    dest='/patient-lab?id='+record['run_id']
+                elif self.path=='/patient-lab/followup':
+                    if set(q)!={'token','parent_id'}:raise ValueError('Expected parent scenario ID')
+                    record=app.patient_lab.followup(q['parent_id'])
+                    dest='/patient-lab?id='+record['run_id']
                 elif self.path=='/decision':app.decide(q.get('case_id',''),q.get('action',''),q.get('author',''),q.get('reason',''));dest='/case?id='+quote(q['case_id'])+'&saved=1'
                 elif self.path=='/note':app.add(q.get('author',''),q.get('kind',''),q.get('body',''),q.get('reference',''));dest='/notes?saved=1'
                 elif self.path=='/milestone':app.update_milestone(q.get('milestone',''),q.get('status',''),q.get('author',''),q.get('note',''),q.get('reference',''));dest='/mission?saved=1'
