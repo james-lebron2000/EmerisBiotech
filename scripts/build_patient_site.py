@@ -3,7 +3,8 @@ import argparse
 import json
 import shutil
 from pathlib import Path
-from vbt.cohort_lab import public_cohort_bundle
+from vbt.cohort_lab import public_cohort_bundle, cohort_result
+from vbt.patient_exports import cohort_csv
 from vbt.molecule_lab import public_bundle
 from vbt.patient_lab import PLANS, ScenarioRequest, canonical, digest, result
 
@@ -41,6 +42,8 @@ def main():
         shutil.copyfile(source.parent / 'cohort-lab' / name, cohort_out / name)
     shutil.copyfile(source / 'styles.css', cohort_out / 'styles.css')
     (cohort_out / 'scenarios.json').write_text(json.dumps(public_cohort_bundle(), ensure_ascii=False, separators=(',', ':')) + '\n')
+    for cutoff in (3, 5, 7):
+        (cohort_out / f'trajectories-cutoff-{cutoff}.csv').write_text(cohort_csv(cohort_result(cutoff)), encoding='utf-8')
     print(f'Built English patient showcase: {args.out}')
 
 

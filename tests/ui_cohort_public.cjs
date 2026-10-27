@@ -52,6 +52,20 @@ const {spawn,spawnSync}=require('node:child_process');
   assert.equal(exported.view.assay_day,6);assert.equal(exported.result.cutoff_day,3);assert.equal(exported.result.total_patients,24);
   assert.equal(exported.result.clinical_outcomes.os,null);
   assert(exported.result.patients.every(r=>Object.values(r.patient.assays).every(a=>a.rows.every(p=>p.day<=3))));
+  const csvDownload=page.waitForEvent('download');await page.locator('#export-csv').click();
+  const downloadedCsv=fs.readFileSync(await (await csvDownload).path(),'utf8');
+  const verification=fs.mkdtempSync(path.join(os.tmpdir(),'cohort-export-'));
+  try{
+   fs.writeFileSync(path.join(verification,'export.json'),JSON.stringify(exported));
+   const root=path.resolve(__dirname,'..'),python=process.env.VBT_PYTHON||path.join(root,'.venv','bin','python');
+   const checked=spawnSync(python,['-m','vbt.patient_exports',path.join(verification,'export.json'),'--csv',path.join(verification,'expected.csv')],{cwd:root,encoding:'utf8',env:{PATH:process.env.PATH,PYTHONPATH:path.join(root,'src')}});
+   assert.equal(checked.status,0,checked.stderr);
+   assert.equal(JSON.parse(checked.stdout).record_integrity,'verified');
+   assert.equal(downloadedCsv,fs.readFileSync(path.join(verification,'expected.csv'),'utf8'));
+   exported.result.total_patients=999;fs.writeFileSync(path.join(verification,'tampered.json'),JSON.stringify(exported));
+   const rejected=spawnSync(python,['-m','vbt.patient_exports',path.join(verification,'tampered.json')],{cwd:root,env:{PATH:process.env.PATH,PYTHONPATH:path.join(root,'src')}});assert.notEqual(rejected.status,0);
+  }finally{fs.rmSync(verification,{recursive:true,force:true});}
+
   await page.locator('#cutoff').selectOption('7');await page.locator('#population').selectOption('paired');await page.locator('#focus').selectOption('P002');
   await page.locator('#day').focus();await page.locator('#day').press('End');
   await page.locator('#play').click();await page.waitForFunction(()=>document.querySelector('#day-value').textContent==='1');await page.locator('#play').click();
@@ -60,7 +74,7 @@ const {spawn,spawnSync}=require('node:child_process');
   assert.deepEqual(errors,[]);
   await page.route('**/cohort-lab/scenarios.json',async route=>{const response=await route.fetch();const bundle=await response.json();bundle.templates['7'].sha256='0'.repeat(64);await route.fulfill({json:bundle});});
   await page.reload();await page.locator('#error').waitFor();assert(await page.locator('#play').isDisabled());assert(await page.locator('#export').isDisabled());
-  const receipt={checks:['keyboard focus retained','evidence stays open during playback','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','English only','desktop/390px/320px','corrupt template fails closed'],errors};
+  const receipt={checks:['keyboard focus retained','evidence stays open during playback','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','offline verifier accepts real browser export and rejects tampering','download CSV equals independently reproduced CSV','English only','desktop/390px/320px','corrupt template fails closed'],errors};
   if(out)fs.writeFileSync(path.join(out,'cohort-browser.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));await context.close();
  }finally{await browser.close();if(service){service.kill('SIGTERM');await new Promise(resolve=>service.exitCode!==null||service.signalCode?resolve():service.once('exit',resolve));}if(temporary)fs.rmSync(temporary,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exit(1)});

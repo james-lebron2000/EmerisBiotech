@@ -3,12 +3,13 @@ const $=s=>document.querySelector(s),esc=v=>String(v).replace(/[&<>"']/g,c=>({'&
 const COLORS=['#14716e','#8961b0'];let templates={},current,timer=null,evidenceKey=null;
 const sha=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))),v=>v.toString(16).padStart(2,'0')).join('');
 function stop(){clearInterval(timer);timer=null;$('#play').textContent='Play timeline';$('#play').setAttribute('aria-pressed','false');}
-function fail(e){stop();$('#error').hidden=false;$('#error').textContent=e.message;for(const id of ['play','day','cutoff','population','focus','export'])$('#'+id).disabled=true;}
+function fail(e){stop();$('#export-csv').hidden=true;$('#error').hidden=false;$('#error').textContent=e.message;for(const id of ['play','day','cutoff','population','focus','export'])$('#'+id).disabled=true;}
 function render(){
  const activePatient=document.activeElement.closest?.('[data-patient]')?.dataset.patient;
  const day=+$('#day').value,pop=$('#population').value,focus=$('#focus').value,cutoff=current.cutoff_day;
  const molecules=Object.keys(current.molecules),paired=new Set(current.paired_patient_ids);
  const included=row=>pop==='available'||paired.has(row.patient.patient_id);
+ $('#export-csv').href='trajectories-cutoff-'+cutoff+'.csv';$('#export-csv').hidden=false;
  $('#day-value').textContent=day;$('#phase').textContent=day>cutoff?'Extrapolated · unvalidated':([0,1,3,5,7].includes(day)?'Synthetic measurement':'Interpolated');
  $('#denominator').textContent=`${current.total_patients} patients total · ${paired.size} complete pairs · ${current.total_patients-paired.size} patients with missing pairs. `+(pop==='paired'?'Both summaries use the same complete-pair patients.':'Available-case summaries use different patient sets; no causal comparison.');
  const maxDay=cutoff+3,maxY=Math.max(120,Math.ceil(Math.max(...current.patients.flatMap(r=>molecules.flatMap(m=>r.responses[m].trajectory.map(p=>p.viability_percent))))/20)*20);
