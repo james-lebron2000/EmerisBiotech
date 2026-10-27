@@ -30,6 +30,7 @@ tests/test_intake_documents.py
 tests/test_acquire_trial_documents_cli.py
 tests/test_trial_document_ocr.py
 tests/test_arena_evidence_locations.py
+tests/test_local_trial_documents.py
 tests/test_arena_api.py
 tests/test_patent_evidence.py
 tests/test_patent_identity.py

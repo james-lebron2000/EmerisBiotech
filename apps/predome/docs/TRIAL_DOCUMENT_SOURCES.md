@@ -2,6 +2,8 @@
 
 本入口把官方登记中的附件清单、实际取得的原件、逐页提取和科学审核分开。它为后续新版本的 `trial_protocol` 证据卡提供资料，不自动补全试验参数、创建预测或写入审核票。当前交付范围是 GitHub 源码；没有服务器部署或新的付费模型调用。
 
+本轮另经官方 CTIS 浏览器取得 [TRIUMPH-5 方案和英文 synopsis](TRIUMPH5_CTIS_ACQUISITION.md)。文件使用独立本地登记路径，不伪造 CT.gov 来源链或未观察的 HTTP 状态；此前“已列出、未取得”的原始观察按当时时点保留。
+
 ## 为什么需要单独的资料路径
 
 本轮实际取得 INAVO120（NCT04191499）的 Protocol v8 和 SAP v2。方案为 8,767,559 bytes、208 页，超出现有通用来源解析器的 6 MiB／200 页限制。既有用户上传入口另有 5 MiB／100 页限制。新入口不改变这两个入口，而是为指定的公开方案／SAP 提供独立的原件采集和逐页索引。
@@ -71,7 +73,7 @@ python3.11 scripts/ocr_trial_document_pages.py \
 
 | 研究 | 已核对范围 | 当前限制 |
 |---|---|---|
-| TRIUMPH-5 · NCT06662383 | 当前登记快照；CTIS 实际可见的 MTD 优效目标和英文方案／synopsis 列表 | CT.gov 快照未列附件；CTIS 原件尚未取得，PDF SHA 为空；不能填入完整 estimand、alpha 或多重性规则 |
+| TRIUMPH-5 · NCT06662383 | CT.gov 快照与 CTIS 页面；后续经官方整项下载取得 amendment (c) 方案 186 页及英文 synopsis 7 页 | 有原件 SHA 及局部可读统计信息，CCI 限制完整规则；最终 SAP、最新适用修订、科学批准和旧截止资格未建立，见独立新记录 |
 | AVANZAR · NCT05687266 | 当前登记、AZ 页面和旧 DE EudraCT 公开字段 | 旧欧洲登记的主要／次要终点层级与当前版本有差异，不能替代现行方案／SAP |
 | INAVO121 · NCT05646862 | 当前登记和 Roche 页面；主研究 BICR-PFS 与 DDI 子研究分别识别 | 患者摘要及其 PDF 聚焦 DDI，不能用来补全主随机研究的 SAP |
 | INAVO120 · NCT04191499 | 官方实际附件：Protocol v8／208 页，SAP v2／33 页；原件哈希与独立下载一致 | 是通用接入和间接资料样本，不是 INAVO121 的统计方案；OCR 尚需人工核对 |

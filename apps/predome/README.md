@@ -16,6 +16,8 @@
 
 [方案与 SAP 原件接入](docs/TRIAL_DOCUMENT_SOURCES.md)提供官方附件清单、显式原件采集、逐页索引与待人工审核的 OCR 补录。真实 INAVO120 原件用于验证采集路径；资料获取、完整文字提取和精确预测目标资格分别记录，不回填旧运行。
 
+[TRIUMPH-5 官方浏览器原件](docs/TRIUMPH5_CTIS_ACQUISITION.md)记录本轮实际取得的 CTIS 方案／英文 synopsis，共 193 页，以及纯本地登记入口。原件字节与来源认证分开，未观察的传输信息保持未知；CCI 遮挡、最终 SAP 和科学审核资格仍有明确边界。
+
 [原文位置传递](docs/RECORDED_EVIDENCE_LOCATIONS.md)让新模型输入、公开引用、Clinical Brief 与 Campaign 报告保留已记录的页码、章节和文档版本。缺失不推断，旧预测和原件不改写；位置元数据不证明模型读过完整原件或已获科学审核。
 
 [逐模型引用报告](docs/launch/model-references-20261027/README.md)将已有公开摘要、每个模型自己的原文／快照引用与空状态一起展示。公开页面在 `Rationale & sources` 内查看；[实际记录截图](docs/images/model-references-20261027/provenance.json)来自本地候选版本，不代表线上部署或引用已获独立科学支持。新专利候选的名称／别名合同见[专利资料说明](patent_data/README.md#new-candidate-identifiers)，候选标签不授予药物身份或冻结资格。

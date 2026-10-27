@@ -1,0 +1,144 @@
+{
+  "schema_version": "predome.triumph5-ctis-acquisition-check-1",
+  "checked_at_utc": "2026-10-27T02:47:38.676871+00:00",
+  "base_commit": "c99399bda995812a9d4e34c98b44b74244213663",
+  "origin_page_url": "https://euclinicaltrials.eu/ctis-public/view/2024-511450-49-00",
+  "official_download_guidance_url": "https://euclinicaltrials.eu/search-tips-and-guidance/?lang=en",
+  "declared_nct_id": "NCT06662383",
+  "observed_eu_ct_number": "2024-511450-49-00",
+  "observed_protocol_code": "J1I-MC-GZBP",
+  "browser_ui_completion_observed": true,
+  "browser_download_event_captured": false,
+  "transport_response_observed": false,
+  "zip": {
+    "relative_path": "2024-511450-49-00_20261027.zip",
+    "bytes": 25121521,
+    "sha256": "b481c6d5a8dcb0eaeee9cfcce888e5fd83575ea1b60fd6f0ebf63b83c4d0a7d9",
+    "filesystem_modified_at_utc": "2026-10-27T02:24:15.064645+00:00",
+    "filesystem_time_is_not_publication_or_availability_proof": true,
+    "entry_count": 45,
+    "total_uncompressed_bytes": 26637111
+  },
+  "documents": [
+    {
+      "document_type": "protocol",
+      "source_bytes": 1937394,
+      "source_sha256": "adb16ec19a47ad8be5716f3475d775f96fa1503cdfb461de042f74057e6cb96f",
+      "zip_member_name": "Trial documents/Protocol/D1_Protocol 2024-511450-49-00_Redacted.PDF",
+      "page_count": 186,
+      "page_index_status": "complete",
+      "registration_manifest_sha256": "d2b7fc77ab7290670c9ff174a6dfb33e36ca6a9593efeb851c4174ead915f92f",
+      "registered_at_utc": "2026-10-27T02:40:45.625378Z",
+      "available_at": "2026-10-27T02:40:45.625378Z",
+      "registration_receipt_sha256": "bf2b60830340da400c6277322fe1796b2b620620d902cf7492e61a43f8ad6b66",
+      "extraction_manifest_sha256": "731be5f1e56cd2958b9dac73f1f21a8b093d5449d444664b89d2cdbf81631a61",
+      "pages_json_sha256": "8940e6c02ffe7ea83b3f367a5a44d7af571ecc6a9d8413f2262eff7e876587fd",
+      "review_status": "needs_human_review",
+      "identity_status": "unverified_operator_observation",
+      "http_status": null,
+      "download_url": null,
+      "retrieved_at_utc": null,
+      "original_byte_copy_and_indices_verified": true
+    },
+    {
+      "document_type": "synopsis",
+      "source_bytes": 650829,
+      "source_sha256": "7fc736e90f412cf99d405065ce64fcf65590a49a1210fa05068fd7a128d2f21a",
+      "zip_member_name": "Trial documents/Synopsis of the protocol/D1_Protocol synopsis EN 2024-511450-49-00_Redacted.PDF",
+      "page_count": 7,
+      "page_index_status": "complete",
+      "registration_manifest_sha256": "077c245faf82f6538f2ae0bf6e3e3a4690072be4273b1c816f5880b0175f22d3",
+      "registered_at_utc": "2026-10-27T02:40:45.623678Z",
+      "available_at": "2026-10-27T02:40:45.623678Z",
+      "registration_receipt_sha256": "d1be0e97248b21117a831c7da5dd2cf6446900869656b1e983fcf7cd986482e5",
+      "extraction_manifest_sha256": "048b96512600df691ec72137730701a77bae65322e9778cca736762a929643ed",
+      "pages_json_sha256": "85cc26d2e75c75c799e9a7218716bce065825ea8b2e8aa1649dd80f7c24330f7",
+      "review_status": "needs_human_review",
+      "identity_status": "unverified_operator_observation",
+      "http_status": null,
+      "download_url": null,
+      "retrieved_at_utc": null,
+      "original_byte_copy_and_indices_verified": true
+    }
+  ],
+  "cover_observations": {
+    "amendment": "c",
+    "approval_stamp": "19 Feb 2025 GMT",
+    "document_id": "VV-CLIN-132835",
+    "protocol_pdf_page": 1,
+    "latest_applicable_global_amendment_verified": false,
+    "approval_date_is_publication_date": false
+  },
+  "selected_ai_source_observations": [
+    {
+      "topic": "primary_endpoint",
+      "observation": "基线至Week80的体重百分比变化",
+      "pdf_pages": [
+        13,
+        52
+      ]
+    },
+    {
+      "topic": "estimands",
+      "observation": "可读到treatment-regimen与efficacy两类定义，适用策略不同",
+      "pdf_pages": [
+        16,
+        17,
+        55,
+        56
+      ]
+    },
+    {
+      "topic": "overall_familywise_alpha",
+      "observation": "主要及关键次要目标总体双侧0.05；完整多重性路径被遮挡",
+      "pdf_pages": [
+        115
+      ]
+    },
+    {
+      "topic": "between_estimand_multiplicity",
+      "observation": "可读到estimands之间不计划调整，不推断总体成功所需estimand或组合",
+      "pdf_pages": [
+        118
+      ]
+    }
+  ],
+  "redactions": {
+    "cci_redactions_observed": true,
+    "mechanical_text_completeness_is_scientific_completeness": false,
+    "hidden_content_reconstructed": false,
+    "sampled_redacted_pdf_pages": [
+      13,
+      114,
+      115,
+      118,
+      120
+    ],
+    "protocol_pdf114_printed_page_visible": false,
+    "synopsis_pdf_pages_1_to_7_printed_pages": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "remaining_unknowns": [
+    "final SAP not acquired",
+    "latest applicable global amendment not established",
+    "full multiplicity and exact overall success decision rule",
+    "redacted dose/model/missing-data details",
+    "eligibility at old historical information cutoffs"
+  ],
+  "scope": "Actual official browser-UI bundle acquisition, selected original-byte preservation, mechanical page extraction and sampled AI source reading only. Local registration does not independently authenticate origin or qualify clinical evidence. No original PDF, full extracted text or redaction image is redistributed in Git.",
+  "human_review_count": 0,
+  "scientific_approval": false,
+  "new_forecasts": 0,
+  "ledger_writes": 0,
+  "model_calls": 0,
+  "server_operations": 0,
+  "old_frozen_inputs_modified": false,
+  "clinical_prediction_validated": false
+}
