@@ -16,3 +16,5 @@ backups/
 *.log
 secrets/
 cache-info.json
+
+node_modules/
