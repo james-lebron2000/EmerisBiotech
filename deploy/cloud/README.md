@@ -34,3 +34,7 @@ research/state 命名卷为持久数据；caddy_data 保存证书状态。单实
 本地 Docker 镜像构建、UID10001卷写入、SIGTERM与队列恢复、HTTP来源／CSRF和导出已通过隔离运行验收，详见 `docs/CONTAINER_ACCEPTANCE_2026-10-17.md`。本机使用 standalone docker-compose 命令。远端 HTTPS／认证网关、证书、真实客户账号、备份恢复和生产可达性仍未验收；本地容器通过不代表已上线。
 
 认证参考：https://caddyserver.com/docs/caddyfile/directives/basic_auth 。Caddy 要求配置密码哈希；Basic Auth 必须搭配 HTTPS。
+
+## 新增 UC 项目事件的备份范围
+
+UC 扩展的 `programs.sqlite3` 使用独立的 [一致性备份与只读恢复流程](../../docs/PROGRAM_BACKUP_2026-10-27.md)。该流程只恢复项目事件，不覆盖上文 research/state 配套卷、市场数据库、身份配置或生产切换。恢复副本不派发任务、不复制凭据或 worker 锁，HTTP 写入关闭；既有署名仍是历史声明。不能因单数据库恢复成功而标记整云环境迁移完成。

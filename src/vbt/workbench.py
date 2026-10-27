@@ -166,6 +166,9 @@ def page(app,path,q):
     else:raise ValueError('页面不存在')
     if q.get('saved')=='1':body='<div class="success" role="status">'+('请求已受理。请查看数据源状态或抓取任务；后台抓取期间可刷新页面。' if path in ('/market','/coverage','/mapping','/disclosures') else '已保存。记录已追加，历史内容保持不变。')+'</div>'+body
     if path not in ('/','/market','/coverage','/market/progress','/assets','/mapping','/market/export','/disclosures') and (app.workspace/'cache-info.json').exists():body='<div class="notice"><strong>历史研究记录的备份范围</strong><p>'+esc(read(app.workspace/'cache-info.json').get('scope'))+'</p></div>'+body
+    if (app.state/'PROGRAMS_RESTORE_READ_ONLY').exists() or (app.state/'PROGRAMS_RESTORE_READ_ONLY').is_symlink():
+        body=re.sub(r'(<form\b[^>]*>)',r'\1<fieldset disabled>',body).replace('</form>','</fieldset></form>')
+        body='<section class="notice" role="status"><strong>UC 项目恢复核对副本：只读</strong><p>保留原记录与署名声明，不认证历史身份。恢复不会重放任务、补造成功或开放写入；外部绑定来源仍需单独核对。本副本不包含旧市场数据与工作台笔记。</p><a href="/program/recovery-status?check_sources=1">核对恢复记录与外部绑定来源</a></section>'+body
     return frame(body,path,refresh)
 
 def entries(rows):
@@ -187,6 +190,10 @@ def handler(app, public_origin=None):
             if not self.safehost():self.send(403,'Host rejected');return
             u=urlsplit(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()}
             try:
+                if u.path=='/program/recovery-status':
+                    from .program_backup import recovery_status
+                    raw=recovery_status(app.state,q.get('check_sources')=='1')
+                    self.send(200,json.dumps(raw,ensure_ascii=False,indent=2),'application/json; charset=utf-8',True);return
                 if u.path=='/program/research-packet':
                     from .ai_research import packet
                     from .programs import Programs
@@ -260,6 +267,8 @@ def handler(app, public_origin=None):
                 self.send(200,page(app,u.path,q))
             except (ValueError,OSError) as e:self.send(404,'<h1>暂时无法读取</h1><p>'+esc(e)+'</p><a href="/">返回首页</a>')
         def do_POST(self):
+            if (app.state/'PROGRAMS_RESTORE_READ_ONLY').exists() or (app.state/'PROGRAMS_RESTORE_READ_ONLY').is_symlink():
+                self.send(403,'项目恢复核对副本只读，写入与执行请求被拒绝');return
             origin=public_origin or f'http://127.0.0.1:{self.server.server_port}'
             if not self.safehost() or self.headers.get('Origin')!=origin:self.send(403,'Origin rejected');return
             try:

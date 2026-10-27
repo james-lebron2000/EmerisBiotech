@@ -42,14 +42,20 @@ def compare_interval(criterion, result):
 
 
 class Programs:
-    def __init__(self, state):
+    def __init__(self, state, read_only=False):
         self.state = Path(state).resolve()
-        if self.state.is_relative_to('/Volumes'):
+        self.read_only = bool(read_only or (self.state / 'PROGRAMS_RESTORE_READ_ONLY').exists() or (self.state / 'PROGRAMS_RESTORE_READ_ONLY').is_symlink())
+        if self.state.is_relative_to('/Volumes') and not self.read_only:
             raise ValueError('研发项目数据库必须位于本机磁盘')
-        self.state.mkdir(parents=True, exist_ok=True)
+        if not self.read_only:
+            self.state.mkdir(parents=True, exist_ok=True)
         self.path = self.state / 'programs.sqlite3'
         if self.path.is_symlink():
             raise ValueError('数据库不能是符号链接')
+        if self.read_only:
+            if not self.path.is_file():
+                raise ValueError('只读项目记录不存在或恢复未完成')
+            return
         with self.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS program_events (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL, program TEXT NOT NULL, kind TEXT NOT NULL, created TEXT NOT NULL, author TEXT NOT NULL, payload TEXT NOT NULL, previous TEXT NOT NULL, digest TEXT NOT NULL)')
             db.execute('CREATE INDEX IF NOT EXISTS program_by_id ON program_events(program,seq)')
@@ -57,7 +63,10 @@ class Programs:
             db.execute("CREATE TRIGGER IF NOT EXISTS program_no_delete BEFORE DELETE ON program_events BEGIN SELECT RAISE(ABORT,'append only'); END")
 
     def db(self):
-        db = sqlite3.connect(self.path, timeout=15, factory=ClosingConnection)
+        db = sqlite3.connect(self.path.as_uri() + '?mode=ro', uri=True, timeout=15, factory=ClosingConnection) if self.read_only else sqlite3.connect(self.path, timeout=15, factory=ClosingConnection)
+        if self.read_only:
+            db.execute('PRAGMA query_only=ON')
+            db.execute('PRAGMA trusted_schema=OFF')
         db.row_factory = sqlite3.Row
         return db
 
@@ -108,6 +117,8 @@ class Programs:
         return dict(current, id=pid, revision=events[-1]['digest'], evidence=evidence, experiments=experiments, decisions=decisions, results=results, assets=assets,diligence=diligence, events=events)
 
     def _append(self, pid, kind, payload, author, expected):
+        if self.read_only:
+            raise ValueError('项目恢复核对副本只读，不能写入、调用模型或派发任务')
         author = text(author, '记录人', 1, 100)
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
