@@ -81,8 +81,8 @@ def assessment_form(app, p, state, kind, subject, title, rows=()):
     body = form(app, p, 'scientific_assessment', '追加审阅：' + e(title))
     for key, value in [('subject_kind', kind), ('subject', subject), ('basis_hash', state['basis_hash'])]:
         body += '<input type="hidden" name="' + key + '" value="' + e(value) + '">'
-    body += '<label>判断<select name="judgment">' + ''.join('<option value="' + k + '">' + v + '</option>' for k, v in JUDGMENTS.items()) + '</select></label>'
-    body += '<label>验证优先级<select name="priority">' + ''.join('<option value="' + k + '">' + v + '</option>' for k, v in PRIORITIES.items()) + '</select></label>'
+    body += '<label>判断<select name="judgment" required><option value="" selected disabled>请选择判断</option>' + ''.join('<option value="' + k + '">' + v + '</option>' for k, v in JUDGMENTS.items()) + '</select></label>'
+    body += '<label>验证优先级<select name="priority" required><option value="" selected disabled>请选择优先级</option>' + ''.join('<option value="' + k + '">' + v + '</option>' for k, v in PRIORITIES.items()) + '</select></label>'
     for key, label in [('reason', '判断依据（至少 10 字符）'), ('scope', '人群、干预、比较、终点与时间范围'), ('missing', '缺失资料、分歧与尚未核实项'), ('next_action', '下一项最可能改变决定的核查或验证'), ('success', '什么结果支持下一步'), ('stop', '什么结果应停止或修订')]:
         body += field(key, label)
     if kind == 'risk':

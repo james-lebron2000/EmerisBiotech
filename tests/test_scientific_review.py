@@ -190,6 +190,8 @@ def test_http_forms_csrf_export_and_injection_boundaries(ready,tmp_path):
     assess(store,pid,assessment(store,pid,reason='<script>alert(1)</script> engineering canary'),'reviewer',store.get(pid)['revision'])
     body=page(app,'/programs',{'id':pid})
     assert '原版对照与风险审阅' in body and '&lt;script&gt;' in body and '<script>alert' not in body
+    assert '<select name="judgment" required><option value="" selected disabled>' in body
+    assert '<select name="priority" required><option value="" selected disabled>' in body
     server=ThreadingHTTPServer(('127.0.0.1',0),handler(app));threading.Thread(target=server.serve_forever,daemon=True).start()
     base=f'http://127.0.0.1:{server.server_port}'
     try:
