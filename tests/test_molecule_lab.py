@@ -75,3 +75,31 @@ def test_templates_and_build(tmp_path):
                 r=simulate_molecule(patient,molecule,int(cutoff))
                 assert t == {'canonical_result':canonical(r),'sha256':digest(r)}
     assert 'id="resistance"' not in (tmp_path/'molecule-lab/index.html').read_text()
+
+
+@pytest.mark.parametrize('mutation',[
+    lambda p:p.update(source_kind='real'),
+    lambda p:p.pop('sample_id'),
+    lambda p:p.update(assays=[]),
+    lambda p:p['assays']['fluorouracil'].update(source_kind='real'),
+    lambda p:p['assays']['fluorouracil'].update(exposure=''),
+    lambda p:p['assays']['fluorouracil'].pop('assay_id'),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(day=True),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(available_day=0),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(available_day=1.0),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(source_id=''),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(source_id='synthetic-P001-fluorouracil-d0'),
+    lambda p:p['assays']['fluorouracil']['rows'][1].update(drug_counts='100,200,300'),
+    lambda p:p['assays']['fluorouracil']['rows'][1].pop('vehicle_counts'),
+])
+def test_declared_patient_scope_and_measurement_contract_fail_closed(mutation):
+    patient=patient_snapshot('P001')
+    mutation(patient)
+    with pytest.raises(ValueError):estimate_assay(patient,'fluorouracil',7)
+
+
+def test_availability_lag_cannot_include_unavailable_measurement():
+    patient=patient_snapshot('P001')
+    patient['assays']['fluorouracil']['rows'][-1]['available_day']=8
+    r=estimate_assay(patient,'fluorouracil',7)
+    assert r['status']=='not_estimable'

@@ -49,6 +49,49 @@ def assay_snapshot(patient_id, paired_values, age_performance):
             'assays': assays}
 
 
+def validate_assay_scope(patient, molecule_id):
+    """Reject out-of-scope identities and malformed paired source measurements."""
+    if not isinstance(patient, dict) or patient.get('source_kind') != 'synthetic':
+        raise ValueError('Only explicitly synthetic patients are supported')
+    for field in ('patient_id', 'sample_id', 'fixture_version'):
+        if not isinstance(patient.get(field), str) or not patient[field].strip():
+            raise ValueError('Patient identity and fixture version are required')
+    if not isinstance(patient.get('assays'), dict):
+        raise ValueError('Patient assays must be a molecule-indexed mapping')
+    assay = patient['assays'].get(molecule_id)
+    if assay is None:
+        return None
+    if not isinstance(assay, dict) or (assay.get('patient_id') != patient['patient_id']
+            or assay.get('sample_id') != patient['sample_id']
+            or assay.get('molecule_id') != molecule_id or assay.get('source_kind') != 'synthetic'):
+        raise ValueError('Synthetic patient, sample or molecule mapping mismatch')
+    for field in ('assay_id', 'exposure'):
+        if not isinstance(assay.get(field), str) or not assay[field].strip():
+            raise ValueError('Assay identity and exposure metadata are required')
+    if not isinstance(assay.get('rows'), list):
+        raise ValueError('Assay rows must be a list')
+    times, sources = [], set()
+    for row in assay['rows']:
+        if not isinstance(row, dict):
+            raise ValueError('Assay measurements must be objects')
+        day, available = row.get('day'), row.get('available_day')
+        if type(day) is not int or type(available) is not int or day < 0 or available < day:
+            raise ValueError('Assay days must be nonnegative integers and available no earlier than measured')
+        source = row.get('source_id')
+        if not isinstance(source, str) or not source.strip() or source in sources:
+            raise ValueError('Unique measurement source identifiers are required')
+        sources.add(source)
+        times.append(day)
+        drug, vehicle = row.get('drug_counts'), row.get('vehicle_counts')
+        if (not isinstance(drug, list) or not isinstance(vehicle, list)
+                or len(drug) != 3 or len(vehicle) != 3
+                or any(type(x) not in (int, float) or not math.isfinite(x) or x <= 0 for x in drug + vehicle)):
+            raise ValueError('Three positive finite matched technical replicates required')
+    if times != sorted(set(times)):
+        raise ValueError('Assay timepoints must be unique and ordered')
+    return assay
+
+
 def estimate_assay(patient, molecule_id, cutoff_day):
     """Interpolate measured means; extrapolate three days using the last log slope.
 
@@ -57,26 +100,18 @@ def estimate_assay(patient, molecule_id, cutoff_day):
     """
     if molecule_id not in MOLECULES or type(cutoff_day) is not int or cutoff_day not in (3, 5, 7):
         raise ValueError('Unsupported molecule or data cutoff')
-    assay = patient['assays'].get(molecule_id)
+    assay = validate_assay_scope(patient, molecule_id)
     if assay is None:
         return {'status': 'not_estimable', 'reason': 'No paired assay for this patient and molecule.', 'trajectory': []}
-    if (assay['patient_id'] != patient['patient_id'] or assay['sample_id'] != patient['sample_id']
-            or assay['molecule_id'] != molecule_id or assay['source_kind'] != 'synthetic'):
-        raise ValueError('Patient, sample or molecule mapping mismatch')
     rows = copy.deepcopy([r for r in assay['rows'] if r['available_day'] <= cutoff_day and r['day'] <= cutoff_day])
     if len(rows) < 3 or rows[0]['day'] != 0 or rows[-1]['day'] != cutoff_day:
         return {'status': 'not_estimable', 'reason': 'Baseline and at least two paired post-exposure timepoints required.', 'trajectory': []}
-    if [r['day'] for r in rows] != sorted(set(r['day'] for r in rows)):
-        raise ValueError('Assay timepoints must be unique and ordered')
-    for row in rows:
-        counts = row['vehicle_counts'] + row['drug_counts']
-        if (len(row['vehicle_counts']) != 3 or len(row['drug_counts']) != 3
-                or any(type(x) not in (int, float) or not math.isfinite(x) or x <= 0 for x in counts)):
-            raise ValueError('Three positive finite matched technical replicates required')
     baseline = [d / v for d, v in zip(rows[0]['drug_counts'], rows[0]['vehicle_counts'])]
     measured = []
     for row in rows:
         values = [100 * d / v / b for d, v, b in zip(row['drug_counts'], row['vehicle_counts'], baseline)]
+        if any(not math.isfinite(v) or v <= 0 for v in values):
+            raise ValueError('Normalized assay values exceed the supported numerical range')
         measured.append({'day': row['day'], 'mean_percent': round(mean(values), 6),
                          'replicate_min': round(min(values), 6), 'replicate_max': round(max(values), 6),
                          'source_id': row['source_id']})
