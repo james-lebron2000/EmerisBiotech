@@ -51,6 +51,9 @@ const TRANSLATIONS={
  'peritoneum':'腹膜',
  'liver':'肝脏',
  'lung':'肺部',
+ 'Unable to load cohort overview.':'无法加载总体队列响应。',
+ 'Cohort overview integrity check failed.':'总体队列完整性校验失败。',
+ 'Cohort overview mismatch.':'总体队列与患者数据不匹配。',
  'Pause':'暂停',
  'Play':'播放',
  '1L':'1线','2L':'2线','3L':'3线'

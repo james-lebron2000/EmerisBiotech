@@ -118,3 +118,25 @@ def regimen_csv(result):
                                  'regimen': result['regimens'][p['regimen_id']]['label'], 'burden_index': p['burden_index'],
                                  'source_kind': 'synthetic', 'model_version': result['model_version']})
     return stream.getvalue()
+
+
+def public_cohort_overview():
+    """Separate presentation summary of all 120 patients; kinetics stay unchanged."""
+    from .cohort_lab import percentile
+    result = regimen_cohort_result()
+    groups = {}
+    for key in PATHWAYS:
+        groups[key] = []
+        for week in range(HORIZON + 1):
+            values = [r['pathways'][key]['trajectory'][week]['burden_index'] for r in result['patients']]
+            groups[key].append({**result['summaries'][key][week],
+                                'q25': round(percentile(values, .25), 6),
+                                'q75': round(percentile(values, .75), 6),
+                                'below_baseline': sum(v < 100 for v in values)})
+    payload = {'schema': 'regimen-cohort-overview-v1', 'source_result_sha256': digest(result),
+               'total_patients': result['total_patients'], 'horizon_weeks': HORIZON,
+               'displayed_patient_ids': [r['patient']['patient_id'] for r in result['patients'][:10]],
+               'selection': 'First 10 fixed patient IDs; not selected by response and not a representative sample.',
+               'summary_definition': 'All 120 patients per pathway; median and inclusive 25th/75th patient percentiles, not confidence intervals.',
+               'groups': groups}
+    return {'canonical_overview': canonical(payload), 'sha256': digest(payload)}

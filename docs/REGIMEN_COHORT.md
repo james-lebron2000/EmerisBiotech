@@ -57,8 +57,8 @@ is present. Clinical response, PFS, OS and toxicity stay null.
 
 ## Display and export
 
-At 1440×900 and 1366×768 the desktop matrix shows all 120 patients without scrolling
-the matrix. Each cell contains the paired A/B sparklines, change from baseline,
+The current presentation shows ten fixed cases beside all-120 median/IQR curves.
+At 1440×900 and 1366×768 the ten cases and cohort overview fit together. Each individual cell contains the paired A/B sparklines, change from baseline,
 treatment-line badges and an absolute A–B index gap. Sparkline axes are shared over
 the whole cohort; no per-cell auto scaling or clipping of the burden range is used.
 Sorting is applied on request, not each animation frame. Patient details and methods
