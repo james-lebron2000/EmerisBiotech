@@ -1,4 +1,4 @@
-"""Build the English public showcase from the authoritative synthetic engine."""
+"""Build the bilingual public showcase from the authoritative synthetic engine."""
 import argparse
 import json
 import shutil
@@ -53,11 +53,11 @@ def main():
         (cohort_out / f'trajectories-cutoff-{cutoff}.csv').write_text(cohort_csv(cohort_result(cutoff)), encoding='utf-8')
     regimen_out = args.out / 'cohort-lab'
     regimen_out.mkdir(exist_ok=True)
-    for name in ('index.html', 'app.js', 'cohort.css'):
+    for name in ('index.html', 'zh.html', 'app.js', 'cohort.css', 'story.css', 'i18n.js'):
         shutil.copyfile(source.parent / 'cohort-lab' / name, regimen_out / name)
     (regimen_out / 'scenarios.json').write_text(json.dumps(public_regimen_bundle(), separators=(',', ':')) + '\n')
     (regimen_out / 'trajectories.csv').write_text(regimen_csv(regimen_cohort_result()), encoding='utf-8')
-    print(f'Built English patient showcase: {args.out}')
+    print(f'Built public research showcase: {args.out}')
 
 
 if __name__ == '__main__':
