@@ -4,7 +4,7 @@
 
 实际 HTTP 页面和 API 响应没有 fixture 替换，使用原始 CSP 与实际 shipped 静态资产，没有注入样式或改写预测。截图由 `verification/patent-assay-pair-20261027/http-acceptance-v2/capture.cjs` 在主 agent 将 v2 sealed bundle 导入隔离 runtime-copy 后取得。全部九张图片已读屏检查。
 
-本轮因 Linux 字体度量下桌面布局超出既有最小滚动范围，再次压缩了桌面模型表和共识区域的留白，保留字号、字段和手机布局。随后以实际 HTTP GET 重拍九图；公开桌面图已重新读屏，其余八图与上一轮已读屏图片字节一致。前一轮图片和 receipt 保留在 ignored 的 `before-desktop-whitespace-fix` 目录。
+本轮根据实际 computed styles 修正桌面布局。此前表格已有 43px 行高，重复设置 padding 没有减少三行高度，末尾共识间距还覆盖了更紧凑的既有值。现已恢复共识 2px 间距，并减少桌面行高、状态间距与标签留白；字号、line-height、字段和手机布局不变。已安装 Chromium 141 的合成日历场景实测总 bottom 从 999.90625px 降为 986.40625px，等待 fonts.ready 前后布局完全一致；这项本机测量不代替 Linux CI 结果。随后以实际 HTTP GET 重拍九图；公开桌面图已重新读屏，其余八图与上一轮已读屏图片字节一致。前一轮图片和 receipt 保留在 ignored 的 `before-computed-cascade-fix` 目录。
 
 ## 真实结果与展示范围
 

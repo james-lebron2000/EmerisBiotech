@@ -1,5 +1,5 @@
 {
-  "at_utc": "2026-10-27T00:11:14.215Z",
+  "at_utc": "2026-10-27T00:22:56.466Z",
   "scope": "Actual loopback create_app, copied real Arena records and normal synthetic local session. Page/API responses were not substituted. Not deployed; uncalibrated research records; not clinical prediction validation.",
   "origin": "http://127.0.0.1:51161",
   "target_id": "of-retatrutide-assay-pair-20261027-v2-target",
@@ -63,12 +63,12 @@
   "proof_download_checks": [
     {
       "purpose": "registration",
-      "sha256": "80696c9014bc484cd8ee22533ff933f023e0b33a75ec610aba4f54d867172f4f",
+      "sha256": "00e55cdce57f5cef7ce1d45df4d0ea86c6e3e31d8f2ab9a513f130388d392581",
       "bytes": 54413
     },
     {
       "purpose": "predictions",
-      "sha256": "8c0c25e9f74c273d04cd1a8e2f83312881cf1bdf36f4640e2d36187ae299e81c",
+      "sha256": "9002d4cc5f3fb8fc5fa7566132557cd0727cb787be5050e613c22e6aad8b082d",
       "bytes": 65160
     }
   ],
@@ -105,7 +105,7 @@
   "unexpected_requests": [],
   "served_asset_sha256": {
     "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
-    "static/arena-public.css": "b78fcc8e494e406602a01f116331941e4972981dede51752361512124fa30868",
+    "static/arena-public.css": "fad498ce5cf83dcd65c8e60ea8a3059aac7186dd8ce72dd08d8876b22ba4288c",
     "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
     "static/arena-public.js": "0634ce2dd933480cdedf7c9ce804c7f782e23185003be98e62a8a9ce28980374",
     "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3",
@@ -117,7 +117,7 @@
       "name": "local-real-records-public-desktop.png",
       "width": 1440,
       "height": 900,
-      "sha256": "a4a52d86f1832ac24536a93691a7a2908d295c48c86da3542905a1ac55831251"
+      "sha256": "13815ff4dd6b9a460c3790b86833fb946f10e6a2c7e678094cc8236f7acd5af9"
     },
     {
       "name": "local-real-records-public-mobile.png",
@@ -174,8 +174,68 @@
   "production_deployed": false,
   "clinical_prediction_validated": false,
   "private_cookie_state_published": false,
-  "desktop_whitespace_followup": {
-    "scope": "Desktop whitespace only; text sizes, data fields, mobile rules, source records and forecast algorithms unchanged",
+  "measured_cascade_followup": {
+    "scope": "Measured desktop CSS cascade correction only; fixture data and 1000px assertion unchanged; text sizes/line-height/mobile/data/forecasts untouched",
+    "measurement_browser": "141.0.7390.37",
+    "measurement_platform": "darwin",
+    "measurement_playwright_module_version": "1.62.1",
+    "linux_ci_equivalence_claimed": false,
+    "before_module_boxes": [
+      {
+        "top": 269.375,
+        "bottom": 487.859375,
+        "height": 218.484375,
+        "width": 1240
+      },
+      {
+        "top": 494.859375,
+        "bottom": 839.9375,
+        "height": 345.078125,
+        "width": 1240
+      },
+      {
+        "top": 846.9375,
+        "bottom": 999.90625,
+        "height": 152.96875,
+        "width": 1240
+      }
+    ],
+    "after_module_boxes": [
+      {
+        "top": 269.375,
+        "bottom": 487.859375,
+        "height": 218.484375,
+        "width": 1240
+      },
+      {
+        "top": 494.859375,
+        "bottom": 831.4375,
+        "height": 336.578125,
+        "width": 1240
+      },
+      {
+        "top": 838.4375,
+        "bottom": 986.40625,
+        "height": 147.96875,
+        "width": 1240
+      }
+    ],
+    "before_model_row_heights": [
+      53,
+      43,
+      43,
+      43
+    ],
+    "after_model_row_heights": [
+      49,
+      41.5,
+      41.5,
+      41.5
+    ],
+    "before_summary_row_margin": "3px",
+    "after_summary_row_margin": "2px",
+    "font_ready_changed_layout": false,
+    "measured_model_font_sizes_and_line_heights_unchanged": true,
     "public_desktop_visually_reviewed": true,
     "other_eight_images_identical_to_previous_visually_reviewed_captures": [
       "local-real-records-lab-forecasts-desktop.png",
@@ -189,6 +249,6 @@
     ],
     "focused_public_fixture_checks": 32,
     "focused_public_fixture_errors": 0,
-    "historical_capture_directory": "ignored before-desktop-whitespace-fix"
+    "historical_capture_directory": "ignored before-computed-cascade-fix"
   }
 }
