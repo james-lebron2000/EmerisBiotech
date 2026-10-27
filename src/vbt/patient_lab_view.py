@@ -33,8 +33,8 @@ def _chart(curves, selected, week, survival, width):
     x = lambda t: left + t / 24 * (width - left - right)
     y = lambda v: height - bottom - v / ymax * (height - top - bottom)
     size_class = 'pl-chart-small' if width == 280 else 'pl-chart-wide'
-    parts = [f'<svg class="pl-chart {size_class}" viewBox="0 0 {width} {height}" role="img" aria-label="'+('纯数学生存曲线示意，非患者预后' if survival else '三种虚构治疗的负荷情景，非临床预测')+'"><title>'+('独立数学示意' if survival else '合成病灶负荷')+'</title>']
-    parts.append(f'<text x="{left}" y="17">'+('示意存活比例（%）' if survival else '负荷指数（基线＝100）')+'</text>')
+    parts = [f'<svg class="pl-chart {size_class}" viewBox="0 0 {width} {height}" role="img" aria-label="'+('Mathematical survival illustration, not patient prognosis' if survival else 'Burden scenarios for three fictional treatments, not clinical predictions')+'"><title>'+('Independent mathematical illustration' if survival else 'Synthetic burden trajectories')+'</title>']
+    parts.append(f'<text x="{left}" y="17">'+('Illustrative survival (%)' if survival else 'Burden index (baseline=100)')+'</text>')
     for v in (0, ymax / 2, ymax):
         parts.append(f'<line class="pl-grid" x1="{left}" x2="{width-right}" y1="{y(v):.1f}" y2="{y(v):.1f}"/><text x="{left-7}" y="{y(v)+4:.1f}" text-anchor="end">{v:g}</text>')
     for t in (0, 8, 16, 24):
@@ -52,12 +52,12 @@ def _chart(curves, selected, week, survival, width):
     if not survival:
         v = curves[selected][week][metric]
         parts.append(f'<line x1="{x(week):.1f}" x2="{x(week):.1f}" y1="{top}" y2="{height-bottom}" stroke="#7c909a" stroke-dasharray="3 4"/><circle cx="{x(week):.1f}" cy="{y(v):.1f}" r="4" fill="{COLORS[selected]}"/>')
-    parts.append(f'<text x="{width-right}" y="{height-2}" text-anchor="end">'+('情景时间（月）' if survival else '当前决策时点后（周）')+'</text></svg>')
+    parts.append(f'<text x="{width-right}" y="{height-2}" text-anchor="end">'+('Scenario time (months)' if survival else 'Weeks after current cutoff')+'</text></svg>')
     return ''.join(parts)
 
 
 def render(app, query):
-    if set(query) - {'id', 'plan', 'week', 'view', 'saved'}:
+    if set(query) - {'id', 'plan', 'week', 'view'}:
         raise ValueError('Unknown patient scenario query')
     selected, view = query.get('plan', 'a'), query.get('view', 'response')
     try:
@@ -78,52 +78,65 @@ def render(app, query):
     def fields(values):
         return '<dl class="pl-fields">' + ''.join('<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>' for k, v in values.items()) + '</dl>'
     token = '<input type="hidden" name="token" value="'+esc(app.token)+'">'
-    body = STYLE + '<section class="patientlab"><div class="pl-head"><div><p class="pl-kicker">PATIENT SCENARIO LAB</p><h1>同一个患者，不同治疗路径</h1><p class="pl-sub">宏观病程 × 微观状态 → 方案推演 → 随访更新</p></div><span class="pl-pill">合成病例 · 研究演示</span></div>'
-    body += '<div class="pl-banner"><strong>当前为合成病例与虚构治疗。</strong>数值来自明确的演练假设，不是对真实患者的疗效、毒性或寿命预测。</div><div class="pl-flow"><span>① 查看已有资料</span><span>② 选择状态假设</span><b>③ 运行并保存推演</b><span>④ 加载随访并保留旧版本</span></div>'
-    body += '<div class="pl-layout"><aside class="pl-profile"><span class="pl-id">'+esc(patient['patient_id'])+'</span><p class="pl-muted">当前资料截止：第 '+str(patient['cutoff_week'])+' 周<br>匿名患者编号 · 合成资料</p><h2>宏观临床</h2>'+fields(patient['clinical'])+'<details><summary>微观生物与缺失资料</summary>'+fields(patient['molecular'])+'</details><h3>当前可见的合成观测</h3>'
+    body = STYLE + '<section class="patientlab"><div class="pl-head"><div><p class="pl-kicker">PATIENT SCENARIO LAB</p><h1>One patient. Multiple futures.</h1><p class="pl-sub">Clinical history × biological state → treatment scenarios → follow-up updates</p></div><span class="pl-pill">Synthetic patient · Research showcase</span></div>'
+    body += '<div class="pl-banner"><strong>Synthetic patient and fictional treatments.</strong>Values follow explicit illustrative assumptions, not predictions of real treatment benefit, toxicity or lifespan.</div><div class="pl-flow"><span>1. Review patient data</span><span>2. Set assumptions</span><b>3. Run and save</b><span>4. Add follow-up versions</span></div>'
+    body += '<div class="pl-layout"><aside class="pl-profile"><span class="pl-id">'+esc(patient['patient_id'])+'</span><p class="pl-muted">Data cutoff: week '+str(patient['cutoff_week'])+'<br>Anonymous identifier · Synthetic data</p><h2>Clinical context</h2>'+fields(patient['clinical'])+'<details><summary>Biology and missing information</summary>'+fields(patient['molecular'])+'</details><h3>Available synthetic observations</h3>'
     for obs in patient['observations']:
-        body += '<p class="pl-muted">第 '+str(obs['week'])+' 周 · 指数 '+str(obs['burden_index'])+'<br>'+esc(obs['source_id'])+'</p>'
-    body += '<p class="pl-muted">部位与组学字段仅为背景，未用于计算；未提供不等于阴性。</p></aside><div>'
-    body += '<form class="pl-form" method="post" action="/patient-lab/run">'+token+'<label for="resistance">新建基线推演的耐药假设<select id="resistance" name="resistance"><option value="low"'+(' selected' if not data or data['resistance_assumption'] == 'low' else '')+'>低耐药：20%</option><option value="high"'+(' selected' if data and data['resistance_assumption'] == 'high' else '')+'>高耐药：45%</option></select></label><button type="submit">运行并保存新推演</button></form>'
+        body += '<p class="pl-muted">Week '+str(obs['week'])+' week · index '+str(obs['burden_index'])+'<br>'+esc(obs['source_id'])+'</p>'
+    body += '<p class="pl-muted">Anatomy and omics are context only, not model inputs. Missing does not mean negative.</p></aside><div>'
+    body += '<form class="pl-form" method="post" action="/patient-lab/run">'+token+'<label for="resistance">Resistance assumption for a new baseline run<select id="resistance" name="resistance"><option value="low"'+(' selected' if not data or data['resistance_assumption'] == 'low' else '')+'>Low resistance: 20%</option><option value="high"'+(' selected' if data and data['resistance_assumption'] == 'high' else '')+'>High resistance: 45%</option></select></label><button type="submit">Run and save a new scenario</button></form>'
     if not data:
-        body += '<div class="pl-stage"><h2>从 P001 的同一起点展开未来分支</h2><p class="pl-muted">点击“运行并保存新推演”，计算虚构 A、B、A＋B 的 24 周负荷情景，生成可重开的独立记录。随后可查看预后展示、导出 JSON，逐次加载第 6、12 周的预设合成随访。</p><p class="pl-muted">页面查看不会自动写入记录或运行模型；当前未执行推演。</p></div>'
+        body += '<div class="pl-stage"><h2>Explore alternative futures for P001</h2><p class="pl-muted">Run a scenario to calculate 24-week trajectories for fictional A, B and A+B and save a record you can reopen. Explore prognosis illustrations, export JSON, then load the predefined week-6 and week-12 synthetic follow-ups.</p><p class="pl-muted">Viewing this page does not create records or execute the model. No scenario has been run yet.</p></div>'
     else:
         body += '<div class="pl-plans">'
         for key, plan in PLANS.items():
             body += '<a class="pl-plan" aria-current="'+str(key == selected).lower()+'" href="'+url(plan=key)+'"><span class="pl-dot" style="background:'+COLORS[key]+'"></span>'+esc(plan['label'])+'<small>'+esc(plan['description'])+'</small></a>'
-        body += '</div><form method="get" action="/patient-lab" class="pl-form"><input type="hidden" name="id" value="'+stored['run_id']+'"><input type="hidden" name="plan" value="'+selected+'"><input type="hidden" name="view" value="'+view+'"><label for="scenario-week">查看决策时点后第 '+str(week)+' 周<input id="scenario-week" name="week" type="range" min="0" max="24" value="'+str(week)+'"></label><button type="submit" class="secondary">更新视图</button><span class="pl-muted">本次假设：'+('20%' if data['resistance_assumption'] == 'low' else '45%')+' 初始耐药</span></form><div class="pl-stage"><nav class="pl-tabs" aria-label="模拟结果视图">'
-        for key, label in [('response', '病灶与细胞状态'), ('prognosis', '疗效与预后'), ('evidence', '证据与缺口')]:
+        body += '</div><form method="get" action="/patient-lab" class="pl-form"><input type="hidden" name="id" value="'+stored['run_id']+'"><input type="hidden" name="plan" value="'+selected+'"><input type="hidden" name="view" value="'+view+'"><label for="scenario-week">Inspect week '+str(week)+'<input id="scenario-week" name="week" type="range" min="0" max="24" value="'+str(week)+'"></label><button type="submit" class="secondary">Update view</button><span class="pl-muted">Run assumption: '+('20%' if data['resistance_assumption'] == 'low' else '45%')+' initial resistance</span></form><div class="pl-stage"><nav class="pl-tabs" aria-label="Scenario result views">'
+        for key, label in [('response', 'Burden and cell state'), ('prognosis', 'Response and prognosis'), ('evidence', 'Evidence and gaps')]:
             body += '<a href="'+url(view=key)+'"'+(' aria-current="page"' if view == key else '')+'>'+label+'</a>'
         body += '</nav>'
         if view == 'response':
             rows = {k: v['trajectory'] for k, v in data['forecasts'].items()}
             point = rows[selected][week]
             resistant = point['resistant_fraction'] * 100
-            body += '<h2>病灶负荷的未来分支</h2><p class="pl-muted">同一当前状态；色带为参数情景跨度，非置信区间。实线 A／虚线 B／点线 A＋B。</p>'+chart(rows, selected, week)
-            body += '<div class="pl-metrics" aria-live="polite"><div><span class="pl-muted">'+esc(PLANS[selected]['label'])+' · 第 '+str(week)+' 周负荷指数</span><strong class="pl-value">'+f'{point["burden_index"]:.1f}'+'</strong><span class="pl-muted">假设跨度 '+f'{point["scenario_low"]:.1f}–{point["scenario_high"]:.1f}'+'</span></div><div><span class="pl-muted">模拟细胞构成，非检测结果</span><div class="pl-cellbar"><span style="width:'+f'{100-resistant:.2f}'+'%;background:var(--pl-a)"></span><span style="width:'+f'{resistant:.2f}'+'%;background:var(--pl-ab)"></span></div><span class="pl-muted">敏感 '+f'{100-resistant:.0f}'+'% · 耐药 '+f'{resistant:.0f}'+'%</span></div></div>'
-            body += '<h3>三方案同时间对照</h3><div class="pl-scroll"><table class="pl-table"><thead><tr><th>虚构方案</th><th>负荷指数</th><th>耐药构成</th></tr></thead><tbody>'
+            body += '<h2>Future burden trajectories</h2><p class="pl-muted">Shared starting state. The band is an illustrative scenario span, not a confidence interval. Solid: A; dashed: B; dotted: A+B.</p>'+chart(rows, selected, week)
+            body += '<div class="pl-metrics" aria-live="polite"><div><span class="pl-muted">'+esc(PLANS[selected]['label'])+' · '+str(week)+'-week burden index</span><strong class="pl-value">'+f'{point["burden_index"]:.1f}'+'</strong><span class="pl-muted">Illustrative span '+f'{point["scenario_low"]:.1f}–{point["scenario_high"]:.1f}'+'</span></div><div><span class="pl-muted">Simulated cell composition, not assay results</span><div class="pl-cellbar"><span style="width:'+f'{100-resistant:.2f}'+'%;background:var(--pl-a)"></span><span style="width:'+f'{resistant:.2f}'+'%;background:var(--pl-ab)"></span></div><span class="pl-muted">Sensitive '+f'{100-resistant:.0f}'+'% · Resistant '+f'{resistant:.0f}'+'%</span></div></div>'
+            body += '<h3>All three plans at the selected time</h3><div class="pl-scroll"><table class="pl-table"><thead><tr><th>Fictional plan</th><th>Burden index</th><th>Resistant fraction</th></tr></thead><tbody>'
             for key in PLANS:
                 row = rows[key][week]
                 body += '<tr><td>'+esc(PLANS[key]['label'])+'</td><td>'+f'{row["burden_index"]:.1f}'+'</td><td>'+f'{row["resistant_fraction"]*100:.0f}'+'%</td></tr>'
-            body += '</tbody></table></div><p class="pl-muted">假设模型只计算两个细胞群体的指数变化；不识别真实分子机制，不产生最优治疗推荐。</p>'
+            body += '</tbody></table></div><p class="pl-muted">This toy model calculates two cell populations only. It does not identify real molecular mechanisms or recommend an optimal treatment.</p>'
         elif view == 'prognosis':
-            body += '<h2>预后情景展示位</h2><p class="pl-muted">下面是固定的数学示意曲线，与患者资料、病灶推演及随访无推导关系；非 PFS／OS 预测。</p>'+chart(data['survival_illustration']['curves'], selected, survival=True)+'<table class="pl-table"><tr><th>终点</th><th>当前状态</th></tr><tr><td>影像疗效 PR／PD</td><td>不可估计；负荷指数不是 RECIST 测量</td></tr><tr><td>PFS／OS</td><td>不可估计；没有适用的个体模型</td></tr><tr><td>毒性／生活质量</td><td>不可估计；需独立数据与模型</td></tr></table>'
+            body += '<h2>Prognosis illustration</h2><p class="pl-muted">Fixed mathematical illustrations, independent of patient data, burden trajectories and follow-up. Not PFS/OS predictions.</p>'+chart(data['survival_illustration']['curves'], selected, survival=True)+'<table class="pl-table"><tr><th>Endpoint</th><th>Status</th></tr><tr><td>Imaging response PR/PD</td><td>Unavailable; the burden index is not a RECIST measurement</td></tr><tr><td>PFS／OS</td><td>Unavailable; no applicable individual model</td></tr><tr><td>Toxicity / quality of life</td><td>Unavailable; requires separate data and models</td></tr></table>'
         else:
-            body += '<h2>来源、假设与适用范围</h2><dl class="pl-evidence"><dt>资料</dt><dd>内置合成病例 P001。每个版本只包含截止时点已可见的观测；未接收真实患者、原始影像或外部模型资料。</dd><dt>实际参与计算</dt><dd>当前负荷指数、选择的初始耐药比例和虚构药物的敏感群体抑制/耐药群体增长参数。年龄、癌种、部位与分子字段未参与计算，不可声称为多模态临床模型。</dd><dt>更新机制</dt><dd>加载固定的第6周82、第12周69的合成负荷观测；演练实际治疗记为A。以新观测重置当前负荷，保留耐药假设；不重新训练，也不证明预测准确。未接受方案的结局仍不可观测。</dd><dt>生存展示</dt><dd>独立数学曲线，只演示布局。病灶缩小不能直接换算为存活时间、PFS或OS。</dd><dt>审核</dt><dd>执行成功与科学审核分别记录；科学审核未开展，clinical_use=false。SHA-256验证记录内容一致性，不认证作者或临床有效性。</dd></dl>'
-        body += '</div><section class="pl-run"><div class="pl-row"><h3>保存的运行与随访版本</h3><a download="patient-scenario.json" href="/patient-lab/export?id='+stored['run_id']+'">导出 JSON</a></div><p class="pl-muted">运行 '+esc(stored['run_id'])+'<br>生成时间 '+esc(stored['created_at'])+'<br>模型 '+esc(data['model_version'])+' · 科学审阅未开展</p><details><summary>输入与结果指纹</summary><p class="pl-muted">输入 <code>'+esc(data['input_sha256'])+'</code><br>结果 <code>'+esc(stored['sha256'])+'</code></p></details>'
+            body += '<h2>Sources, assumptions and scope</h2><dl class="pl-evidence"><dt>Data</dt><dd>Built-in synthetic patient P001. Each snapshot includes only observations available by its cutoff. No real patient, imaging or external-model data are ingested.</dd><dt>Computational inputs</dt><dd>Only the current burden index, assumed initial resistance and fictional growth/suppression parameters enter the calculation. Age, diagnosis, anatomy and molecular fields are not computational inputs. This is not a multimodal clinical model.</dd><dt>Follow-up update</dt><dd>Fixed synthetic observations are 82 at week 6 and 69 at week 12, with fictional A recorded as received treatment. Updating resets burden and retains the resistance assumption. It does not retrain or validate the model. Outcomes under unreceived plans remain unobserved.</dd><dt>Survival illustration</dt><dd>Independent mathematical curves demonstrate the layout only. Tumor shrinkage is not converted into survival, PFS or OS.</dd><dt>Review</dt><dd>Execution and scientific review are separate. Scientific review has not been performed; clinical_use=false. SHA-256 checks content consistency, not authorship or clinical validity.</dd></dl>'
+        body += '</div><section class="pl-run"><div class="pl-row"><h3>Saved runs and follow-up versions</h3><a download="patient-scenario.json" href="/patient-lab/export?id='+stored['run_id']+'">Export JSON</a></div><p class="pl-muted">Run '+esc(stored['run_id'])+'<br>Created at '+esc(stored['created_at'])+'<br>Model '+esc(data['model_version'])+' · Scientific review not performed</p><details><summary>Input and result fingerprints</summary><p class="pl-muted">Input <code>'+esc(data['input_sha256'])+'</code><br>Result <code>'+esc(stored['sha256'])+'</code></p></details>'
         if data['parent_id']:
-            body += '<p><a href="/patient-lab?id='+data['parent_id']+'">查看上一版冻结推演</a></p>'
+            body += '<p><a href="/patient-lab?id='+data['parent_id']+'">Open the previous frozen run</a></p>'
             parent = app.patient_lab.get(data['parent_id'])['result']
             observed = patient['observations'][-1]
             past = parent['forecasts']['a']['trajectory'][6]['burden_index']
-            body += '<p class="pl-muted">本次合成观测 '+str(observed['burden_index'])+'；上一版 A 的6周情景 '+f'{past:.1f}'+'。仅核对演练数据流，不计预测性能；B/联合方案没有对应观测。</p>'
+            body += '<p class="pl-muted">Synthetic observation: '+str(observed['burden_index'])+'; previous A 6-week scenario '+f'{past:.1f}'+'. This checks the demonstration data flow only, not predictive performance. B and A+B have no corresponding observations.</p>'
         if patient['cutoff_week'] < 12:
-            body += '<form method="post" action="/patient-lab/followup" class="pl-form">'+token+'<input type="hidden" name="parent_id" value="'+stored['run_id']+'"><button type="submit">加载第 '+str(patient['cutoff_week'] + 6)+' 周合成随访并创建新版本</button></form>'
+            body += '<form method="post" action="/patient-lab/followup" class="pl-form">'+token+'<input type="hidden" name="parent_id" value="'+stored['run_id']+'"><button type="submit">Load '+str(patient['cutoff_week'] + 6)+' week synthetic follow-up as a new version</button></form>'
         else:
-            body += '<p class="pl-muted">两次预设随访均已加载，完整演练流程已走通。可回看旧版本或从基线创建新假设。</p>'
+            body += '<p class="pl-muted">Both synthetic follow-ups are loaded. The demonstration workflow is complete. Reopen an earlier version or start a new baseline assumption.</p>'
         body += '</section>'
-    body += '</div></div><h3>最近 30 次已保存推演</h3><div class="pl-history">'
+    body += '</div></div><h3>Recent saved scenarios (up to 30)</h3><div class="pl-history">'
     for run in app.patient_lab.history():
-        body += '<a href="/patient-lab?id='+run['run_id']+'">P001 · 截止'+str(run['result']['patient']['cutoff_week'])+'周 · '+run['run_id'][:8]+'</a>'
-    body += '</div><p class="pl-footer">只运行内置合成情景，无真实患者导入、无真实药物剂量、无外部模型调用。新运行追加保存，旧预测保持不变。</p></section>'
+        body += '<a href="/patient-lab?id='+run['run_id']+'">P001 · cutoff '+str(run['result']['patient']['cutoff_week'])+'w · '+run['run_id'][:8]+'</a>'
+    body += '</div><p class="pl-footer">Built-in synthetic scenarios only. No real patient uploads, drug dosing or external model calls. New runs are appended; earlier forecasts remain unchanged.</p></section>'
     return body
+
+
+def frame(body):
+    """English-only shell for the patient project; legacy tools retain their locale."""
+    from .ui_shell import STYLE as shell_style
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>Patient Scenario Lab · EmerisBiotech</title><style>' + shell_style + '</style></head><body>'
+            '<a class="skip-link" href="#main-content">Skip to content</a>'
+            '<header class="topbar" style="margin:0"><a class="brand" href="/patient-lab" style="color:#163c49">EmerisBiotech</a>'
+            '<span>Patient Scenario Lab</span><span class="context-pill">Synthetic research · English</span></header>'
+            '<main id="main-content" class="main-content">' + body +
+            '<footer class="page-footer">EmerisBiotech · Synthetic research showcase · Not for clinical use</footer></main></body></html>')

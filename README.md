@@ -4,9 +4,9 @@
 
 **状态：** 可运行的研究软件；尚未建立经过验证的二期/三期预测能力或投资收益优势。本地容器已完成隔离运行验收，远端 HTTPS、客户账号与上线验收尚未完成。
 
-## 患者治疗情景展示
+## Patient Scenario Lab
 
-新增 `/patient-lab` 独立入口，使用匿名编号 **P001** 的内置合成病例，比较虚构 A、B、A＋B 的24周负荷情景。支持保存运行、切换结果、JSON导出，以及加载第6／12周合成随访创建新版本；历史推演保留。生存曲线仅为独立数学示意，真实个体疗效、PFS、OS和毒性保持不可估计。见[使用与边界](docs/PATIENT_LAB.md)。
+Open `/patient-lab` for the English-only patient showcase. Anonymous patient **P001** is synthetic. Compare 24-week scenarios for fictional A, B and A+B; save runs, export JSON and create new versions from week-6/week-12 synthetic follow-ups. Earlier forecasts remain unchanged. Survival curves are independent mathematical illustrations; clinical response, PFS, OS and toxicity remain unavailable. See the [English guide](docs/PATIENT_LAB.md).
 
 ## 安装与启动
 

@@ -1,12 +1,15 @@
 {
-  "scope": "synthetic fixture; real loopback HTTP, no provider or production access",
+  "url": "http://127.0.0.1:64344",
   "checks": [
-    "create persisted synthetic run",
-    "plan and time selection",
-    "prognosis and evidence boundaries",
-    "two followup versions",
-    "reload and original immutability",
-    "390px and 320px real layout"
+    "English interface and export",
+    "verified templates",
+    "save and compare",
+    "two follow-ups",
+    "export",
+    "reload and original preserved",
+    "duplicate follow-up",
+    "visitor isolation",
+    "desktop/390px/320px"
   ],
   "errors": [],
   "external_requests": []

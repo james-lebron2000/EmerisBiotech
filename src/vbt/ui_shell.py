@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 
 NAV_GROUPS = (
     ("研究入口", (("/", "研究首页", "01"), ("/market", "市场与管线", "02"),
-                  ("/assets", "临床资产", "03"), ("/patient-lab", "患者情景", "12"), ("/disclosures", "公司披露与登记核对", "04"))),
+                  ("/assets", "临床资产", "03"), ("/patient-lab", "Patient scenarios", "12"), ("/disclosures", "公司披露与登记核对", "04"))),
     ("数据覆盖", (("/coverage", "覆盖进度与缺口", "05"), ("/mapping", "申办方关联", "06"))),
     ("工作记录", (("/records", "历史记录", "07"), ("/jobs", "完整性校验", "08"),
                   ("/notes", "问题与笔记", "09"), ("/mission", "目标与里程碑", "10"),
@@ -113,6 +113,9 @@ def _refresh_meta(refresh):
 
 def frame(body, path, refresh=""):
     """Wrap trusted renderer HTML in the responsive, accessible app shell."""
+    if path == "/patient-lab":
+        from .patient_lab_view import frame as patient_frame
+        return patient_frame(body)
     active, title = _route(path)
     safe_title = html.escape(title, quote=True)
     navigation = _navigation(active)

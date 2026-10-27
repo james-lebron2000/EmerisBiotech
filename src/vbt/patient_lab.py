@@ -15,14 +15,14 @@ from .sqlite_connections import ClosingConnection
 
 MODEL_VERSION = 'synthetic-two-population-v1'
 PLANS = {
-    'a': {'label': '方案 A', 'description': '虚构 · 机制 A', 'kill': .095, 'growth': .052, 'survival_scale': 21},
-    'b': {'label': '方案 B', 'description': '虚构 · 机制 B', 'kill': .042, 'growth': .004, 'survival_scale': 25},
-    'ab': {'label': '方案 A＋B', 'description': '虚构 · 联合机制', 'kill': .11, 'growth': -.008, 'survival_scale': 29},
+    'a': {'label': 'Plan A', 'description': 'Fictional · Mechanism A', 'kill': .095, 'growth': .052, 'survival_scale': 21},
+    'b': {'label': 'Plan B', 'description': 'Fictional · Mechanism B', 'kill': .042, 'growth': .004, 'survival_scale': 25},
+    'ab': {'label': 'Plan A+B', 'description': 'Fictional · Combined mechanism', 'kill': .11, 'growth': -.008, 'survival_scale': 29},
 }
 PATIENT = {
-    'patient_id': 'P001', 'source_kind': 'synthetic', 'fixture_version': 'patient-p001-v1',
-    'clinical': {'疾病背景': '转移性结直肠癌', '年龄／体能': '58 岁／ECOG 1', '影像部位': '肝 2 处、肺 1 处（情景背景）', '基线负荷': '归一化指数 100，非直径或体积', '既往给药': '虚构机制 A（演练设定）', '症状／肝肾功能': '未提供，不视为正常'},
-    'molecular': {'病理／DNA': '仅示意字段，未用于计算', 'RNA／蛋白／代谢': '未提供', '单细胞／空间组学': '未提供', '纵向 ctDNA': '未提供', '敏感／耐药构成': '人工情景假设，非检测结果'},
+    'patient_id': 'P001', 'source_kind': 'synthetic', 'fixture_version': 'patient-p001-v2-en',
+    'clinical': {'Diagnosis': 'Metastatic colorectal cancer', 'Age / performance': '58 years / ECOG 1', 'Anatomy': '2 liver, 1 lung sites (context only)', 'Baseline burden': 'Index 100; not diameter or volume', 'Recorded treatment': 'Fictional A (synthetic history)', 'Symptoms / organ function': 'Not provided; not assumed normal'},
+    'molecular': {'Pathology / DNA': 'Illustrative fields; not model inputs', 'RNA / protein / metabolism': 'Not provided', 'Single-cell / spatial omics': 'Not provided', 'Longitudinal ctDNA': 'Not provided', 'Sensitive / resistant composition': 'Explicit assumption; not an assay result'},
     'observations': [
         {'week': 0, 'available_week': 0, 'burden_index': 100., 'source_id': 'synthetic-baseline'},
         {'week': 6, 'available_week': 6, 'burden_index': 82., 'source_id': 'synthetic-followup-6', 'recorded_treatment': 'a'},
