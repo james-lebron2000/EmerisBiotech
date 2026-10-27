@@ -277,3 +277,30 @@ html[data-theme=dark] .public-outcome-failure{background:#422e3b;border-color:#6
 /* Keep the returned-judgment denominator and cross-platform font-metric slack
    visible by reducing desktop whitespace only; mobile and text sizes stay intact. */
 @media(min-width:701px){.public-model-heading,.arena-faceoff{margin-bottom:4px}.public-table td{height:41px;padding-top:4px;padding-bottom:4px}.public-outcome{padding-top:3px;padding-bottom:3px}.public-run-status{margin-top:2px}.public-calibration-note{margin-top:6px}.public-summary-row{margin:2px 0}.public-consensus{padding-top:6px;padding-bottom:6px}.public-consensus h2{margin-bottom:2px}.public-agreement-bar{height:4px;margin-bottom:1px}.public-agreement-empty{margin-bottom:1px}}
+
+/* Optional research comparisons stay inside the prediction module. Only an
+   explicit expansion adds height; the default clinical matrix is unchanged. */
+.public-model-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0}
+#public-comparison-toggle,.public-comparison-retry{border:1px solid var(--public-line);background:var(--public-card);color:var(--public-blue);border-radius:4px;min-height:26px;padding:3px 7px;font-size:10px;line-height:1.5;box-shadow:none;white-space:nowrap}
+#public-comparison-toggle[aria-expanded=true]{background:var(--public-soft)}
+#public-comparison-toggle[aria-expanded=true]>span{display:inline-block;transform:rotate(45deg)}
+.public-comparisons{border-top:1px solid var(--public-line);margin-top:12px;padding-top:10px;min-width:0}
+.public-comparisons h3{font-size:15px;line-height:1.4;margin:14px 0 4px}
+.public-comparisons h4{font-size:12px;line-height:1.5;margin:0 0 5px;color:var(--public-ink)}
+.public-comparison-scope,.public-comparison-note,.public-comparison-empty{font-size:11px;line-height:1.6;color:var(--public-muted);margin:4px 0 9px;overflow-wrap:anywhere}
+.public-patent-comparisons{display:grid;gap:10px}.public-patent-comparison,.public-agent-comparison{border:1px solid var(--public-line);border-radius:5px;padding:12px;min-width:0}
+.public-comparison-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.public-comparison-pair>div{min-width:0}
+.public-comparison-pair>div+div{border-left:1px solid var(--public-line);padding-left:16px}
+.public-comparison-run{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:3px 8px;min-width:0}
+.public-comparison-run>strong{font-size:12px;line-height:1.5;overflow-wrap:anywhere}.public-comparison-run>.public-outcome{font-size:11px;line-height:1.4}
+.public-comparison-status,.public-comparison-version,.public-comparison-run>time{grid-column:1/-1;font-size:10px;line-height:1.5;color:var(--public-muted);overflow-wrap:anywhere}
+.public-comparison-rationale{grid-column:1/-1;min-width:0;margin-top:4px}.public-comparison-rationale summary,.public-comparison-added summary{font-size:11px;line-height:1.6;color:var(--public-blue);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.public-comparison-rationale>p{font-size:11px;line-height:1.65;margin:7px 0;color:var(--public-muted);overflow-wrap:anywhere}
+.public-comparison-rationale .public-model-references h3,.public-comparison-added .public-model-references h3{font-size:12px;margin-top:8px}
+.public-comparison-rationale .public-model-references,.public-comparison-added .public-model-references{font-size:11px;min-width:0}
+.public-comparison-verdict{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;border-top:1px solid var(--public-line);padding-top:8px;margin:10px 0 0;font-size:11px;line-height:1.6;color:var(--public-ink)}
+.public-comparison-verdict>span,.public-comparison-flags,.public-comparison-reasons,.public-comparison-components{font-size:10px;line-height:1.6;color:var(--public-muted);overflow-wrap:anywhere}
+.public-comparison-reasons,.public-comparison-components,.public-comparison-flags{margin:5px 0 0}
+.public-comparison-added{margin-top:5px}.public-agent-comparisons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:701px){.public-model-heading>div:first-child{min-width:0}.public-model-actions{flex-shrink:0;max-width:43%}.public-model-actions .arena-evidence-tag{font-size:9px}}
+@media(max-width:700px){.public-model-actions{justify-content:flex-start;margin-top:7px;gap:7px}#public-comparison-toggle,.public-comparison-retry{font-size:11px;min-height:32px;padding:5px 8px}.public-comparisons{margin-top:13px}.public-comparison-pair,.public-agent-comparisons{grid-template-columns:minmax(0,1fr)}.public-comparison-pair{gap:12px}.public-comparison-pair>div+div{border-left:0;border-top:1px solid var(--public-line);padding:10px 0 0}.public-patent-comparison,.public-agent-comparison{padding:10px}.public-comparison-run>strong{font-size:13px}.public-comparison-status,.public-comparison-version,.public-comparison-run>time,.public-comparison-verdict>span,.public-comparison-flags,.public-comparison-reasons,.public-comparison-components{font-size:11px}.public-comparison-verdict{font-size:12px}}

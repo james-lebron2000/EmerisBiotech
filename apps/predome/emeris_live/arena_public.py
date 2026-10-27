@@ -16,6 +16,7 @@ from .arena_store import ArenaLedger, result_target_binding
 from .arena_result_assurance import result_assurance
 from .arena_public_contract import credential_like, public_url, validate_current_readout, public_consensus
 from .arena_evidence_locations import validate_locations
+from . import arena_comparisons
 
 ROOT = Path(__file__).resolve().parents[1]
 router = APIRouter()
@@ -486,6 +487,23 @@ def target_view(target, sources, snapshot_urls=None, verified_assets=None):
     return result
 
 
+def _source_assets(store, frozen, sources, verified_assets, snapshot_urls, checked_sources):
+    """Resolve already-saved source bytes once; absent snapshots remain absent."""
+    for source in sources:
+        digest = source.get('source_sha256')
+        if source.get('archive_only_source') or not re.fullmatch(r'[a-f0-9]{64}', str(digest)) or digest in checked_sources:
+            continue
+        checked_sources.add(digest)
+        try:
+            _, raw = arena_api._source_asset(digest, data_dir=store.path, events=frozen.get('events', []))
+        except HTTPException as exc:
+            if exc.status_code != 404:
+                raise
+            continue
+        verified_assets[digest] = raw
+        snapshot_urls[digest] = '/api/arena/sources/' + digest
+
+
 def build_public(store):
     frozen = read_frozen(store)
     calendar = current_readouts(store, frozen)
@@ -510,19 +528,7 @@ def build_public(store):
                     source = old_evidence[ident]
                     sources[(ident, source.get('source_sha256'))] = source
         source_list = list(sources.values())
-        for source in source_list:
-            digest = source.get('source_sha256')
-            if source.get('archive_only_source') or not re.fullmatch(r'[a-f0-9]{64}', str(digest)) or digest in checked_sources:
-                continue
-            checked_sources.add(digest)
-            try:
-                _, raw = arena_api._source_asset(digest, data_dir=store.path, events=frozen.get('events', []))
-            except HTTPException as exc:
-                if exc.status_code != 404:
-                    raise
-                continue
-            verified_assets[digest] = raw
-            snapshot_urls[digest] = '/api/arena/sources/' + digest
+        _source_assets(store, frozen, source_list, verified_assets, snapshot_urls, checked_sources)
         public_target = target_view(target, source_list, snapshot_urls, verified_assets)
         if target['id'] in calendar:
             public_target['current_readout'] = calendar[target['id']]
@@ -565,6 +571,63 @@ def detail_from_view(view, target_id):
     return {'version': VERSION, 'target': target, 'runs': [r for r in view['runs'] if r['target_id'] == target_id],
             'consensus': target['consensus'], 'sources': target['sources'], 'evidence': target['sources'],
             'result': target['result'], 'public_policy': dict(POLICY)}
+
+
+def build_comparisons(store, target_id):
+    """One exact native snapshot, with no private workflow or numeric outputs."""
+    frozen = read_frozen(store)
+    target = next((t for t in frozen['targets'] if t['id'] == target_id), None)
+    result = {'schema_version': arena_comparisons.SCHEMA_VERSION, 'target_id': target_id,
+        'patent_comparisons': [], 'agent_comparisons': [],
+        'public_policy': dict(arena_comparisons.PUBLIC_POLICY)}
+    if target is None:
+        # A verified historical public record has no new native assignments.
+        # Unknown targets still use the original not-found contract.
+        detail_from_view(build_public(store), target_id)
+        return result
+    runs = [run for run in frozen['runs'] if run.get('target_id') == target_id
+            and run.get('cohort_id') == target.get('cohort_id')]
+    patents = arena_comparisons.patent_comparisons(runs)
+    agents = arena_comparisons.agent_comparisons(runs)
+    visible = {}
+    for pair in patents:
+        for key in ('control', 'with_patents'):
+            if pair[key] is not None:
+                visible[pair[key]['id']] = pair[key]
+    for item in agents:
+        visible[item['run']['id']] = item['run']
+    sources = [source for run in visible.values()
+               for source in run.get('packet', {}).get('evidence', [])]
+    assets, urls = {}, {}
+    _source_assets(store, frozen, sources, assets, urls, set())
+
+    def public_run(run):
+        return run_view(run, target, run.get('packet', {}).get('evidence', []), urls)
+
+    for pair in patents:
+        treated = pair['with_patents']
+        result['patent_comparisons'].append({
+            **{key: pair[key] for key in ('registration_matched', 'model_version_matched',
+                'comparison_status', 'judgment_changed', 'reasons')},
+            'control': public_run(pair['control']) if pair['control'] is not None else None,
+            'with_patents': public_run(treated),
+            'added_sources': [source_view(source, urls)
+                for source in treated.get('packet', {}).get('evidence', [])
+                if source.get('kind') == 'patent']})
+    for item in agents:
+        result['agent_comparisons'].append({
+            **{key: item[key] for key in ('workflow', 'baseline_run_ids',
+                'clinical_input_matched', 'common_budget_cap', 'component_models', 'reasons')},
+            'run': public_run(item['run'])})
+    return result
+
+
+@router.get('/api/arena/public/targets/{target_id}/comparisons')
+def comparisons(target_id: str, request: Request):
+    try:
+        return build_comparisons(request.app.state.store, target_id)
+    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error):
+        raise HTTPException(503, '公开对照记录暂不可用；未生成替代预测。') from None
 
 
 @router.get('/api/arena/public/targets/{target_id}/record')

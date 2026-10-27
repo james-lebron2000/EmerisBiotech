@@ -19,6 +19,7 @@ tests/test_evaluation_api_status_fields.py
 tests/test_evidence_install.py
 tests/test_arena_core.py
 tests/test_arena_source_only.py
+tests/test_arena_public_comparisons.py
 tests/test_arena_imports.py
 tests/test_arena_import_store.py
 tests/test_arena_import_public.py
