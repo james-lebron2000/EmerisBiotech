@@ -1,5 +1,7 @@
 # Patient × Molecule Lab
 
+The default public `cohort-lab/` now hosts the separate [120-patient treatment atlas](REGIMEN_COHORT.md). The 24-patient assay workflow described below is preserved at `assay-cohort-archive/`; its Python fixtures and export verification remain unchanged.
+
 Development branch: `patient-molecule-response`. The English successor workflow is
 available at `/molecule-lab` in the workbench and `molecule-lab/` in the public
 build. It has no manual resistance input. The existing v1 scenario archive and
@@ -106,7 +108,7 @@ branch is reviewed and an explicit release is made.
 
 ## Virtual Trial Cohort extension
 
-The new `cohort-lab/` public page (and read-only `/cohort-lab` workbench route)
+The archived `assay-cohort-archive/` public page (and read-only `/cohort-lab` workbench route)
 displays **24 synthetic patients under both molecule exposures simultaneously**.
 This is a paired virtual assay cohort, not a randomized clinical trial. Treatment
 arms, RECIST outcomes, survival and drug combinations are not manufactured.
