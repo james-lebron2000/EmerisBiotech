@@ -47,6 +47,14 @@ python3.11 -m venv .venv
 
 默认检查包含静态检查和源码fixture测试，不需要真实证据、模型密钥或生产数据库。源码测试使用干净检出，排除默认目录及版本化专利目录中的受控本地冻结材料，保留Git公开的Arena和专利配置。`scripts/test_source.py`保留为兼容入口。
 
+仅运行公开 Arena 时，可以在干净检出中直接启动，不必先安装旧档案：
+
+```sh
+EMERIS_DATA_DIR=/absolute/private/new-predome-state .venv/bin/python run.py
+```
+
+访问 `http://127.0.0.1:19320/arena`。新状态目录显示明确空状态；已有的真实 Arena 登记／模型记录通过原有封存导入流程进入后才显示，不会自动调用模型或填入示例预测。旧资料完整性和数据库校验仍然保留，具体条件见[源码启动与独立 Arena 记录](docs/SOURCE_ONLY_ARENA.md)。
+
 独立账本中的既有预测可按[已完成预测的可核验同步](docs/SEALED_RECORD_SYNC.md)接入当前服务：保留原时间、失败和签名，在宿主仅追加一条导入事件；公开与内部视图使用不同权限及字段。
 
 公开页面的 [Clinical Brief 下载](docs/PUBLIC_CLINICAL_BRIEF.md)将所选试验的同条件记录、公开来源及结果状态保存为可离线阅读的报告和机器可读快照。资料生成时间与原预测时间分开，下载不会调用模型、写入账本或产生结果裁定。
@@ -74,7 +82,7 @@ python3.11 -m venv .venv
 EMERIS_DATA_DIR=/absolute/private/state .venv/bin/python run.py
 ```
 
-冻结证据必须来自发布包 `4c6eceadf49f7b0de7d19fb6c02aab05a11c6f1547896e0110cf1a073c8fe6e9`。安装前核对文件，不从不可信输入生成新的预期哈希。启动后访问 `http://127.0.0.1:19320`。完整页面需要这个证据包；只有公开Git源码的检出不应被描述为包含完整真实档案的在线演示。
+冻结证据必须来自发布包 `4c6eceadf49f7b0de7d19fb6c02aab05a11c6f1547896e0110cf1a073c8fe6e9`。安装前核对文件，不从不可信输入生成新的预期哈希。启动后访问 `http://127.0.0.1:19320`。旧临床日历、完整研究档案和旧 dashboard 仍需要这个证据包；独立 Arena 可以展示其自身已登记的记录。公开 Git 源码不包含完整真实档案。
 
 `source-files-1.1.8.json` 是导入时原文件清单。测试工具后续可作可移植性修改；部署脚本严格核对运行时代码、静态页面与依赖文件在Git提交、原发布包和在线manifest中的一致性。
 

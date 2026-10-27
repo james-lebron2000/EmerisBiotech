@@ -78,14 +78,21 @@ def read_archived(store):
     Existing integrity decoders run against one query-only SQLite snapshot.
     Missing, never-initialized tables mean no recorded public outcomes; partial
     schemas fail closed rather than dropping some established result records.
+    A source-only installation has none of the four legacy material roots. It
+    can serve the separate Arena ledger without manufacturing a legacy release.
+    Existing database integrity/schema checks still run in this case; recorded
+    archive imports require their source material rather than silently vanishing.
     """
     from . import product as product_module
     from .platform_store import PlatformStore
-    product = product_module.build_product(None)
+    legacy_roots = ('predome_data', 'dashboard_data', 'trial_data', 'public_data')
+    has_materials = any((ROOT / name).exists() or (ROOT / name).is_symlink()
+                        for name in legacy_roots)
+    product = product_module.build_product(None) if has_materials else None
     path = Path(store.path) / 'workbench.sqlite3'
     if path.is_symlink(): raise ValueError('Invalid archive path')
     if not path.exists():
-        return combined_archives(store, product)
+        return combined_archives(store, product) if product is not None else ([], [], {})
     if not path.is_file(): raise ValueError('Invalid archive path')
     with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as db:
         db.row_factory = sqlite3.Row
@@ -107,7 +114,13 @@ def read_archived(store):
             ledger.store = view_store
             snapshots = ledger.list_public_snapshots()
             outcomes = product_module._published_outcomes(ledger, snapshots)
-            product_module._bind_results(product, snapshots, outcomes)
+            if product is None:
+                if any(item['record'].get('provenance') == 'archived_record_import'
+                       or item['record'].get('archive_provenance') is not None
+                       for item in snapshots):
+                    raise ValueError('Recorded archive imports require legacy source material')
+            else:
+                product_module._bind_results(product, snapshots, outcomes)
         # Read the existing independently approved calendar overlay, if present.
         overlay_tables = {'readout_update_proposals', 'readout_update_decisions'}
         if tables & overlay_tables:
@@ -121,12 +134,13 @@ def read_archived(store):
                 if proposal.get('arena_target_id') or proposal['nct_id'] in newest:
                     continue
                 newest[proposal['nct_id']] = proposal
-            for trial in product['upcoming'] + product.get('resolved_trials', []):
+            trials = [] if product is None else product['upcoming'] + product.get('resolved_trials', [])
+            for trial in trials:
                 update = newest.get(trial['nct_id'])
                 if update:
                     trial['window'] = {k: update[k] for k in ('start', 'end', 'precision', 'label')}
                     trial['window']['source_url'] = update['source']['url']
-    return combined_archives(store, product)
+    return combined_archives(store, product) if product is not None else ([], [], {})
 
 
 def current_readouts(store, frozen):
