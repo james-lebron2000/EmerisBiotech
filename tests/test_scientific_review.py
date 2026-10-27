@@ -13,7 +13,7 @@ import pytest
 from vbt.programs import Programs, Conflict
 from vbt.scientific_review import (BASE_FILES, COLUMNS, REPORT, assess, comparison_source, export_report,
                                    import_comparison, view)
-from vbt.ai_research import packet
+from vbt.ai_research import DOMAINS, ingest, packet, proposals
 from vbt.workbench import Workbench, handler, page
 from test_programs import PROFILE, add
 
@@ -157,6 +157,29 @@ def test_source_route_refuses_arbitrary_paths_and_changed_files(ready):
         with pytest.raises(ValueError):comparison_source(store,pid,name)
     (root/'sample_flow.csv').write_text('changed')
     with pytest.raises(ValueError):comparison_source(store,pid,'sample_flow.csv')
+
+
+def test_ai_can_cite_exact_comparison_and_review_invalidates_old_draft(ready):
+    store,pid,ref,root,cid=ready
+    context=packet(store,pid)
+    comparison=context['scientific_review']['comparisons'][0]
+    assert comparison['reference_id']=='difference:COHORT_OSMR'
+    assert comparison['difference_class']=='missing_selection_manifest'
+    assert str(root) not in json.dumps(context)
+    proposal=dict(packet_hash=context['packet_hash'],summary='Engineering comparison proposal, not a real model output',
+        risks=[dict(domain=k,status='unknown',reason='Unknown synthetic fixture; not scientific validation',references=[]) for k in DOMAINS],
+        tasks=[dict(id='mapping',tool='manual_research',question='Which original mapping remains unresolved?',
+            rationale='Known source differences must inform the next verification',next_action='Request actual original sample mapping',
+            success_criterion='Original choices are independently documented',stop_criterion='Stop if original mapping remains missing',
+            references=['difference:COHORT_OSMR'])])
+    ingest(store,pid,proposal,'engineering author',store.get(pid)['revision'],dict(kind='human_import',model_label='engineering fixture'))
+    assert not proposals(store,pid)[-1]['stale']
+    assess(store,pid,assessment(store,pid),'reviewer',store.get(pid)['revision'])
+    assert proposals(store,pid)[-1]['stale']
+    (root/'sample_flow.csv').unlink()
+    proposal['packet_hash']=packet(store,pid)['packet_hash']
+    with pytest.raises(ValueError,match='未知证据'):
+        ingest(store,pid,proposal,'engineering author',store.get(pid)['revision'],dict(kind='human_import',model_label='engineering fixture'))
 
 
 def test_bound_artifact_loss_invalidates_risk_even_without_comparison_change(ready,tmp_path):

@@ -34,6 +34,11 @@ def validate_proposal(proposal,context):
     if proposal.get('packet_hash')!=context['packet_hash']: raise Conflict('AI 草案所依据的项目内容已变化，请重新冻结上下文')
     if set(proposal)!={'packet_hash','summary','risks','tasks'}: raise ValueError('草案字段必须为 packet_hash、summary、risks、tasks')
     known={e['event_id'] for e in context['evidence']}|{r['event_id'] for r in context['results']}|{a['event_id'] for a in context['assets']}
+    comparison=context.get('scientific_review',{})
+    # Historical snapshots stay readable, but unavailable source rows cannot
+    # become newly qualified citations merely because their text was retained.
+    if comparison.get('source_integrity')=='verified':
+        known|={r['reference_id'] for r in comparison.get('comparisons',[])}
     risks=proposal.get('risks');tasks=proposal.get('tasks')
     if not isinstance(risks,list) or len(risks)!=len(DOMAINS) or {r.get('domain') for r in risks if isinstance(r,dict)}!=set(DOMAINS): raise ValueError('需逐项覆盖八类研发及转化风险')
     if not isinstance(tasks,list) or not 1<=len(tasks)<=8: raise ValueError('需提供 1–8 项有界研究任务')

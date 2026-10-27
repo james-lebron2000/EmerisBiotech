@@ -221,8 +221,10 @@ def assess(store, pid, payload, author, revision):
 
 def context_summary(store, pid):
     state = view(store, pid)
+    rows = state['comparison']['payload']['rows'] if state['comparison'] else []
     return dict(basis_hash=state['basis_hash'], source_integrity=state['source_integrity'],
                 comparison_hash=state['comparison']['payload']['content_hash'] if state['comparison'] else None,
+                comparisons=[dict(reference_id='difference:' + r['item'], **r) for r in rows],
                 assessments=[{k: r[k] for k in ('event_id', 'subject_kind', 'subject', 'judgment', 'priority',
                                                'reason', 'scope', 'missing', 'next_action', 'success', 'stop',
                                                'references', 'stale')} for r in state['reviews']])
