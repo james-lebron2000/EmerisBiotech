@@ -184,3 +184,24 @@ Playback from the final day restarts at day 0. Axes remain fixed to support
 comparison. This changes visual disclosure only; model outputs and complete
 JSON/CSV exports remain unchanged. The selected timeline day is not a replacement
 for the data-availability cutoff.
+
+### Continuous cohort playback
+
+The cohort page automatically plays after the complete synthetic bundle passes checksum
+verification. A requestAnimationFrame clock advances at 1.5 seconds per assay day;
+Pause freezes the fractional position and Replay starts again at baseline. Switching
+the data cutoff resets to baseline and pauses. Hiding the tab pauses playback.
+Reduced-motion preferences start paused, with explicit playback still available.
+
+SVG paths, distribution bands, summary values and individual patient values use linear
+**display interpolation between the frozen daily outputs**. Intermediate population
+quantiles are interpolated labels, not newly calculated quantiles of intermediate
+patient values. This introduces no new observations, biological fit or clinical
+outcome estimates. The original integer-day model outputs, source evidence and CSV
+remain unchanged. Cohort JSON view metadata accepts a finite fractional `assay_day`
+within the selected timeline; the offline verifier still reproduces the complete
+canonical daily result independently.
+
+Visual direction references the warm neutral palette, strong typography, thin rules
+and editorial spacing of Anthropic's public research site, adapted to EmerisBiotech's
+assay workflow. It uses system fonts and original UI styling, without external assets.

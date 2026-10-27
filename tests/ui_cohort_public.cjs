@@ -34,16 +34,23 @@ const {spawn,spawnSync}=require('node:child_process');
   assert.equal(await page.locator('#plots svg').count(),2);
   const drawingBounds=async()=>page.locator('#plots svg').evaluateAll(svgs=>svgs.map(svg=>{
    const cursor=svg.querySelector('.timeline-cursor').x1.baseVal.value;
-   const pathRight=Math.max(42,...Array.from(svg.querySelectorAll('path'),p=>{const b=p.getBBox();return b.x+b.width;}));
+   const pathRight=Math.max(42,...Array.from(svg.querySelectorAll('path[d]:not([d=""])'),p=>{const b=p.getBBox();return b.x+b.width;}));
    const pointRight=Math.max(42,...Array.from(svg.querySelectorAll('circle'),p=>p.cx.baseVal.value));
-   return {cursor,pathRight,pointRight,segments:svg.querySelectorAll('.trajectory-segment').length,forecastSegments:svg.querySelectorAll('[data-phase="extrapolated"]').length};
+   return {cursor,pathRight,pointRight,segments:svg.querySelectorAll('.trajectory-segment[d]:not([d=""])').length,forecastSegments:svg.querySelectorAll('[data-phase="extrapolated"][d]:not([d=""])').length};
   }));
   const checkRevealed=async()=>{const bounds=await drawingBounds();for(const b of bounds){assert(b.pathRight<=b.cursor+.02,JSON.stringify(b));assert(b.pointRight<=b.cursor+.02,JSON.stringify(b));}return bounds;};
+  assert.equal(await page.locator('#play').getAttribute('aria-pressed'),'true');
+  await page.waitForFunction(()=>+document.querySelector('#day').value>0);
+  await page.locator('#play').click();await page.locator('#day').fill('0');
   const baseline=await checkRevealed();assert(baseline.every(b=>b.segments===0&&b.pathRight===42&&b.pointRight===42));
 
   assert((await page.locator('#denominator').innerText()).includes('22 complete pairs'));
   assert((await page.locator('#summary').innerText()).includes('n = 22 / 24'));
-  await page.locator('#play').click();await page.waitForFunction(()=>+document.querySelector('#day-value').textContent>=2);await page.locator('#play').click();
+  await page.evaluate(()=>{window.savedCard=document.querySelector('.patient-card');window.savedCurve=document.querySelector('.trajectory-segment');});
+  await page.locator('#day').fill('1.1');await page.locator('#play').click();
+  const before=await page.locator('#day').inputValue();await page.waitForTimeout(250);const between=await page.locator('#day').inputValue();assert(+between>+before&&+between<2,'must move within the same assay day');
+  assert(await page.evaluate(()=>window.savedCard===document.querySelector('.patient-card')&&window.savedCurve===document.querySelector('.trajectory-segment')),'animation preserves DOM nodes');
+  await page.waitForFunction(()=>+document.querySelector('#day-value').textContent>=2);await page.locator('#play').click();
   assert.equal(await page.locator('#play').getAttribute('aria-pressed'),'false');
   const paused=await page.locator('#day-value').innerText();await page.waitForTimeout(800);assert.equal(await page.locator('#day-value').innerText(),paused);
   const partial=await checkRevealed();assert(partial.every(b=>b.pathRight>42&&b.pathRight<534&&b.forecastSegments===0));
@@ -87,8 +94,11 @@ const {spawn,spawnSync}=require('node:child_process');
 
   await page.locator('#cutoff').selectOption('7');await page.locator('#population').selectOption('paired');await page.locator('#focus').selectOption('P002');
   await page.locator('#day').focus();await page.locator('#day').press('End');
-  await page.locator('#play').click();await page.waitForFunction(()=>document.querySelector('#day-value').textContent==='1');await page.locator('#play').click();
+  await page.locator('#play').click();await page.waitForFunction(()=>+document.querySelector('#day').value>.2);await page.locator('#play').click();
   await checkRevealed();
+  await page.locator('#replay').click();assert.equal(await page.locator('#play').getAttribute('aria-pressed'),'true');assert(+await page.locator('#day').inputValue()<.5);await page.locator('#play').click();
+  await page.locator('#day').fill('3.375');const fractionalDownload=page.waitForEvent('download');await page.locator('#export').click();const fractional=JSON.parse(fs.readFileSync(await (await fractionalDownload).path(),'utf8'));assert.equal(fractional.view.assay_day,3.375);
+  const reduced=await browser.newContext({reducedMotion:'reduce'}),reducedPage=await reduced.newPage();await reducedPage.goto(base.replace(/\/$/,'')+'/cohort-lab/');await reducedPage.locator('#play:enabled').waitFor();assert.equal(await reducedPage.locator('#play').getAttribute('aria-pressed'),'false');assert.equal(await reducedPage.locator('#day').inputValue(),'0');await reducedPage.locator('#replay').click();await reducedPage.waitForFunction(()=>+document.querySelector('#day').value>0);await reduced.close();
   const out=process.env.PATIENT_LAB_QA_DIR;if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,'cohort-desktop.png'),fullPage:true});}
   for(const width of [390,320]){await page.setViewportSize({width,height:1100});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(out&&width===390){await page.locator('#summary').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'cohort-mobile.png')});}}
   await page.route('**/cohort-lab/scenarios.json',async route=>{const response=await route.fetch();const bundle=await response.json();bundle.templates['7'].sha256='0'.repeat(64);await route.fulfill({json:bundle});});
@@ -96,7 +106,7 @@ const {spawn,spawnSync}=require('node:child_process');
   await collectHostingHashes(page,new URL(base).origin,hostingHashes);
   const {applicationErrors,hostingWarnings}=classifyConsole(consoleMessages,hostingHashes);
   assert.deepEqual(errors,[]);assert.deepEqual(applicationErrors,[]);
-  const receipt={checks:['keyboard focus retained','evidence stays open during playback','baseline points only','progressive SVG geometry stays behind cursor','median/IQR/selected patient reveal together','rewind and cutoff reset clear future geometry','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','offline verifier accepts real browser export and rejects tampering','download CSV equals independently reproduced CSV','English only','desktop/390px/320px','corrupt template fails closed','unknown console/script/resource failures remain fatal'],errors,application_errors:applicationErrors,hosting_warnings:hostingWarnings};
+  const receipt={checks:['autoplay after verified load','continuous sub-day motion','stable animation DOM','explicit replay starts from baseline','fractional time export','reduced-motion starts paused with manual playback available','keyboard focus retained','evidence stays open during playback','baseline points only','progressive SVG geometry stays behind cursor','median/IQR/selected patient reveal together','rewind and cutoff reset clear future geometry','24 patient cards','two simultaneous molecule panels','same paired denominators','available case denominators','play/pause/restart','synchronized timeline and patient values','missing pair and highlight','cutoff-limited export','offline verifier accepts real browser export and rejects tampering','download CSV equals independently reproduced CSV','English only','desktop/390px/320px','corrupt template fails closed','unknown console/script/resource failures remain fatal'],errors,application_errors:applicationErrors,hosting_warnings:hostingWarnings};
   if(out)fs.writeFileSync(path.join(out,'cohort-browser.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));await context.close();
  }finally{await browser.close();if(service){service.kill('SIGTERM');await new Promise(resolve=>service.exitCode!==null||service.signalCode?resolve():service.once('exit',resolve));}if(temporary)fs.rmSync(temporary,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exit(1)});

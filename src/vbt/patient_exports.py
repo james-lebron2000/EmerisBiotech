@@ -100,7 +100,7 @@ def verify_export(envelope):
         if not isinstance(view, dict) or set(view) != {'assay_day', 'population', 'highlight_patient'}:
             raise ValueError('Invalid cohort view metadata')
         day = view['assay_day']
-        if type(day) is not int or not 0 <= day <= cutoff + 3 or view['population'] not in ('paired', 'available'):
+        if type(day) not in (int, float) or not 0 <= day <= cutoff + 3 or view['population'] not in ('paired', 'available'):
             raise ValueError('Unsupported cohort day or summary population')
         ids = {r['patient']['patient_id'] for r in expected['patients']}
         if view['highlight_patient'] is not None and view['highlight_patient'] not in ids:
