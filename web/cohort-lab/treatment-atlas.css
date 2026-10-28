@@ -155,3 +155,11 @@ body:is(.atlas-active,:has(#simulation:target)) dialog { background:#14252d; col
 .atlas-reading-notes p { font-size:9px; line-height:1.7; margin:7px 0; }
 .atlas-summary { align-self:start; }
 @media(max-width:760px) { .atlas-summary .atlas-axis-label,.atlas-reading-notes { grid-column:1/-1; }.atlas-reading-notes { margin-top:4px; } }
+#simulation .sequence span,#simulation .cohort-metrics span,#simulation .cohort-metrics small,#simulation .overview-heading>span { color:#b2c5c4; }
+#simulation .cohort-chart text { fill:#a6bec0; }
+#simulation svg [stroke="#ad6547"] { stroke:var(--a); }#simulation svg [stroke="#4c7567"] { stroke:var(--b); }
+#simulation svg [fill="#ad6547"] { fill:var(--a); }#simulation svg [fill="#4c7567"] { fill:var(--b); }
+body:is(.atlas-active,:has(#simulation:target)) dialog th { color:#adc3c4; }
+body:is(.atlas-active,:has(#simulation:target)) dialog td,body:is(.atlas-active,:has(#simulation:target)) dialog th { border-color:#ffffff1c; }
+body:is(.atlas-active,:has(#simulation:target)) dialog svg text { fill:#abc3c3; font:10px ui-monospace,monospace; }
+body:is(.atlas-active,:has(#simulation:target)) dialog .sparkline.a { stroke:#f3a58a; }body:is(.atlas-active,:has(#simulation:target)) dialog .sparkline.b { stroke:#8ad8c2; }
