@@ -11,7 +11,7 @@
  const at=(ps,w)=>{const a=ps[Math.floor(w)],b=ps[Math.min(Math.ceil(w),ps.length-1)];return a.burden_index+(b.burden_index-a.burden_index)*(w-Math.floor(w));};
  const quantile=(vs,p)=>{const s=[...vs].sort((a,b)=>a-b),n=(s.length-1)*p;return s[Math.floor(n)]+(s[Math.ceil(n)]-s[Math.floor(n)])*(n-Math.floor(n));};
  const change=v=>(v>=100?'+':'')+(v-100).toFixed(0)+'%';
- const status=(point)=>t(({below_baseline:'Below baseline',above_baseline:'Above baseline',near_baseline:'Near baseline',rebound:'Rebound from nadir'})[point.display_status]||'Index trajectory',({below_baseline:'低于基线',above_baseline:'高于基线',near_baseline:'接近基线',rebound:'较最低点反弹'})[point.display_status]||'指数轨迹');
+ const status=(point)=>t(({below_baseline:'Index below 95',above_baseline:'Index above 105',near_baseline:'Index 95–105',rebound:'Rebound from nadir'})[point.display_status]||'Index trajectory',({below_baseline:'指数低于 95',above_baseline:'指数高于 105',near_baseline:'指数 95–105',rebound:'较最低点反弹'})[point.display_status]||'指数轨迹');
  const x=w=>30+w/72*270;
  function summary(rows){return Object.fromEntries(keys.map(k=>[k,Array.from({length:73},(_,week)=>{const vs=rows.map(r=>r.pathways[k].trajectory[week].burden_index);return {burden_index:quantile(vs,.5),q25:quantile(vs,.25),q75:quantile(vs,.75)};})]));}
  function board(kind,rows){
@@ -28,7 +28,7 @@
   root.querySelector('.atlas-selection').textContent=t('All patients in this view; no outcome selection. Five index units is a display band.','本视图包含该组全部患者，不按结果筛选。5 个指数单位仅为显示分档。');
  }
  function pause(){if(raf!==null)cancelAnimationFrame(raf);raf=null;q('#immune-play').textContent=t('Play','播放');q('#immune-play').setAttribute('aria-pressed','false');}
- function draw(){q('#immune-week').value=time;q('#immune-time').textContent=time.toFixed(1);update('immune',time);const counts={};for(const k of keys){counts[k]={};for(const {r} of boards.immune||[]){const s=r.pathways[k].trajectory[Math.floor(time)].display_status;counts[k][s]=(counts[k][s]||0)+1;}}q('#immune-status').textContent=keys.map(k=>k+': '+t('below baseline ','低于基线 ')+(counts[k].below_baseline||0)+' · '+t('rebound ','反弹 ')+(counts[k].rebound||0)+' / '+(boards.immune?.length||0)).join('    |    ');}
+ function draw(){q('#immune-week').value=time;q('#immune-time').textContent=time.toFixed(1);update('immune',time);const counts={};for(const k of keys){counts[k]={};for(const {r} of boards.immune||[]){const s=r.pathways[k].trajectory[Math.floor(time)].display_status;counts[k][s]=(counts[k][s]||0)+1;}}q('#immune-status').textContent=keys.map(k=>k+': '+t('index <95 without rebound ','指数 <95 且无反弹 ')+(counts[k].below_baseline||0)+' · '+t('rebound ','反弹 ')+(counts[k].rebound||0)+' / '+(boards.immune?.length||0)).join('    |    ');}
  function play(){if(!immune||raf!==null||scene!=='immune')return;if(time>=72)time=0;let last=null;q('#immune-play').textContent=t('Pause','暂停');q('#immune-play').setAttribute('aria-pressed','true');const tick=now=>{if(last!==null)time=Math.min(72,time+(now-last)/500*+q('#immune-speed').value);last=now;draw();if(time>=72){pause();return;}raf=requestAnimationFrame(tick);};raf=requestAnimationFrame(tick);}
  function openDialog(title,body){q('#atlas-dialog-title').textContent=title;q('#atlas-dialog-body').innerHTML=body;q('#atlas-dialog').showModal();}
  function showPatient(id){pause();highlighted=id;const row=immune.patients.find(r=>r.patient.patient_id===id),p=row.patient;const ymax=yMax.immune,y=v=>155-Math.log1p(v)/Math.log1p(ymax)*140;
