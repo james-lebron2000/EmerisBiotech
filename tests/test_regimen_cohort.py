@@ -112,3 +112,35 @@ def test_overview_uses_all_120_while_display_selection_stays_fixed(result):
             assert point['below_baseline']==sum(v<100 for v in values)
         ten=[row['pathways'][key]['trajectory'][72]['burden_index'] for row in result['patients'][:10]]
         assert overview['groups'][key][72]['median_index']!=round(median(ten),6)
+
+
+def test_paired_comparison_strata_are_input_defined_and_exhaustive(result):
+    from vbt.regimen_cohort import public_cohort_overview, comparison_stratum
+    overview=json.loads(public_cohort_overview()['canonical_overview'])
+    strata=overview['comparison']['strata']
+    assert overview['schema']=='regimen-cohort-overview-v2'
+    ids=[pid for k in ('oxaliplatin','irinotecan','similar') for pid in strata[k]['patient_ids']]
+    assert len(ids)==len(set(ids))==120
+    for key,group in strata.items():
+        selected=[row for row in result['patients'] if row['patient']['patient_id'] in group['patient_ids']]
+        assert group['n']==len(selected)
+        if key!='all':assert all(comparison_stratum(row['patient'])==key for row in selected)
+        for week in (0,12,24,48,72):
+            gaps=[row['pathways']['A']['trajectory'][week]['burden_index']-row['pathways']['B']['trajectory'][week]['burden_index'] for row in selected]
+            paired=group['paired'][week]
+            assert paired['median_a_minus_b']==round(median(gaps),6)
+            assert paired['a_lower']==sum(v < -5 for v in gaps)
+            assert paired['b_lower']==sum(v > 5 for v in gaps)
+            assert paired['within_5']==sum(-5<=v<=5 for v in gaps)
+            assert paired['a_lower']+paired['b_lower']+paired['within_5']==group['n']
+            for path in PATHWAYS:
+                values=[r['pathways'][path]['trajectory'][week]['burden_index'] for r in selected]
+                assert group['groups'][path][week]['median_index']==round(median(values),6)
+    # Opposing input-defined effects exist without changing the frozen model or choosing outcomes.
+    assert strata['oxaliplatin']['paired'][24]['median_a_minus_b'] < -20
+    assert strata['irinotecan']['paired'][24]['median_a_minus_b'] > 20
+    assert abs(strata['all']['paired'][24]['median_a_minus_b']) < 5
+    record=envelope(result);record['view']['comparison_stratum']='oxaliplatin'
+    assert verify_export(record)==result
+    record['view']['comparison_stratum']='invented'
+    with pytest.raises(ValueError):verify_export(record)

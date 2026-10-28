@@ -133,10 +133,51 @@ def public_cohort_overview():
                                 'q25': round(percentile(values, .25), 6),
                                 'q75': round(percentile(values, .75), 6),
                                 'below_baseline': sum(v < 100 for v in values)})
-    payload = {'schema': 'regimen-cohort-overview-v1', 'source_result_sha256': digest(result),
+    payload = {'schema': 'regimen-cohort-overview-v2', 'source_result_sha256': digest(result),
                'total_patients': result['total_patients'], 'horizon_weeks': HORIZON,
                'displayed_patient_ids': [r['patient']['patient_id'] for r in result['patients'][:20]],
                'selection': 'Fixed patient IDs P001-P020.',
                'summary_definition': 'All 120 patients per pathway; median and inclusive 25th/75th patient percentiles, not confidence intervals.',
                'groups': groups}
+    payload['comparison'] = pathway_comparison(result)
     return {'canonical_overview': canonical(payload), 'sha256': digest(payload)}
+
+
+COMPARISON_STRATA = ('all', 'oxaliplatin', 'irinotecan', 'similar')
+
+
+def comparison_stratum(patient):
+    """Partition on authored baseline inputs, never on observed outcome ranking."""
+    c = patient['scenario_coefficients']
+    ratio = c['oxaliplatin'] / c['irinotecan']
+    return 'oxaliplatin' if ratio >= 1.35 else 'irinotecan' if ratio <= 1/1.35 else 'similar'
+
+
+def pathway_comparison(result):
+    """Descriptive paired contrasts of frozen outputs; no efficacy estimate."""
+    from .cohort_lab import percentile
+    strata = {}
+    for name in COMPARISON_STRATA:
+        rows = [r for r in result['patients'] if name == 'all' or comparison_stratum(r['patient']) == name]
+        if not rows:
+            raise ValueError('Comparison stratum is empty')
+        groups = {key: [] for key in PATHWAYS}
+        pairs = []
+        for week in range(HORIZON + 1):
+            for key in PATHWAYS:
+                points = [r['pathways'][key]['trajectory'][week] for r in rows]
+                values = [p['burden_index'] for p in points]
+                groups[key].append({'week': week, 'n': len(rows), 'median_index': round(median(values),6),
+                    'q25': round(percentile(values,.25),6), 'q75': round(percentile(values,.75),6),
+                    'below_baseline': sum(v<100 for v in values),
+                    'line_counts': {str(line):sum(p['line']==line for p in points) for line in (1,2,3)}})
+            gaps = [r['pathways']['A']['trajectory'][week]['burden_index'] - r['pathways']['B']['trajectory'][week]['burden_index'] for r in rows]
+            pairs.append({'week': week, 'n': len(rows), 'median_a_minus_b': round(median(gaps),6),
+                          'a_lower': sum(d < -5 for d in gaps), 'b_lower': sum(d > 5 for d in gaps),
+                          'within_5': sum(abs(d)<=5 for d in gaps)})
+        strata[name] = {'n': len(rows), 'patient_ids': [r['patient']['patient_id'] for r in rows],
+                        'groups': groups, 'paired': pairs}
+    return {'definition': 'Paired difference = A index minus B index for each patient; negative means lower in A. Not a causal or clinical efficacy estimate.',
+            'grouping': 'Baseline authored coefficient ratio oxaliplatin/irinotecan >=1.35, <=1/1.35, or between. Not measured sensitivity, not outcome-selected.',
+            'tolerance': 'Within 5 index units is a display band, not clinical equivalence or a significance test.',
+            'strata': strata}

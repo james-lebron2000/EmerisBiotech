@@ -75,3 +75,29 @@ clinical validation. No real patients, trial participants or clinical benefit ar
 claimed.
 
 The company/product/simulation narrative and Chinese edition are documented in [COHORT_PRESENTATION.md](COHORT_PRESENTATION.md).
+
+## Paired pathway contrasts and input-defined strata
+
+Overview schema `regimen-cohort-overview-v2` adds a descriptive paired comparison
+without changing `synthetic-regimen-cohort-120-v1`, its canonical outputs or CSV.
+For every patient and week, compute A burden index minus B burden index. Negative
+means lower in A. Count gaps below -5, above +5 and within ±5 index units. The five-unit
+band is a display convention, not clinical equivalence or statistical significance.
+The displayed median is the median of patient-level paired gaps, not a subtraction
+of two marginal medians. Counts use completed weeks; intermediate median labels use
+linear display interpolation.
+
+Before examining simulated outcomes, partition the authored baseline coefficients:
+oxaliplatin/irinotecan ≥1.35 (41 patients), ≤1/1.35 (42 patients), or between (37).
+These are synthetic input strata, not measured patient sensitivities or validated
+biomarker groups. They are not selected by observed response. In the frozen week-24
+outputs, the opposing strata have median paired gaps -36.279696 and +32.922972 index
+units, while the full cohort has +2.819980. The aggregate similarity masks opposing
+patient-level behavior; it does not establish equivalent clinical treatment efficacy.
+
+The all-cohort comparison strip stays at n=120. A selected stratum changes the
+cohort curves, denominators and first fixed patient IDs displayed. Axes stay shared
+across stratum selections. JSON always exports all 120 patients and records the
+optional `view.comparison_stratum`; older three-field view exports remain valid.
+The comparison concerns complete sequential scenarios, not head-to-head causal
+comparisons of individual 1L, 2L or 3L regimens.

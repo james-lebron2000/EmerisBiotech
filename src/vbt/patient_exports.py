@@ -110,8 +110,10 @@ def verify_export(envelope):
         _metadata(envelope)
         expected = regimen_cohort_result()
         view = envelope.get('view')
-        if not isinstance(view, dict) or set(view) != {'week', 'highlight_patient', 'order'}:
+        if not isinstance(view, dict) or set(view) not in ({'week', 'highlight_patient', 'order'}, {'week', 'highlight_patient', 'order', 'comparison_stratum'}):
             raise ValueError('Invalid regimen cohort view metadata')
+        if view.get('comparison_stratum', 'all') not in ('all', 'oxaliplatin', 'irinotecan', 'similar'):
+            raise ValueError('Unsupported comparison stratum')
         week = view['week']
         if type(week) not in (int, float) or not 0 <= week <= expected['horizon_weeks']:
             raise ValueError('Unsupported regimen cohort week')
