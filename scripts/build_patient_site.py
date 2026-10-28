@@ -4,6 +4,7 @@ import json
 import shutil
 from pathlib import Path
 from vbt.regimen_cohort import public_regimen_bundle, regimen_cohort_result, regimen_csv, public_cohort_overview
+from vbt.immunotherapy_cohort import public_immune_bundle, immunotherapy_result, immune_csv
 from vbt.cohort_lab import public_cohort_bundle, cohort_result
 from vbt.patient_exports import cohort_csv
 from vbt.molecule_lab import public_bundle
@@ -53,11 +54,13 @@ def main():
         (cohort_out / f'trajectories-cutoff-{cutoff}.csv').write_text(cohort_csv(cohort_result(cutoff)), encoding='utf-8')
     regimen_out = args.out / 'cohort-lab'
     regimen_out.mkdir(exist_ok=True)
-    for name in ('index.html', 'zh.html', 'app.js', 'cohort.css', 'story.css', 'i18n.js'):
+    for name in ('index.html', 'zh.html', 'app.js', 'cohort.css', 'story.css', 'i18n.js', 'treatment-atlas.js', 'treatment-atlas.css'):
         shutil.copyfile(source.parent / 'cohort-lab' / name, regimen_out / name)
     (regimen_out / 'scenarios.json').write_text(json.dumps(public_regimen_bundle(), separators=(',', ':')) + '\n')
     (regimen_out / 'overview.json').write_text(json.dumps(public_cohort_overview(), separators=(',', ':')) + '\n')
     (regimen_out / 'trajectories.csv').write_text(regimen_csv(regimen_cohort_result()), encoding='utf-8')
+    (regimen_out / 'immune-scenarios.json').write_text(json.dumps(public_immune_bundle(), separators=(',', ':')) + '\n')
+    (regimen_out / 'immune-trajectories.csv').write_text(immune_csv(immunotherapy_result()), encoding='utf-8')
     print(f'Built public research showcase: {args.out}')
 
 
