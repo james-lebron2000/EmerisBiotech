@@ -6,7 +6,7 @@ const percent=index=>(index>=100?'+':'')+(index-100).toFixed(0)+'%';
 // View interpolation only. Treatment-line events stay at their discrete modeled review week.
 function sample(points,time){const a=points[Math.floor(time)],b=points[Math.min(Math.ceil(time),points.length-1)];return {...a,burden_index:a.burden_index+(b.burden_index-a.burden_index)*(time-Math.floor(time))};}
 function stop(){if(frame!==null)cancelAnimationFrame(frame);frame=null;$('#play').textContent=tr('Play');$('#play').setAttribute('aria-pressed','false');}
-function play(){if(frame!==null)return;if(+$('#week').value>=data.horizon_weeks)$('#week').value=0;let previous=null,time=+$('#week').value;$('#play').textContent=tr('Pause');$('#play').setAttribute('aria-pressed','true');const tick=now=>{if(previous!==null)time=Math.min(data.horizon_weeks,time+(now-previous)/500*+$('#speed').value);previous=now;$('#week').value=time;draw();if(time>=data.horizon_weeks){stop();return;}frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);}
+function play(){if(frame!==null||document.querySelector('#chemo-scene')?.hidden)return;if(+$('#week').value>=data.horizon_weeks)$('#week').value=0;let previous=null,time=+$('#week').value;$('#play').textContent=tr('Pause');$('#play').setAttribute('aria-pressed','true');const tick=now=>{if(previous!==null)time=Math.min(data.horizon_weeks,time+(now-previous)/500*+$('#speed').value);previous=now;$('#week').value=time;draw();if(time>=data.horizon_weeks){stop();return;}frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);}
 function fail(error){stop();$('#error').hidden=false;$('#error').textContent=tr(error.message);for(const id of ['play','replay','week','reorder','export'])$('#'+id).disabled=true;$('#export-csv').hidden=true;}
 function activeStratum(){return overview.comparison.strata[comparisonStratum];}
 function stratumLabel(key){return (window.IS_ZH?{all:'全部 120 人',oxaliplatin:'奥沙利铂敏感性较高的合成输入',irinotecan:'伊立替康敏感性较高的合成输入',similar:'两种敏感性接近的合成输入'}:{all:'All 120 patients',oxaliplatin:'Oxaliplatin-leaning inputs',irinotecan:'Irinotecan-leaning inputs',similar:'Similar sensitivity inputs'})[key];}
@@ -15,6 +15,7 @@ function draw(){const time=+$('#week').value;$('#week-value').textContent=time.t
  const a=sample(item.row.pathways.A.trajectory,time),b=sample(item.row.pathways.B.trajectory,time);const gap=a.burden_index-b.burden_index;item.gap.textContent=(Math.abs(gap)<=5?'≈':gap<0?'A↓':'B↓')+Math.abs(gap).toFixed(0);item.gap.title=gapLabel(gap)+(window.IS_ZH?'（指数单位）':' index units');}
  const cursorX=38+time/data.horizon_weeks*392;$('#overview-clip rect').setAttribute('width',time/data.horizon_weeks*392);$('#cohort-cursor').setAttribute('x1',cursorX);$('#cohort-cursor').setAttribute('x2',cursorX);
  for(const binding of overviewBindings){const point=overviewPoint(activeStratum().groups[binding.key],time);binding.tip.setAttribute('cx',cursorX);binding.tip.setAttribute('cy',185-point.median_index/cohortYMax*165);binding.median.textContent=percent(point.median_index);binding.iqr.textContent=(window.IS_ZH?'指数四分位范围 ':'Index IQR ')+point.q25.toFixed(1)+'–'+point.q75.toFixed(1);binding.below.textContent=(window.IS_ZH?'低于基线指数 ':'Below baseline index ')+point.below_baseline+' / '+activeStratum().n;}
+ window.drawTreatmentAtlas?.(data,time);
  drawComparison(time);
  for(const key of ['A','B']){const s=activeStratum().groups[key][Math.floor(time)];$('#counts-'+key).textContent=tr('1L '+s.line_counts['1']+' · 2L '+s.line_counts['2']+' · 3L '+s.line_counts['3']+' / '+activeStratum().n);}
 }
@@ -72,3 +73,6 @@ function drawComparison(time){
  for(const [id,value] of [['bar-a',all.a_lower],['bar-same',all.within_5],['bar-b',all.b_lower]])$('#'+id).style.width=value/120*100+'%';
  for(const key of ['oxaliplatin','irinotecan']){$('#contrast-'+key).textContent=gapLabel(at(key).median_a_minus_b);document.querySelector('[data-stratum="'+key+'"]').setAttribute('aria-pressed',comparisonStratum===key);}
 }
+
+window.pauseChemo=stop;
+window.inspectChemoPatient=showPatient;

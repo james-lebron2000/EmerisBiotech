@@ -15,6 +15,7 @@ from pathlib import Path
 from .patient_lab import canonical
 from .molecule_lab import simulate_molecule
 from .cohort_lab import cohort_result
+from .immunotherapy_cohort import immunotherapy_result, immune_csv
 from .regimen_cohort import regimen_cohort_result, regimen_csv
 
 MAX_BYTES = 8 * 1024 * 1024
@@ -106,6 +107,18 @@ def verify_export(envelope):
         ids = {r['patient']['patient_id'] for r in expected['patients']}
         if view['highlight_patient'] is not None and view['highlight_patient'] not in ids:
             raise ValueError('Unknown highlighted cohort patient')
+    elif schema == 'immune-cohort-v1':
+        _metadata(envelope)
+        expected = immunotherapy_result()
+        view = envelope.get('view')
+        if not isinstance(view, dict) or set(view) != {'week', 'highlight_patient', 'pattern'}:
+            raise ValueError('Invalid immune cohort view metadata')
+        if type(view['week']) not in (int, float) or not 0 <= view['week'] <= expected['horizon_weeks']:
+            raise ValueError('Unsupported immune cohort week')
+        if view['pattern'] not in ('all', 'early', 'delayed', 'low_effect', 'escape'):
+            raise ValueError('Unsupported immune input pattern')
+        if view['highlight_patient'] is not None and view['highlight_patient'] not in {r['patient']['patient_id'] for r in expected['patients']}:
+            raise ValueError('Unknown immune cohort patient')
     elif schema == 'regimen-cohort-v1':
         _metadata(envelope)
         expected = regimen_cohort_result()
@@ -164,10 +177,10 @@ def main():
             raise ValueError('Export exceeds the 8 MiB size limit')
         expected = verify_export(strict_json(args.export.read_text(encoding='utf-8')))
         if args.csv:
-            if expected['schema_version'] not in ('patient-cohort-v1', 'regimen-cohort-v1'):
+            if expected['schema_version'] not in ('patient-cohort-v1', 'regimen-cohort-v1', 'immune-cohort-v1'):
                 raise ValueError('CSV is supported for cohort exports only')
             with args.csv.open('x', encoding='utf-8', newline='') as file:
-                file.write(regimen_csv(expected) if expected['schema_version']=='regimen-cohort-v1' else cohort_csv(expected))
+                file.write(immune_csv(expected) if expected['schema_version']=='immune-cohort-v1' else regimen_csv(expected) if expected['schema_version']=='regimen-cohort-v1' else cohort_csv(expected))
         print(json.dumps({'record_integrity': 'verified', 'approved_synthetic_template': True,
             'schema_version': expected['schema_version'], 'model_version': expected['model_version'],
             'scientific_review': expected['scientific_review'], 'clinical_use': False,
