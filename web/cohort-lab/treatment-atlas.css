@@ -163,3 +163,4 @@ body:is(.atlas-active,:has(#simulation:target)) dialog th { color:#adc3c4; }
 body:is(.atlas-active,:has(#simulation:target)) dialog td,body:is(.atlas-active,:has(#simulation:target)) dialog th { border-color:#ffffff1c; }
 body:is(.atlas-active,:has(#simulation:target)) dialog svg text { fill:#abc3c3; font:10px ui-monospace,monospace; }
 body:is(.atlas-active,:has(#simulation:target)) dialog .sparkline.a { stroke:#f3a58a; }body:is(.atlas-active,:has(#simulation:target)) dialog .sparkline.b { stroke:#8ad8c2; }
+#atlas-dialog svg text:last-child { text-anchor:end; }
