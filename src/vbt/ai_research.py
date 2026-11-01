@@ -74,7 +74,7 @@ def proposals(store,pid):
     for e in store.events(pid):
         draft=e['payload'] if e['kind']=='ai_proposal' else e['payload'].get('draft') if e['kind']=='ai_model_receipt' and e['payload'].get('status')=='succeeded' else None
         if draft:
-            records.append(dict(draft,event_id=e['id'],created=e['created'],stale=draft['proposal']['packet_hash']!=context['packet_hash']))
+            records.append(dict(draft,**({'mission_id':e['payload']['mission_id']} if e['payload'].get('mission_id') else {}),event_id=e['id'],created=e['created'],stale=draft['proposal']['packet_hash']!=context['packet_hash']))
     return records
 
 def _read(store,pid,name):

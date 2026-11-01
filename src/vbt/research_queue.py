@@ -149,6 +149,10 @@ def enqueue(store,pid,proposal_id,task_ids,deps,budget,author,revision):
         raise Conflict('项目已有更新，请刷新后创建批次')
     payload=dict(schema_version=1,**identity,batch_id=batch_id,tasks=tasks,limits=clean_limits,
                  max_tasks=len(tasks),monetary_cost=None,scope='host_defined_read_only_tools_no_model_or_arbitrary_code')
+    if proposal.get('mission_id'):
+        from .research_mission import guard
+        guard(store,pid,proposal['mission_id'])
+        payload['mission_id']=proposal['mission_id']
     try:
         store._append(pid,'ai_batch',payload,author,revision)
     except Conflict:
@@ -249,6 +253,12 @@ def recover(store,pid,batch_id,author,revision,reason):
         return recovered
 
 
+def _cancelled(store,pid,request):
+    return any((e['kind']=='ai_batch_cancel' and e['payload']['batch_id']==request['payload']['batch_id']) or
+               (e['kind']=='mission_stop' and e['payload'].get('mission_id')==request['payload'].get('mission_id'))
+               for e in store.events(pid))
+
+
 def _worker(store,pid,request,lock_fd,seconds):
     script=Path(__file__).with_name('research_worker.py').resolve()
     env={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','PYTHONDONTWRITEBYTECODE':'1'}
@@ -256,10 +266,12 @@ def _worker(store,pid,request,lock_fd,seconds):
           '--tool',request['payload']['tool'],'--packet-hash',request['payload']['packet_hash'],'--seconds',str(seconds)]
     started=time.monotonic();process=None;state='blocked';error='worker_start_failed';output=None
     try:
+        if _cancelled(store,pid,request):
+            return 'cancelled','cancelled_before_dispatch',None,0.0,0.0
         process=subprocess.Popen(args,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,
                                  env=env,pass_fds=(lock_fd,),start_new_session=True)
         while True:
-            cancelled=any(e['kind']=='ai_batch_cancel' and e['payload']['batch_id']==request['payload']['batch_id'] for e in store.events(pid))
+            cancelled=_cancelled(store,pid,request)
             remaining=seconds-(time.monotonic()-started)
             if cancelled or remaining<=0:
                 state='cancelled' if cancelled else 'timed_out'
@@ -313,15 +325,21 @@ def execute_next(store,pid,batch_id,author,revision=None,task_id=None):
         if any(e['kind']=='ai_tool_request' and e['id'] in unknown_owners and e['payload'].get('lock_identity')!=identity for e in events):
             raise ValueError('执行锁版本变化，无法核实曾未确认终止的子进程')
         batch=get_batch(store,pid,batch_id)
+        mission_state=None
+        if batch.get('mission_id'):
+            from .research_mission import guard
+            mission_state=guard(store,pid,batch['mission_id'],tool=True)
         if batch['status']!='ready':
             raise ValueError('批次未就绪：'+batch['status'])
         job=next((t for t in batch['tasks'] if t['state']=='queued' and (task_id is None or t['id']==task_id)),None)
         if not job:
             raise ValueError('指定任务尚未就绪，需先满足依赖或显式重试')
+        if mission_state:guard(store,pid,batch['mission_id'],tool=True,tool_name=job['tool'])
         reserved=min(batch['remaining_seconds'],batch['limits']['per_task_seconds'])
+        if mission_state:reserved=min(reserved,mission_state['remaining_seconds'])
         store._append(pid,'ai_tool_request',dict(schema_version=2,batch_id=batch_id,task_key=job['task_key'],
             proposal_id=batch['proposal_id'],task_id=job['id'],tool=job['tool'],packet_hash=batch['packet_hash'],
-            reserved_seconds=reserved,lock_identity=identity),author,batch['revision'])
+            reserved_seconds=reserved,lock_identity=identity,**({'mission_id':batch['mission_id']} if batch.get('mission_id') else {})),author,batch['revision'])
         request=next(e for e in store.events(pid) if e['previous']==batch['revision'])
         status,error,output,elapsed,charge=_worker(store,pid,request,fd,reserved)
         return _save_receipt(store,pid,request,author,status,error,output,elapsed,charge)

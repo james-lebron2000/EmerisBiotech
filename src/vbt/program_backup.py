@@ -108,7 +108,7 @@ def state_inventory(state):
                 if field in data:
                     if not isinstance(data[field],list):raise ValueError('项目引用须为列表')
                     for ref in data[field]:check(ref,allowed)
-            for field, allowed in [('evidence_id',{'evidence'}),('experiment_id',{'experiment'}),('result_id',{'result'}),
+            for field, allowed in [('mission_id',{'research_mission'}),('evidence_id',{'evidence'}),('experiment_id',{'experiment'}),('result_id',{'result'}),
                                    ('asset_id',{'asset_import'}),('claim_id',{'asset_claim'}),('proposal_id',{'ai_proposal','ai_model_receipt'})]:
                 if field in data:check(data[field],allowed)
             if kind in ('ai_model_receipt','ai_tool_receipt'):

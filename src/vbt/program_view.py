@@ -40,7 +40,7 @@ def render(app,q):
             body+=field('author','记录人（本地声明）','text')+'<p><button>建立研究项目</button></p></form>'
         return body
     p=store.get(pid)
-    body+='<nav class="asset-page-nav" aria-label="同一项目的研究工作"><a href="#scientific-review">原版对照与风险审阅</a><a href="#ai-research">AI 研究草案</a><a href="#research-batches">任务批次与预算</a><a href="#validation-results">研发验证与结果</a><a href="#asset-diligence">资产与 BD 尽调</a></nav>'
+    body+='<nav class="asset-page-nav" aria-label="同一项目的研究工作"><a href="#scientific-review">原版对照与风险审阅</a><a href="#ai-research">AI 研究草案</a><a href="#research-missions">持续研究任务</a><a href="#research-batches">任务批次与预算</a><a href="#validation-results">研发验证与结果</a><a href="#asset-diligence">资产与 BD 尽调</a></nav>'
     body+='<a href="/programs">← 所有研发项目</a><h2>'+e(p['title'])+'</h2><div class="page-actions"><a class="button secondary" href="/program/export?id='+quote(pid)+'">导出完整决策包 JSON</a></div>'
     gaps=store.gaps(p)
     body+='<section class="card"><h2>下一步需要解决什么</h2><p>'+e('；'.join(gaps) if gaps else '准备项已记录，可提交研究计划决定；不代表科学审查通过')+'</p><p class="data-note">本地署名与“已审阅”均为记录人的声明。预算是估算，保存不会支付费用、预约实验或启动分析。</p></section>'
@@ -81,6 +81,8 @@ def render(app,q):
     if any(r['current_scope'] for r in p['results']):body+='<fieldset><legend>引用验证结果（推进需引用全部当前结果）</legend>'+''.join('<label><input type="checkbox" name="result_ids" value="'+e(r['event_id'])+'"> '+e(r['metric'])+' · '+e(ASSESSMENTS[r['assessment']])+'</label>' for r in p['results'] if r['current_scope'])+'</fieldset>'
     body+=field('author','记录人（本地声明）','text')+'<p><button>保存本轮决定</button></p></form>'
     body+=diligence_section(app,p)
+    from .research_mission_view import render as render_missions
+    body+=render_missions(app,p)
     from .ai_research_view import render as ai_section
     body+=ai_section(app,store,p)
     from .scientific_review_view import render as scientific_section
@@ -139,6 +141,11 @@ def submit(app,q):
     elif operation=='experiment':store.add_experiment(pid,q,author,revision)
     elif operation=='result':store.add_result(pid,q,author,revision)
     elif operation=='result_review':store.review_result(pid,q,author,revision)
+    elif operation in ('mission_create','mission_run','mission_stop'):
+        from .research_mission import create,run,stop
+        if operation=='mission_create':create(store,pid,q,author,revision)
+        elif operation=='mission_run':run(store,pid,q.get('mission_id'),author,revision)
+        else:stop(store,pid,q.get('mission_id'),author,revision,q.get('reason'))
     elif operation=='diligence':store.add_diligence(pid,q,author,revision)
     elif operation in ('asset_claim','asset_claim_review'):
         from .asset_diligence import add_claim,review_claim

@@ -198,6 +198,10 @@ def handler(app, public_origin=None):
                     from .ai_research import packet
                     from .programs import Programs
                     self.send(200,json.dumps(packet(Programs(app.state),q.get('id','')),ensure_ascii=False,indent=2),'application/json; charset=utf-8',True);return
+                if u.path=='/program/research-mission':
+                    from .research_mission import export
+                    from .programs import Programs
+                    self.send_bytes(200,export(Programs(app.state),q.get('id',''),q.get('mission','')),'application/json; charset=utf-8',True);return
                 if u.path=='/program/task-batches':
                     from .research_queue import export_batches
                     from .programs import Programs

@@ -33,6 +33,7 @@ def render(app, store, p, context):
     for event in reversed(receipts):
         r = event['payload']
         label = {'succeeded': '调用及草案校验完成 · 待科学审阅', 'failed': '模型调用或草案校验失败', 'stale': '上下文已变化 · 未接纳为当前草案'}[r['status']]
+        if r.get('mission_id') and r['status']=='succeeded':label='任务模型决策校验完成 · 待科学审阅'
         body += '<section class="card"><h3>' + label + '</h3><p>配置模型：' + e(r['configured_model'] or '未配置') + '；提供方返回模型：' + e(r['returned_model'] or '未提供／未接受') + '</p>'
         body += '<p class="ref">请求 ' + e(r['request_id']) + ' · ' + e(event['created']) + '</p>'
         if r['packet_hash'] != context['packet_hash']:
