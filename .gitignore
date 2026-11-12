@@ -16,3 +16,6 @@ backups/
 *.log
 secrets/
 cache-info.json
+
+# Local execution artifacts are preserved outside source publication.
+output/
