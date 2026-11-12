@@ -5,7 +5,7 @@
  const para=(id,v,cls)=>el(id).append(node('p',v,cls));
  const target=v=>Array.isArray(v)?v.map(target).join('；'):v&&typeof v==='object'?[v.measure||v.title||v.endpoint||'主要终点',v.timeFrame||v.time_frame].filter(Boolean).join(' · '):text(v);
  const link=(parent,url,label)=>{try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)return;const a=node('a',label||u.hostname);a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}catch(_){}};
- const names={constant_0_5:'固定50%',beta_pooled:'训练集合并统计',beta_area:'适应症收缩统计',training_majority:'训练集多数类',asset_OOF_convex_ensemble:'训练OOF组合（预设主候选）',design_logistic:'设计 Logistic',design_extra_trees:'设计 Extra Trees',prior_augmented_logistic:'前期证据＋Logistic',prior_augmented_extra_trees:'前期证据＋Extra Trees','deepseek-flash':'DeepSeek Flash','deepseek-v4-pro':'DeepSeek Pro'};
+ const names={constant_0_5:'固定50%',beta_pooled:'训练集合并统计',beta_area:'适应症收缩统计',training_majority:'训练集多数类',asset_OOF_convex_ensemble:'训练OOF组合（预设主候选）',design_logistic:'设计 Logistic',design_extra_trees:'设计 Extra Trees',prior_augmented_logistic:'前期证据＋Logistic',prior_augmented_extra_trees:'前期证据＋Extra Trees','deepseek-flash':'deepseek-flash','deepseek-v4-pro':'deepseek-v4-pro'};
  fetch('/api/predome/continuous',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('资料尚未发布或来源校验未通过');return r.json();}).then(e=>{
   if(e.integrity_verified!==true)throw Error('未获得校验通过资料');const r=obj(e.record),b=obj(r.benchmark),f=obj(r.flow),p=obj(r.protocol),fore=obj(r.prospective);
   const readiness={blocked_training_guard:'训练尚未启动：样本门槛未满足',trained_no_eligible_heldout:'已探索训练，独立测试尚未就绪',retrospective_heldout_complete:'已完成冻结后的历史测试'};

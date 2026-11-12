@@ -1,0 +1,132 @@
+{
+  "schema_version": "predome-readout-observation-1",
+  "observation_id": "readout-observation-20261027-avanzar-v1",
+  "recorded_at_utc": "2026-10-26T21:42:00+00:00",
+  "as_of_local_date": "2026-10-27",
+  "timezone": "Asia/Taipei",
+  "status": "pending_source_acquisition_and_independent_review",
+  "record_kind": "unapproved_calendar_observation",
+  "target": {
+    "target_id": "of-season-20261023-corrected-avanzar",
+    "trial_name": "AVANZAR",
+    "nct_id": "NCT05687266",
+    "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+    "population": "Previously untreated advanced non-squamous NSCLC without actionable genomic alterations; TROP2 biomarker-positive non-squamous analysis population.",
+    "comparison": "Dato-DXd + durvalumab + carboplatin versus pembrolizumab + pemetrexed + platinum chemotherapy.",
+    "registry_url": "https://clinicaltrials.gov/study/NCT05687266"
+  },
+  "preserved_frozen_window": {
+    "spec_path_relative_to_application": "arena_data/season_corrected_spec.json",
+    "start": "2026-07-01",
+    "end": "2026-12-31",
+    "precision": "half_year",
+    "label": "H2 2026 sponsor guidance",
+    "guidance_as_of": "2026-07-27",
+    "source_url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+    "modified": false
+  },
+  "new_official_source": {
+    "title": "Meet AZN Management: ESMO 2026 Investor Event",
+    "event_date": "2026-10-26",
+    "document_cover_date": "2026-10-26",
+    "source_url": "https://www.astrazeneca.com/content/dam/az/Investor_Relations/events/AZN-2026-ESMO-presentation.pdf",
+    "event_page_url": "https://www.astrazeneca.com/investor-relations/meet-the-management-event-at-esmo-2026.html",
+    "official_listing_url": "https://www.astrazeneca.com/investor-relations/results-and-presentations.html",
+    "pdf_page_one_based": 50,
+    "printed_slide_number": 51,
+    "observed_heading": "Pipeline momentum continues through 2027",
+    "observation": "The official presentation text lists AVANZAR and first-line NSQ/NSQ TROP2-positive NSCLC under the 2027 readout section. This supports a candidate 2027 trial-level guidance observation, not an endpoint result.",
+    "observation_method": "Official website listing and PDF text displayed by the web reader; no independently captured original bytes.",
+    "original_pdf_captured": false,
+    "source_sha256": null,
+    "screenshot_verified": false,
+    "half_year_layout_verified": false,
+    "acquisition_attempt": {
+      "method": "Direct HTTPS retrieval of the official public PDF with Python urllib",
+      "http_status": 403,
+      "original_bytes_saved": false,
+      "access_restriction_bypassed": false,
+      "screenshot_attempt_status": "web_pdf_screenshot_unavailable"
+    }
+  },
+  "candidate_window": {
+    "start": "2027-01-01",
+    "end": "2027-12-31",
+    "precision": "year",
+    "label": "2027 sponsor guidance candidate; source acquisition and independent review pending",
+    "guidance_as_of": "2026-10-26",
+    "source_granularity": "named_trial",
+    "endpoint_specific_timing_confirmed": false,
+    "approval_status": "pending",
+    "eligible_for_public_calendar_update": false,
+    "source_note": "The year is supported by the official section heading and named trial. H1/H2 column alignment has not been visually verified, so no half-year or quarter is assigned. Event-driven timing can change; this is not an exact announcement date."
+  },
+  "required_before_approval": [
+    "Acquire the permitted official original PDF and record its actual bytes, acquisition time and SHA-256.",
+    "Inspect the relevant original page and verify any intended half-year label against the visual layout; otherwise retain year precision.",
+    "Independently review the exact named trial and timing scope, preserving the distinction between trial-level guidance and the endpoint-specific frozen prediction target.",
+    "Record an approved, separately versioned calendar update through the existing review process; retain the original forecast input and previous window."
+  ],
+  "bounded_other_target_observations": [
+    {
+      "trial_name": "INAVO121",
+      "nct_id": "NCT05646862",
+      "endpoint": "BICR-assessed PFS in the main randomized post-CDK4/6 HR-positive, HER2-negative, PIK3CA-mutated population; inavolisib + fulvestrant versus alpelisib + fulvestrant.",
+      "source_url": "https://assets.roche.com/f/176343/x/214d9ddfff/irp261022.pdf",
+      "document_date": "2026-10-22",
+      "observation": "The official deck lists INAVO121 in its 2026 clinical-results outlook and distinguishes INAVO120 and INAVO121. This bounded check did not establish a new exact readout date or the frozen endpoint outcome.",
+      "new_window_proposed": false,
+      "outcome_label": null
+    },
+    {
+      "trial_name": "MEVPRO-1",
+      "nct_id": "NCT06551324",
+      "endpoint": "BICR rPFS per RECIST v1.1 and PCWG3; mevrometostat + enzalutamide versus physician choice enzalutamide or docetaxel after abiraterone.",
+      "source_url": "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts",
+      "additional_source_url": "https://www.pfizerclinicaltrials.com/mevproprostatecancerclinicaltrials",
+      "document_date": null,
+      "observation": "The official catalyst page lists MEVPRO-1 under 2026 data readouts. The recruitment page says Recruitment completed; recruitment status is neither a primary endpoint result nor an announcement date. This bounded check did not establish a new window or decisive endpoint result.",
+      "new_window_proposed": false,
+      "outcome_label": null
+    },
+    {
+      "trial_name": "TOPAZ-1",
+      "nct_id": "NCT04895241",
+      "endpoint": "Week-52 SRI-4 response for high-dose litifilimab versus placebo with nonbiologic standard care in SLE.",
+      "source_url": "https://investors.biogen.com/",
+      "additional_source_url": "https://investors.biogen.com/events/event-details/q3-2026-earnings-call-webcast",
+      "document_date": null,
+      "corporate_event_date": "2026-10-28",
+      "observation": "The official IR site lists a Q3 earnings call on October 28. A corporate communication event is not a trial-specific promised readout. AMETHYST and TOPAZ-2 are not this exact TOPAZ-1 target. This bounded check did not establish a new trial readout window or decisive endpoint result.",
+      "new_window_proposed": false,
+      "outcome_label": null
+    },
+    {
+      "trial_name": "OCEAN",
+      "nct_id": "NCT05263934",
+      "endpoint": "Protocol/SAP non-inferiority of depemokimab versus mepolizumab for remission (BVAS=0 and OCS <=4 mg/day) at both Week 36 and Week 52.",
+      "source_url": "https://www.gsk.com/media/jayh41pz/q2-2026-results-announcement.pdf",
+      "document_date": "2026-07-28",
+      "observation": "The official Q2 announcement distinguishes H2 2026 OCEAN Phase III data readout from 2027 regulatory submission and decision milestones. Those regulatory dates cannot be substituted for readout timing. This bounded check did not establish a newer date or the exact decisive endpoint result.",
+      "new_window_proposed": false,
+      "outcome_label": null
+    }
+  ],
+  "limitations": [
+    "This is a versioned observation note, not an approved source snapshot, calendar update, outcome adjudication or new forecast.",
+    "Recorded-at time is when this note was assembled, not an asserted original-PDF acquisition time or independent timestamp attestation.",
+    "A limited official-source check that did not establish an outcome does not prove that no announcement exists.",
+    "A changed readout window, an event-driven delay, recruitment completion, approval or another trial's result cannot resolve this frozen endpoint target.",
+    "No third-party quarter-level timing is used as candidate data."
+  ],
+  "outcome_label": null,
+  "first_public_outcome_at": null,
+  "independent_reviews_completed": 0,
+  "production_calendar_updated": false,
+  "provider_calls": 0,
+  "forecast_changes": 0,
+  "frozen_spec_changes": 0,
+  "ledger_writes": 0,
+  "outcome_adjudications": 0,
+  "clinical_prediction_validated": false
+}

@@ -1,0 +1,8 @@
+{
+  "checked_at": "2026-10-22",
+  "verification": "Publication date fields read from linked public patent records; no priority-date substitution",
+  "items": {
+    "https://patents.google.com/patent/WO2024141760A1/en": {"publication_number": "WO2024141760A1", "public_available_at": "2024-07-04"},
+    "https://patents.google.com/patent/WO2025120513A1/en": {"publication_number": "WO2025120513A1", "public_available_at": "2025-06-12"}
+  }
+}

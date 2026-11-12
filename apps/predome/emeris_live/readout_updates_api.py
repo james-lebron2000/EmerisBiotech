@@ -3,7 +3,7 @@ from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 from .platform_api import reviewer, invoke, page_response
-from .readout_updates import ReadoutUpdateStore, CONFIRMATIONS
+from .readout_updates import ReadoutUpdateStore, CONFIRMATIONS, ARENA_CONFIRMATION
 
 router=APIRouter(prefix='/api/readout-updates',tags=['readout calendar review'])
 
@@ -12,13 +12,16 @@ class Proposal(BaseModel):
     model_config=ConfigDict(extra='forbid')
     nct_id:str=Field(pattern=r'^NCT\d{8}$')
     candidate_id:str=Field(min_length=1,max_length=100)
-    date_kind:Literal['official_exact_date','estimated_window']
-    start:str=Field(max_length=10)
-    end:str=Field(max_length=10)
-    precision:Literal['day','month','quarter','half_year','year','range']
+    date_kind:Literal['official_exact_date','estimated_window','readout_time_unconfirmed']
+    start:str|None=Field(max_length=10)
+    end:str|None=Field(max_length=10)
+    precision:Literal['day','month','quarter','half_year','year','range','unknown']
     label:str=Field(min_length=1,max_length=160)
     quoted_evidence:str=Field(min_length=20,max_length=6000)
     reason:str=Field(min_length=10,max_length=3000)
+    arena_target_id:str|None=Field(default=None,min_length=1,max_length=100)
+    source_granularity:Literal['named_trial','exact_analysis']|None=None
+    applicability:Literal['exact_registered_target']|None=None
 
 
 class Decision(BaseModel):
@@ -33,6 +36,7 @@ def proposals(request:Request,limit:int=Query(20,ge=1,le=100),offset:int=Query(0
     user=reviewer(request)
     rows=invoke(ReadoutUpdateStore(request.app.state.store).list,user['owner'],limit=limit+1,offset=offset)
     return page_response(rows,limit,offset) | {'approval_requirements':list(CONFIRMATIONS),
+        'arena_additional_approval_requirements':[ARENA_CONFIRMATION],
         'calendar_effect':'only_independently_approved_updates_are_public'}
 
 
@@ -41,7 +45,7 @@ def propose(body:Proposal,request:Request):
     user=reviewer(request)
     if hasattr(request.app.state,'platform_rate_limit'):
         request.app.state.platform_rate_limit('readout-proposal:'+user['owner'],20,600)
-    return invoke(ReadoutUpdateStore(request.app.state.store).propose,user['owner'],body.model_dump())
+    return invoke(ReadoutUpdateStore(request.app.state.store).propose,user['owner'],body.model_dump(exclude_unset=True))
 
 
 @router.get('/{proposal_id}')

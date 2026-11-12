@@ -1,0 +1,230 @@
+{
+  "cohort_id": "of-pilot-20261022-v1",
+  "targets": [
+    {
+      "id": "of-pilot-20261022-avanzar-pfs",
+      "project_id": "datopotamab-deruxtecan",
+      "nct_id": "NCT05687266",
+      "trial_name": "AVANZAR",
+      "drug": "datopotamab deruxtecan",
+      "sponsor": "AstraZeneca / Daiichi Sankyo",
+      "indication": "first-line advanced NSCLC",
+      "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+      "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+      "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+      "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved.",
+      "analysis_timepoint": "First officially reported decisive analysis of the specified primary PFS hypothesis; registry timeframe approximately 3 years.",
+      "information_cutoff_utc": "2026-10-22T15:33:52.652299+00:00",
+      "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+      "submission_deadline_utc": "2026-10-22T18:35:52.652299+00:00",
+      "scope": "prospective_challenge",
+      "readout": {
+        "label": "H2 2026 公司指引；待更新核查",
+        "start": "2026-07-01",
+        "end": "2026-12-31",
+        "precision": "half_year",
+        "source_url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+        "source_title": "AstraZeneca H1 2026 Clinical Trials Appendix",
+        "guidance_as_of": "2026-07-27",
+        "requires_refresh": true
+      },
+      "status_note": "2026-10-22限定官方中英文检索未发现本目标决定性结果；不能排除未索引公告。注册记录预计主要完成时间2027-11，不能用其替换公司读出窗口。",
+      "readout_screen": {
+        "status": "no_decisive_public_result_found",
+        "checked_at_utc": "2026-10-22T15:35:52.652299+00:00",
+        "method": "Registry hasResults check plus domain-limited English and Chinese search of sponsor official sources.",
+        "queries": [
+          "AVANZAR datopotamab trial results 2026",
+          "AVANZAR 研究 结果 2026"
+        ],
+        "domains": [
+          "astrazeneca.com",
+          "daiichisankyo.com",
+          "clinicaltrials.gov",
+          "astrazeneca.com.cn",
+          "daiichisankyo.com.cn"
+        ],
+        "finding": "Retrieved results concerned TROPION-Breast02, TROPION-Lung01 or other trials, not the AVANZAR target.",
+        "sources": [
+          {
+            "url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+            "sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "retrieved_at": "2026-10-22T15:34:00.360843+00:00"
+          },
+          {
+            "url": "https://www.astrazeneca.com/content/dam/az/PDF/2026/h1q2/H1-and-Q2-2026-results-clinical-trials-appendix.pdf",
+            "role": "earlier company timing guidance, not negative result proof"
+          }
+        ]
+      },
+      "evidence_ids": [
+        "registry-NCT05687266",
+        "tropion_lung01_nsq_pfs"
+      ],
+      "patent_ids": []
+    }
+  ],
+  "slots": [
+    {
+      "target_id": "of-pilot-20261022-avanzar-pfs",
+      "model_id": "glm-5.2",
+      "track": "same_evidence",
+      "condition": "clinical_only",
+      "workflow_version": "arena-providers-1.0.0:single_pass",
+      "packet": {
+        "target": {
+          "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+          "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+          "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+          "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+        },
+        "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+        "evidence": [
+          {
+            "id": "registry-NCT05687266",
+            "kind": "trial_registry",
+            "title": "AVANZAR registered design",
+            "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+            "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+            "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "available_at": "2026-10-09T23:59:59+00:00"
+          },
+          {
+            "id": "tropion_lung01_nsq_pfs",
+            "kind": "clinical_prior",
+            "title": "TROPION-Lung01 indirect randomized evidence",
+            "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+            "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "available_at": "2024-09-09T23:59:59+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "target_id": "of-pilot-20261022-avanzar-pfs",
+      "model_id": "kimi-k3",
+      "track": "same_evidence",
+      "condition": "clinical_only",
+      "workflow_version": "arena-providers-1.0.0:single_pass",
+      "packet": {
+        "target": {
+          "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+          "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+          "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+          "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+        },
+        "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+        "evidence": [
+          {
+            "id": "registry-NCT05687266",
+            "kind": "trial_registry",
+            "title": "AVANZAR registered design",
+            "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+            "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+            "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "available_at": "2026-10-09T23:59:59+00:00"
+          },
+          {
+            "id": "tropion_lung01_nsq_pfs",
+            "kind": "clinical_prior",
+            "title": "TROPION-Lung01 indirect randomized evidence",
+            "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+            "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "available_at": "2024-09-09T23:59:59+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "target_id": "of-pilot-20261022-avanzar-pfs",
+      "model_id": "deepseek-v4.1-flash",
+      "track": "same_evidence",
+      "condition": "clinical_only",
+      "workflow_version": "arena-providers-1.0.0:single_pass",
+      "packet": {
+        "target": {
+          "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+          "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+          "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+          "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+        },
+        "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+        "evidence": [
+          {
+            "id": "registry-NCT05687266",
+            "kind": "trial_registry",
+            "title": "AVANZAR registered design",
+            "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+            "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+            "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "available_at": "2026-10-09T23:59:59+00:00"
+          },
+          {
+            "id": "tropion_lung01_nsq_pfs",
+            "kind": "clinical_prior",
+            "title": "TROPION-Lung01 indirect randomized evidence",
+            "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+            "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "available_at": "2024-09-09T23:59:59+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "target_id": "of-pilot-20261022-avanzar-pfs",
+      "model_id": "deepseek-v4-pro",
+      "track": "same_evidence",
+      "condition": "clinical_only",
+      "workflow_version": "arena-providers-1.0.0:single_pass",
+      "packet": {
+        "target": {
+          "endpoint": "Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population",
+          "population": "Previously untreated advanced non-squamous NSCLC, TROP2 biomarker positive, without actionable genomic alterations.",
+          "comparison": "Dato-DXd 6 mg/kg + durvalumab + carboplatin versus pembrolizumab + histology-specific platinum chemotherapy.",
+          "success_definition": "First official decisive primary analysis reports a favorable statistically qualifying PFS result by BICR in the non-squamous TROP2 biomarker-positive population under the prespecified SAP. Other populations, OS, unadjusted nominal p-values, commercial decisions and delayed readouts do not resolve this target. If multiplicity-adjusted qualification is unclear, adjudication remains unresolved."
+        },
+        "data_cutoff": "2026-10-22T15:33:52.652299+00:00",
+        "evidence": [
+          {
+            "id": "registry-NCT05687266",
+            "kind": "trial_registry",
+            "title": "AVANZAR registered design",
+            "text": "Randomized open-label phase III AVANZAR, total enrollment 1350. There are four primary hypotheses: PFS and OS in non-squamous TROP2-positive and overall non-squamous populations. This target is only the TROP2-positive non-squamous PFS hypothesis. Alpha allocation, event counts, biomarker prevalence and missing-data estimand are not supplied. Registry estimated primary completion 2027-11 does not establish readout timing.",
+            "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+            "source_sha256": "5876c9946f45d7f0e8479c571da32a1f55f6ef2c8f1767a67b0b91e586e14995",
+            "available_at": "2026-10-09T23:59:59+00:00"
+          },
+          {
+            "id": "tropion_lung01_nsq_pfs",
+            "kind": "clinical_prior",
+            "title": "TROPION-Lung01 indirect randomized evidence",
+            "text": "In previously treated non-squamous NSCLC, Dato-DXd monotherapy versus docetaxel showed PFS HR 0.63 (95% CI 0.51–0.79), subgroup n=229 versus 232. This is indirect evidence: later-line versus first-line, monotherapy versus triple combination, different comparator, and no isolation of the target TROP2 biomarker-positive population. It is not an AVANZAR treatment effect. Source was previously archived as a primary-reader excerpt, not a full paper download; no independent human review.",
+            "source_url": "https://ascopubs.org/doi/10.1200/JCO-24-01544",
+            "source_sha256": "f8fb95c4cb6b05902223c37712941538b50768f3649f4fd605ec258ba526b8b8",
+            "available_at": "2024-09-09T23:59:59+00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "protocol": {
+    "version": "pilot-20261022-v1",
+    "purpose": "First prospective operational pilot; full 12-project season remains to be enrolled",
+    "execution_budget": {
+      "budget_policy": "token_only_unpriced",
+      "max_requests": 1,
+      "max_output_tokens": 4096,
+      "max_input_chars": 6000,
+      "timeout_seconds": 120
+    },
+    "maximum_slots": 4,
+    "pricing_status": "Unverified: provider pricing page requires account login. No monetary total is claimed.",
+    "primary_selection": "First run of each registered slot; failures retained, no replacement or semantic retry.",
+    "comparison": "Same evidence and instructions; four gateway-reported models from three model families.",
+    "metrics": "Brier/log loss after exact target outcome adjudication; coverage includes all four assigned slots; historical replay excluded.",
+    "independent_timestamp": "Server append-only hash chain; external public attestation still pending."
+  }
+}

@@ -1,0 +1,677 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Read-only research shortlist for Predome Open Forecast; not a model forecast, registered experiment, clinical validation or outcome adjudication.",
+  "created_at_utc": "2026-10-22T15:41:23.965854+00:00",
+  "as_of_date": "2026-10-22",
+  "source_policy": "Sponsor original materials plus ClinicalTrials.gov official API; secondary search hits were discovery only and did not establish readout windows.",
+  "candidate_count": 6,
+  "independent_asset_clusters": 6,
+  "independence_limits": "Six distinct drug assets, not six statistically independent mechanisms. Two oral estrogen receptor drugs and three Roche projects share biological and sponsor-level dependencies; cluster and sensitivity analyses must retain these dependencies.",
+  "selection_notes": [
+    "No calendar day inferred from company year-only windows.",
+    "No primary-completion date used as a sponsor readout window.",
+    "No absence of ClinicalTrials.gov results treated as proof that the outcome is unpublished.",
+    "Refresh sponsor releases, conference abstracts and registry immediately before evidence lock.",
+    "Freeze study, endpoint, analysis population, success rule and cutoff; obtain protocol/SAP where public. If key success logic remains unknown, abstain or keep the item as a candidate.",
+    "Prior reported trials of the same molecule are valid earlier evidence, but cannot be relabeled as the target outcome.",
+    "Research file does not register, schedule or call a model, and contains no paid API credentials."
+  ],
+  "sources": {
+    "roche_q3_2026": {
+      "url": "https://assets.roche.com/f/176343/x/214d9ddfff/irp261022.pdf",
+      "title": "Roche Q3 2026 Results Presentation with Appendix",
+      "publication_date": "2026-10-22",
+      "access_method": "web indexed PDF text; page 37 and 38 timeline and trial-design appendix inspected",
+      "content_sha256": null,
+      "retrieval_limit": "Direct PDF fetch returned HTTP 403. Original bytes are not archived by this research note.",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "pfizer_catalysts": {
+      "url": "https://cdn.pfizer.com/pfizercom/pfizer-2026-pipeline-catalysts.pdf",
+      "title": "Pfizer Pipeline: Key Anticipated 2026 Catalysts",
+      "publication_date": "2026-09-30",
+      "access_method": "web text and directly retrieved PDF, rendered page 1 visually inspected",
+      "content_sha256": "439a2a5360c6829c616c7ff6e272e18b0491840082d7b7d1d4eeae02f8d6e512",
+      "finding": "MEVPRO-1 appears under Data Readouts and has no completed dot; the legend differentiates completed and completed-not-advancing.",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "pfizer_catalysts_landing": {
+      "url": "https://www.pfizer.com/pfizer-pipeline-key-anticipated-2026-catalysts",
+      "title": "Pfizer current pipeline catalysts landing page",
+      "publication_date": null,
+      "access_method": "web opened current page and followed PDF download",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "lilly_20260918": {
+      "url": "https://investor.lilly.com/news-releases/news-release-details/us-fda-approves-inluriyo-imlunestrant-combination-verzenio",
+      "title": "Lilly FDA approval announcement for imlunestrant plus abemaciclib",
+      "publication_date": "2026-09-18",
+      "access_method": "web opened official investor press release; explicit EMBER-4 initial-results year in body",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "roche_20260309": {
+      "url": "https://www.roche.com/media/releases/med-cor-2026-03-09",
+      "title": "Roche update on phase III persevERA",
+      "publication_date": "2026-03-09",
+      "access_method": "web opened official release; separate pionERA expected-readout statement in body",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "bms_q1_2026": {
+      "url": "https://www.bms.com/assets/bms/us/en-us/pdf/investor-info/doc_presentations/2026/BMY-2026-Q1-Results-Investor-Presentation-with-Appendix.pdf",
+      "title": "BMS Q1 2026 Results Presentation with Appendix",
+      "publication_date": null,
+      "publication_period": "Q1 2026 financial results presentation",
+      "access_method": "web indexed official PDF, page 41 inspected",
+      "finding": "SUCCESSOR-1 projected data readout 2027; SUCCESSOR-2 topline March 2026 shown separately.",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "bms_20260713": {
+      "url": "https://news.bms.com/news/details/2026/U-S--Food-and-Drug-Administration-Accepts-Bristol-Myers-Squibbs-New-Drug-Application-for-Mezigdomide-in-Patients-with-Relapsed-or-Refractory-Multiple-Myeloma/default.aspx",
+      "title": "FDA accepts BMS mezigdomide application",
+      "publication_date": "2026-07-13",
+      "access_method": "web official release search and source excerpt",
+      "finding": "SUCCESSOR-1 described as ongoing; NDA and May 2027 regulatory action date concern SUCCESSOR-2, not a SUCCESSOR-1 readout.",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    },
+    "genentech_skyglo": {
+      "url": "https://www.genentech-medinfo.com/pipeline-and-clinical-trials/oncology/glofitamab/skyglo.html",
+      "title": "Glofitamab Phase III in 1L LBCL (SKYGLO)",
+      "publication_date": null,
+      "content_as_of": "2026-10-20",
+      "access_method": "web official medical-information page",
+      "finding": "Active not recruiting; IRF PFS primary endpoint.",
+      "accessed_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "source_type": "sponsor_primary"
+    }
+  },
+  "candidates": [
+    {
+      "trial_name": "INAVO121",
+      "nct_id": "NCT05646862",
+      "drug_name": "inavolisib",
+      "company": "Roche / Genentech",
+      "asset_cluster_id": "inavolisib",
+      "mechanism_family": "PI3K-alpha inhibition",
+      "population": "HR-positive, HER2-negative, PIK3CA-mutated locally advanced or metastatic breast cancer progressing during or after CDK4/6 inhibitor plus endocrine therapy; up to two prior systemic lines in metastatic disease.",
+      "intervention": "inavolisib plus fulvestrant",
+      "comparator": "alpelisib plus fulvestrant",
+      "endpoint": "Main-study BICR-assessed progression-free survival (PFS)",
+      "readout_window": "2026",
+      "window_source_ids": [
+        "roche_q3_2026"
+      ],
+      "window_source_locator": "Presentation page 27 outlook; page 37 clinical-results table",
+      "source_window_precision": "year",
+      "forecast_scope": "Main randomized study only. Exclude pharmacokinetic sub-study Cmax and AUC endpoints.",
+      "result_check_notes": [
+        "Company Q3 presentation still lists the main study in 2026 outlook; no target main-study result identified in scoped web search.",
+        "Registry RECRUITING may reflect the pharmacokinetic sub-study, whereas main-study recruitment was completed in Q4 2024 according to Roche Q3 appendix. Do not resolve this by silently changing registry status."
+      ],
+      "uncertainties": [
+        "Event-driven timing may move. Exact alpha allocation, interim boundary and estimand not recovered in this review.",
+        "The current Roche PDF text was accessible through the web index but direct PDF retrieval was forbidden; archive permitted source content before a formal lock."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT05646862",
+        "public_url": "https://clinicaltrials.gov/study/NCT05646862",
+        "retrieved_at_utc": "2026-10-22T15:41:24.793524+00:00",
+        "response_sha256": "4a35dbe05b072f1ae8dae165f51df34c16b5dcb9b91b543c388488dd03fc8b9f",
+        "last_update_posted": {
+          "date": "2026-09-28",
+          "type": "ACTUAL"
+        },
+        "overall_status": "RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 420,
+          "type": "ESTIMATED"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Blinded Independent Central Review (BICR)-Assessed Progression Free Survival (PFS)",
+            "timeFrame": "From randomization until disease progression or death due to any cause (up to approximately 64 months)"
+          },
+          {
+            "measure": "Sub-study: Maximum observed Drug Concentration (Cmax) for Midazolam",
+            "timeFrame": "Day -4 and -3 of Cycle (C) 1, Day (D) 11 and C1D12. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: Cmax for Bupropion",
+            "timeFrame": "Day -3, -2, -1 of C1D1, C1D12, C1D13, C1D14 and C1D15. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: Cmax for Omeprazole",
+            "timeFrame": "Day -4 and -3 of C1D11 and C1D12. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: Area Under the Concentration-Time Curve From Time 0 to Last Measurable Concentration (AUC [0-last]) for Midazolam",
+            "timeFrame": "Day -4 and -3 of C1D11 and C1D12. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: AUC (0-last) for Bupropion",
+            "timeFrame": "Day -3, -2, -1 of C1D1, C1D12, C1D13, C1D14 and C1D15. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: AUC (0-last) for Omeprazole",
+            "timeFrame": "Day -4 and -3 of C1D11 and C1D12. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: Area Under the Concentration-Time Curve From Time 0 to Infinity (AUC [0-infinity]) for Midazolam",
+            "timeFrame": "Day -4 and -3 of C1D11 and C1D12. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: AUC (0-infinity) for Bupropion",
+            "timeFrame": "Day -3, -2, -1 of C1D1, C1D12, C1D13, C1D14 and C1D15. A cycle is 28 days."
+          },
+          {
+            "measure": "Sub-study: AUC (0-infinity) for Omeprazole",
+            "timeFrame": "Day -4 and -3 of C1D11 and C1D12. A cycle is 28 days."
+          }
+        ],
+        "arm_labels": [
+          "Inavolisib + Fulvestrant",
+          "Alpelisib + Fulvestrant",
+          "Sub-study: Inavolisib + Fulvestrant + CYP substrates"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"INAVO121\" results topline October 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"INAVO121\" results site:roche.com",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    },
+    {
+      "trial_name": "MEVPRO-1",
+      "nct_id": "NCT06551324",
+      "drug_name": "mevrometostat (PF-06821497)",
+      "company": "Pfizer",
+      "asset_cluster_id": "mevrometostat",
+      "mechanism_family": "EZH2 inhibition",
+      "population": "Metastatic castration-resistant prostate adenocarcinoma progressing after abiraterone in mCSPC or first-line mCRPC; ECOG 0-2.",
+      "intervention": "mevrometostat plus enzalutamide",
+      "comparator": "physician's choice of enzalutamide or docetaxel",
+      "endpoint": "BICR-assessed radiographic PFS per RECIST 1.1 and PCWG3",
+      "readout_window": "2026",
+      "window_source_ids": [
+        "pfizer_catalysts",
+        "pfizer_catalysts_landing"
+      ],
+      "window_source_locator": "September 30, 2026 catalyst PDF, page 1, Data Readouts column",
+      "source_window_precision": "year",
+      "forecast_scope": "Randomized phase III MEVPRO-1 rPFS, not prior randomized phase I dose-expansion efficacy.",
+      "result_check_notes": [
+        "No official MEVPRO-1 topline result identified in scoped search.",
+        "Current Pfizer PDF visually shows MEVPRO-1 without the completed marker. Earlier phase I efficacy is available and must not be mislabeled as MEVPRO-1 outcome."
+      ],
+      "uncertainties": [
+        "No exact day, month or quarter confirmed in current sponsor source.",
+        "The event-driven analysis boundary and final multiplicity details require protocol/SAP review."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT06551324",
+        "public_url": "https://clinicaltrials.gov/study/NCT06551324",
+        "retrieved_at_utc": "2026-10-22T15:41:24.759846+00:00",
+        "response_sha256": "b9acbb1d48acf67a206233713044ff2725be18b797b3d5970460aab467932043",
+        "last_update_posted": {
+          "date": "2026-08-11",
+          "type": "ACTUAL"
+        },
+        "overall_status": "ACTIVE_NOT_RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 600,
+          "type": "ESTIMATED"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Radiographic Progression Free Survival (rPFS) assessed by blinded independent central review (BICR) per RECIST v1.1 and Prostate Cancer Clinical Trials Working Group 3 (PCWG3)",
+            "description": "rPFS is defined as the time from the date of randomization to first objective evidence of radiographic progression as assessed in soft tissue per Response Evaluation Criteria in Solid Tumors (RECIST) v1.1 or in bone per Prostate Cancer Clinical Trials Working Group 3 (PCWG3) guidelines by BICR, or death, whichever occurs first.",
+            "timeFrame": "Randomization up to approximately 2 years."
+          }
+        ],
+        "arm_labels": [
+          "Arm B",
+          "Arm A"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"MEVPRO-1\" results topline Pfizer 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"MEVPRO-1\" results site:pfizer.com",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    },
+    {
+      "trial_name": "SKYGLO",
+      "nct_id": "NCT06047080",
+      "drug_name": "glofitamab",
+      "company": "Roche / Genentech",
+      "asset_cluster_id": "glofitamab",
+      "mechanism_family": "CD20 x CD3 bispecific antibody",
+      "population": "Previously untreated CD20-positive large B-cell lymphoma, IPI 2-5, ECOG 0-2.",
+      "intervention": "glofitamab plus polatuzumab vedotin, rituximab, cyclophosphamide, doxorubicin and prednisone (Pola-R-CHP)",
+      "comparator": "Pola-R-CHP",
+      "endpoint": "PFS determined by an Independent Review Facility (IRF)",
+      "readout_window": "2027",
+      "window_source_ids": [
+        "roche_q3_2026"
+      ],
+      "window_source_locator": "Presentation page 38, 2027 clinical results; page 67 trial design",
+      "source_window_precision": "year",
+      "forecast_scope": "SKYGLO first-line LBCL randomized IRF-PFS; separate from already reported STARGLO.",
+      "result_check_notes": [
+        "No target SKYGLO result identified in scoped search.",
+        "Official medical-information page is current to October 20, 2026 and describes an ongoing active-not-recruiting trial."
+      ],
+      "additional_source_ids": [
+        "genentech_skyglo"
+      ],
+      "uncertainties": [
+        "Company slides use 1L DLBCL shorthand; registry eligibility is LBCL with protocol exclusions. Use registry population precisely.",
+        "Exact analysis date and SAP boundary not recovered.",
+        "Original Roche PDF bytes not archived in this research note."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT06047080",
+        "public_url": "https://clinicaltrials.gov/study/NCT06047080",
+        "retrieved_at_utc": "2026-10-22T15:41:25.003607+00:00",
+        "response_sha256": "30ddbe7b100c5f068e630319d3b56356bdc7e4bf14dfce3ba82c97913ef6b2c5",
+        "last_update_posted": {
+          "date": "2026-09-11",
+          "type": "ACTUAL"
+        },
+        "overall_status": "ACTIVE_NOT_RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 1130,
+          "type": "ACTUAL"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Progression-free survival (PFS) as determined by Independent Review Facility (IRF)",
+            "timeFrame": "From randomization to the first occurrence of disease progression or relapse, or death due to any cause, whichever occurs first (up to approximately 65 months)"
+          }
+        ],
+        "arm_labels": [
+          "Glofitamab + Pola-R-CHP",
+          "Pola-R-CHP"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"SKYGLO\" results primary endpoint 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"SKYGLO\" \"results\" site:roche.com 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    },
+    {
+      "trial_name": "EMBER-4",
+      "nct_id": "NCT05514054",
+      "drug_name": "imlunestrant",
+      "company": "Eli Lilly and Company",
+      "asset_cluster_id": "imlunestrant",
+      "mechanism_family": "oral estrogen receptor antagonist / degrader",
+      "population": "Resected ER-positive, HER2-negative early breast cancer with increased recurrence risk after 24-60 months of adjuvant endocrine therapy; no distant metastases.",
+      "intervention": "imlunestrant",
+      "comparator": "investigator's choice of tamoxifen, anastrozole, letrozole or exemestane",
+      "endpoint": "Invasive disease-free survival excluding second non-breast primary invasive cancers",
+      "readout_window": "2027",
+      "window_source_ids": [
+        "lilly_20260918"
+      ],
+      "window_source_locator": "EMBER-4 paragraph states initial results anticipated in 2027",
+      "source_window_precision": "year",
+      "forecast_scope": "Adjuvant EMBER-4 iDFS, not advanced-disease EMBER-3 outcomes or FDA approval.",
+      "result_check_notes": [
+        "No target EMBER-4 result identified in scoped search.",
+        "Lilly September 18, 2026 release explicitly anticipates initial results in 2027."
+      ],
+      "uncertainties": [
+        "Initial results may refer to an interim analysis; the applicable prespecified boundary is not recovered.",
+        "Different definitions of iDFS include or exclude second primary non-breast cancers; retain registered main endpoint definition."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT05514054",
+        "public_url": "https://clinicaltrials.gov/study/NCT05514054",
+        "retrieved_at_utc": "2026-10-22T15:41:24.724188+00:00",
+        "response_sha256": "a9eec8a679fde0f21f98da45b18ac61dcc51c22a4d30bbce675bffb22fe22d58",
+        "last_update_posted": {
+          "date": "2026-04-02",
+          "type": "ACTUAL"
+        },
+        "overall_status": "ACTIVE_NOT_RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 8000,
+          "type": "ESTIMATED"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Invasive Disease-Free Survival (IDFS)",
+            "description": "IDFS excluding second non-breast primary invasive cancers",
+            "timeFrame": "Randomization to recurrence or death from any cause (up to 10 years)"
+          }
+        ],
+        "arm_labels": [
+          "Imlunestrant",
+          "Investigator's Choice of Endocrine Therapy"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"EMBER-4\" results primary endpoint 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"EMBER-4\" \"results\" site:lilly.com 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    },
+    {
+      "trial_name": "pionERA",
+      "nct_id": "NCT06065748",
+      "drug_name": "giredestrant",
+      "company": "Roche / Genentech",
+      "asset_cluster_id": "giredestrant",
+      "mechanism_family": "oral estrogen receptor antagonist / degrader",
+      "population": "ER-positive, HER2-negative locally advanced or metastatic breast cancer resistant to prior adjuvant endocrine therapy; no prior systemic treatment for advanced disease.",
+      "intervention": "giredestrant plus investigator's choice of palbociclib, ribociclib or abemaciclib",
+      "comparator": "fulvestrant plus investigator's choice of palbociclib, ribociclib or abemaciclib",
+      "endpoint": "Investigator-assessed PFS in ESR1-mutated subgroup and PFS in full analysis set (two primary outcomes)",
+      "readout_window": "2027",
+      "window_source_ids": [
+        "roche_20260309"
+      ],
+      "window_source_locator": "Separate pionERA readout statement in March 9, 2026 release",
+      "source_window_precision": "year",
+      "forecast_scope": "Prespecify ESR1m PFS and FAS PFS separately or an explicitly justified joint decision rule before model execution.",
+      "result_check_notes": [
+        "No target pionERA result identified in scoped search.",
+        "Roche Q3 2026 appendix says recruitment completed Q3 2026; that is status context, not a new readout date.",
+        "persevERA failed PFS in March 2026, but it is a distinct population, comparator and study."
+      ],
+      "additional_source_ids": [
+        "roche_q3_2026"
+      ],
+      "uncertainties": [
+        "Highest target-definition risk: SAP success logic and alpha allocation between ESR1m and FAS are not recovered. Do not select the favorable subgroup retrospectively.",
+        "The explicit 2027 readout statement is from March 2026 and needs a final freshness review."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT06065748",
+        "public_url": "https://clinicaltrials.gov/study/NCT06065748",
+        "retrieved_at_utc": "2026-10-22T15:41:25.109440+00:00",
+        "response_sha256": "6ab04d270c66dc3d607c8c650aa31dbd2aa4645f40c55b1958788724185b158c",
+        "last_update_posted": {
+          "date": "2026-09-14",
+          "type": "ACTUAL"
+        },
+        "overall_status": "ACTIVE_NOT_RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 1050,
+          "type": "ESTIMATED"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Progression-Free Survival (PFS) in the ESR1 mutation (ESR1m) Subgroup",
+            "description": "PFS is defined as the time from randomization to the first occurrence of PD, as determined by the investigator according to Response Evaluation Criteria in Solid Tumors Version 1.1 (RECIST v1.1), or death from any cause during the study.",
+            "timeFrame": "From randomization to first occurrence of progressive disease (PD) or death (up to 5 years)"
+          },
+          {
+            "measure": "PFS in the Full Analysis Set (FAS) Population",
+            "timeFrame": "From randomization to first occurrence of PD or death (up to 5 years)"
+          }
+        ],
+        "arm_labels": [
+          "Giredestrant + Investigator's Choice of CDK4/6i",
+          "Fulvestrant + Investigator's Choice of CDK4/6i"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"pionERA\" results 2026 site:roche.com",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"pionERA\" topline results October 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    },
+    {
+      "trial_name": "SUCCESSOR-1",
+      "nct_id": "NCT05519085",
+      "drug_name": "mezigdomide (CC-92480)",
+      "company": "Bristol Myers Squibb / Celgene",
+      "asset_cluster_id": "mezigdomide",
+      "mechanism_family": "cereblon E3 ligase modulator protein degradation",
+      "population": "Relapsed or refractory multiple myeloma following 1-3 prior antimyeloma therapy lines and at least minimal response to at least one previous therapy.",
+      "intervention": "mezigdomide, bortezomib and dexamethasone (MeziVd)",
+      "comparator": "pomalidomide, bortezomib and dexamethasone (PVd)",
+      "endpoint": "Progression-free survival",
+      "readout_window": "2027",
+      "window_source_ids": [
+        "bms_q1_2026"
+      ],
+      "window_source_locator": "Q1 2026 results appendix page 41: projected data readout 2027",
+      "source_window_precision": "year",
+      "forecast_scope": "SUCCESSOR-1 MeziVd versus PVd PFS, not already reported SUCCESSOR-2 MeziKd versus Kd.",
+      "result_check_notes": [
+        "No target SUCCESSOR-1 result identified in scoped search.",
+        "July 13, 2026 official release calls SUCCESSOR-1 ongoing; the accepted NDA comes from SUCCESSOR-2.",
+        "Older 2025 sponsor material projected 2026. Prefer newer 2026 presentation that projects 2027."
+      ],
+      "additional_source_ids": [
+        "bms_20260713"
+      ],
+      "uncertainties": [
+        "Readout source is Q1 2026; refresh against next company pipeline update before locking.",
+        "Two-stage design, alpha threshold, analysis population and interim decision boundary require protocol/SAP review."
+      ],
+      "registry_snapshot": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT05519085",
+        "public_url": "https://clinicaltrials.gov/study/NCT05519085",
+        "retrieved_at_utc": "2026-10-22T15:41:24.718434+00:00",
+        "response_sha256": "3a55778a2ee3059992bbfdfda722cce2a8c309eef73a75b08bf5d1c4aa3cc800",
+        "last_update_posted": {
+          "date": "2026-09-30",
+          "type": "ACTUAL"
+        },
+        "overall_status": "RECRUITING",
+        "has_results": false,
+        "phase": [
+          "PHASE3"
+        ],
+        "enrollment": {
+          "count": 810,
+          "type": "ESTIMATED"
+        },
+        "primary_outcomes": [
+          {
+            "measure": "Progression-free Survival (PFS)",
+            "timeFrame": "From date of randomization to date of disease progression or death due to any cause (Up to approximately 5 years)"
+          }
+        ],
+        "arm_labels": [
+          "MeziVd (mezigdomide, bortezomib and dexamethasone)",
+          "PVd (pomalidomide, bortezomib and dexamethasone)"
+        ],
+        "primary_completion_not_used_as_readout": true
+      },
+      "phase": "III",
+      "status": "candidate_requires_prelock_refresh_and_review",
+      "outcome_status": "not_identified_in_scoped_search",
+      "checked_at_utc": "2026-10-22T15:41:23.965854+00:00",
+      "prediction": null,
+      "formally_registered": false,
+      "search_log": [
+        {
+          "query": "\"SUCCESSOR-1\" results 2026 site:bms.com",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"SUCCESSOR-1\" topline results October 2026",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        },
+        {
+          "query": "\"SUCCESSOR-1\" \"2027\" site:bms.com 2026 July",
+          "searched_date": "2026-10-22",
+          "engine": "web search",
+          "finding": "No target-trial primary outcome result identified among returned and inspected results; not an exhaustive absence proof."
+        }
+      ],
+      "proposed_success_definition": "At the prespecified first efficacy readout, the stated target population and endpoint meet the trial-specific prespecified statistical superiority criterion. Exact endpoint/analysis decision rule must be frozen before execution; no p-value threshold is inferred here."
+    }
+  ],
+  "excluded_already_read_out": [
+    {
+      "trial_name": "eVOLVE-Lung02",
+      "drug_name": "volrustomig",
+      "announcement_date": "2026-08-17",
+      "reason": "Stopped for futility in PFS and OS; not a prospective unknown-outcome case.",
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2026/update-on-evolve-lung02-phase-iii-trial.html",
+      "checked_date": "2026-10-22"
+    },
+    {
+      "trial_name": "persevERA",
+      "drug_name": "giredestrant",
+      "announcement_date": "2026-03-09",
+      "reason": "Primary PFS objective not met. Distinct from pionERA.",
+      "source_url": "https://www.roche.com/media/releases/med-cor-2026-03-09",
+      "checked_date": "2026-10-22"
+    },
+    {
+      "trial_name": "SERENA-4",
+      "drug_name": "camizestrant",
+      "announcement_date": "2026-09-11",
+      "reason": "Primary PFS endpoint not met.",
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2026/update-serena-4-phase-iii-trial.html",
+      "checked_date": "2026-10-22"
+    },
+    {
+      "trial_name": "SigVie-002 / Be6A LUNG-01",
+      "drug_name": "sigvotatug vedotin",
+      "announcement_date": "2026-06-22",
+      "reason": "Primary OS endpoint not met overall.",
+      "source_url": "https://www.pfizer.com/news/press-release/press-release-detail/pfizer-announces-topline-phase-3-results-sigvotatug-vedotin",
+      "checked_date": "2026-10-22"
+    },
+    {
+      "trial_name": "CELESTIMO",
+      "drug_name": "mosunetuzumab",
+      "announcement_date": "2026-09-17",
+      "reason": "Positive PFS readout already announced.",
+      "source_url": "https://www.roche.com/media/releases/med-cor-2026-09-17",
+      "checked_date": "2026-10-22"
+    },
+    {
+      "trial_name": "KRASCENDO 1",
+      "drug_name": "divarasib",
+      "announcement_date": "2026-07-02",
+      "reason": "Positive phase III primary PFS result already announced; a later conference presentation is not a fresh unknown outcome.",
+      "source_url": "https://www.roche.com/investors/updates/inv-update-2026-07-02",
+      "checked_date": "2026-10-22"
+    }
+  ]
+}

@@ -1,0 +1,425 @@
+{
+  "schema_version": "predome-actual-record-sync-ui-capture-1",
+  "captured_at_utc": "2026-10-26T19:20:37.477Z",
+  "scope": "Actual original forecasts projected from a temporary host database copy with 331 physical host events containing one separately verified 19-event source epoch. This is a local candidate UI, not deployed or clinical validation.",
+  "annotation": "Capture-only fixed banner: TRIUMPH-5 · 本地真实记录 · 未上线/未临床验证. No product data, CSS or application asset was altered.",
+  "source_ledger_sha256": "9217ac9c830b97c53b3ad5d2d6473285464dd48eae4575d2a26c87d5db220ca4",
+  "source_event_count": 19,
+  "host_ledger_sha256": "0ec9fb20841e5aba43aaa09e40573f862c34efe4c1d2391b331806077b36c79b",
+  "host_event_count": 331,
+  "source_projection_sha256": {
+    "actual-public-overview.json": "b13a62103ff2706d32165adb0d0d038a432e817d26021ab47d7363f56ec11f4b",
+    "actual-public-detail.json": "663b2efd733b0b3559467079ea721661729c1f6566f29c02ea7e02370c435c2e",
+    "actual-lab-overview.json": "e69cd820c9677e69c44966ac08ee04f86b325d71f9d673a1a9ad68214de01407",
+    "actual-lab-detail.json": "f3108e49c6cfe2b7ebbf1ffb85dd5058626e2484c14096ce5f546cb59bd4ef2c",
+    "actual-projection-receipt.json": "07f1e577a8afcfab3e855dbcb8628bde1a5e1b1fd71196fc1a843908c962738d"
+  },
+  "production_assets_sha256": {
+    "static/arena-public.html": "df675c45948283b4d5c2b931721665c9e3c223f4fee703ca651d02c894434d58",
+    "static/arena-public.js": "6fdb2eb0cdf8a759157ab6520d3ee5ebd0ccbad2e4a380dbc1fe38fd18b3cfc7",
+    "static/arena-public.css": "2d5f167c249ddb082ef5be53d83cfc33d97f22796057e4de1d3a1f6e6e91b089",
+    "static/arena-lab.html": "fc46763c0dbb49d1395c4d5cac4afc826a3ae3733f72dbcec75234736bc4cedc",
+    "static/arena.js": "59c79791f013d85329c904d37589e286cf3ef3c9e2628d6bdebc0c6596d16c4e",
+    "static/arena.css": "c349f4fcc9e64368a57d8636589545aa3153d7de4975c2a55132fe5d2ca261be",
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3"
+  },
+  "production_assets_unchanged": true,
+  "source_projections_unchanged": true,
+  "browser": "Installed Google Chrome via bundled Playwright; no dependency or browser downloads",
+  "isolation": "All browser requests intercepted; only shipped static assets and exact provided projections fulfilled. No server, credentials, provider, external source, production or database requests. Private capture-session identity is synthetic and provides no scientific/human assurance.",
+  "mobile_limit": "Public mobile capture is a full-page 375px-wide screenshot, not a one-screen claim. Internal six-column pair table scrolls within its container; document has no horizontal overflow.",
+  "checks": [
+    {
+      "mode": "public",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "document_horizontal_overflow": false,
+      "modules": [
+        {
+          "label": "Trial overview",
+          "top": 262.578125,
+          "bottom": 444.0625,
+          "height": 181.484375
+        },
+        {
+          "label": "AI model predictions",
+          "top": 453.0625,
+          "bottom": 726.640625,
+          "height": 273.578125
+        },
+        {
+          "label": "Consensus and actual result",
+          "top": 735.640625,
+          "bottom": 889.109375,
+          "height": 153.46875
+        }
+      ],
+      "all_three_modules_within_initial_viewport": true,
+      "public_rows": 2,
+      "kimi": "Failed original call displayed Uncertain; no usable response",
+      "flash": "Success direction",
+      "probabilities_and_confidence": "N/A",
+      "actual_result": "pending",
+      "match_markers": 0,
+      "ranking": "not assigned",
+      "record_scope": "Independent research pilot, separate from formal season"
+    },
+    {
+      "mode": "public",
+      "viewport": {
+        "width": 375,
+        "height": 1100
+      },
+      "document_horizontal_overflow": false,
+      "modules": [
+        {
+          "label": "Trial overview",
+          "top": 453,
+          "bottom": 917.484375,
+          "height": 464.484375
+        },
+        {
+          "label": "AI model predictions",
+          "top": 929.484375,
+          "bottom": 1800.984375,
+          "height": 871.5
+        },
+        {
+          "label": "Consensus and actual result",
+          "top": 1812.984375,
+          "bottom": 2361.046875,
+          "height": 548.0625
+        }
+      ],
+      "all_three_modules_within_initial_viewport": false,
+      "public_rows": 2,
+      "kimi": "Failed original call displayed Uncertain; no usable response",
+      "flash": "Success direction",
+      "probabilities_and_confidence": "N/A",
+      "actual_result": "pending",
+      "match_markers": 0,
+      "ranking": "not assigned",
+      "record_scope": "Independent research pilot, separate from formal season"
+    },
+    {
+      "mode": "internal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "document_horizontal_overflow": false,
+      "records": 4,
+      "pair_table": {
+        "clientWidth": 1178,
+        "scrollWidth": 1178
+      },
+      "kimi_control": "failure preserved; no numeric pair change",
+      "flash_pair": "original uncalibrated 82% to 78%, -4.0 pp; not improvement",
+      "provenance": {
+        "top": 236.234375,
+        "bottom": 552,
+        "height": 315.765625
+      },
+      "source_events": 19,
+      "registration_covered_events": 6,
+      "predictions_covered_events": 15,
+      "later_events_not_covered_by_original_predictions_tsa": 4,
+      "source_generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "host_synced_at_utc": "2026-10-26T19:05:24.339066+00:00",
+      "original_proof_links": "visible only in internal UI; links not followed by capture"
+    },
+    {
+      "mode": "internal",
+      "viewport": {
+        "width": 375,
+        "height": 1100
+      },
+      "document_horizontal_overflow": false,
+      "records": 4,
+      "pair_table": {
+        "clientWidth": 305,
+        "scrollWidth": 740
+      },
+      "kimi_control": "failure preserved; no numeric pair change",
+      "flash_pair": "original uncalibrated 82% to 78%, -4.0 pp; not improvement",
+      "provenance": {
+        "top": 270.703125,
+        "bottom": 715.03125,
+        "height": 444.328125
+      },
+      "source_events": 19,
+      "registration_covered_events": 6,
+      "predictions_covered_events": 15,
+      "later_events_not_covered_by_original_predictions_tsa": 4,
+      "source_generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "host_synced_at_utc": "2026-10-26T19:05:24.339066+00:00",
+      "original_proof_links": "visible only in internal UI; links not followed by capture"
+    }
+  ],
+  "requests": [
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/arena"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/arena-public.css"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/arena-public.js"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/api/arena/public"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    },
+    {
+      "mode": "public",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/api/arena/public/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/arena"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/arena-public.css"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/arena-public.js"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/api/arena/public"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    },
+    {
+      "mode": "public",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/api/arena/public/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/arena/lab"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/arena.css"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/arena.js"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/api/arena/lab/overview"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    },
+    {
+      "mode": "internal",
+      "viewport": 1440,
+      "method": "GET",
+      "path": "/api/arena/lab/targets/of-retatrutide-pair-20261027-v1-target"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/arena/lab"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/arena.css"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/design-system.css"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/theme.js"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/arena.js"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/api/arena/lab/overview"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/static/favicon.svg"
+    },
+    {
+      "mode": "internal",
+      "viewport": 375,
+      "method": "GET",
+      "path": "/api/arena/lab/targets/of-retatrutide-pair-20261027-v1-target"
+    }
+  ],
+  "unexpected_requests": [],
+  "console_errors": [],
+  "captures": [
+    {
+      "file": "public-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "full_page": false,
+      "sha256": "4ee2f10d70435d66e2cd02024285bc2c157e7a8ad3aba4a773b3a168c8248651",
+      "image_width_px": 1440,
+      "image_height_px": 900
+    },
+    {
+      "file": "public-mobile.png",
+      "viewport": {
+        "width": 375,
+        "height": 1100
+      },
+      "full_page": true,
+      "sha256": "a14a3a6594bc640a1881313a3c47eb209b6286d72fc36a8249acde152b02c6b2",
+      "image_width_px": 375,
+      "image_height_px": 2476
+    },
+    {
+      "file": "internal-pair.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "full_page": false,
+      "sha256": "6a2624326e8b8f0450c7a55ff2dcb7c5d5a053b810097a74c1ff6c686f5badd5",
+      "image_width_px": 1440,
+      "image_height_px": 900
+    },
+    {
+      "file": "internal-provenance-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "full_page": false,
+      "sha256": "3ddbf9ec4ef1353983d4d187e2bb1fcf7bd8de7569dd468ebda717553b8bb997",
+      "image_width_px": 1440,
+      "image_height_px": 900
+    },
+    {
+      "file": "internal-provenance-mobile.png",
+      "viewport": {
+        "width": 375,
+        "height": 1100
+      },
+      "full_page": false,
+      "sha256": "051a0c485de023053e8e1498e0548ef8948d9518a637302a094d8985f2d27d27",
+      "image_width_px": 375,
+      "image_height_px": 1100
+    }
+  ],
+  "visual_review": {
+    "reviewed_all_five_pngs": true,
+    "method": "Opened and inspected actual PNGs after automated browser checks",
+    "public_desktop": "All three core modules visible through y=889.11 in 1440x900 viewport; Kimi failed/Uncertain and Flash Success clear; both public probability/confidence columns N/A; pending result and no ranking.",
+    "public_mobile": "375x2476 full-page image; responsive per-model cards and stacked consensus/result; no horizontal document overflow; not a one-screen mobile claim.",
+    "internal_provenance": "Desktop and 375px mobile show original generation and later service-sync times, source event count 19, registration 6, prediction 15, and 4 later source events outside original prediction TSA.",
+    "internal_pair": "Desktop shows failure preserved and uncalibrated Flash 82 to 78 (-4.0 percentage points); this is a judgment change, not predictive improvement.",
+    "capture_annotation_limit": "The fixed capture-only scope banner overlays the upper header area; it does not modify application layout or data."
+  }
+}

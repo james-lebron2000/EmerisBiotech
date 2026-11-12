@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Predome 内部测试与调试：只读核对模型输出、失败状态、证据来源、预算与冻结记录。">
+<title>内部测试与调试 · Predome</title>
+<link rel="icon" href="/static/favicon.svg"><link rel="stylesheet" href="/static/arena.css"><link rel="stylesheet" href="/static/design-system.css?v=editorial-01">
+</head>
+<body class="design-system arena-page">
+<a class="skip" href="#arena-content">跳到内部调试内容</a>
+<header><a class="brand" href="/arena/lab">Predome <span>Research Lab</span></a><nav aria-label="内部调试导航"><a href="https://8.148.145.28/">读出日历</a><a href="/arena/lab" aria-current="page">内部测试与调试</a><a href="/arena/lab?view=leaderboard">运行比较</a><a href="/arena/lab?view=patents">专利证据</a><a href="https://8.148.145.28/data">账户与登录</a><button id="theme-toggle" type="button" aria-label="切换深浅色模式">深色模式</button></nav></header>
+<main id="arena-content">
+<section class="arena-hero"><div><p class="eyebrow">PREDOME / RESEARCH LAB</p><h1>内部测试与调试</h1><p class="arena-lead">核对完整运行记录、模型判断与证据边界。失败、拒答、撤回和来源更正与成功输出一同保留。</p></div><aside class="arena-promise"><span>01 / INPUTS</span><span>02 / EXECUTION</span><span>03 / AUDIT</span><p>工程调试不代表临床验证。模型概率不是患者获益率，也不是药品获批率。</p></aside></section>
+<aside class="arena-notice" aria-label="内部调试范围"><strong>内部只读调试 · 独立端口 18443</strong><p>内部页面仅供授权用户只读查看。本页保留引用审核、来源问题、阶段预算、冻结哈希与时间凭证。付费模型调用仅通过 operator CLI 执行；本页面不触发调用或修改记录。</p><a href="https://8.148.145.28/arena">查看公开研究视图 →</a></aside>
+<nav class="arena-tabs" aria-label="内部调试页面"><a href="/arena/lab" data-view="overview">试验与预测</a><a href="/arena/lab?view=leaderboard" data-view="leaderboard">结果与比较</a><a href="/arena/lab?view=patents" data-view="patents">专利证据库</a><a href="/arena/lab?view=methodology" data-view="methodology">方法与规则</a><a href="/api/arena/ledger" class="ledger-download">下载公开记录 JSON ↓</a></nav>
+<p id="arena-status" class="arena-status" role="status" aria-live="polite">正在读取内部调试记录…</p>
+<section id="arena-summary" class="arena-summary" aria-label="内部调试记录覆盖范围"></section>
+<div id="arena-body"></div>
+<noscript><p class="arena-notice">此页面需要 JavaScript 展示比较。你仍可通过上方链接下载公开记录。</p></noscript>
+</main>
+<footer><span>Predome Research Lab · Emeris</span><span>证据、生成、锁定、公布与裁定分别记录</span><a href="/arena/lab?view=methodology">查看比较规则</a></footer>
+<script src="/static/theme.js"></script><script src="/static/arena.js?v=result-reviews-01"></script>
+</body></html>

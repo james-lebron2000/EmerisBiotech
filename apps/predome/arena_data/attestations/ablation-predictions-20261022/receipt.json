@@ -1,0 +1,25 @@
+{
+  "id": "ablation-predictions-20261022",
+  "purpose": "predictions",
+  "ledger_sha256": "70f58e75bd8c93153537da1a2101b3b7deb87d6692c5812afb4a895589849804",
+  "covered_event_count": 37,
+  "tsa": "FreeTSA",
+  "generated_at_utc": "2026-10-22T16:10:44+00:00",
+  "verified_at_utc": "2026-10-22T16:10:44.802338+00:00",
+  "verification_method": "openssl_ts_verify",
+  "signature_verified": true,
+  "timestamp_response_sha256": "cd1aadde2acb552ea9fa8173411f5897866c991d14d4f526cbf342a51b124ccc",
+  "manifest_sha256": "1806967fa7954a58613c807de57bd72ba737985fdf429c4663f0c30e68530eed",
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "public_url": "https://8.148.145.28/api/arena/attestations/ablation-predictions-20261022",
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+  "files": {
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "manifest.json": "1806967fa7954a58613c807de57bd72ba737985fdf429c4663f0c30e68530eed",
+    "manifest.tsq": "16cd61d218bfd07c8fd06c5f1e5fcedd4b34afa4c11f2f7e72851bd4ff51a203",
+    "manifest.tsr": "cd1aadde2acb552ea9fa8173411f5897866c991d14d4f526cbf342a51b124ccc",
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "verification.txt": "3a0df6c52913be96863f1e641e230bdc3aff234883445976a07d97681e11c670"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ablation-registration-20261022",
+  "purpose": "registration",
+  "ledger_sha256": "653f61bdb86148488c56bfc4985770c1954830effbeb130555a4ee07f3365ecf",
+  "covered_event_count": 24,
+  "tsa": "FreeTSA",
+  "generated_at_utc": "2026-10-22T15:56:50+00:00",
+  "verified_at_utc": "2026-10-22T15:56:50.803093+00:00",
+  "verification_method": "openssl_ts_verify",
+  "signature_verified": true,
+  "timestamp_response_sha256": "996bc950d4071153b2b3eacc680891e57a02fdb00927b186969412dd266d13a8",
+  "manifest_sha256": "b55f26569974a96aff7d9238562f27bd03f064ec20e2c7a8765f275114a77ae4",
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "public_url": "https://8.148.145.28/api/arena/attestations/ablation-registration-20261022",
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+  "files": {
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "manifest.json": "b55f26569974a96aff7d9238562f27bd03f064ec20e2c7a8765f275114a77ae4",
+    "manifest.tsq": "60f586d1d45b782cdde2653e501d6e39add6c2efdd2fb2f8d1d6b5fccdc1a4b9",
+    "manifest.tsr": "996bc950d4071153b2b3eacc680891e57a02fdb00927b186969412dd266d13a8",
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "verification.txt": "b2f39f6fa18e30f17f5c211064fc4435ceee8ac3602a490a191b703c7e9b63c3"
+  }
+}

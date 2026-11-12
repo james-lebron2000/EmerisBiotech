@@ -23,30 +23,42 @@ def main(base, out):
         return body if raw else json.loads(body)
 
     health = get('/api/health')
-    assert health['version'] == '1.1.8' and health['clinical_prediction_validated'] is False
+    if health['version'] != '1.1.8' or health['clinical_prediction_validated'] is not False:
+        raise ValueError('Health does not match the unvalidated 1.1.8 release contract')
     caps = get('/api/predict/capabilities')
-    assert caps['pipeline_version'] == 'predome-user-trial-1.1.5'
+    if caps['pipeline_version'] != 'predome-user-trial-1.1.5':
+        raise ValueError('Prediction pipeline version differs from the release contract')
     policy = caps['ensemble_policy']
-    assert policy['policy_version'] == 'equal-weight-two-model.v1'
-    assert policy['policy_sha256'] == POLICY_SHA256
-    assert policy['members'] == list(MEMBERS)
-    assert policy['weights'] == {model: 0.5 for model in MEMBERS}
-    assert policy['requires_all_members'] is True
-    assert policy['clinical_prediction_validated'] is False
-    assert policy['evaluation_scope'] == 'descriptive_only_excluded_from_model_performance'
+    if policy['policy_version'] != 'equal-weight-two-model.v1':
+        raise ValueError('Ensemble policy version differs from the release contract')
+    if policy['policy_sha256'] != POLICY_SHA256:
+        raise ValueError('Ensemble policy hash differs from the bound implementation')
+    if policy['members'] != list(MEMBERS):
+        raise ValueError('Ensemble members differ from the bound implementation')
+    if policy['weights'] != {model: 0.5 for model in MEMBERS}:
+        raise ValueError('Ensemble weights are not the required equal weights')
+    if policy['requires_all_members'] is not True:
+        raise ValueError('Ensemble no longer requires every member')
+    if policy['clinical_prediction_validated'] is not False:
+        raise ValueError('Ensemble clinical validation claim differs from the release contract')
+    if policy['evaluation_scope'] != 'descriptive_only_excluded_from_model_performance':
+        raise ValueError('Ensemble evaluation scope differs from the descriptive-only contract')
     comparisons = {}
     for name, route in [('snapshots', '/api/platform/snapshots?limit=100'),
                         ('baselines', '/api/platform/baselines?limit=100')]:
         previous = json.loads((ROOT / f'verification/upgrade/{name}-before-ensemble-1.1.8.json').read_text())
         current = get(route)
         # Compare the entire response, including old hashes and registration times.
-        assert current == previous, name + ' changed during deployment'
+        if current != previous:
+            raise ValueError(name + ' changed during deployment')
         comparisons[name] = {'records': len(current['records']), 'full_response_unchanged': True,
                              'response_sha256': hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()}
     analytics = get('/api/analytics')
-    assert analytics['summary']['n'] == 0
+    if analytics['summary']['n'] != 0:
+        raise ValueError('Unexpected prospective evaluated records in the ensemble release')
     doc = get('/api/product/method', raw=True).decode()
-    assert '1.1.8' in doc and '等权双模型' in doc and '不纳入当前单模型绩效' in doc
+    if '1.1.8' not in doc or '等权双模型' not in doc or '不纳入当前单模型绩效' not in doc:
+        raise ValueError('Published product method differs from the ensemble release contract')
     receipt = {'status': 'passed', 'checked_at_utc': datetime.now(timezone.utc).isoformat(),
                'base': base, 'scope': 'GET only; no provider invocation or clinical validation',
                'health': health, 'ensemble_policy': policy, 'llm_available': caps['llm_available'],

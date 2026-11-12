@@ -1,0 +1,270 @@
+{
+  "schema_version": "predome-patent-pair-research-summary-1",
+  "as_of_utc": "2026-10-26T18:00:07.626406+00:00",
+  "cohort_id": "of-retatrutide-pair-20261027-v1",
+  "target": {
+    "id": "of-retatrutide-pair-20261027-v1-target",
+    "nct_id": "NCT06662383",
+    "trial_name": "TRIUMPH-5",
+    "drug": "retatrutide",
+    "endpoint": "Percent Change from Baseline in Body Weight",
+    "population": "Adults aged 18 years or older with obesity and at least one self-reported unsuccessful dietary weight-loss effort enrolled in NCT06662383; primary analysis set/estimand is not publicly specified in the acquired summary. No additional diabetes or BMI restriction is inferred.",
+    "comparison": "Retatrutide versus tirzepatide, both subcutaneous; exact dosing and escalation not publicly specified in the acquired summary; no placebo.",
+    "success_definition": "For TRIUMPH-5 (NCT06662383), the first decisive official report of its prespecified Week 80 primary analysis states that retatrutide achieved statistically significant superiority to tirzepatide in percent change from baseline in body weight, in that trial's prespecified primary analysis population and under its protocol/SAP success rule. Only an explicit tested failure of this exact primary superiority criterion can resolve Failure; no result, delay, non-inferiority alone, nominal secondary significance, other TRIUMPH trials or numerical weight loss alone cannot. If the official report does not establish the prespecified primary criterion, analysis population or multiplicity qualification, resolution remains Mixed/Inconclusive or pending until clarified; do not force a binary score. The unknown SAP is not replaced with an assumed alpha or estimand.",
+    "information_cutoff_utc": "2026-10-26T17:46:48.518897+00:00",
+    "readout": {
+      "basis": "no_confirmed_sponsor_readout_guidance",
+      "completion_is_not_readout": true,
+      "estimated_primary_completion": "2026-11",
+      "estimated_study_completion": "2026-12",
+      "label": "Official result announcement time unconfirmed",
+      "precision": "unknown",
+      "source_url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383"
+    }
+  },
+  "records": [
+    {
+      "id": "run-609621f37ca3480b916128224492de98",
+      "model_id": "kimi-k3",
+      "condition": "clinical_only",
+      "status": "failed",
+      "requested_model": "kimi-k3",
+      "returned_model": "kimi-k3",
+      "registered_at": "2026-10-26T17:50:59.481790+00:00",
+      "started_at": "2026-10-26T17:52:18.590407+00:00",
+      "locked_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "generated_at_utc": "2026-10-26T17:53:28.016692+00:00",
+      "input_sha256": "c522093352b2dd5a38d7414fea0e8791aedbd13cc90e76dc7a7b6b82e0881ce5",
+      "expected_provider_input_sha256": "d4b1ffd711cc242dabc9d704bcdc28ee9894ffa716db25e392a7bc437b69552e",
+      "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+      "output_sha256": "6d95a6912bdf101652d2ae9be84bb5754734ed20e165e2b385e30158bc414aff",
+      "provider_response_sha256": "12e32d907d945a7050c26a26524ab4890ef7777a04f8104141aa454aff2f26b3",
+      "execution_budget_sha256": "440587bc5493d1435ae7e216c3168292689de4b6f3ddaa2e6eee97a5d78e5f26",
+      "error_code": "invalid_json",
+      "usage": {
+        "cache_read_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "input_tokens": 3028,
+        "output_tokens": 3192,
+        "reasoning_tokens": 0
+      },
+      "latency_ms": 69424,
+      "raw_uncalibrated_model_value": null,
+      "calibrated_success_probability": null,
+      "actual_outcome": null,
+      "clinical_prediction_validated": false,
+      "selected_ai_citation_review_recorded": false
+    },
+    {
+      "id": "run-27c84d5756a14fd8a4c3e2af62c9fd35",
+      "model_id": "kimi-k3",
+      "condition": "with_patents",
+      "status": "predicted",
+      "requested_model": "kimi-k3",
+      "returned_model": "kimi-k3",
+      "registered_at": "2026-10-26T17:50:59.481991+00:00",
+      "started_at": "2026-10-26T17:53:28.019140+00:00",
+      "locked_at_utc": "2026-10-26T17:54:50.464919+00:00",
+      "generated_at_utc": "2026-10-26T17:54:50.464919+00:00",
+      "input_sha256": "4bf3132f652a385e70a613f177c60328bb4f8ae352f82db654a0f9adb0a175c2",
+      "expected_provider_input_sha256": "e986850e942490f60e3b1c118600a8427d1a85100b5191fe65db56fa62eea53d",
+      "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+      "output_sha256": "c261440f4f5cf460c93036c572d217d08bedc0da2ca0dd6a2eb6c0145b2a6a27",
+      "provider_response_sha256": "630c630e5ff20eb8289aa8707188084447dbc69782063b06e6271aab9644b2f8",
+      "execution_budget_sha256": "440587bc5493d1435ae7e216c3168292689de4b6f3ddaa2e6eee97a5d78e5f26",
+      "error_code": null,
+      "usage": {
+        "cache_read_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "input_tokens": 5258,
+        "output_tokens": 3943,
+        "reasoning_tokens": 0
+      },
+      "latency_ms": 82437,
+      "raw_uncalibrated_model_value": 0.78,
+      "calibrated_success_probability": null,
+      "actual_outcome": null,
+      "clinical_prediction_validated": false,
+      "selected_ai_citation_review_recorded": true
+    },
+    {
+      "id": "run-b58d38210ec24ce7b40cb9f019c5f5d0",
+      "model_id": "deepseek-v4.1-flash",
+      "condition": "clinical_only",
+      "status": "predicted",
+      "requested_model": "deepseek-v4.1-flash",
+      "returned_model": "deepseek-v4.1-flash",
+      "registered_at": "2026-10-26T17:50:59.482218+00:00",
+      "started_at": "2026-10-26T17:54:50.471569+00:00",
+      "locked_at_utc": "2026-10-26T17:55:11.481075+00:00",
+      "generated_at_utc": "2026-10-26T17:55:11.481075+00:00",
+      "input_sha256": "c522093352b2dd5a38d7414fea0e8791aedbd13cc90e76dc7a7b6b82e0881ce5",
+      "expected_provider_input_sha256": "d4b1ffd711cc242dabc9d704bcdc28ee9894ffa716db25e392a7bc437b69552e",
+      "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+      "output_sha256": "7f3488625eea71d6490874f7812eccb1c2a5c410e738df59ba85313114e1d97b",
+      "provider_response_sha256": "0bc9372c51b314957dc9d9a7f4da90577bcbfc918862fd290fa6c4f40e5a528f",
+      "execution_budget_sha256": "440587bc5493d1435ae7e216c3168292689de4b6f3ddaa2e6eee97a5d78e5f26",
+      "error_code": null,
+      "usage": {
+        "cache_read_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "input_tokens": 3267,
+        "output_tokens": 2732,
+        "reasoning_tokens": 2112
+      },
+      "latency_ms": 21003,
+      "raw_uncalibrated_model_value": 0.82,
+      "calibrated_success_probability": null,
+      "actual_outcome": null,
+      "clinical_prediction_validated": false,
+      "selected_ai_citation_review_recorded": true
+    },
+    {
+      "id": "run-de896100b1ea48a7b480a1075ab18fd5",
+      "model_id": "deepseek-v4.1-flash",
+      "condition": "with_patents",
+      "status": "predicted",
+      "requested_model": "deepseek-v4.1-flash",
+      "returned_model": "deepseek-v4.1-flash",
+      "registered_at": "2026-10-26T17:50:59.482405+00:00",
+      "started_at": "2026-10-26T17:55:11.487815+00:00",
+      "locked_at_utc": "2026-10-26T17:55:25.121825+00:00",
+      "generated_at_utc": "2026-10-26T17:55:25.121825+00:00",
+      "input_sha256": "4bf3132f652a385e70a613f177c60328bb4f8ae352f82db654a0f9adb0a175c2",
+      "expected_provider_input_sha256": "e986850e942490f60e3b1c118600a8427d1a85100b5191fe65db56fa62eea53d",
+      "expected_prompt_sha256": "72eed776ddb82231734ff87ff9c81b6753b47e6bc36625bdf2258b5bee9fdd0b",
+      "output_sha256": "48f8e73333a946d595857810562552e8af8251a821e87be5e63a167e6fa834d9",
+      "provider_response_sha256": "3b8ab1feb12a78567a8a71c6dda1d152b1c06ed7ad0fd3670d99d7f62b3b7fbb",
+      "execution_budget_sha256": "440587bc5493d1435ae7e216c3168292689de4b6f3ddaa2e6eee97a5d78e5f26",
+      "error_code": null,
+      "usage": {
+        "cache_read_input_tokens": 2048,
+        "cache_write_input_tokens": 0,
+        "input_tokens": 5852,
+        "output_tokens": 1880,
+        "reasoning_tokens": 1222
+      },
+      "latency_ms": 13628,
+      "raw_uncalibrated_model_value": 0.78,
+      "calibrated_success_probability": null,
+      "actual_outcome": null,
+      "clinical_prediction_validated": false,
+      "selected_ai_citation_review_recorded": true
+    }
+  ],
+  "paired_conditions": [
+    {
+      "target_id": "of-retatrutide-pair-20261027-v1-target",
+      "model_id": "kimi-k3",
+      "control_run_id": "run-609621f37ca3480b916128224492de98",
+      "treated_run_id": "run-27c84d5756a14fd8a4c3e2af62c9fd35",
+      "pair_verified": true,
+      "probability_change": null,
+      "cost_comparison": {
+        "comparable": false,
+        "currency": null,
+        "delta_amount": null,
+        "basis": null,
+        "reason": "incomplete_cost",
+        "is_estimate": false
+      },
+      "delta_brier_with_minus_without": null,
+      "interpretation": "概率变化不等于预测改善；评分等待事前锁定记录对应的已裁定结果。"
+    },
+    {
+      "target_id": "of-retatrutide-pair-20261027-v1-target",
+      "model_id": "deepseek-v4.1-flash",
+      "control_run_id": "run-b58d38210ec24ce7b40cb9f019c5f5d0",
+      "treated_run_id": "run-de896100b1ea48a7b480a1075ab18fd5",
+      "pair_verified": true,
+      "probability_change": -0.039999999999999925,
+      "cost_comparison": {
+        "comparable": false,
+        "currency": null,
+        "delta_amount": null,
+        "basis": null,
+        "reason": "incomplete_cost",
+        "is_estimate": false
+      },
+      "delta_brier_with_minus_without": null,
+      "interpretation": "概率变化不等于预测改善；评分等待事前锁定记录对应的已裁定结果。"
+    }
+  ],
+  "execution": {
+    "assigned_slots": 4,
+    "actual_provider_attempts": 4,
+    "valid_structured_predictions": 3,
+    "failed": 1,
+    "retry_calls": 0,
+    "usage_as_reported": {
+      "input_tokens": 17405,
+      "output_tokens": 11747,
+      "reasoning_tokens": 3334,
+      "cache_read_input_tokens": 2048,
+      "cache_write_input_tokens": 0
+    },
+    "reasoning_tokens_note": "Reported as a subcategory; do not add to output tokens again",
+    "monetary_cost": null,
+    "cost_status": "unpriced_not_zero"
+  },
+  "independent_timestamps": {
+    "registration-proof": {
+      "generated_at_utc": "2026-10-26T17:51:10+00:00",
+      "signature_verified": true,
+      "ledger_sha256": "82e0c8fae93dc36c824e4813665510ac3a852dc98fe421627f63085937ccb4d6",
+      "manifest_sha256": "956f4509d93c279f7cfac7ea01259cb3d9fa549327fc2deec3cf6b072d87f9d1",
+      "receipt_sha256": "2da7b7441be6475e532906a56c7f1e1b5cf84f5279415e0ce41407577a43fc31",
+      "published": false
+    },
+    "predictions-proof": {
+      "generated_at_utc": "2026-10-26T17:55:46+00:00",
+      "signature_verified": true,
+      "ledger_sha256": "743957c73a19071a18bfc42044a8e36400c86ca6a1875620cd33e5c41683759d",
+      "manifest_sha256": "0ba6bdd1871d052513365d3b7cc994cfb30add17fbb0be43e5cee785fa5ab99a",
+      "receipt_sha256": "d62c76a91b11691972d7a35599964c1bfeeda261a2a4726026a1ec82d10f3b8a",
+      "published": false
+    }
+  },
+  "evidence_provenance": {
+    "patent_publication": "WO2019125938A1",
+    "selected_example": "12 / SEQ17 Table3",
+    "patent_review_receipt_sha256": "41122925ffb5754c9fa38a45d66bfeb3aed6f17031c40958ea0ea55d6fb535d3",
+    "ai_source_review_basis": "two_agent_visual_source_check",
+    "same_base_model_correlation_disclosed": true,
+    "human_review_count": 0,
+    "prior_source_policy": "Original CT.gov bytes; TRIUMPH-1 sponsor page uses explicit archived reader after original HTTP403",
+    "clinical_spec_file_sha256": "aad6b8c536f121bea1cdae51b8f741610da75dcefbb97dc8a595ec4e7c6292ea",
+    "prepared_spec_file_sha256": "e1df72184cca4d670ce2e58c3f7b8e626b3e1ba95b0d92dcd734f14047fc8e2f",
+    "preparer_sha256": "09e082a4ced991129646e0d221130e01e668d0042641e4d0476af261dd75b402"
+  },
+  "previous_ledger_files_unchanged": true,
+  "actual_outcome": null,
+  "ranking_allowed": false,
+  "clinical_prediction_validated": false,
+  "deployment_completed": false,
+  "limitations": [
+    "Raw model values have no independent calibration and must not populate the public Success Probability field",
+    "Three valid outputs over four slots are response coverage, not clinical success or accuracy",
+    "One drug project and one attempt per condition cannot identify a patent effect or model superiority",
+    "Future exact endpoint outcome and authorized independent scientific acceptance remain absent",
+    "Gateway-returned model IDs do not independently authenticate provider weights",
+    "The derived summary does not replace the original ledger, packets or signed manifests"
+  ],
+  "claim_source_review": {
+    "scope": "selected frozen-packet claim-source pairs",
+    "reviewer_kind": "ai",
+    "human_review_count": 0,
+    "same_base_model_correlation_disclosed": true,
+    "claim_inventory_complete": false,
+    "reviewed_runs": 3,
+    "selected_pairs": 26,
+    "frozen_inputs_outputs_unchanged": true,
+    "no_accuracy_or_ranking_interpretation": true,
+    "findings": [
+      "Kimi target power and target standard-error transport are unsupported by the frozen evidence",
+      "Target head-to-head effect cannot be identified from cross-trial mean differences",
+      "Flash same-dose wording is unsupported because target dose is unknown",
+      "SURMOUNT-5 tirzepatide group is 15mg or MTD10/15mg, not all fixed 15mg"
+    ]
+  }
+}

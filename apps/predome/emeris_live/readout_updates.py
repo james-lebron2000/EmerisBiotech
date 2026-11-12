@@ -14,6 +14,8 @@ from .intake import get_candidate, get_source_bytes
 CONFIRMATIONS=('readout_not_completion','source_quote_supports_date','trial_identity_confirmed','primary_source_checked','precision_correct')
 KINDS={'official_announcement_candidate','pubmed_literature_candidate','reported_results_candidate','registry_update','discovery_requires_readout_source'}
 FIELDS={'nct_id','candidate_id','date_kind','start','end','precision','label','quoted_evidence','reason'}
+ARENA_FIELDS={'arena_target_id','source_granularity','applicability'}
+ARENA_CONFIRMATION='exact_target_applicability_confirmed'
 
 
 def now():return datetime.now(timezone.utc).isoformat()
@@ -64,7 +66,7 @@ def source_record(store,candidate_id,nct,quote):
     if captured!=candidate or hashlib.sha256(original_bytes).hexdigest()!=sha:
         raise ValueError('Captured source changed while loading its original bytes')
     if official:
-        from .official_intake import extract,identity,tracked_config
+        from .official_intake import extract,identity,watch_config
         try:document=extract(original_bytes)
         except (ValueError,TypeError,KeyError,subprocess.SubprocessError) as exc:
             raise ValueError('Official source could not be re-extracted from verified original bytes') from exc
@@ -76,7 +78,7 @@ def source_record(store,candidate_id,nct,quote):
         if not isinstance(structured.get('text'),str) or normalized(structured['text'])!=normalized(extracted):
             raise ValueError('Captured source changed after proposal or extraction differs from original bytes')
         exact_nct=bool(re.search(r'(?<![a-z0-9])'+re.escape(nct)+r'(?![a-z0-9])',quote,re.I))
-        config=next((record for record in tracked_config() if record['nct_id']==nct),None)
+        config=next((record for record in watch_config(store) if record['nct_id']==nct),None) if not exact_nct else None
         alias_match=bool(config and 'trial_alias' in identity(quote,config))
         if not exact_nct and not alias_match:
             raise ValueError('Official quote must identify the exact NCT or configured trial alias and drug')
@@ -123,6 +125,10 @@ def source_record(store,candidate_id,nct,quote):
 
 def validate_window(proposal):
     kind=proposal.get('date_kind');precision=proposal.get('precision')
+    if kind=='readout_time_unconfirmed' and ARENA_FIELDS<=set(proposal):
+        if proposal.get('start') is not None or proposal.get('end') is not None or precision!='unknown':
+            raise ValueError('Unconfirmed Arena readout requires null start/end and unknown precision')
+        return
     if kind not in ('official_exact_date','estimated_window'):
         raise ValueError('Only readout exact dates or estimated windows are allowed; completion dates are not readout dates')
     values=[]
@@ -147,6 +153,87 @@ def validate_window(proposal):
         if end!=expected:raise ValueError('Window end does not match calendar precision')
 
 
+def arena_binding(store,proposal):
+    """Bind an operational timing review to the current frozen exact question."""
+    from .arena_public import read_frozen
+    from .arena_watch import current_targets
+    from .arena_store import result_target_binding
+    if (proposal.get('source_granularity') not in ('named_trial','exact_analysis')
+            or proposal.get('applicability')!='exact_registered_target'):
+        raise ValueError('Arena timing requires named-trial or exact-analysis applicability')
+    target_id=proposal.get('arena_target_id')
+    if not isinstance(target_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,100}',target_id):
+        raise ValueError('Invalid Arena target identifier')
+    selected=[target for target in current_targets(read_frozen(store)) if target['id']==target_id]
+    if len(selected)!=1 or selected[0].get('nct_id')!=proposal.get('nct_id'):
+        raise ValueError('Arena timing must identify the exact active registered target and NCT')
+    return result_target_binding(selected[0])
+
+
+def validate_binding(proposal):
+    present=ARENA_FIELDS&set(proposal)
+    if not present:
+        if {'arena_target_binding','arena_target_binding_sha256'}&set(proposal):
+            raise ValueError('Arena timing fields must be supplied together')
+        return False
+    if present!=ARENA_FIELDS:
+        raise ValueError('Arena timing fields must be supplied together')
+    binding=proposal.get('arena_target_binding')
+    from .arena_store import RESULT_BINDING_FIELDS
+    if (not isinstance(binding,dict) or set(binding)!=set(RESULT_BINDING_FIELDS)
+            or any(not isinstance(binding[key],str) or not binding[key].strip() for key in RESULT_BINDING_FIELDS)
+            or binding.get('id')!=proposal['arena_target_id']
+            or binding.get('nct_id')!=proposal['nct_id']
+            or digest(binding)!=proposal.get('arena_target_binding_sha256')
+            or proposal.get('source_granularity') not in ('named_trial','exact_analysis')
+            or proposal.get('applicability')!='exact_registered_target'):
+        raise ValueError('Arena target binding integrity failed')
+    return True
+
+
+def approved_records(db,unpack):
+    """Read verified approvals in one existing DB snapshot without schema writes."""
+    required={'readout_update_proposals','readout_update_decisions'}
+    tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not tables&required:return []
+    if not required<=tables:raise ValueError('Incomplete calendar schema')
+    records=[]
+    rows=db.execute('''SELECT d.*,p.id AS p_id,p.nct_id AS p_nct_id,p.submitted_by AS p_submitted_by,
+        p.candidate_id AS p_candidate_id,p.sha256 AS p_sha256,p.payload AS p_payload,p.created AS p_created
+        FROM readout_update_decisions d LEFT JOIN readout_update_proposals p ON p.id=d.proposal_id
+        ORDER BY d.created DESC,d.rowid DESC''')
+    for row in rows:
+        proposal=unpack(row['p_payload']) if row['p_id'] is not None else None
+        review=unpack(row['payload'])
+        if (not isinstance(proposal,dict) or not isinstance(review,dict)
+                or digest(proposal)!=row['p_sha256'] or digest(review)!=row['sha256']):
+            raise ValueError('Readout record integrity failed')
+        if any(proposal.get(field)!=row[column] for field,column in (
+                ('id','p_id'),('nct_id','p_nct_id'),('submitted_by','p_submitted_by'),
+                ('candidate_id','p_candidate_id'),('created_at','p_created'))):
+            raise ValueError('Readout proposal SQL identity mismatch')
+        if any(review.get(field)!=row[column] for field,column in (
+                ('id','id'),('proposal_id','proposal_id'),('reviewer_id','reviewer_id'),
+                ('decision','decision'),('created_at','created'))):
+            raise ValueError('Readout decision SQL identity mismatch')
+        if (review.get('proposal_sha256')!=row['p_sha256']
+                or review.get('decision') not in ('approved','rejected')
+                or not isinstance(review.get('reviewer_id'),str) or not review['reviewer_id']
+                or review['reviewer_id'].casefold()==str(proposal.get('submitted_by')).casefold()):
+            raise ValueError('Review proposal binding mismatch')
+        is_arena=validate_binding(proposal)
+        if review['decision']!='approved':continue
+        confirmations=review.get('confirmations')
+        if (not isinstance(confirmations,dict)
+                or any(confirmations.get(key) is not True for key in CONFIRMATIONS)
+                or is_arena and confirmations.get(ARENA_CONFIRMATION) is not True):
+            raise ValueError('Approved readout confirmations incomplete')
+        validate_window(proposal)
+        records.append({'proposal':proposal,'review':review,'proposal_sha256':row['p_sha256'],
+                        'decision_sha256':row['sha256']})
+    return records
+
+
 class ReadoutUpdateStore:
     def __init__(self,store):
         self.store=store
@@ -168,7 +255,7 @@ class ReadoutUpdateStore:
 
     def propose(self,reviewer_id,proposal):
         if not isinstance(reviewer_id,str) or not reviewer_id:raise ValueError('Reviewer identity required')
-        if not isinstance(proposal,dict) or set(proposal)!=FIELDS:raise ValueError('Proposal fields must match the review schema; source provenance is server supplied')
+        if not isinstance(proposal,dict) or set(proposal) not in (FIELDS,FIELDS|ARENA_FIELDS):raise ValueError('Proposal fields must match the review schema; source provenance is server supplied')
         if len(canonical(proposal).encode())>24000:raise ValueError('Proposal too large')
         proposal=dict(proposal)
         if not isinstance(proposal['nct_id'],str) or not re.fullmatch(r'NCT\d{8}',proposal['nct_id']):raise ValueError('Invalid trial identifier')
@@ -177,11 +264,16 @@ class ReadoutUpdateStore:
             if not isinstance(value,str) or not low<=len(value.strip())<=high:raise ValueError('Invalid '+key)
             proposal[key]=value.strip()
         validate_window(proposal)
+        is_arena=ARENA_FIELDS<=set(proposal)
+        if is_arena:
+            binding=arena_binding(self.store,proposal)
+            proposal.update(arena_target_binding=binding,arena_target_binding_sha256=digest(binding))
         quote=normalized(proposal['quoted_evidence'])
         proposal['source']=source_record(self.store,proposal['candidate_id'],proposal['nct_id'],quote)
         proposal.update({'id':'ru_'+secrets.token_hex(12),'created_at':now(),'submitted_by':reviewer_id,
-                         'provenance':'human_proposed_readout_update_from_captured_source','quoted_evidence':quote,
-                         'calendar_effect':'none_until_independently_approved'})
+                         'provenance':'authenticated_account_proposed_operational_calendar_update','quoted_evidence':quote,
+                         'review_scope':'operational_calendar_review_not_clinical_scientific_adjudication',
+                         'calendar_effect':'none_until_distinct_account_approved'})
         with self.store.connect() as db:
             db.execute('INSERT INTO readout_update_proposals VALUES(?,?,?,?,?,?,?)',(proposal['id'],proposal['nct_id'],reviewer_id,proposal['candidate_id'],digest(proposal),self.store.pack(proposal),proposal['created_at']))
         return self.get(proposal['id'],reviewer_id)
@@ -197,7 +289,7 @@ class ReadoutUpdateStore:
         proposal=self.decode(row);review=self.decode(decision) if decision else None
         return {'id':row['id'],'created_at':row['created'],'submitted_by':row['submitted_by'],'proposal':proposal,
                 'status':review['decision'] if review else 'pending_review','decision':review,
-                'can_review':bool(actor_id and actor_id!=row['submitted_by'] and not review),'sha256':row['sha256']}
+                'can_review':bool(actor_id and actor_id.casefold()!=row['submitted_by'].casefold() and not review),'sha256':row['sha256']}
 
     def list(self,actor_id,limit=20,offset=0):
         suffix,args=page_sql(limit,offset)
@@ -213,35 +305,43 @@ class ReadoutUpdateStore:
             row=db.execute('SELECT * FROM readout_update_proposals WHERE id=?',(proposal_id,)).fetchone()
             if not row:raise KeyError(proposal_id)
             proposal=self.decode(row)
-            if not reviewer_id or reviewer_id==row['submitted_by']:raise ValueError('Submitting reviewer cannot review their own update')
+            if not isinstance(reviewer_id,str) or not reviewer_id or reviewer_id.casefold()==row['submitted_by'].casefold():raise ValueError('Submitting reviewer cannot review their own update')
             if db.execute('SELECT id FROM readout_update_decisions WHERE proposal_id=?',(proposal_id,)).fetchone():raise ValueError('Decision is immutable; submit a new proposal')
             if decision=='approved':
                 if any((confirmations or {}).get(key) is not True for key in CONFIRMATIONS):raise ValueError('All independent readout confirmations are required')
                 validate_window(proposal)
+                is_arena=validate_binding(proposal)
+                if is_arena:
+                    if (confirmations or {}).get(ARENA_CONFIRMATION) is not True:
+                        raise ValueError('Exact target applicability confirmation is required')
+                    binding=arena_binding(self.store,proposal)
+                    if binding!=proposal['arena_target_binding'] or digest(binding)!=proposal['arena_target_binding_sha256']:
+                        raise ValueError('Arena target binding changed after proposal')
                 current=source_record(self.store,proposal['candidate_id'],proposal['nct_id'],proposal['quoted_evidence'])
                 if current!=proposal['source']:raise ValueError('Captured source changed after proposal')
             review={'id':'rd_'+secrets.token_hex(12),'proposal_id':proposal_id,'reviewer_id':reviewer_id,
                     'decision':decision,'reason':reason.strip(),'confirmations':confirmations or {},'created_at':now(),
-                    'proposal_sha256':row['sha256'],'timestamp_attestation':'server_clock_not_independent_timestamp'}
+                    'proposal_sha256':row['sha256'],'timestamp_attestation':'server_clock_not_independent_timestamp',
+                    'review_scope':'operational_calendar_review_not_clinical_scientific_adjudication',
+                    'identity_assurance':'authenticated_account_not_verified_scientific_credentials'}
             db.execute('INSERT INTO readout_update_decisions VALUES(?,?,?,?,?,?,?)',(review['id'],proposal_id,reviewer_id,decision,digest(review),self.store.pack(review),review['created_at']))
         return self.get(proposal_id,reviewer_id)
 
 
 def approved_public_updates(store):
     """Latest approved overlay per trial; pending/rejected records never publish."""
-    ledger=ReadoutUpdateStore(store);result={}
+    result={}
     with store.connect() as db:
-        rows=db.execute("SELECT p.*,d.payload AS decision_payload,d.sha256 AS decision_sha FROM readout_update_decisions d JOIN readout_update_proposals p ON p.id=d.proposal_id WHERE d.decision='approved' ORDER BY d.created DESC,d.rowid DESC")
-        for row in rows:
-            if row['nct_id'] in result:continue
-            proposal=ledger.decode(row);review=ledger.decode({'payload':row['decision_payload'],'sha256':row['decision_sha']})
-            if review['proposal_sha256']!=row['sha256']:raise ValueError('Review proposal binding mismatch')
-            result[row['nct_id']]={k:proposal[k] for k in ('nct_id','date_kind','start','end','precision','label','quoted_evidence')} | {
+        for record in approved_records(db,store.unpack):
+            proposal=record['proposal'];review=record['review']
+            if ARENA_FIELDS&set(proposal) or proposal['nct_id'] in result:continue
+            result[proposal['nct_id']]={k:proposal[k] for k in ('nct_id','date_kind','start','end','precision','label','quoted_evidence')} | {
                 'source':proposal['source'],'source_url':proposal['source']['url'],
                 'published_at':proposal['source']['published_at'],'retrieved_at':proposal['source']['retrieved_at'],
                 'source_sha256':proposal['source']['sha256'],'hash_scope':proposal['source']['hash_scope'],
                 'provenance':{'kind':'independently_reviewed_readout_calendar_overlay','proposal_id':proposal['id'],
-                    'proposal_sha256':row['sha256'],'decision_id':review['id'],'decision_sha256':row['decision_sha'],
+                    'proposal_sha256':record['proposal_sha256'],'decision_id':review['id'],'decision_sha256':record['decision_sha256'],
                     'approved_at':review['created_at'],'original_prediction_unchanged':True,
+                    'review_scope':'operational_calendar_review_not_clinical_scientific_adjudication',
                     'timestamp_attestation':'server_clock_not_independent_timestamp'}}
     return result

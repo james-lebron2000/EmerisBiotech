@@ -1,12 +1,14 @@
 import hashlib
 import json
 import sqlite3
+from copy import deepcopy
+from datetime import datetime,timezone,timedelta
 import pytest
 from fastapi import FastAPI,HTTPException
 from fastapi.testclient import TestClient
 from emeris_live.store import Store
 from emeris_live import intake,readout_updates
-from emeris_live.readout_updates import ReadoutUpdateStore,approved_public_updates,CONFIRMATIONS
+from emeris_live.readout_updates import ReadoutUpdateStore,approved_public_updates,approved_records,CONFIRMATIONS,ARENA_CONFIRMATION
 from emeris_live.readout_updates_api import router
 
 QUOTE='The NCT01234567 trial primary readout is expected in the first quarter of 2027.'
@@ -25,6 +27,8 @@ def real_pdf(text=QUOTE):
 
 @pytest.fixture
 def records(tmp_path,monkeypatch):
+    from emeris_live import official_intake
+    monkeypatch.setattr(official_intake,'tracked_config',lambda:[])
     monkeypatch.setattr(intake,'now',lambda:'2026-10-20T12:00:00+00:00')
     monkeypatch.setattr(readout_updates,'now',lambda:'2026-10-21T12:00:00+00:00')
     store=Store(tmp_path/'data');intake.initialize(store)
@@ -281,3 +285,231 @@ def test_previously_approved_record_is_not_rewritten_by_later_intake_mutation(re
     assert approved_public_updates(store)==before
     with pytest.raises(ValueError,match='changed after proposal'):
         ledger.propose('reviewer-c',data)
+
+
+def register_formal(store,*,cohort_id='formal-calendar',target_id='formal-calendar-target',nct='NCT01234567',trial='CURRENT-STUDY'):
+    from emeris_live.arena_store import ArenaLedger
+    time=datetime.now(timezone.utc)
+    target={'id':target_id,'project_id':'calendar-asset','nct_id':nct,'trial_name':trial,'drug':'testdrug',
+        'endpoint':'Primary PFS','population':'Registered biomarker-positive adults','comparison':'A versus B',
+        'success_definition':'Prespecified primary superiority hypothesis met','analysis_timepoint':'Primary analysis',
+        'information_cutoff_utc':(time-timedelta(hours=1)).isoformat(),
+        'submission_deadline_utc':(time+timedelta(days=1)).isoformat(),
+        'readout_screen':{'status':'no_decisive_public_result_found','checked_at_utc':time.isoformat(),
+            'sources':[{'url':'https://clinicaltrials.gov/study/'+nct,'sha256':'a'*64}]},
+        'readout':{'source_url':'https://www.astrazeneca.com/registered-guidance','source_sha256':'b'*64,'guidance_as_of':'2026-10-19'}}
+    packet={'target':{k:target[k] for k in ('endpoint','population','comparison','success_definition')},
+        'data_cutoff':target['information_cutoff_utc'],'evidence':[{'id':'calendar-evidence',
+            'text':'Synthetic clinical evidence used only in this isolated temporary ledger.',
+            'source_url':'https://clinicaltrials.gov/study/'+nct,'source_sha256':'a'*64,
+            'available_at':(time-timedelta(days=1)).isoformat(),'kind':'clinical_prior'}]}
+    arena=ArenaLedger(store.path)
+    arena.register(cohort_id,[target],[{'target_id':target_id,'model_id':'fixture-model','requested_model':'fixture-model-v1',
+        'track':'same_evidence','condition':'clinical_only','packet':packet}],{'season_kind':'registered_12_project_season'})
+    return arena,target
+
+
+@pytest.fixture
+def arena_records(records):
+    store,ledger,data=records
+    arena,target=register_formal(store)
+    return store,ledger,arena,target,data|{'arena_target_id':target['id'],
+        'source_granularity':'named_trial','applicability':'exact_registered_target'}
+
+
+def read_approvals(store):
+    with store.connect() as db:
+        return approved_records(db,store.unpack)
+
+
+def test_arena_timing_is_server_bound_distinct_account_approved_and_does_not_change_frozen_target(arena_records):
+    from emeris_live.arena_store import result_target_binding
+    from emeris_live.platform_store import digest
+    store,ledger,arena,target,data=arena_records
+    before=deepcopy(arena.events())
+    proposal=ledger.propose('account-a',data)
+    payload=proposal['proposal']
+    assert payload['arena_target_binding']==result_target_binding(target)
+    assert payload['arena_target_binding_sha256']==digest(result_target_binding(target))
+    assert 'operational_calendar' in payload['provenance']
+    assert 'not_clinical_scientific' in payload['review_scope']
+    assert not read_approvals(store)
+    with pytest.raises(ValueError,match='own update'):
+        ledger.review('ACCOUNT-A',proposal['id'],'approved','Same authenticated account cannot approve.',CONFIRM|{ARENA_CONFIRMATION:True})
+    with pytest.raises(ValueError,match='applicability confirmation'):
+        ledger.review('account-b',proposal['id'],'approved','Distinct account checked the exact clinical target.',CONFIRM)
+    ledger.review('account-b',proposal['id'],'approved','Exact primary analysis and source timing checked.',CONFIRM|{ARENA_CONFIRMATION:True})
+    record=read_approvals(store)[0]
+    assert record['proposal']==payload
+    assert record['proposal_sha256']==proposal['sha256']
+    assert record['review']['reviewer_id']=='account-b'
+    assert 'scientific_credentials' in record['review']['identity_assurance']
+    assert arena.events()==before
+    assert approved_public_updates(store)=={}
+
+
+@pytest.mark.parametrize('changes',[
+    {'arena_target_id':'unknown-target'}, {'nct_id':'NCT99999999'},
+    {'source_granularity':'drug_program'}, {'source_granularity':'unknown'},
+    {'applicability':'different_analysis'}, {'arena_target_binding':{'id':'client-forged'}},
+    {'arena_target_binding_sha256':'a'*64}, {'result_target_binding':{'id':'client-forged'}},
+])
+def test_arena_target_scope_and_client_bindings_fail_closed(arena_records,changes):
+    store,ledger,arena,target,data=arena_records
+    with pytest.raises(ValueError):ledger.propose('account-a',data|changes)
+    assert not read_approvals(store)
+
+
+@pytest.mark.parametrize('field',['arena_target_id','source_granularity','applicability'])
+def test_arena_extension_fields_are_required_together(arena_records,field):
+    store,ledger,arena,target,data=arena_records
+    data.pop(field)
+    with pytest.raises(ValueError,match='schema'):ledger.propose('account-a',data)
+
+
+def test_arena_unknown_timing_has_no_inferred_date_and_does_not_replace_legacy_nct_overlay(arena_records,monkeypatch):
+    store,ledger,arena,target,data=arena_records
+    legacy={k:v for k,v in data.items() if k not in readout_updates.ARENA_FIELDS}
+    original=ledger.propose('account-a',legacy)
+    ledger.review('account-b',original['id'],'approved','Original NCT-level timing was checked.',CONFIRM)
+    quote='The NCT01234567 primary readout timing remains unconfirmed; no announcement window is supplied.'
+    cid,_=intake.save_candidate(store,data['nct_id'],'official_announcement_candidate','https://sponsor.example/no-guidance',quote.encode(),
+        {'text':quote,'published_at':'2026-10-20'})
+    unknown=data|{'candidate_id':cid,'date_kind':'readout_time_unconfirmed','start':None,'end':None,
+        'precision':'unknown','label':'No current readout window confirmed','quoted_evidence':quote}
+    with pytest.raises(ValueError,match='Only readout'):
+        ledger.propose('account-a',{k:v for k,v in unknown.items() if k not in readout_updates.ARENA_FIELDS})
+    monkeypatch.setattr(readout_updates,'now',lambda:'2026-10-22T12:00:00+00:00')
+    proposal=ledger.propose('account-a',unknown)
+    ledger.review('account-b',proposal['id'],'approved','No exact target readout window appears in this source.',CONFIRM|{ARENA_CONFIRMATION:True})
+    rows=read_approvals(store)
+    assert rows[0]['proposal']['id']==proposal['id']
+    assert rows[0]['proposal']['start'] is None and rows[0]['proposal']['end'] is None
+    assert rows[0]['proposal']['precision']=='unknown'
+    assert approved_public_updates(store)[data['nct_id']]['start']=='2027-01-01'
+
+
+@pytest.mark.parametrize('changes',[{'start':'2027-01-01'},{'end':'2027-03-31'},{'precision':'quarter'}])
+def test_unknown_timing_cannot_carry_an_invented_date(arena_records,changes):
+    store,ledger,arena,target,data=arena_records
+    with pytest.raises(ValueError,match='null start/end'):
+        ledger.propose('account-a',data|{'date_kind':'readout_time_unconfirmed','start':None,'end':None,'precision':'unknown'}|changes)
+
+
+@pytest.mark.parametrize('change',['new-formal-cohort','withdrawn','different-binding'])
+def test_arena_current_target_is_rechecked_at_approval(arena_records,monkeypatch,change):
+    from emeris_live import arena_public
+    store,ledger,arena,target,data=arena_records
+    proposal=ledger.propose('account-a',data)
+    if change=='new-formal-cohort':
+        register_formal(store,cohort_id='later-formal',target_id='later-target')
+    elif change=='withdrawn':
+        arena.withdraw_unstarted_cohort('formal-calendar','Synthetic withdrawal before any model execution.')
+    else:
+        actual=arena_public.read_frozen(store)
+        actual['targets'][0]['endpoint']='A different endpoint'
+        monkeypatch.setattr(arena_public,'read_frozen',lambda store:actual)
+    with pytest.raises(ValueError,match='active registered target|binding changed'):
+        ledger.review('account-b',proposal['id'],'approved','Current target must still match exactly.',CONFIRM|{ARENA_CONFIRMATION:True})
+    assert not read_approvals(store)
+
+
+def test_official_alias_uses_verified_current_formal_configuration_not_legacy_or_intake(arena_records,monkeypatch):
+    from emeris_live import official_intake
+    store,ledger,arena,target,data=arena_records
+    monkeypatch.setattr(official_intake,'tracked_config',lambda:[{'nct_id':data['nct_id'],
+        'trial':'STALE-STUDY','drug':'testdrug','sources':[]}])
+    for alias,valid in [('CURRENT-STUDY',True),('STALE-STUDY',False),('INTAKE-INVENTED',False)]:
+        quote=f'{alias} with testdrug primary readout is expected in the first quarter of 2027.'
+        cid,_=intake.save_candidate(store,data['nct_id'],'official_announcement_candidate','https://sponsor.example/'+alias,quote.encode(),
+            {'text':quote,'published_at':'2026-10-19','trial_name':alias,'drug':'testdrug','trial_identity_match':['trial_alias']})
+        if valid:
+            proposal=ledger.propose('account-a',data|{'candidate_id':cid,'quoted_evidence':quote})
+            ledger.review('account-b',proposal['id'],'approved','Formal current alias and drug checked in original bytes.',CONFIRM|{ARENA_CONFIRMATION:True})
+        else:
+            with pytest.raises(ValueError,match='exact NCT'):
+                ledger.propose('account-a',data|{'candidate_id':cid,'quoted_evidence':quote})
+
+
+def test_arena_source_is_revalidated_without_rewriting_its_original_bytes(arena_records):
+    store,ledger,arena,target,data=arena_records
+    proposal=ledger.propose('account-a',data)
+    with store.connect() as db:
+        row=db.execute('SELECT payload FROM intake_candidates WHERE id=?',(data['candidate_id'],)).fetchone()
+        candidate=store.unpack(row['payload']);candidate['structured']['text']='An unrelated replacement statement.'
+        db.execute('UPDATE intake_candidates SET payload=? WHERE id=?',(store.pack(candidate),data['candidate_id']))
+    with pytest.raises(ValueError,match='changed after proposal'):
+        ledger.review('account-b',proposal['id'],'approved','This changed extraction cannot approve original proposal.',CONFIRM|{ARENA_CONFIRMATION:True})
+    assert not read_approvals(store)
+
+
+def test_approved_records_uses_existing_readonly_snapshot_without_initializing_tables(tmp_path):
+    path=tmp_path/'empty.sqlite3'
+    with sqlite3.connect(path) as db:db.execute('CREATE TABLE untouched(value TEXT)')
+    before=path.read_bytes()
+    with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+        db.row_factory=sqlite3.Row;db.execute('PRAGMA query_only=ON')
+        assert approved_records(db,lambda value:json.loads(value))==[]
+    assert path.read_bytes()==before
+    with sqlite3.connect(path) as db:db.execute('CREATE TABLE readout_update_proposals(id TEXT)')
+    with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+        db.row_factory=sqlite3.Row;db.execute('PRAGMA query_only=ON')
+        with pytest.raises(ValueError,match='Incomplete calendar'):approved_records(db,json.loads)
+
+
+@pytest.mark.parametrize('change',['proposal-nct','proposal-owner','proposal-candidate','proposal-created',
+    'decision-id','decision-owner','decision-kind','decision-created','orphan','proposal-digest','decision-digest','proposal-binding'])
+def test_approved_records_checks_sql_identities_both_digests_and_review_binding(arena_records,change):
+    from emeris_live.platform_store import digest
+    store,ledger,arena,target,data=arena_records
+    proposal=ledger.propose('account-a',data)
+    ledger.review('account-b',proposal['id'],'approved','All exact target and source checks completed.',CONFIRM|{ARENA_CONFIRMATION:True})
+    with store.connect() as db:
+        db.execute('DROP TRIGGER readout_update_proposals_no_update')
+        db.execute('DROP TRIGGER readout_update_decisions_no_update')
+        if change.startswith('proposal-') and change not in ('proposal-digest','proposal-binding'):
+            column={'proposal-nct':'nct_id','proposal-owner':'submitted_by','proposal-candidate':'candidate_id','proposal-created':'created'}[change]
+            db.execute(f'UPDATE readout_update_proposals SET {column}=?',('different',))
+        elif change in ('decision-id','decision-owner','decision-kind','decision-created','orphan'):
+            column={'decision-id':'id','decision-owner':'reviewer_id','decision-kind':'decision','decision-created':'created','orphan':'proposal_id'}[change]
+            db.execute(f'UPDATE readout_update_decisions SET {column}=?',('rejected' if change=='decision-kind' else 'different',))
+        elif change in ('proposal-digest','decision-digest'):
+            table='readout_update_proposals' if change=='proposal-digest' else 'readout_update_decisions'
+            db.execute(f'UPDATE {table} SET sha256=?',('f'*64,))
+        else:
+            value=deepcopy(proposal['proposal']);value['label']='A different source-bound window label'
+            db.execute('UPDATE readout_update_proposals SET payload=?,sha256=?',(store.pack(value),digest(value)))
+    with pytest.raises(ValueError,match='integrity|identity|binding'):read_approvals(store)
+
+
+def test_arena_api_requires_complete_extension_and_extra_confirmation(arena_records,monkeypatch):
+    store,ledger,arena,target,data=arena_records
+    monkeypatch.setenv('EMERIS_REVIEWERS','a,b')
+    app=FastAPI();app.state.store=store
+    def actor(request):
+        name=request.headers.get('x-user')
+        if not name:raise HTTPException(401)
+        if request.method!='GET' and request.headers.get('x-csrf')!='valid':raise HTTPException(403)
+        return {'owner':name,'name':name}
+    app.state.platform_user=actor;app.include_router(router);client=TestClient(app)
+    headers={'x-user':'a','x-csrf':'valid'}
+    for invalid in [data|{'arena_target_binding_sha256':'a'*64},data|{'source_granularity':'drug_program'},
+            {k:v for k,v in data.items() if k!='applicability'}]:
+        assert client.post('/api/readout-updates',json=invalid,headers=headers).status_code==422
+    proposal=client.post('/api/readout-updates',json=data,headers=headers)
+    assert proposal.status_code==200
+    url='/api/readout-updates/'+proposal.json()['id']+'/review'
+    body={'decision':'approved','reason':'Distinct account reviewed current exact target.','confirmations':CONFIRM}
+    assert client.post(url,json=body,headers={'x-user':'b','x-csrf':'valid'}).status_code==422
+    body['confirmations']=CONFIRM|{ARENA_CONFIRMATION:True}
+    assert client.post(url,json=body,headers=headers).status_code==422
+    approved=client.post(url,json=body,headers={'x-user':'b','x-csrf':'valid'})
+    assert approved.status_code==200
+    assert approved.json()['decision']['reviewer_id']=='b'
+    assert not any(k in approved.json()['decision'] for k in ('human_review_count','reviewer_kind','scientific_credentials_verified'))
+    unknown=data|{'date_kind':'readout_time_unconfirmed','start':None,'end':None,'precision':'unknown'}
+    unknown_proposal=client.post('/api/readout-updates',json=unknown,headers=headers)
+    assert unknown_proposal.status_code==200
+    assert unknown_proposal.json()['proposal']['start'] is None
+    legacy_unknown={k:v for k,v in unknown.items() if k not in readout_updates.ARENA_FIELDS}
+    assert client.post('/api/readout-updates',json=legacy_unknown,headers=headers).status_code==422

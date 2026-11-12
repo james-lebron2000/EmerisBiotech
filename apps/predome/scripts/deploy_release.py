@@ -15,6 +15,14 @@ ROOT = Path(__file__).resolve().parents[1]
 REMOTE = '/opt/emeris-live'
 TARGET = REMOTE + '/releases/20261021-platform10'
 PREVIOUS = REMOTE + '/releases/20261021-platform9'
+BOOTSTRAP_PROGRAM = '''from pathlib import Path
+import hashlib, sys, tarfile
+archive = Path(sys.argv[1])
+if hashlib.sha256(archive.read_bytes()).hexdigest() != sys.argv[2]:
+    raise ValueError("Pinned release archive SHA-256 differs")
+with tarfile.open(archive) as bundle:
+    Path(sys.argv[3]).write_bytes(bundle.extractfile('deploy/deploy_upgrade.py').read())
+'''
 
 def digest(path):
     h=hashlib.sha256()
@@ -78,14 +86,7 @@ def main():
             if a.apply and current==PREVIOUS:
                 remote_archive=REMOTE+'/predome-1.1.8.tar.gz'
                 subprocess.run(['scp',*options,str(a.archive.resolve()),destination+':'+remote_archive],check=True)
-                bootstrap='''from pathlib import Path
-import hashlib,tarfile
-p=Path('/opt/emeris-live/predome-1.1.8.tar.gz')
-assert hashlib.sha256(p.read_bytes()).hexdigest()==%r
-with tarfile.open(p) as t:
- Path('/opt/emeris-live/deploy-platform10.py').write_bytes(t.extractfile('deploy/deploy_upgrade.py').read())
-''' % expected
-                ssh([REMOTE+'/venv/bin/python','-'],bootstrap)
+                ssh([REMOTE+'/venv/bin/python','-',remote_archive,expected,REMOTE+'/deploy-platform10.py'],BOOTSTRAP_PROGRAM)
                 print(ssh([REMOTE+'/venv/bin/python',REMOTE+'/deploy-platform10.py',remote_archive]))
             elif current!=TARGET:
                 raise ValueError('1.1.8 is not deployed; --verify cannot deploy')

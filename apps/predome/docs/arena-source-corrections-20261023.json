@@ -1,0 +1,179 @@
+{
+  "schema_version": "arena-source-corrections-v1",
+  "created_at_utc": "2026-10-22T16:57:43.359233+00:00",
+  "purpose": "Additive primary-source correction and balanced evidence for a new cohort; does not mutate an earlier catalog, packet, prediction or frozen ledger record.",
+  "new_cutoff_required_after": "2026-10-22T16:55:00.554352+00:00",
+  "review_status": {
+    "automated_byte_hash_verification": true,
+    "source_text_checked": true,
+    "human_review_count": 0,
+    "clinical_validation": false
+  },
+  "corrections": [
+    {
+      "target_id": "of-season-20261023-avanzar",
+      "supersedes_evidence_id": "dato-lung01-nsq",
+      "action": "replace_only_in_new_packet",
+      "replacement_evidence_id": "dato-lung01-nsq-corrected-20261023",
+      "reason": "The older paraphrased capture gave unverified n=229/232 alongside the nonsquamous PFS effect. Actual primary Table 2 gives n=234/234. The old counts are not reinterpreted as a safety set.",
+      "old_claim": "n=229 versus 232",
+      "corrected_claim": "n=234 versus 234 in the nonsquamous efficacy subgroup; HR and 95% CI unchanged"
+    },
+    {
+      "target_id": "of-season-20261023-vitalize",
+      "action": "append_to_new_packet_preserving_mobilize_futility",
+      "additional_evidence_ids": [
+        "riliprubart-phase2-week24",
+        "riliprubart-phase2-week76"
+      ],
+      "reason": "Add positive same-asset phase 2 evidence while retaining the negative phase 3 MOBILIZE prior; preserve nonrandomized, different-population, different-endpoint and conditional-cohort limitations."
+    }
+  ],
+  "sources": [
+    {
+      "id": "tropion_lung01_europepmc_xml",
+      "path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml",
+      "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+      "resolved_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+      "retrieved_at": "2026-10-22T16:55:00.554352+00:00",
+      "sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+      "bytes": 184527,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "application/xml",
+      "response_last_modified": null,
+      "http_status": 200,
+      "public_date": "2024-09-09",
+      "source_date": "2024-09-09",
+      "public_date_basis": "Article XML article-meta/pub-date",
+      "source_type": "peer_reviewed_article",
+      "available_at": "2026-10-22T16:55:00.554352+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml.receipt.json",
+      "receipt_sha256": "c409c239083d0a76f3e2de8d0be11f446876243cd59d3d66556024ec6031dc63",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    },
+    {
+      "id": "sanofi_riliprubart_2024",
+      "path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+      "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+      "resolved_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+      "retrieved_at": "2026-10-22T16:54:58.301389+00:00",
+      "sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+      "bytes": 194157,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "text/html",
+      "response_last_modified": null,
+      "http_status": 200,
+      "public_date": "2024-06-25",
+      "source_date": "2024-06-25",
+      "public_date_basis": "Official release dated Paris, June 25, 2024",
+      "source_type": "sponsor_press_release",
+      "available_at": "2026-10-22T16:54:58.301389+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html.receipt.json",
+      "receipt_sha256": "4044db851f3ed9d7c64aea624153fabe23913126841f733dc987a7d588ebf4ef",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    },
+    {
+      "id": "sanofi_riliprubart_2025",
+      "path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf",
+      "source_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+      "resolved_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+      "retrieved_at": "2026-10-22T16:54:58.130014+00:00",
+      "sha256": "97076dc3af6a951bdc5365c7b44899e756558f59526a80ecfa49fb3ba6efcf9b",
+      "bytes": 1891309,
+      "snapshot_kind": "original_http_response",
+      "http_content_type": "application/pdf",
+      "response_last_modified": "Tue, 16 Dec 2025 14:03:08 GMT",
+      "http_status": 200,
+      "public_date": "2025-12-16",
+      "source_date": "2025-12-16",
+      "public_date_basis": "Official year-end presentation dated December 16, 2025; HTTP Last-Modified corroborates date",
+      "source_type": "sponsor_presentation",
+      "available_at": "2026-10-22T16:54:58.130014+00:00",
+      "receipt_path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf.receipt.json",
+      "receipt_sha256": "4672dea94411a2a2dad6e7172d641e79733dec59b276500e06725e98ae6230c1",
+      "rights_scope": "Public primary-source research evidence; retained for provenance and short factual paraphrase; no claim of exclusive rights."
+    }
+  ],
+  "evidence_cards": [
+    {
+      "id": "dato-lung01-nsq-corrected-20261023",
+      "target_id": "of-season-20261023-avanzar",
+      "source_id": "tropion_lung01_europepmc_xml",
+      "title": "Corrected indirect randomized Dato evidence",
+      "text": "TROPION-Lung01 was a randomized comparison of Dato-DXd monotherapy versus docetaxel after prior NSCLC therapy. Table 2 reports 234 patients per arm in the nonsquamous histology efficacy subgroup, not 229 versus 232. Median PFS was 5.5 versus 3.6 months, HR 0.63 (95% CI 0.51-0.79). In the overall population, OS was not significantly improved: HR 0.94 (95% CI 0.78-1.14), p=0.530. Histology subgroups used electronic case-report-form data. These patients do not isolate AVANZAR TROP2-positive disease. Treatment line, combination, comparator and hypothesis differ; neither the PFS signal nor the overall OS null result establishes AVANZAR efficacy.",
+      "kind": "clinical_prior",
+      "is_target_result": false,
+      "page_references": [],
+      "source_anchor": "XML table-wrap id=tbl2, Overall Efficacy for All Patients and by Histology, nonsquamous columns; table footnotes",
+      "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11771353/fullTextXML",
+      "source_path": "arena_data/source_snapshots/correction-20261023-tropion-lung01.fulltext.xml",
+      "source_sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+      "source_date": "2024-09-09",
+      "available_at": "2026-10-22T16:55:00.554352+00:00",
+      "snapshot_kind": "original_http_response",
+      "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+      "human_review_count": 0,
+      "word_count": 92
+    },
+    {
+      "id": "riliprubart-phase2-week24",
+      "target_id": "of-season-20261023-vitalize",
+      "source_id": "sanofi_riliprubart_2024",
+      "title": "Indirect open-label riliprubart CIDP week-24 evidence",
+      "text": "Sanofi reported an open-label, multicentre phase 2 CIDP study without a randomized comparator. At week 24, 42/48 SOC-treated patients (87%), 16/18 SOC-refractory patients (89%) and 11/12 SOC-naive patients (92%) improved or remained stable. Improvement alone occurred in 25/48 treated patients (52%) and 9/18 refractory patients (50%). These combined stable-or-improved proportions are not one shared primary response endpoint: Part A primary was relapse after SOC withdrawal for treated patients, and response during treatment for refractory/naive patients. Part B was an optional 52-week extension whose primary endpoint was long-term safety/tolerability. Two deaths occurred in patients with significant comorbidities; the release does not establish drug causality. SOC included immunoglobulins or corticosteroids. Nonrandomization, cohort differences, endpoint differences and selected extension participation prevent an estimate of superiority over maintenance IVIg in VITALIZE.",
+      "kind": "clinical_prior",
+      "is_target_result": false,
+      "page_references": [],
+      "source_anchor": "Results from part A and B; About the phase 2 study",
+      "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+      "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+      "source_sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+      "source_date": "2024-06-25",
+      "available_at": "2026-10-22T16:54:58.301389+00:00",
+      "snapshot_kind": "original_http_response",
+      "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+      "human_review_count": 0,
+      "word_count": 127
+    },
+    {
+      "id": "riliprubart-phase2-week76",
+      "target_id": "of-season-20261023-vitalize",
+      "source_id": "sanofi_riliprubart_2025",
+      "title": "Conditional open-label riliprubart CIDP week-76 evidence",
+      "text": "Sanofi's December 2025 presentation reports phase 2 CIDP extension outcomes at week 76 only among patient groups who achieved the week-24 primary endpoint. The conditional cohorts were SOC-treated n=40, SOC-refractory n=9 and SOC-naive n=7: 80% were relapse-free, 78% had sustained response and 86% had sustained response, respectively. Non-evaluable proportions were 13%, 11% and 14%; reported relapse proportions were 7% and 11% in the first two groups. These are open-label conditional extension outcomes, not percentages of the original 48/18/12 cohorts and not randomized treatment effects. They support potential durability in selected responders but cannot estimate VITALIZE week-24 adjusted-INCAT superiority against maintenance IVIg. Part B's primary endpoint was long-term safety/tolerability, as defined in the 2024 study description.",
+      "kind": "clinical_prior",
+      "is_target_result": false,
+      "page_references": [
+        17
+      ],
+      "source_anchor": "Printed PDF page 17: Neurology: riliprubart potential to expand in neuroinflammation; condition immediately above cohort charts",
+      "source_url": "https://www.sanofi.com/assets/dotcom/content-app/events/investor-presentation/2025/2025-year-end-late-stage-pipeline-review/2025_12_16_Sanofi_Year-end_late-stage_pipeline_review_Pres.pdf",
+      "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-yearend-2025.pdf",
+      "source_sha256": "97076dc3af6a951bdc5365c7b44899e756558f59526a80ecfa49fb3ba6efcf9b",
+      "source_date": "2025-12-16",
+      "available_at": "2026-10-22T16:54:58.130014+00:00",
+      "snapshot_kind": "original_http_response",
+      "curation": "AI factual extraction checked against saved original HTTP response; no human scientific review",
+      "human_review_count": 0,
+      "word_count": 115,
+      "supporting_source_ids": [
+        "sanofi_riliprubart_2024"
+      ],
+      "supporting_sources": [
+        {
+          "source_id": "sanofi_riliprubart_2024",
+          "source_path": "arena_data/source_snapshots/correction-20261023-sanofi-riliprubart-2024.html",
+          "source_sha256": "6c40eabe6d4310700eceaa286f70c83e3dfce64b25bf4f362701ae905ade1d0a",
+          "source_url": "https://www.sanofi.com/en/media-room/press-releases/2024/2024-06-25-20-30-00-2904145",
+          "source_anchor": "About the phase 2 study: Part B primary endpoint"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Source acquisition and byte integrity are not clinical validation or independent human review.",
+    "These are indirect prior studies, not AVANZAR or VITALIZE results.",
+    "The 2025 extension report overlaps the phase 2 cohort described in 2024 and is not a second independent study.",
+    "No new target readout date or target outcome is established by these correction sources."
+  ]
+}

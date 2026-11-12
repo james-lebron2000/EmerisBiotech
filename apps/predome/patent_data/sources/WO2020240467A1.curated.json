@@ -1,0 +1,126 @@
+{
+  "schema_version": "predome-patent-experiment-cards-1.0",
+  "experiment_cards": [
+    {
+      "publication_number": "WO2020240467A1",
+      "public_available_at": "2020-12-03",
+      "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+      "pdf_page_1_based": 93,
+      "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "text_sha256": "e10a61c47f1cd311ee6fa98a9cc029e9ea5cded859157c468970a506d3e2b740",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "reviewed_at": null,
+        "verification_actor": "AI assistant",
+        "verification_date": "2026-10-22",
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false,
+      "extraction_method": "OCR extraction with AI visual comparison against original PDF page",
+      "unit": "percent",
+      "evidence_id": "WO2020240467A1-example7-orr",
+      "example_id": "7",
+      "title": "一期 DS-1062a 研究中的未确认客观缓解率",
+      "section_type": "clinical_study",
+      "experiment_system": "Phase 1 open-label dose escalation/expansion; 6 mg/kg escalation cohort; 8 mg/kg escalation and expansion cohorts; response-evaluable analysis set",
+      "species_or_cell": "Human participants with previously treated NSCLC",
+      "trial_id": "NCT03401385",
+      "sample_size": {
+        "treated": 95,
+        "response_evaluable": 88,
+        "groups": [
+          {
+            "dose_mg_kg": 6,
+            "n": 18
+          },
+          {
+            "dose_mg_kg": 8,
+            "n": 34
+          }
+        ]
+      },
+      "dose": {
+        "route": "intravenous",
+        "groups_mg_kg": [
+          6,
+          8
+        ]
+      },
+      "comparator": null,
+      "endpoint": "Investigator-assessed unconfirmed objective response rate",
+      "result": {
+        "groups": [
+          {
+            "dose_mg_kg": 6,
+            "responders": 5,
+            "denominator": 18,
+            "percent": 27.8,
+            "ci95_percent": [
+              9.7,
+              53.5
+            ]
+          },
+          {
+            "dose_mg_kg": 8,
+            "responders": 13,
+            "denominator": 34,
+            "percent": 38.2,
+            "ci95_percent": [
+              22.2,
+              56.4
+            ]
+          }
+        ]
+      },
+      "data_cutoff": "2019-11-16",
+      "missing_fields": [
+        "Randomized concurrent comparator",
+        "Independent human scientific review",
+        "Full sequence alignment against regulatory INN reference"
+      ],
+      "source_location": "PDF page 93, printed page 91, Example 7, paragraphs [0455]-[0458], Table 2",
+      "source_excerpt": "5/18 subjects with response, all with PR; 13/34, all with PR.",
+      "interpretation_limit": "This is a patent-reported, early-phase, nonrandomized, unconfirmed response outcome. It is not a phase 3 treatment effect or a validated forecast.",
+      "supporting_pdf_pages": [
+        87,
+        88,
+        89,
+        93,
+        94
+      ],
+      "response_evaluable_definition": "Baseline and post-baseline tumor assessment, or discontinuation of study treatment (PDF p94, paragraph [0459])."
+    }
+  ],
+  "document_observations": [
+    {
+      "observation": "Example 4 calls antibody-drug conjugate (1) DS-1062a. Example 7 reports a phase 1 response dataset, not a randomized phase 3 effect.",
+      "pdf_page_1_based": 87,
+      "paragraph": "[0419]",
+      "review_status": "AI page visual check; no human scientific review"
+    }
+  ],
+  "mapping_observations": [
+    {
+      "kind": "explicit_development_code_in_document",
+      "code": "DS-1062a",
+      "pdf_page_1_based": 87,
+      "paragraph": "[0419]",
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+      "public_available_at": "2020-12-03"
+    },
+    {
+      "kind": "sponsor_alias_confirmation",
+      "aliases": [
+        "datopotamab deruxtecan",
+        "Dato-DXd",
+        "DS-1062"
+      ],
+      "source_url": "https://daiichisankyo.us/documents/36782/37797/DS-1062%2BPh3%2BTROPION-Lung%2B01%2BTrial%2BInitiation%2BPress%2BRelease%2BFINAL.pdf/f218673c-a0e1-9aab-701a-a63dcd24fc61?t=1607931412596",
+      "pdf_page_1_based": 1,
+      "public_available_at": "2020-12-14",
+      "limitation": "Confirms development aliases; exact sequence/structure and patent-scope review remain pending."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "budget_policy": "token_only_unpriced",
+  "max_requests": 2,
+  "max_output_tokens": 4096,
+  "max_input_chars": 6000,
+  "timeout_seconds": 120
+}

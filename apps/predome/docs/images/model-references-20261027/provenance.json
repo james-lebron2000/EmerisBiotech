@@ -1,0 +1,162 @@
+{
+  "schema_version": "predome-actual-model-references-visual-1",
+  "scope": "Existing actual API payloads from a temporary host copy, rendered locally with shipped assets; not live production, not deployed and not clinically validated.",
+  "captured_at_utc": "2026-10-26T20:53:06.532Z",
+  "capture_only_note": "Actual records · local candidate · not deployed · not clinically validated",
+  "target_id": "of-retatrutide-pair-20261027-v1-target",
+  "nct_id": "NCT06662383",
+  "transport": "Existing actual public API captures from a temporary host copy are injected through browser request interception. Current shipped assets are rendered locally. No production server, external API or provider was contacted.",
+  "public_api_record_sha256": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249",
+  "input_sha256": {
+    "actual-public-overview.json": "b13a62103ff2706d32165adb0d0d038a432e817d26021ab47d7363f56ec11f4b",
+    "actual-public-detail.json": "663b2efd733b0b3559467079ea721661729c1f6566f29c02ea7e02370c435c2e",
+    "clinical-brief.html": "1253bd2a0c346ba71e8c5770e03dbbcc296ee6837b8101e497be70d12415bb00",
+    "clinical-record.json": "95ffe4d983b2d87e52efb134663b2be7569a7c909abe0ea77eef98839d262249",
+    "predome-triumph5-clinical-brief.zip": "d511200db044adf3c940e92a4ebdae0122e9fa8c14131064ff97ce65fbcdd180"
+  },
+  "producer_and_ui_sha256": {
+    "emeris_live/arena_public_brief.py": "d5d88b3387938a705ada8b34b48da5aa97817d0e7e1817929ccc5523c0a0702d",
+    "emeris_live/arena_public.py": "d3e022a9453e6c88cb8c5ee45d1dd352d3ea3ec32969834f349c6ec332dd1739",
+    "static/arena-public.js": "7fb3fb492cfdd5a263561b0e247aaed5681adabafff158f81d1158c59d242bcd",
+    "static/arena-public.html": "df675c45948283b4d5c2b931721665c9e3c223f4fee703ca651d02c894434d58",
+    "static/arena-public.css": "d04b07e03b91e727110142e49e1201aa148edafc32e8cccffef0e97ab731a541",
+    "static/design-system.css": "dbe0800116ba468b2f50b3580b48da519f1d00c52860ad64bd4a43949899e816",
+    "static/theme.js": "f374d9a86bad9a05da7f2d57338c3781b1a5305f9aa339ff984cdab87eea3a53",
+    "static/favicon.svg": "fdd1ef69c16f9145e1f48f32db4652997f909cc505a6e034edc327ce4c0350b3",
+    "emeris_live/arena_public_contract.py": "a79b49eaf9e95b9b54a985a1c71ed64cb9c7bb8f226b7fe50b98200efd8bc7c2"
+  },
+  "browser": {
+    "node_version": "v24.8.0",
+    "browser_version": "156.0.8078.47"
+  },
+  "images": [
+    {
+      "file": "public-desktop-collapsed.png",
+      "sha256": "abf4886531d26be5b192c721d1aae3f37e7124f51d4d4f46dc68e47901dfbddd",
+      "bytes": 169889,
+      "width_px": 1440,
+      "height_px": 900,
+      "full_page": false,
+      "visually_inspected": true
+    },
+    {
+      "file": "public-desktop-expanded.png",
+      "sha256": "4cda945d458d56b5a8d50cea12e0e0570248113ecc1548203b1f0a6a3fc19873",
+      "bytes": 235008,
+      "width_px": 1440,
+      "height_px": 1234,
+      "full_page": true,
+      "visually_inspected": true
+    },
+    {
+      "file": "public-mobile-expanded.png",
+      "sha256": "527c551f4f11dcbac9bdd9ad4af65b84bced159c1633167b64435875f58286f5",
+      "bytes": 268834,
+      "width_px": 375,
+      "height_px": 3020,
+      "full_page": true,
+      "visually_inspected": true
+    },
+    {
+      "file": "brief-desktop.png",
+      "sha256": "676f60732a30e317f26899dca66ddb3623eca1a6dc510a8265897953bc0d93de",
+      "bytes": 405640,
+      "width_px": 1440,
+      "height_px": 2148,
+      "full_page": true,
+      "visually_inspected": true
+    },
+    {
+      "file": "brief-mobile.png",
+      "sha256": "ef12dbeaf674e2f923f6cc8d35548ed995162d07f8200ea4295e6d76b1ccc99b",
+      "bytes": 370360,
+      "width_px": 375,
+      "height_px": 3599,
+      "full_page": true,
+      "visually_inspected": true
+    }
+  ],
+  "visual_review": {
+    "reviewer_kind": "AI visual inspection of the five rendered PNG files; not human acceptance or clinical review",
+    "all_five_images_opened_and_inspected": true,
+    "observations": [
+      "Desktop collapsed: exact TRIUMPH-5, two original model records, failed Kimi response, N/A and unresolved actual result are visible. All three modules fit in 1440 x 900.",
+      "Desktop expanded: Flash retains its original short rationale and three specific recorded references, each with original and captured links. No references or match are fabricated for the failed Kimi record.",
+      "Public mobile 375px: both controls and the three Flash references remain readable in vertical flow with no whole-document horizontal overflow.",
+      "Standalone desktop: the exact clinical question, original output table, separate Kimi empty-state and Flash rationale with three references, pending result and provenance notes are rendered.",
+      "Standalone mobile 375px: facts and references flow vertically; comparison table scrolls inside its container. Right-side status and timestamp columns require table scrolling, while the document does not overflow.",
+      "Every image explicitly states Actual records / local candidate / not deployed / not clinically validated. These are locally rendered existing actual records, not live-production screenshots."
+    ]
+  },
+  "automated_render_checks": {
+    "status": "passed",
+    "all_requests_intercepted": true,
+    "get_requests": 18,
+    "external_resource_requests": 0,
+    "public_desktop_collapsed_module_boxes": [
+      {
+        "top": 262.578125,
+        "bottom": 444.0625
+      },
+      {
+        "top": 453.0625,
+        "bottom": 726.640625
+      },
+      {
+        "top": 735.640625,
+        "bottom": 889.109375
+      }
+    ],
+    "public_desktop_collapsed_max_bottom_px": 889.109375,
+    "public_mobile_no_document_overflow": {
+      "viewport": 375,
+      "document": 375,
+      "body": 375
+    },
+    "standalone_javascript_enabled": false,
+    "standalone_resource_request_counts": [
+      1,
+      1
+    ],
+    "standalone_mobile_table_scroll": {
+      "container_width": 343,
+      "content_width": 800,
+      "overflow_x": "auto"
+    },
+    "actual_controls": 2,
+    "failed_controls": 1,
+    "model_reference_counts": {
+      "deepseek-v4.1-flash": 3,
+      "kimi-k3": 0
+    },
+    "reference_expansion_network_requests": 0,
+    "prediction_match_badges": 0,
+    "probability_and_confidence": "N/A",
+    "clinical_outcome": "unresolved",
+    "browser_receipt_sha256": "ac76c606697d50d3d242b29341ab0f9d82bee8f591dff610960d55ccce76c6a2"
+  },
+  "provider_calls": 0,
+  "new_predictions": 0,
+  "database_accesses": 0,
+  "production_server_requests": 0,
+  "human_user_acceptance_created": false,
+  "clinical_prediction_validated": false,
+  "deployment_completed": false,
+  "root_visual_review": {
+    "reviewer_kind": "AI visual inspection; not independent human or scientific review",
+    "checked_at_utc": "2026-10-26T20:56:03.814057+00:00",
+    "images_opened": [
+      "public-desktop-collapsed.png",
+      "public-desktop-expanded.png",
+      "public-mobile-expanded.png",
+      "brief-desktop.png",
+      "brief-mobile.png"
+    ],
+    "status": "passed",
+    "notes": [
+      "Desktop default comparison stays within1440x900; expansion adds model-owned references in its original row.",
+      "Mobile references wrap and the standalone comparison table scrolls inside its container.",
+      "Failed Kimi remains Uncertain with no references; unresolved outcomes receive no hit or ranking."
+    ]
+  }
+}

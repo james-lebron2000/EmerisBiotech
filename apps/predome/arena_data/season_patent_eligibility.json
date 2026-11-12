@@ -1,0 +1,85 @@
+[
+  {
+    "project_id": "datopotamab-deruxtecan",
+    "drug": "datopotamab deruxtecan",
+    "patent_pack_status": "ready",
+    "added_slots": 2
+  },
+  {
+    "project_id": "inavolisib",
+    "drug": "inavolisib",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "mevrometostat",
+    "drug": "mevrometostat",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "glofitamab",
+    "drug": "glofitamab",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "imlunestrant",
+    "drug": "imlunestrant",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "giredestrant",
+    "drug": "giredestrant",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "mezigdomide",
+    "drug": "mezigdomide",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "litifilimab",
+    "drug": "litifilimab",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "camizestrant",
+    "drug": "camizestrant",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "riliprubart",
+    "drug": "riliprubart",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "depemokimab",
+    "drug": "depemokimab",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  },
+  {
+    "project_id": "volrustomig",
+    "drug": "volrustomig",
+    "patent_pack_status": "blocked_no_eligible_patent_evidence",
+    "added_slots": 0,
+    "reason": "No eligible drug-linked, source-reviewed experiment card in the current public catalog; no patent output is fabricated."
+  }
+]

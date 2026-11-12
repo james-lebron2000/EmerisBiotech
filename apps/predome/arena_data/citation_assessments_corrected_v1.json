@@ -1,0 +1,85 @@
+{
+  "schema_version": "arena-citation-assessments-v1",
+  "reviews": [
+    {
+      "run_id": "run-e52e47899feb4976b3ca4b4bed1bb7a3",
+      "reviewer_id": "codex-selected-source-check-corrected-20261023",
+      "reviewer_kind": "ai",
+      "assessment": {
+        "scope": "frozen_packet_claim_source_pairs",
+        "claim_inventory_complete": false,
+        "inventory_method": "AI selected-claim audit: exactly three literal claim-source pairs from this corrected AVANZAR narrative, selected to cover registry endpoint, prior OS result and transferability. Checked each frozen packet anchor and SHA-256-matched source: ClinicalTrials.gov JSON primaryOutcomes, TROPION-Lung01 full-text XML Table 2, and the archived AstraZeneca Lung04 web-tool extract (not original HTTP bytes). Human reviewers: 0. No full claim census, whole-output accuracy, forecast calibration or clinical validation; source checks are limited to these anchors.",
+        "run_output_sha256": "90e665bf25c74683b1c024f08b4f67ba2bc4c6b6948a75d26d371d67650a9853",
+        "pairs": [
+          {
+            "claim_id": "claim-1",
+            "claim_text": "终点确为BICR评估的非鳞TROP2阳性PFS",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+            "verdict": "supports",
+            "packet_excerpt": "Selected primary endpoint: Progression-Free Survival (PFS) by blinded independent central review (BICR) in the non-squamous TROP2 biomarker positive population.",
+            "note": "冻结摘要与同哈希原始注册 JSON 的 protocolSection.outcomesModule.primaryOutcomes[0].measure 一致，支持所述终点及分析人群；不由此证明该终点已达标或具体统计检验规则。"
+          },
+          {
+            "claim_id": "claim-2",
+            "claim_text": "且Lung01总体OS为阴性",
+            "source_id": "dato-lung01-nsq-corrected-20261023",
+            "source_sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+            "verdict": "supports",
+            "packet_excerpt": "In the overall population, OS was not significantly improved: HR 0.94 (95% CI 0.78-1.14), p=0.530.",
+            "note": "已核对同哈希全文 XML table-wrap id=tbl2 的 All Patients 总体 OS 列：死亡 HR 0.94、95% CI 0.78–1.14、P=.530。这里的阴性仅指未显示统计学显著 OS 改善，不等于证明无任何疗效，也不能当作 AVANZAR 结果。"
+          },
+          {
+            "claim_id": "claim-3",
+            "claim_text": "均不覆盖本目标的一线人群、TROP2阳性富集、联合方案与pembro+培美曲塞+铂类强对照",
+            "source_id": "dato-lung04-firstline-triplet",
+            "source_sha256": "c06283aa46646a0d6c52c2db4ee1f6d132f37724792227946fa4546385f9acfb",
+            "verdict": "partially_supports",
+            "packet_excerpt": "In the small phase Ib TROPION-Lung04 first-line subgroup, Dato-DXd + durvalumab + carboplatin had confirmed-or-pending-confirmation responses in 10/13 patients (76.9%, 95% CI 46.2-95.0).",
+            "note": "冻结摘要及同哈希 AZ 网页提取快照 L191、L204–216 确有初治患者与 Dato-DXd+durvalumab+carboplatin 三联，因此不能将这句话理解为完全缺乏一线或该联合方案资料。其不限定本目标 TROP2 阳性非鳞人群、没有所述随机标准对照及目标 PFS 比较的局限得到支持；只能说尚未覆盖全部目标条件。该来源是网页工具提取快照，本次未重新取得原始 HTTP 页面。"
+          }
+        ]
+      }
+    },
+    {
+      "run_id": "run-50edd2bc2c3148e0980ab605c50edfb0",
+      "reviewer_id": "codex-selected-source-check-corrected-20261023",
+      "reviewer_kind": "ai",
+      "assessment": {
+        "scope": "frozen_packet_claim_source_pairs",
+        "claim_inventory_complete": false,
+        "inventory_method": "AI selected-claim audit: exactly three literal claim-source pairs from this corrected AVANZAR narrative, selected to cover prior randomized PFS, early combination response and registry-versus-statistical-hypothesis wording. Checked frozen packet anchors and SHA-256-matched ClinicalTrials.gov JSON, TROPION-Lung01 full-text XML Table 2/Patients section, and archived AstraZeneca Lung04 web-tool extract (not original HTTP bytes). Human reviewers: 0. Not a full factual-claim census, whole-output accuracy, prediction validation or ranking.",
+        "run_output_sha256": "666ee8c0d777b92afc31618d5e0eff7626742d5b986d7b9b3e38684b34c4cdc3",
+        "pairs": [
+          {
+            "claim_id": "claim-1",
+            "claim_text": "间接证据显示Dato-DXd在非鳞状NSCLC后线单药对比多西他赛有PFS获益（HR 0.63）",
+            "source_id": "dato-lung01-nsq-corrected-20261023",
+            "source_sha256": "5d9599dd41de1cec00ea34b6e12faa812ce45813ed484d5790dda648a5599066",
+            "verdict": "supports",
+            "packet_excerpt": "TROPION-Lung01 was a randomized comparison of Dato-DXd monotherapy versus docetaxel after prior NSCLC therapy. Table 2 reports 234 patients per arm in the nonsquamous histology efficacy subgroup, not 229 versus 232. Median PFS was 5.5 versus 3.6 months, HR 0.63 (95% CI 0.51-0.79).",
+            "note": "同哈希全文 XML 的 Patients 节确认既往治疗；Table 2 Nonsquamous Histology 列为每组234例，PFS 5.5对3.6个月、HR 0.63（95% CI 0.51–0.79）。这些核对支持该间接研究描述，不证明 AVANZAR 的富集人群或一线联合方案有效。"
+          },
+          {
+            "claim_id": "claim-2",
+            "claim_text": "且Ib期三联方案在初治患者中显示较高缓解率",
+            "source_id": "dato-lung04-firstline-triplet",
+            "source_sha256": "c06283aa46646a0d6c52c2db4ee1f6d132f37724792227946fa4546385f9acfb",
+            "verdict": "supports",
+            "packet_excerpt": "In the small phase Ib TROPION-Lung04 first-line subgroup, Dato-DXd + durvalumab + carboplatin had confirmed-or-pending-confirmation responses in 10/13 patients (76.9%, 95% CI 46.2-95.0).",
+            "note": "同哈希 AZ 网页提取快照 L191、L204–214 报告初治三联组13例、10例部分缓解、ORR 76.9%（95% CI 46.2–95.0），含已确认与待确认缓解。支持观察到缓解的描述；较高只能作此小样本比例的定性描述，不能理解为已证明优于标准治疗或已转化为 PFS 获益。本次未重新取得原始 HTTP 页面。"
+          },
+          {
+            "claim_id": "claim-3",
+            "claim_text": "且注册信息显示4个主要假设",
+            "source_id": "registry-NCT05687266",
+            "source_sha256": "8522ddd9dc96da091b64ba9b73a6aa3decca003f4a2836d304f429c6ad8c4ed4",
+            "verdict": "partially_supports",
+            "packet_excerpt": "There are 4 registered primary-outcome entries. Four primary hypotheses and biomarker enrichment; multiplicity allocation, event count and target effect unknown.",
+            "note": "模型确实复述了冻结摘要，但同哈希原始 JSON 的 primaryOutcomes 直接核实的是四项主要结局条目：TROP2阳性非鳞人群的PFS/OS，以及非鳞人群的PFS/OS。登记条目本身不能核实独立统计检验假设的数量、检验层级或α分配；需要操作性方案/SAP。此处标注来源摘要到统计术语的限度，不将其称为凭空引用。"
+          }
+        ]
+      }
+    }
+  ]
+}

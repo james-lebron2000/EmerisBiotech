@@ -1,0 +1,21 @@
+{
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "bundle_bytes": 106360,
+  "bundle_exported_at_utc": "2026-10-22T18:46:13.098683+00:00",
+  "bundle_sha256": "1a0144906b743e03c50b13b2c1e9554ec488381b88e4939d9d8ec53fa116825c",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "clinical_prediction_validated": false,
+  "formal_assigned_records": 48,
+  "formal_trials": 12,
+  "generated_at_utc": "2026-10-22T18:48:48+00:00",
+  "historical_replays": 8,
+  "ledger_writes": 0,
+  "new_predictions_generated": false,
+  "original_prediction_time_proven": false,
+  "provider_calls": 0,
+  "schema_version": "predome-public-bundle-rfc3161-1",
+  "time_scope": "public_export_existence_only",
+  "timestamp_response_sha256": "958a61b460e0f642569df9cd2b61882e2dafc18796e88aae90d591a17fcd4ec1",
+  "tsa": "FreeTSA",
+  "verification_method": "openssl_ts_verify_data_and_query"
+}

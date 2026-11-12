@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:predome:patent-experiment-card:1.0",
+  "title": "Patent experiment card with explicit review and missingness",
+  "type": "object",
+  "required": ["evidence_id", "publication_number", "section_type", "experiment_system", "species_or_cell", "sample_size", "dose", "comparator", "endpoint", "result", "unit", "missing_fields", "source_url", "pdf_page_1_based", "source_sha256", "public_available_at", "review", "eligible_for_forecast"],
+  "properties": {
+    "evidence_id": {"type": "string", "minLength": 1},
+    "publication_number": {"type": "string", "pattern": "^[A-Z]{2}[0-9]{5,14}[A-Z][0-9]?$"},
+    "section_type": {"enum": ["clinical_study", "preclinical_experiment", "completed_experiment", "prophetic_example", "claim", "background", "example_requires_completed_vs_prophetic_classification"]},
+    "experiment_system": {"type": ["string", "null"]},
+    "species_or_cell": {"type": ["string", "null"]},
+    "sample_size": {"type": ["object", "integer", "null"]},
+    "dose": {"type": ["object", "string", "null"]},
+    "comparator": {"type": ["string", "null"]},
+    "endpoint": {"type": ["string", "null"]},
+    "result": {"type": ["object", "null"]},
+    "unit": {"type": ["string", "null"]},
+    "missing_fields": {"type": "array", "items": {"type": "string"}},
+    "source_url": {"type": "string", "format": "uri"},
+    "pdf_page_1_based": {"type": "integer", "minimum": 1},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "public_available_at": {"type": "string", "minLength": 10},
+    "review": {"type": "object", "required": ["status", "reviewer"], "properties": {"status": {"type": "string"}, "reviewer": {"type": ["string", "array", "null"], "items": {"type": "string"}}, "human_review_count": {"type": "integer", "minimum": 0}, "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "eligible_for_forecast": {"type": "boolean"}
+  }
+}

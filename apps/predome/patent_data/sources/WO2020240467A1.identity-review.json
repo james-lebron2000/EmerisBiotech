@@ -1,0 +1,216 @@
+{
+  "schema_version": "predome-patent-ai-source-review-1.0",
+  "review_id": "dato-dxd-two-agent-20261022",
+  "review_type": "two_agent_visual_source_check",
+  "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+  "publication_number": "WO2020240467A1",
+  "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+  "identity_decision": "supported_by_explicit_development_code_and_trial_id",
+  "reviewers": [
+    {
+      "actor_id": "/root/patent_infra_plan",
+      "actor_type": "ai",
+      "role": "patent_identity_and_numerical_source_verifier",
+      "status": "completed",
+      "scope": "Primary source alias lookup and original PDF visual verification, including pages 85,87,88,93,94"
+    },
+    {
+      "actor_id": "/root",
+      "actor_type": "ai",
+      "role": "separate_context_source_reviewer",
+      "status": "completed",
+      "scope": "Independently opened pages 87,88,93,94; checked NCI code names and live ClinicalTrials.gov intervention/alias/program mapping",
+      "confirmation_basis": "Parent collaboration message explicitly confirms each page, dose denominator, ORR, CI, response-evaluable definition and official alias checks"
+    }
+  ],
+  "same_base_model_correlation_disclosed": true,
+  "independence_limit": "Two separately executed AI roles share the same base model and may share systematic errors; this is not independent human scientific review.",
+  "human_review_count": 0,
+  "clinical_prediction_validated": false,
+  "research_use_only": true,
+  "drug_mapping": {
+    "candidate_name": "datopotamab deruxtecan",
+    "aliases": [
+      "datopotamab deruxtecan",
+      "Dato-DXd",
+      "DS-1062",
+      "DS-1062a",
+      "DS1062a",
+      "datopotamab"
+    ],
+    "status": "ai_verified_explicit_code_and_trial_identity",
+    "reviewer": [
+      "/root/patent_infra_plan",
+      "/root"
+    ],
+    "reviewed_at": "2026-10-22T15:51:33.359677+00:00",
+    "basis": "Original patent ADC (1) = DS-1062a and NCT03401385 / DS1062-A-J101; official NCI and ClinicalTrials.gov explicitly connect the same codes to datopotamab deruxtecan. No later secondary patent cross-reference is required.",
+    "sources": [
+      {
+        "source_id": "patent",
+        "url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf",
+        "public_available_at": "2020-12-03",
+        "raw_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+        "role": "original_patent_explicit_code_and_clinical_results"
+      },
+      {
+        "source_id": "nci",
+        "url": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/datopotamab-deruxtecan",
+        "public_available_at": "2026-10-22T15:47:12.656710+00:00",
+        "raw_sha256": "577471680947142824556fb2b54b808e73ef66c5f7c58f274dd845afa792bad8",
+        "retrieved_at": "2026-10-22T15:47:12.656710+00:00",
+        "role": "official_canonical_drug_and_development_aliases",
+        "availability_basis": "Conservative retrieval timestamp; historical webpage version not verified"
+      },
+      {
+        "source_id": "trial",
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT03401385",
+        "public_available_at": "2026-10-22T15:47:13.148202+00:00",
+        "raw_sha256": "16cc8336d142898229b7112d46bbca5a73e9d163ddc3a352e066126023c7958d",
+        "retrieved_at": "2026-10-22T15:47:13.148202+00:00",
+        "role": "official_trial_id_program_id_and_intervention_aliases",
+        "availability_basis": "Conservative retrieval timestamp; historical registry versions not fetched"
+      }
+    ],
+    "document_evidence": [
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+        "pdf_page_1_based": 85,
+        "location": "Example 1 [0410]-[0411]",
+        "observation": "ADC (1) uses heavy-chain SEQ ID NO 45 and light-chain SEQ ID NO 46; DAR 3.5–4.5. ADC (2), DAR 6.5–8.0, must not be substituted.",
+        "public_available_at": "2020-12-03"
+      },
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+        "pdf_page_1_based": 87,
+        "location": "Example 4 [0419]",
+        "observation": "Antibody-drug conjugate (1) is explicitly also referred to as DS-1062a.",
+        "public_available_at": "2020-12-03"
+      },
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+        "pdf_page_1_based": 88,
+        "location": "Example 5 [0425]",
+        "observation": "First-in-human DS-1062a study explicitly identifies NCT03401385.",
+        "public_available_at": "2020-12-03"
+      },
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+        "pdf_page_1_based": 93,
+        "location": "Example 7 [0455]-[0458], Table 2",
+        "observation": "Study DS1062-A-J101; cutoff 2019-11-16. 95 treated; 88 response evaluable. 6 mg/kg: 5/18, 27.8%, 95% CI 9.7–53.5. 8 mg/kg: 13/34, 38.2%, 95% CI 22.2–56.4. Investigator-assessed unconfirmed responses.",
+        "public_available_at": "2020-12-03"
+      },
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+        "pdf_page_1_based": 94,
+        "location": "[0459] and Table 2 footnote",
+        "observation": "Response evaluable requires baseline and post-baseline assessment, or treatment discontinuation; confidence intervals are exact Clopper-Pearson.",
+        "public_available_at": "2020-12-03"
+      }
+    ]
+  },
+  "page_checks": [
+    {
+      "pdf_page_1_based": 85,
+      "printed_page": 83,
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=85",
+      "location": "Example 1 [0410]-[0411]",
+      "observation": "ADC (1) uses heavy-chain SEQ ID NO 45 and light-chain SEQ ID NO 46; DAR 3.5–4.5. ADC (2), DAR 6.5–8.0, must not be substituted.",
+      "preview_relative_path": "receipts/review/WO2020240467A1-p85.png",
+      "preview_sha256": "d596ee069d3404ac2e281efb5098bd000f4f428e9f4aa1556a3352f467b3beb7",
+      "ai_role_checks": 1
+    },
+    {
+      "pdf_page_1_based": 87,
+      "printed_page": 85,
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+      "location": "Example 4 [0419]",
+      "observation": "Antibody-drug conjugate (1) is explicitly also referred to as DS-1062a.",
+      "preview_relative_path": "receipts/review/WO2020240467A1-p87.png",
+      "preview_sha256": "0b696854891b93b6dcf0106137821308747747ebdcfc1e746e1a02e0389ef206",
+      "ai_role_checks": 2
+    },
+    {
+      "pdf_page_1_based": 88,
+      "printed_page": 86,
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=88",
+      "location": "Example 5 [0425]",
+      "observation": "First-in-human DS-1062a study explicitly identifies NCT03401385.",
+      "preview_relative_path": "receipts/review/WO2020240467A1-p88.png",
+      "preview_sha256": "162f1571a6767633538ccee210a26f0d773c0d0af84991ad7b579127117a111f",
+      "ai_role_checks": 2
+    },
+    {
+      "pdf_page_1_based": 93,
+      "printed_page": 91,
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+      "location": "Example 7 [0455]-[0458], Table 2",
+      "observation": "Study DS1062-A-J101; cutoff 2019-11-16. 95 treated; 88 response evaluable. 6 mg/kg: 5/18, 27.8%, 95% CI 9.7–53.5. 8 mg/kg: 13/34, 38.2%, 95% CI 22.2–56.4. Investigator-assessed unconfirmed responses.",
+      "preview_relative_path": "receipts/review/WO2020240467A1-p93.png",
+      "preview_sha256": "e97f27e9f161d3248c87b900ffbb26ba7cc1f6b93a5db6a2142fae498d561d58",
+      "ai_role_checks": 2
+    },
+    {
+      "pdf_page_1_based": 94,
+      "printed_page": 92,
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+      "location": "[0459] and Table 2 footnote",
+      "observation": "Response evaluable requires baseline and post-baseline assessment, or treatment discontinuation; confidence intervals are exact Clopper-Pearson.",
+      "preview_relative_path": "receipts/review/WO2020240467A1-p94.png",
+      "preview_sha256": "777c22542048cb2df5dd7637bf2907bdb2f29d15490266a1a4d8e0c12e79b11c",
+      "ai_role_checks": 2
+    }
+  ],
+  "official_identity_checks": [
+    {
+      "source_id": "nci",
+      "canonical_name": "datopotamab deruxtecan-dlnk",
+      "development_codes": [
+        "DS-1062",
+        "DS-1062a"
+      ],
+      "abbreviation": "Dato-DXd"
+    },
+    {
+      "source_id": "trial",
+      "trial_id": "NCT03401385",
+      "program_id": "DS1062-A-J101",
+      "intervention_name": "Datopotamab Deruxtecan (Dato-DXd)",
+      "intervention_other_name": "DS1062a",
+      "last_update_submitted": "2026-08-28",
+      "last_update_posted": "2026-09-01",
+      "scope": "Identity fields only; current trial status, outcomes and design are not used as historical efficacy evidence."
+    }
+  ],
+  "experiment_card_checks": [
+    {
+      "evidence_id": "WO2020240467A1-example7-orr",
+      "content_sha256": "bdd50a5f7225a9f7fcd2b7b3b25ba4be56c5e70510fe0a7f178170a0b9a6dae1",
+      "numerical_source_check": true,
+      "completed_experiment_check": true,
+      "source_pages": [
+        93,
+        94
+      ],
+      "endpoint_interpretation": "Unconfirmed, investigator-assessed phase 1 ORR in dose-specific response-evaluable groups; no randomized concurrent comparator."
+    }
+  ],
+  "remaining_limitations": [
+    "Human scientific review count is zero; the two AI roles share a base model.",
+    "The exact identity is verified through explicit development codes and trial identifiers; full sequence alignment to a regulatory INN document has not been performed.",
+    "Patent-reported, early-phase, nonrandomized unconfirmed ORR cannot be treated as a phase 3 treatment effect or a validated forecast.",
+    "The 88 response-evaluable patients span all reported dose groups; do not use 88 as the denominator for the selected 6 mg/kg (18) or 8 mg/kg (34) groups.",
+    "Whole-document OCR is complete but only selected source pages and the selected experiment card were checked; ADC (2) and other unreviewed examples are excluded.",
+    "Current NCI and ClinicalTrials.gov identity records are conservatively available only at their recorded retrieval timestamps; do not backdate into historical forecasts.",
+    "Official patent-family membership and legal status have not been verified.",
+    "No demonstrated incremental prediction accuracy or prospective clinical validation."
+  ],
+  "excluded_inferences": [
+    "ADC (2) efficacy or safety assigned to ADC (1)",
+    "Predicted human pharmacokinetics treated as observed human clinical data",
+    "Patent narrative comparisons to docetaxel treated as controlled causal estimates",
+    "Current registry outcomes imported into earlier evidence cutoffs"
+  ],
+  "receipt_sha256": "c061b893bb0959074dfcf546998ce49c713c13ace5c52de299a566d4ccad80a8"
+}

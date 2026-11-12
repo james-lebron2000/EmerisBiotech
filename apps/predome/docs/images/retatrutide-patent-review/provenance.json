@@ -1,0 +1,10 @@
+{
+  "scope": "Local candidate internal research page rendered with actual public patent catalogue metadata; unrelated application bootstrap uses isolated fixtures. No provider calls, real review approval or production deployment.",
+  "source_catalog_sha256": "7273cef079c1c06f873f96a67bf0dd5c0cda759f1b99e866df0f6120ba122efc",
+  "clinical_prediction_validated": false,
+  "human_scientific_review_count": 0,
+  "images": {
+    "result-viewport.png": "f739d02f8dbc4a05a0cbc1ae66e5b79a8df2f4d9ea47a57d6cbd073f9ca49353",
+    "mobile.png": "905a5bcf3f40844cd373843c89360aef08169399d12a4e806ea33410ff4384ec"
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "schema_version": "predome-patent-experiment-cards-1.0",
+  "experiment_cards": [
+    {
+      "publication_number": "WO2020240467A1",
+      "public_available_at": "2020-12-03",
+      "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=93",
+      "pdf_page_1_based": 93,
+      "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "text_sha256": "e10a61c47f1cd311ee6fa98a9cc029e9ea5cded859157c468970a506d3e2b740",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "reviewed_at": null,
+        "verification_actor": "AI assistant",
+        "verification_date": "2026-10-22",
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false,
+      "extraction_method": "OCR extraction with AI visual comparison against original PDF page",
+      "unit": "percent",
+      "evidence_id": "WO2020240467A1-example7-orr",
+      "example_id": "7",
+      "title": "一期 DS-1062a 研究中的未确认客观缓解率",
+      "section_type": "clinical_study",
+      "experiment_system": "Phase 1 open-label dose escalation/expansion; 6 mg/kg escalation cohort; 8 mg/kg escalation and expansion cohorts; response-evaluable analysis set",
+      "species_or_cell": "Human participants with previously treated NSCLC",
+      "trial_id": "NCT03401385",
+      "sample_size": {
+        "treated": 95,
+        "response_evaluable": 88,
+        "groups": [
+          {
+            "dose_mg_kg": 6,
+            "n": 18
+          },
+          {
+            "dose_mg_kg": 8,
+            "n": 34
+          }
+        ]
+      },
+      "dose": {
+        "route": "intravenous",
+        "groups_mg_kg": [
+          6,
+          8
+        ]
+      },
+      "comparator": null,
+      "endpoint": "Investigator-assessed unconfirmed objective response rate",
+      "result": {
+        "groups": [
+          {
+            "dose_mg_kg": 6,
+            "responders": 5,
+            "denominator": 18,
+            "percent": 27.8,
+            "ci95_percent": [
+              9.7,
+              53.5
+            ]
+          },
+          {
+            "dose_mg_kg": 8,
+            "responders": 13,
+            "denominator": 34,
+            "percent": 38.2,
+            "ci95_percent": [
+              22.2,
+              56.4
+            ]
+          }
+        ]
+      },
+      "data_cutoff": "2019-11-16",
+      "missing_fields": [
+        "Randomized concurrent comparator",
+        "Independent human scientific review",
+        "Full sequence alignment against regulatory INN reference"
+      ],
+      "source_location": "PDF page 93, printed page 91, Example 7, paragraphs [0455]-[0458], Table 2",
+      "source_excerpt": "5/18 subjects with response, all with PR; 13/34, all with PR.",
+      "interpretation_limit": "This is a patent-reported, early-phase, nonrandomized, unconfirmed response outcome. It is not a phase 3 treatment effect or a validated forecast.",
+      "supporting_pdf_pages": [
+        87,
+        88,
+        89,
+        93,
+        94
+      ],
+      "response_evaluable_definition": "Baseline and post-baseline tumor assessment, or discontinuation of study treatment (PDF p94, paragraph [0459])."
+    },
+    {
+      "evidence_id": "WO2020240467A1-example7-observed-human-pk-v1",
+      "publication_number": "WO2020240467A1",
+      "public_available_at": "2020-12-03",
+      "title": "DS-1062a phase 1 observed human pharmacokinetics under repeated 8 mg/kg dosing",
+      "source_url": "https://patents.google.com/patent/WO2020240467A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=94",
+      "pdf_page_1_based": 94,
+      "printed_page": 92,
+      "supporting_pdf_pages": [
+        87,
+        88,
+        93,
+        94,
+        129
+      ],
+      "source_sha256": "e63091e539fbb60bd77dca15d87ecdc67d74b640ad223d592678a179f611665a",
+      "text_sha256": "2e39b0e514cd0c89e407eee88e8ccf40af0daf17e568caa053baa54da0c1ece4",
+      "example_id": "7",
+      "section_type": "clinical_study",
+      "observation_status": "reported_observed_pk_measurements",
+      "experiment_system": "Preliminary single- and multiple-dose human pharmacokinetics evaluated using noncompartmental analysis in the phase 1 DS-1062a program. The quantitative passage describes repeated 8 mg/kg dosing; it does not specify the cycle used for the reported summaries.",
+      "species_or_cell": "Human subjects in the referenced phase 1 NSCLC clinical program; no animal data are included in this card.",
+      "trial_id": "NCT03401385",
+      "program_id": "DS1062-A-J101",
+      "sample_size": {
+        "overall_pk_analysis_subjects": 61,
+        "overall_pk_dose_range_mg_kg": [
+          0.27,
+          10
+        ],
+        "repeated_8_mg_kg_pk_subjects": null,
+        "n_per_reported_pk_parameter": null,
+        "denominator_limit": "61 refers to the overall PK analysis across doses, not the number contributing to each repeated 8 mg/kg parameter. ORR n=34, response-evaluable n=88 and treated n=95 are separate efficacy denominators and are not assigned to PK."
+      },
+      "dose": {
+        "route": "intravenous",
+        "amount": 8,
+        "unit": "mg/kg",
+        "exposure": "repeated dosing",
+        "quantitative_pk_cycle": null,
+        "quantitative_pk_dosing_interval_days": null,
+        "route_basis": "Phase 1 intravenous infusion described on PDF88 [0427].",
+        "schedule_limit": "The observed PK passage does not state the parameter cycle or exact dosing schedule. Figure23 shows a repeated profile on a 0/21/42/63-day axis; this card does not infer individual dosing times or use Example4 simulated q3w x3 as an observed regimen."
+      },
+      "comparator": null,
+      "co_measured_analytes": [
+        "DS-1062a ADC",
+        "total anti-TROP2 antibody",
+        "free drug (payload)"
+      ],
+      "endpoint": "Mean AUClast, Cmax and mean terminal half-life reported in the repeated DS-1062a 8 mg/kg PK passage; these are exposure parameters, not efficacy endpoints.",
+      "result": {
+        "reported_context": "Repeated DS-1062a 8 mg/kg; values are transcribed from [0462], not digitized from Figure23.",
+        "analyte_assignment_limit": "The passage names DS-1062a together with total antibody and payload profiles, but does not separately label the numerical parameter triple per analyte. No total-antibody or payload numeric parameters are generated.",
+        "parameters": [
+          {
+            "name": "AUClast",
+            "summary": "mean",
+            "value": 914,
+            "unit": "ug*day/mL",
+            "unit_as_printed": "μg·d/mL"
+          },
+          {
+            "name": "Cmax",
+            "summary": "mean",
+            "value": 196,
+            "unit": "ug/mL",
+            "unit_as_printed": "μg/mL"
+          },
+          {
+            "name": "terminal_half_life",
+            "summary": "mean",
+            "value": 5.45,
+            "unit": "day",
+            "unit_as_printed": "days"
+          }
+        ],
+        "reported_qualitative_observation": "DS-1062a and total anti-TROP2 antibody plasma levels were described as similar; free-drug exposure was described as lower. The patent interprets this as circulation stability; the card does not quantify a release fraction.",
+        "measurement_kind": "observed_human_pk"
+      },
+      "unit": "AUClast: ug*day/mL; Cmax: ug/mL; terminal half-life: day. Original printed microgram units were visually checked.",
+      "data_cutoff": null,
+      "data_cutoff_limit": "The preceding Example7 efficacy paragraph dates its response data to 2019-11-16. The PK subsection does not explicitly date the PK population or parameters; that efficacy cutoff is not silently assigned to PK.",
+      "missing_fields": [
+        "Repeated 8 mg/kg PK analysis group size and n contributing to each parameter",
+        "Cycle or dose instance used for the reported PK summary",
+        "Last sample time and exact AUClast integration interval",
+        "Per-subject PK concentrations, sampling schedule and missing-data handling",
+        "SD, SEM or CI of the reported parameters",
+        "Exact analyte-specific labeling of the numeric parameter triple",
+        "Explicit PK data cutoff date",
+        "Randomized concurrent comparator",
+        "Independent human scientific review and current clinical-target transport assessment"
+      ],
+      "source_location": "PDF94 / printed92, Example7, [0460]-[0463]. Figure23: PDF129 / drawing sheet24/24. Identity ADC(1)=DS-1062a: PDF87 / printed85 [0419]; phase1 trial and IV route: PDF88 / printed86 [0425]-[0427]; program identity: PDF93 / printed91 Table2 title.",
+      "source_discrepancies": [
+        {
+          "location": "PDF94 / printed92 [0462] Cmax unit",
+          "archived_ocr": "196 g/mL",
+          "original_page_visual": "196 μg/mL",
+          "action": "Use original-page microgram unit in this new candidate card; preserve archived OCR unchanged."
+        }
+      ],
+      "excluded_materials": [
+        {
+          "location": "PDF87-88, Example4 [0420] and continuation",
+          "reason": "Cynomolgus-monkey measurements feed target-mediated drug-disposition modeling and predicted human concentration profiles; not the observed human PK parameters in this card."
+        },
+        {
+          "location": "PDF93-94 efficacy Table2 and [0455]-[0459]",
+          "reason": "ORR and its dose-specific efficacy denominators remain in the existing ORR card; they are not reclassified as PK denominators."
+        },
+        {
+          "location": "Figure23 curve data",
+          "reason": "Only labels and context checked; no concentration values or error-bar type were digitized or inferred."
+        }
+      ],
+      "interpretation_limit": "Patent-reported preliminary human PK may inform an exposure hypothesis. It does not establish exposure-response, comparative efficacy, current phase3 dosing, a safety margin, primary PFS benefit, a clinical success probability or incremental forecasting accuracy. No extrapolation from 8 mg/kg single-agent early-phase PK to the AVANZAR combination target is performed.",
+      "extraction_method": "Unchanged archived OCR used for location; original PDF87/88/93/94/129 visually checked in two same-base AI role contexts. Numeric units come from PDF94, not OCR or Figure23 digitization.",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "human_review_count": 0,
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false,
+      "research_use_only": true
+    }
+  ],
+  "document_observations": [
+    {
+      "observation": "Example 4 calls antibody-drug conjugate (1) DS-1062a. Example 7 reports a phase 1 response dataset, not a randomized phase 3 effect.",
+      "pdf_page_1_based": 87,
+      "paragraph": "[0419]",
+      "review_status": "AI page visual check; no human scientific review"
+    }
+  ],
+  "mapping_observations": [
+    {
+      "kind": "explicit_development_code_in_document",
+      "code": "DS-1062a",
+      "pdf_page_1_based": 87,
+      "paragraph": "[0419]",
+      "source_url": "https://patentimages.storage.googleapis.com/96/41/bb/a313ce7ab96353/WO2020240467A1.pdf#page=87",
+      "public_available_at": "2020-12-03"
+    },
+    {
+      "kind": "sponsor_alias_confirmation",
+      "aliases": [
+        "datopotamab deruxtecan",
+        "Dato-DXd",
+        "DS-1062"
+      ],
+      "source_url": "https://daiichisankyo.us/documents/36782/37797/DS-1062%2BPh3%2BTROPION-Lung%2B01%2BTrial%2BInitiation%2BPress%2BRelease%2BFINAL.pdf/f218673c-a0e1-9aab-701a-a63dcd24fc61?t=1607931412596",
+      "pdf_page_1_based": 1,
+      "public_available_at": "2020-12-14",
+      "limitation": "Confirms development aliases; exact sequence/structure and patent-scope review remain pending."
+    }
+  ],
+  "analysis_id": "dato-orr-observed-human-pk-20261027-v2"
+}

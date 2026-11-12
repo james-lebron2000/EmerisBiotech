@@ -1,0 +1,288 @@
+{
+  "schema_version": "predome-patent-ai-source-review-1.1",
+  "review_id": "retatrutide-ex12-two-ai-20261027-v1",
+  "review_type": "two_agent_visual_source_check",
+  "reviewed_at": "2026-10-26T16:55:51.222863+00:00",
+  "publication_number": "WO2019125938A1",
+  "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+  "identity_decision": "supported_by_ai_modified_peptide_structure_check",
+  "identity_analysis": {
+    "schema_version": "predome-modified-peptide-comparison-1",
+    "reference_source_sha256": "a62a49cec0c1b3afbe8a2571f3aad2463a178c7139f861958e6b2de897eb46bc",
+    "reference_pdf_page_1_based": 123,
+    "candidate_source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+    "candidate_identity": {
+      "example_id": "12",
+      "sequence_id": "SEQ ID NO:17",
+      "definition_pdf_pages": [
+        22,
+        37
+      ]
+    },
+    "reference": {
+      "residues": [
+        "L-Tyr",
+        "Aib",
+        "L-Gln",
+        "Gly",
+        "L-Thr",
+        "L-Phe",
+        "L-Thr",
+        "L-Ser",
+        "L-Asp",
+        "L-Tyr",
+        "L-Ser",
+        "L-Ile",
+        "2-methyl-L-Leu",
+        "L-Leu",
+        "L-Asp",
+        "L-Lys",
+        "L-Lys",
+        "L-Ala",
+        "L-Gln",
+        "Aib",
+        "L-Ala",
+        "L-Phe",
+        "L-Ile",
+        "L-Glu",
+        "L-Tyr",
+        "L-Leu",
+        "L-Leu",
+        "L-Glu",
+        "Gly",
+        "Gly",
+        "L-Pro",
+        "L-Ser",
+        "L-Ser",
+        "Gly",
+        "L-Ala",
+        "L-Pro",
+        "L-Pro",
+        "L-Pro",
+        "L-Ser"
+      ],
+      "n_terminus": "free_amine",
+      "c_terminus": "amide",
+      "conjugations": [
+        {
+          "position": 17,
+          "attachment_atom": "N6",
+          "linker_from_peptide": [
+            "AEEA",
+            "L-gamma-Glu"
+          ],
+          "glutamate_alpha_carboxyl": "free",
+          "lipid_carbons": 20,
+          "lipid_distal_carboxyl": "free"
+        }
+      ]
+    },
+    "candidate": {
+      "residues": [
+        "L-Tyr",
+        "Aib",
+        "L-Gln",
+        "Gly",
+        "L-Thr",
+        "L-Phe",
+        "L-Thr",
+        "L-Ser",
+        "L-Asp",
+        "L-Tyr",
+        "L-Ser",
+        "L-Ile",
+        "2-methyl-L-Leu",
+        "L-Leu",
+        "L-Asp",
+        "L-Lys",
+        "L-Lys",
+        "L-Ala",
+        "L-Gln",
+        "Aib",
+        "L-Ala",
+        "L-Phe",
+        "L-Ile",
+        "L-Glu",
+        "L-Tyr",
+        "L-Leu",
+        "L-Leu",
+        "L-Glu",
+        "Gly",
+        "Gly",
+        "L-Pro",
+        "L-Ser",
+        "L-Ser",
+        "Gly",
+        "L-Ala",
+        "L-Pro",
+        "L-Pro",
+        "L-Pro",
+        "L-Ser"
+      ],
+      "n_terminus": "free_amine",
+      "c_terminus": "amide",
+      "conjugations": [
+        {
+          "position": 17,
+          "attachment_atom": "N6",
+          "linker_from_peptide": [
+            "AEEA",
+            "L-gamma-Glu"
+          ],
+          "glutamate_alpha_carboxyl": "free",
+          "lipid_carbons": 20,
+          "lipid_distal_carboxyl": "free"
+        }
+      ]
+    },
+    "reference_name": "retatrutide",
+    "reference_formula": "C221H342N46O68",
+    "comparison": {
+      "schema_version": "predome-modified-peptide-comparison-1",
+      "matches": true,
+      "differing_fields": [],
+      "method": "exact_transcribed_features_not_automated_structure_recognition",
+      "human_scientific_review": false,
+      "clinical_prediction_validated": false
+    },
+    "scope": "Exact comparison of AI-transcribed complete molecular features; not automated image recognition or proof of clinical formulation/batch identity"
+  },
+  "reviewers": [
+    {
+      "actor_id": "/root",
+      "actor_type": "ai",
+      "role": "primary_document_structure_and_numeric_verifier",
+      "status": "completed",
+      "scope": "Actually viewed WHO123 and patent22,28,29,30,37; compared modified structure, observed EC50/SEM/n and retained source caveats"
+    },
+    {
+      "actor_id": "/root/data_gate_review",
+      "actor_type": "ai",
+      "role": "separate_context_original_page_reviewer",
+      "status": "completed",
+      "scope": "Independently checked WHO123, Example12/SEQ17, Example1 exclusion and Table3 original pages28-30; actual observation record retained"
+    }
+  ],
+  "same_base_model_correlation_disclosed": true,
+  "independence_limit": "Separate AI role contexts share a base model and may share systematic error; this is not independent human scientific review.",
+  "human_review_count": 0,
+  "clinical_prediction_validated": false,
+  "research_use_only": true,
+  "drug_mapping": {
+    "candidate_name": "retatrutide",
+    "aliases": [
+      "retatrutide"
+    ],
+    "status": "ai_verified_modified_peptide_structure",
+    "reviewer": [
+      "/root",
+      "/root/data_gate_review"
+    ],
+    "reviewed_at": "2026-10-26T16:55:51.222863+00:00",
+    "basis": "Original Example12/SEQ17 modified peptide sequence and drawn conjugation agree with the official WHO proposed INN molecular definition. Other examples and unverified development-code aliases are excluded.",
+    "sources": [
+      {
+        "source_id": "patent",
+        "url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf",
+        "public_available_at": "2019-06-27",
+        "raw_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+        "role": "original_patent_exact_compound_and_reported_cell_experiment",
+        "original_relative_path": "receipts/review/retatrutide-20261027/WO2019125938A1.pdf"
+      },
+      {
+        "source_id": "who_inn128",
+        "url": "https://cdn.who.int/media/docs/default-source/international-nonproprietary-names-(inn)/pl128.pdf",
+        "public_available_at": "2023-01-20",
+        "raw_sha256": "a62a49cec0c1b3afbe8a2571f3aad2463a178c7139f861958e6b2de897eb46bc",
+        "retrieved_at": "2026-10-26T16:45:11.768669+00:00",
+        "role": "official_inn_modified_peptide_identity",
+        "availability_basis": "PDF2 publication notice explicitly dates publication 20.01.2023; volume year 2022 is not substituted",
+        "original_relative_path": "receipts/review/retatrutide-20261027/who-proposed-inn-128.pdf"
+      }
+    ],
+    "document_evidence": [
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=22",
+        "pdf_page_1_based": 22,
+        "location": "Example12 and SEQ17 structure",
+        "public_available_at": "2019-06-27"
+      },
+      {
+        "source_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=37",
+        "pdf_page_1_based": 37,
+        "location": "SEQ ID NO:17",
+        "public_available_at": "2019-06-27"
+      },
+      {
+        "source_url": "https://cdn.who.int/media/docs/default-source/international-nonproprietary-names-(inn)/pl128.pdf#page=123",
+        "pdf_page_1_based": 123,
+        "location": "Printed1051 retatrutide modified-residue and conjugation definition",
+        "public_available_at": "2023-01-20"
+      }
+    ]
+  },
+  "page_checks": [
+    {
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "pdf_page_1_based": 22,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/patent-p022.png",
+      "preview_sha256": "55ac8d6626af64cf79cdd0bd9bb704fc448c191bedb1f9525fbb47f5a04c44dc"
+    },
+    {
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "pdf_page_1_based": 28,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/patent-p028.png",
+      "preview_sha256": "7a78eabdf72aa54123c2a480454e5276d2ca6e7339e56cf044900b1c85c5886b"
+    },
+    {
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "pdf_page_1_based": 29,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/patent-p029.png",
+      "preview_sha256": "41442a4284d1c37c7c17ca5b77cd9a908a2bded323ec5713af54095ece9e3c7a"
+    },
+    {
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "pdf_page_1_based": 30,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/patent-p030.png",
+      "preview_sha256": "e8ba2877e8eb39b02f4ee98a03bec093b72a1399315a73d7ba3a6a1e1f0f4662"
+    },
+    {
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "pdf_page_1_based": 37,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/patent-p037.png",
+      "preview_sha256": "398ffcb24b64a254b88c5a8b84b58cd129173f42a2216ed5c1b3a7e356311cbc"
+    },
+    {
+      "source_sha256": "a62a49cec0c1b3afbe8a2571f3aad2463a178c7139f861958e6b2de897eb46bc",
+      "pdf_page_1_based": 123,
+      "preview_relative_path": "receipts/review/retatrutide-20261027/who-p123.png",
+      "preview_sha256": "d95f977d8ecbaf76e9d138fb9b0796eee9eecdd55501bf5f783a4c04c3944c73"
+    }
+  ],
+  "experiment_cards_source": {
+    "filename": "WO2019125938A1.retatrutide-ex12-v1.json",
+    "sha256": "899c7b066d640f307db03a6b7c65e391b746e95855d5ef61af721c641155f911"
+  },
+  "card_selection_reason": "Only Example12/SEQ17 Table3. Prior Example1/SEQ7 mouse card is retained as excluded evidence because its modified residue and linker chemistry differ from retatrutide.",
+  "experiment_card_checks": [
+    {
+      "evidence_id": "WO2019125938A1-example12-table3-camp-v1",
+      "content_sha256": "05f95d348d606b63fab643e8acf9b00212df75e85c06894dbd731ced3d42a354",
+      "numerical_source_check": true,
+      "completed_experiment_check": true
+    }
+  ],
+  "remaining_limitations": [
+    "Same-base AI source review only; zero human scientific reviewers",
+    "Reported engineered-cell EC50 is not a clinical endpoint or validated forecast probability",
+    "Independent experimental unit and raw concentration-response curves unavailable",
+    "Native-control range versus EC50 relationship is unexplained; original units retained",
+    "WHO identifies a molecular entity, not clinical formulation, salt batch, purity or manufacturing equivalence",
+    "Only retatrutide name is source-verified here; development-code aliases, other examples, assays and current patent rights are not inferred"
+  ],
+  "source_observation_record": {
+    "path": "receipts/review/retatrutide-20261027/data-gate-table3-review.json",
+    "sha256": "d609b69b758ae8cb839f2bb8e6c3662e0521f10597d9332c8f1c3375a9215022"
+  },
+  "receipt_sha256": "41122925ffb5754c9fa38a45d66bfeb3aed6f17031c40958ea0ea55d6fb535d3"
+}

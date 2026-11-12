@@ -3,7 +3,7 @@
   const el = id => document.getElementById(id), node = (tag, value, cls) => {
     const n = document.createElement(tag); n.textContent = value; if (cls) n.className = cls; return n;
   };
-  const names = {beta_pooled:'统计 · 合并贝叶斯基准',beta_area:'统计 · 适应症收缩基准',logistic_l2:'训练 · L2 逻辑回归',extra_trees:'训练 · Extra Trees', 'deepseek-flash':'DeepSeek Flash 零样本回放','deepseek-v4-pro':'DeepSeek Pro 零样本回放'};
+  const names = {beta_pooled:'统计 · 合并贝叶斯基准',beta_area:'统计 · 适应症收缩基准',logistic_l2:'训练 · L2 逻辑回归',extra_trees:'训练 · Extra Trees', 'deepseek-flash':'deepseek-flash','deepseek-v4-pro':'deepseek-v4-pro'};
   const num = x => x == null ? '无法估计' : Number(x).toFixed(3);
   fetch('/api/predome/historical').then(r => { if (!r.ok) throw Error('历史评测 API 不可用'); return r.json(); }).then(envelope => {
     if (!envelope.integrity_verified) throw Error('完整性校验失败');

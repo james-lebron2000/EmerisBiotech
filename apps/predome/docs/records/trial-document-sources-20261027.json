@@ -1,0 +1,479 @@
+{
+  "schema_version": "predome.trial-document-source-observations-1",
+  "as_of_utc": "2026-10-27T01:41:56.665336+00:00",
+  "scope": "Current source acquisition and document indexing only; GitHub candidate without server deployment or new model calls",
+  "source_audit_freeze_manifest_sha256": "7ffc7118eaba34143530f7541218ab0d61727b9789dfa4521ca0688706010df6",
+  "current_target_observations": [
+    {
+      "nct_id": "NCT06662383",
+      "trial_name": "TRIUMPH-5",
+      "registry_source": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT06662383",
+        "sha256": "086ff3eefc7c1b00bfdd833c9bf194863df978f85176599d9cc22974a9c43339",
+        "retrieved_at_utc": "2026-10-27T01:08:56.622264+00:00"
+      },
+      "document_section_state": "absent_in_this_current_API_response",
+      "registered_primary_outcome_entry_count": 1,
+      "downloaded_matching_full_protocol": false,
+      "downloaded_matching_SAP": false,
+      "unknowns_not_resolved_by_acquired_protocol": [
+        "complete protocol/SAP applicable amendment and its date",
+        "primary analysis population and full estimand/intercurrent-event strategy",
+        "alpha allocation, sidedness and multiplicity/gatekeeping",
+        "analysis timing/event threshold and exact statistical success rule",
+        "raw CTIS redacted protocol and synopsis acquisition; publication/version dates and original PDF hash"
+      ],
+      "ctis_listing_observation": {
+        "source_url": "https://euclinicaltrials.eu/ctis-public/view/2024-511450-49-00",
+        "certainty": "current_visible_official_summary_observed_not_full_protocol_verified",
+        "observed_at_utc": "2026-10-27T01:19:42.048Z",
+        "protocol_name": "D1_Protocol 2024-511450-49-00_Redacted",
+        "protocol_type": "Protocol (for publication)",
+        "language": "English",
+        "file_type": "PDF",
+        "anchor_href": null,
+        "protocol_raw_acquired": false,
+        "source_pdf_sha256": null,
+        "source_observation_sha256": "f68f3b109e5c3f77c5395fdccec6bdab966dc9d507bfbb14935b36950cfa5ff0",
+        "objective_summary": "Visible official summary describes superiority of retatrutide MTD over tirzepatide MTD for body-weight change; full target statistical rule remains unverified."
+      }
+    },
+    {
+      "nct_id": "NCT05687266",
+      "trial_name": "AVANZAR",
+      "registry_source": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT05687266",
+        "sha256": "01ecf76165274891716c8622a595f24e81e2c061c19aba4c71b50e9a256a60ca",
+        "retrieved_at_utc": "2026-10-27T01:08:57.190071+00:00"
+      },
+      "document_section_state": "absent_in_this_current_API_response",
+      "registered_primary_outcome_entry_count": 4,
+      "downloaded_matching_full_protocol": false,
+      "downloaded_matching_SAP": false,
+      "unknowns_not_resolved_by_acquired_protocol": [
+        "complete protocol/SAP applicable amendment and its date",
+        "primary analysis population and full estimand/intercurrent-event strategy",
+        "alpha allocation, sidedness and multiplicity/gatekeeping",
+        "analysis timing/event threshold and exact statistical success rule"
+      ],
+      "version_conflict": "Older EudraCT DE E.2.1/E.5.1 lists dual primary TROP2-positive PFS/OS and ITT PFS/OS as secondary. Current CT.gov and sponsor description list four primary entries with non-squamous populations. Do not overwrite current exact target or infer current gatekeeping from the older record."
+    },
+    {
+      "nct_id": "NCT05646862",
+      "trial_name": "INAVO121",
+      "registry_source": {
+        "url": "https://clinicaltrials.gov/api/v2/studies/NCT05646862",
+        "sha256": "73d2d410ec46ae71347b25e2d38f92ac0201156da2e3dd1e3fde5cb4e70f15d9",
+        "retrieved_at_utc": "2026-10-27T01:08:56.623375+00:00"
+      },
+      "document_section_state": "absent_in_this_current_API_response",
+      "registered_primary_outcome_entry_count": 10,
+      "downloaded_matching_full_protocol": false,
+      "downloaded_matching_SAP": false,
+      "unknowns_not_resolved_by_acquired_protocol": [
+        "complete protocol/SAP applicable amendment and its date",
+        "primary analysis population and full estimand/intercurrent-event strategy",
+        "alpha allocation, sidedness and multiplicity/gatekeeping",
+        "analysis timing/event threshold and exact statistical success rule"
+      ],
+      "scope_conflict": "Current Roche ForPatients top/patient text and listed PDF focus on DDI substudy; professional tab retains main-study design. The nine additional primary entries in the registry belong to the substudy and cannot resolve main randomized BICR-PFS."
+    }
+  ],
+  "positive_prior_case": {
+    "nct_id": "NCT04191499",
+    "trial_name": "INAVO120",
+    "use": "Connector acceptance and indirect-source candidate; not INAVO121 protocol/SAP",
+    "registry_source": {
+      "available_at": "2026-10-27T01:26:33.146084Z",
+      "bytes": 104417,
+      "retrieved_at_utc": "2026-10-27T01:26:33.146084Z",
+      "sha256": "72cce9b0d73a3eba3145b3eea5252e226cd610278e0f6b3176bbb28c76e7d9d7",
+      "url": "https://clinicaltrials.gov/api/v2/studies/NCT04191499"
+    },
+    "acquisition_status": "complete",
+    "acquisition_manifest_sha256": "8ddfaffc620a886d447a7c6a6655d45076c67e6ca6e0fe8fd4b773c47cae7eb3",
+    "extraction_manifest_sha256": "4bee94e449c73a9123d8296e46ae86ffa36aa299593b2ee49d041124fd60b303",
+    "command_exit_code": 1,
+    "exit_reason": "originals acquired; text extraction remains partial, preserving nontext pages",
+    "documents": [
+      {
+        "filename": "Prot_000.pdf",
+        "source": {
+          "available_at": "2026-10-27T01:26:37.719473Z",
+          "bytes": 8767559,
+          "retrieved_at_utc": "2026-10-27T01:26:37.719473Z",
+          "sha256": "e634333ca5264f3aefec13b08f3aeaf9a9f2470096d551c20e004a5652a546cb",
+          "url": "https://cdn.clinicaltrials.gov/large-docs/99/NCT04191499/Prot_000.pdf"
+        },
+        "official_listing_metadata": {
+          "typeAbbrev": "Prot",
+          "hasProtocol": true,
+          "hasSap": false,
+          "hasIcf": false,
+          "label": "Study Protocol",
+          "date": "2023-03-08",
+          "uploadDate": "2024-09-16T16:21",
+          "filename": "Prot_000.pdf",
+          "size": 8767559
+        },
+        "cover_version": "Protocol Version8",
+        "acquisition_status": "acquired",
+        "independent_original_sha256_match": true,
+        "page_count": 208,
+        "indexed_pages": 208,
+        "page_status_counts": {
+          "text": 200,
+          "empty": 8
+        },
+        "nontext_pdf_page_numbers": [
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          172,
+          185
+        ],
+        "text_extraction_status": "partial",
+        "warnings": [
+          "empty_pages_may_be_blank_or_scanned"
+        ],
+        "ocr_status": "ocr_complete_needs_human_review",
+        "human_scientific_review_count": 0,
+        "ocr_sidecar": {
+          "schema_version": "predome.trial-document-ocr-1",
+          "manifest_sha256": "095264ad340d61b1277f23a50ceb63b9b09f8581bd8929340fdafdfbfb7bf90b",
+          "source_sha256": "e634333ca5264f3aefec13b08f3aeaf9a9f2470096d551c20e004a5652a546cb",
+          "extraction_sha256": "d5a277329896abf061e44626f87cee89c062dfe23f2912bb3a6abb402ceffeb8",
+          "extraction_hash_scope": "canonical_json_of_supplied_extraction",
+          "created_at_utc": "2026-10-27T01:40:18.690229+00:00",
+          "tool_versions": {
+            "pdftoppm": "pdftoppm version 25.09.1",
+            "tesseract": "tesseract 5.5.2"
+          },
+          "language": "eng",
+          "dpi": 200,
+          "psm": 6,
+          "engine_confidence_note": "Tesseract engine scores are not transcription accuracy or scientific validation.",
+          "low_confidence_threshold": 50.0,
+          "pages": [
+            {
+              "pdf_page_number": 159,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "4c2de41ae7b061b868ad28c4ada68d3de4454ab26611550047ed5dc02db84188",
+                  "bytes": 764321
+                },
+                "text": {
+                  "sha256": "7c0cdca9fc80c3d023e28d7e27e9d08e00b87d56579e500d430c840593ea4521",
+                  "bytes": 777
+                },
+                "tsv": {
+                  "sha256": "707ae262e8450ffb3d79332cbf8c68b6c1ab839d18f6b81bcd111fb98085dc1e",
+                  "bytes": 7608
+                }
+              },
+              "engine_word_count": 151,
+              "engine_low_confidence_word_count": 24
+            },
+            {
+              "pdf_page_number": 160,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "8f613be604691bb876a899c9c5f7f42612ae7cb9cdb3f0f88de2d8e730922db4",
+                  "bytes": 751247
+                },
+                "text": {
+                  "sha256": "c768fbff41129df52abfc54129ca96278e1c35b4eddb8662e8cbb97b313da99d",
+                  "bytes": 855
+                },
+                "tsv": {
+                  "sha256": "bf29d48461127c392911b24476a33176c0efa861b5f7d215625a12f20518cfd4",
+                  "bytes": 8572
+                }
+              },
+              "engine_word_count": 175,
+              "engine_low_confidence_word_count": 37
+            },
+            {
+              "pdf_page_number": 161,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "f926a844693c06b1f5b960b903f0ece4789d685ec87aab349d8d4e6313906b20",
+                  "bytes": 765292
+                },
+                "text": {
+                  "sha256": "d1445b2feadedeaf213df7cc5b5ea08262c8b1994d29dd7fad2142ce8ea51eba",
+                  "bytes": 879
+                },
+                "tsv": {
+                  "sha256": "6aa9f85f7b9283b1e6294422228149a4c750ec39fb9abe7435cb085bdec75347",
+                  "bytes": 8077
+                }
+              },
+              "engine_word_count": 160,
+              "engine_low_confidence_word_count": 31
+            },
+            {
+              "pdf_page_number": 162,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "3eb28fb38dfcf9539b9b1db4ee7f23d7eadee052172f34c79e0e323a886b6dc7",
+                  "bytes": 744838
+                },
+                "text": {
+                  "sha256": "0e085f05c767a2b0230a46000faaf1cf00f7cf503ef12f081a72a47e36f1b458",
+                  "bytes": 860
+                },
+                "tsv": {
+                  "sha256": "604dc09ef0debe8d02a34edbf16441a3ca095ef36910c7d0aeb1d26d474e2a6b",
+                  "bytes": 7855
+                }
+              },
+              "engine_word_count": 155,
+              "engine_low_confidence_word_count": 21
+            },
+            {
+              "pdf_page_number": 163,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "00b35c4af3b18ec4138ca394cd3fc5f5a928e0d05e001691fa4dc74ceb674f70",
+                  "bytes": 775202
+                },
+                "text": {
+                  "sha256": "0a0ccf0c23faf3784be70fb461a0849fa1d6c48f2c56022350e838fe68c2f13c",
+                  "bytes": 837
+                },
+                "tsv": {
+                  "sha256": "b4795d3104a57140346b05516b12a45f219dec78c3b03371ddd5c3672981f586",
+                  "bytes": 7648
+                }
+              },
+              "engine_word_count": 150,
+              "engine_low_confidence_word_count": 29
+            },
+            {
+              "pdf_page_number": 164,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "0af7b5302e4c2b04a5612f517ff65d07119f8465aec5cb827c8ef01c7dff862c",
+                  "bytes": 569079
+                },
+                "text": {
+                  "sha256": "971b0a2753953a6fa083e597460a7bb2cb72346d4beb9d8287cc97c1ffe77e2b",
+                  "bytes": 672
+                },
+                "tsv": {
+                  "sha256": "01181ad5f6f71e7b57e3d65ff3e11520297df92c2967c2743651e308fe8841b1",
+                  "bytes": 6412
+                }
+              },
+              "engine_word_count": 133,
+              "engine_low_confidence_word_count": 24
+            },
+            {
+              "pdf_page_number": 172,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "048bd9e9681473ad67d377a0707d065ba9a45702d02aa91b65850609137f910e",
+                  "bytes": 1079587
+                },
+                "text": {
+                  "sha256": "6e7ef4e71d557d27f143388530294a49a50d6977ec5504e9f5b60d9f7a8a7ebc",
+                  "bytes": 1182
+                },
+                "tsv": {
+                  "sha256": "08a2a452dabe3771039e5411cbdc6e910b59230d5dd0a234012dbd3f314ab072",
+                  "bytes": 9410
+                }
+              },
+              "engine_word_count": 181,
+              "engine_low_confidence_word_count": 7
+            },
+            {
+              "pdf_page_number": 185,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "4ca2b7b26ccfb0b8c8d9476e8fd5150853180a5c0fb01faaebca152765f02d2d",
+                  "bytes": 463652
+                },
+                "text": {
+                  "sha256": "de8b9722b3408b69f3f0f0f0a2cf1c1ec831b6a2971857c5bc7f3f3923ef6750",
+                  "bytes": 481
+                },
+                "tsv": {
+                  "sha256": "e4d2b3102827e299ad600b6338490b05a57e13e095b7c17d7c038fe59021cd40",
+                  "bytes": 4064
+                }
+              },
+              "engine_word_count": 77,
+              "engine_low_confidence_word_count": 1
+            }
+          ],
+          "original_extraction_modified": false,
+          "ocr_text_merged": false,
+          "human_review_performed": false
+        }
+      },
+      {
+        "filename": "SAP_001.pdf",
+        "source": {
+          "available_at": "2026-10-27T01:26:39.442880Z",
+          "bytes": 919413,
+          "retrieved_at_utc": "2026-10-27T01:26:39.442880Z",
+          "sha256": "ae6ca9150990d1ed505ea64836e097d7fc98e4f799f3ce62369abbd835b4e3f9",
+          "url": "https://cdn.clinicaltrials.gov/large-docs/99/NCT04191499/SAP_001.pdf"
+        },
+        "official_listing_metadata": {
+          "typeAbbrev": "SAP",
+          "hasProtocol": false,
+          "hasSap": true,
+          "hasIcf": false,
+          "label": "Statistical Analysis Plan",
+          "date": "2023-09-18",
+          "uploadDate": "2024-09-16T16:21",
+          "filename": "SAP_001.pdf",
+          "size": 919413
+        },
+        "cover_version": "SAP Version2",
+        "acquisition_status": "acquired",
+        "independent_original_sha256_match": true,
+        "page_count": 33,
+        "indexed_pages": 33,
+        "page_status_counts": {
+          "text": 30,
+          "empty": 3
+        },
+        "nontext_pdf_page_numbers": [
+          9,
+          10,
+          11
+        ],
+        "text_extraction_status": "partial",
+        "warnings": [
+          "empty_pages_may_be_blank_or_scanned"
+        ],
+        "ocr_status": "ocr_complete_needs_human_review",
+        "human_scientific_review_count": 0,
+        "ocr_sidecar": {
+          "schema_version": "predome.trial-document-ocr-1",
+          "manifest_sha256": "69d1a490ea9150e37426bfe137a19ef97f75f652e8aa54c5ce27dd05f5ddea0c",
+          "source_sha256": "ae6ca9150990d1ed505ea64836e097d7fc98e4f799f3ce62369abbd835b4e3f9",
+          "extraction_sha256": "fe864fd23ae39913a310acc015269521e3eac849d856a3a8aaadf1e5fdb7e427",
+          "extraction_hash_scope": "canonical_json_of_supplied_extraction",
+          "created_at_utc": "2026-10-27T01:40:18.677049+00:00",
+          "tool_versions": {
+            "pdftoppm": "pdftoppm version 25.09.1",
+            "tesseract": "tesseract 5.5.2"
+          },
+          "language": "eng",
+          "dpi": 200,
+          "psm": 6,
+          "engine_confidence_note": "Tesseract engine scores are not transcription accuracy or scientific validation.",
+          "low_confidence_threshold": 50.0,
+          "pages": [
+            {
+              "pdf_page_number": 9,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "2cef2901c5157d93578557571ad90aa4fc19ca278fc5ebb38a78834252044f75",
+                  "bytes": 1022129
+                },
+                "text": {
+                  "sha256": "d7faf59615303da5dcbdce302872c794f6dabce4d3819c32dfe6048131c9f684",
+                  "bytes": 2289
+                },
+                "tsv": {
+                  "sha256": "5fb7c14cc9f03f2274e6593084ae79555f922e8df396edef8d61bbd51287df49",
+                  "bytes": 16564
+                }
+              },
+              "engine_word_count": 334,
+              "engine_low_confidence_word_count": 6
+            },
+            {
+              "pdf_page_number": 10,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "859c9625fc7221092a12ad66c32ee8727e720c1c019880dc359ef0075dce7b65",
+                  "bytes": 764023
+                },
+                "text": {
+                  "sha256": "a6f8e97aba0a79b202464863e6de69f77084566e036b15475e0140d0259210bc",
+                  "bytes": 1850
+                },
+                "tsv": {
+                  "sha256": "04a0c532bb83e4f2d8c20e203fd4d11ad8488cb9230bdf621c8ce3005df28273",
+                  "bytes": 14269
+                }
+              },
+              "engine_word_count": 288,
+              "engine_low_confidence_word_count": 13
+            },
+            {
+              "pdf_page_number": 11,
+              "status": "ocr_complete",
+              "review_status": "needs_human_review",
+              "artifacts": {
+                "png": {
+                  "sha256": "eb0bca7c5398f6f7ac780126fff288cbc0d0209f8610eee85c612f25e567bd74",
+                  "bytes": 830718
+                },
+                "text": {
+                  "sha256": "545c56c532f7aea7b1f6e84ae15d6517e11ff9093a6d7341ea2acf145d28c5f0",
+                  "bytes": 1937
+                },
+                "tsv": {
+                  "sha256": "59454eba144e2e4e844d59ccbeaf1e36aa177a6614436f4357a137fcc8b02960",
+                  "bytes": 14987
+                }
+              },
+              "engine_word_count": 306,
+              "engine_low_confidence_word_count": 11
+            }
+          ],
+          "original_extraction_modified": false,
+          "ocr_text_merged": false,
+          "human_review_performed": false
+        }
+      }
+    ],
+    "ocr_acceptance": {
+      "selected_pages": 11,
+      "ocr_completed_pages": 11,
+      "artifact_hashes_verified": 33,
+      "review_status": "needs_human_review",
+      "merged_into_model_input": false,
+      "original_text_extraction_status": "partial",
+      "note": "Root visually checked SAP9 and protocol159 against original images; this is sampled AI inspection, not a human scientific review or all-word transcription audit."
+    }
+  },
+  "cutoff_policy": "Actual acquisition availability only; no historical cutoff eligibility inferred from document date or raw uploadDate",
+  "model_calls": 0,
+  "ledger_writes": 0,
+  "human_scientific_reviews": 0,
+  "formal_outcome_adjudications": 0,
+  "existing_forecasts_modified": false,
+  "clinical_prediction_validated": false
+}

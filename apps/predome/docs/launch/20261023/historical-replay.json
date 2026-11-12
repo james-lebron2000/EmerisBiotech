@@ -1,0 +1,260 @@
+{
+  "consensus": {
+    "agreement": 0.5,
+    "agreement_denominator": 2,
+    "assigned": 2,
+    "average_probability": null,
+    "calibration_status": "not_established",
+    "confidence": null,
+    "counts": {
+      "Failure": 1,
+      "Success": 1,
+      "Uncertain": 0
+    },
+    "predicted_outcome": "Uncertain"
+  },
+  "evidence": [
+    {
+      "id": "history-replay-case-001-result",
+      "kind": "historical_public_result",
+      "page": null,
+      "publication_date": "2025-02-26",
+      "source_snapshot_url": null,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+      "title": "SERENA-6 original public result"
+    },
+    {
+      "id": "history-replay-case-001-numeric-result",
+      "kind": "historical_numeric_result",
+      "page": null,
+      "publication_date": "2025-06-01",
+      "source_snapshot_url": null,
+      "source_url": "https://doi.org/10.1056/nejmoa2502929",
+      "title": "SERENA-6 numeric result publication"
+    },
+    {
+      "id": "history-replay-case-001-design",
+      "kind": "historical_design",
+      "page": null,
+      "publication_date": "2023-01-02",
+      "source_snapshot_url": null,
+      "source_url": "https://aact.ctti-clinicaltrials.org/static/exported_files/monthly/20230102_pipe-delimited-export.zip",
+      "title": "SERENA-6 archived design data"
+    }
+  ],
+  "public_policy": {
+    "calibration_status": "not_established",
+    "clinical_prediction_validated": false,
+    "comparison_scope": "Same-evidence clinical-only assignments, separately for each exact registered target. Historical records remain separate.",
+    "confidence": null,
+    "consensus_rule": "Each assigned model slot counts once. A class needs more than half of all assigned slots; otherwise consensus is Uncertain. Agreement is the largest class count divided by all assigned slots, including Uncertain; it is not accuracy or confidence.",
+    "direction_rule": "Direction only: persisted valid model value >0.5 = Success; <0.5 = Failure; exactly 0.5, abstention, failed/missing output or blocked input = Uncertain. This is not a calibrated clinical success probability.",
+    "probability": null
+  },
+  "result": {
+    "confidence_interval": {
+      "level": 0.95,
+      "lower": 0.31,
+      "measure": "HR",
+      "upper": 0.6
+    },
+    "effect_size": {
+      "measure": "HR",
+      "value": 0.44
+    },
+    "first_public_at": "2025-02-26",
+    "label": "success",
+    "numeric_source_url": "https://doi.org/10.1056/nejmoa2502929",
+    "p_value": null,
+    "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+    "status": "adjudicated",
+    "summary": "Primary PFS success in emergent ESR1 mutation switching population; secondary PFS2/OS were immature at announcement. Historical title lists palbociclib/abemaciclib; the result program also allowed ribociclib. Match is at the prespecified PFS and same-CDK4/6 comparator-class level, not proof of unchanged every background-drug option.",
+    "verification_note": "Historical source-curated research label, checked by AI agents; no independent human adjudication is claimed. Model execution followed public results. This is a retrospective replay, not a prospective hit."
+  },
+  "runs": [
+    {
+      "brief_reason": "间接B级先验显示PFS的HR=0.33（90%CI 0.18–0.58，benefit_z约3.12），提示较强信号，但该先验样本量很小（22 vs 35），且与目标在人群、对照（单药对CDK4/6联合、进展后对ctDNA触发切换、fulvestrant对继续AI）均不匹配，仅终点匹配。目标为302例III期随机生存终点试验。间接证据不能等同于目标疗效，且不匹配降低可迁移性，故给出略高于中性的主观估计。",
+      "calibration_status": "not_established",
+      "cohort_id": null,
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-17T07:36:18.179453+00:00",
+      "id": "history-replay-case-001-deepseek-flash",
+      "locked_at_utc": null,
+      "match": null,
+      "match_status": "historical_replay",
+      "model_id": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "predicted_outcome": "Success",
+      "probability": null,
+      "reason": "间接B级先验显示PFS的HR=0.33（90%CI 0.18–0.58，benefit_z约3.12），提示较强信号，但该先验样本量很小（22 vs 35），且与目标在人群、对照（单药对CDK4/6联合、进展后对ctDNA触发切换、fulvestrant对继续AI）均不匹配，仅终点匹配。目标为302例III期随机生存终点试验。间接证据不能等同于目标疗效，且不匹配降低可迁移性，故给出略高于中性的主观估计。",
+      "requested_model": "deepseek-flash",
+      "scope": "archived_research",
+      "sources": [
+        {
+          "id": "history-replay-case-001-design",
+          "kind": "historical_design",
+          "page": null,
+          "publication_date": "2023-01-02",
+          "source_snapshot_url": null,
+          "source_url": "https://aact.ctti-clinicaltrials.org/static/exported_files/monthly/20230102_pipe-delimited-export.zip",
+          "title": "SERENA-6 archived design data"
+        }
+      ],
+      "status": "predicted",
+      "target_id": "history-replay-case-001",
+      "track": "archived"
+    },
+    {
+      "brief_reason": "先验证据为B级，效应量HR=0.33，但人群、对照和终点均不匹配，且样本量小，外推不确定性大。",
+      "calibration_status": "not_established",
+      "cohort_id": null,
+      "condition": "clinical_only",
+      "confidence": null,
+      "generated_at_utc": "2026-10-17T07:36:29.109802+00:00",
+      "id": "history-replay-case-001-deepseek-v4-pro",
+      "locked_at_utc": null,
+      "match": null,
+      "match_status": "historical_replay",
+      "model_id": "deepseek-v4-pro",
+      "model_version": "deepseek-v4-pro",
+      "predicted_outcome": "Failure",
+      "probability": null,
+      "reason": "先验证据为B级，效应量HR=0.33，但人群、对照和终点均不匹配，且样本量小，外推不确定性大。",
+      "requested_model": "deepseek-v4-pro",
+      "scope": "archived_research",
+      "sources": [],
+      "status": "predicted",
+      "target_id": "history-replay-case-001",
+      "track": "archived"
+    }
+  ],
+  "sources": [
+    {
+      "id": "history-replay-case-001-result",
+      "kind": "historical_public_result",
+      "page": null,
+      "publication_date": "2025-02-26",
+      "source_snapshot_url": null,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+      "title": "SERENA-6 original public result"
+    },
+    {
+      "id": "history-replay-case-001-numeric-result",
+      "kind": "historical_numeric_result",
+      "page": null,
+      "publication_date": "2025-06-01",
+      "source_snapshot_url": null,
+      "source_url": "https://doi.org/10.1056/nejmoa2502929",
+      "title": "SERENA-6 numeric result publication"
+    },
+    {
+      "id": "history-replay-case-001-design",
+      "kind": "historical_design",
+      "page": null,
+      "publication_date": "2023-01-02",
+      "source_snapshot_url": null,
+      "source_url": "https://aact.ctti-clinicaltrials.org/static/exported_files/monthly/20230102_pipe-delimited-export.zip",
+      "title": "SERENA-6 archived design data"
+    }
+  ],
+  "target": {
+    "analysis_timepoint": null,
+    "cohort_id": null,
+    "comparison": "Switch to camizestrant plus same CDK4/6 inhibitor versus continue AI plus same CDK4/6 inhibitor",
+    "consensus": {
+      "agreement": 0.5,
+      "agreement_denominator": 2,
+      "assigned": 2,
+      "average_probability": null,
+      "calibration_status": "not_established",
+      "confidence": null,
+      "counts": {
+        "Failure": 1,
+        "Success": 1,
+        "Uncertain": 0
+      },
+      "predicted_outcome": "Uncertain"
+    },
+    "design": null,
+    "drug": "camizestrant",
+    "endpoint": "PFS after emergent ESR1 mutation before radiographic progression; switch to camizestrant versus continue AI, same CDK4/6 inhibitor",
+    "execution_status": null,
+    "id": "history-replay-case-001",
+    "indication": "ER-positive/HER2-negative advanced breast cancer with emergent ctDNA ESR1 mutation, at least 6 months first-line AI plus CDK4/6 inhibitor, no radiologic progression; randomized N=315",
+    "information_cutoff_utc": "2023-01-02",
+    "nct_id": "NCT04964934",
+    "phase": null,
+    "population": "ER-positive/HER2-negative advanced breast cancer with emergent ctDNA ESR1 mutation, at least 6 months first-line AI plus CDK4/6 inhibitor, no radiologic progression; randomized N=315",
+    "readout": {
+      "end": "2025-02-26",
+      "label": "2025-02-26",
+      "precision": "day",
+      "source_granularity": null,
+      "source_note": null,
+      "source_title": "Archived first public result",
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+      "start": "2025-02-26"
+    },
+    "record_kind": "historical_replay",
+    "registered_at": null,
+    "registry_status": null,
+    "registry_url": "https://clinicaltrials.gov/study/NCT04964934",
+    "result": {
+      "confidence_interval": {
+        "level": 0.95,
+        "lower": 0.31,
+        "measure": "HR",
+        "upper": 0.6
+      },
+      "effect_size": {
+        "measure": "HR",
+        "value": 0.44
+      },
+      "first_public_at": "2025-02-26",
+      "label": "success",
+      "numeric_source_url": "https://doi.org/10.1056/nejmoa2502929",
+      "p_value": null,
+      "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+      "status": "adjudicated",
+      "summary": "Primary PFS success in emergent ESR1 mutation switching population; secondary PFS2/OS were immature at announcement. Historical title lists palbociclib/abemaciclib; the result program also allowed ribociclib. Match is at the prespecified PFS and same-CDK4/6 comparator-class level, not proof of unchanged every background-drug option.",
+      "verification_note": "Historical source-curated research label, checked by AI agents; no independent human adjudication is claimed. Model execution followed public results. This is a retrospective replay, not a prospective hit."
+    },
+    "scope": "archived_research",
+    "sources": [
+      {
+        "id": "history-replay-case-001-result",
+        "kind": "historical_public_result",
+        "page": null,
+        "publication_date": "2025-02-26",
+        "source_snapshot_url": null,
+        "source_url": "https://www.astrazeneca.com/media-centre/press-releases/2025/camizestrant-improved-pfs-in-1l-hr-breast-cancer.html",
+        "title": "SERENA-6 original public result"
+      },
+      {
+        "id": "history-replay-case-001-numeric-result",
+        "kind": "historical_numeric_result",
+        "page": null,
+        "publication_date": "2025-06-01",
+        "source_snapshot_url": null,
+        "source_url": "https://doi.org/10.1056/nejmoa2502929",
+        "title": "SERENA-6 numeric result publication"
+      },
+      {
+        "id": "history-replay-case-001-design",
+        "kind": "historical_design",
+        "page": null,
+        "publication_date": "2023-01-02",
+        "source_snapshot_url": null,
+        "source_url": "https://aact.ctti-clinicaltrials.org/static/exported_files/monthly/20230102_pipe-delimited-export.zip",
+        "title": "SERENA-6 archived design data"
+      }
+    ],
+    "sponsor": null,
+    "status": "adjudicated",
+    "success_definition": null,
+    "trial_name": "SERENA-6",
+    "verification_note": "Historical source-curated research label, checked by AI agents; no independent human adjudication is claimed. Model execution followed public results. This is a retrospective replay, not a prospective hit."
+  },
+  "version": "arena-clinical-public-1.0"
+}

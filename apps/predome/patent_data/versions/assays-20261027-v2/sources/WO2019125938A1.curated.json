@@ -1,0 +1,72 @@
+{
+  "schema_version": "predome-patent-experiment-cards-1.0",
+  "experiment_cards": [
+    {
+      "publication_number": "WO2019125938A1",
+      "public_available_at": "2019-06-27",
+      "source_url": "https://patents.google.com/patent/WO2019125938A1/en",
+      "pdf_url": "https://patentimages.storage.googleapis.com/1a/2d/d9/8cc906d231c5d8/WO2019125938A1.pdf#page=34",
+      "pdf_page_1_based": 34,
+      "source_sha256": "bb653d5c392186458402f7e97637bc8ae823c2a6e75675fe1327c4c4ceb6146d",
+      "text_sha256": "a582566312713478399744fd6bcc599efbd2077836c637a0fc57bd429aba34e9",
+      "review": {
+        "status": "ai_page_visual_check_not_human_scientific_review",
+        "reviewer": null,
+        "reviewed_at": null,
+        "verification_actor": "AI assistant",
+        "verification_date": "2026-10-22",
+        "human_scientific_review": false
+      },
+      "eligible_for_forecast": false,
+      "extraction_method": "OCR extraction with AI visual comparison against original PDF page",
+      "unit": "percent; g for vehicle-adjusted difference",
+      "evidence_id": "WO2019125938A1-table7-mouse-weight",
+      "example_id": "Table 7 / Example 1 analog",
+      "title": "饮食诱导肥胖小鼠中的体重变化实验",
+      "section_type": "preclinical_experiment",
+      "experiment_system": "Diet-induced obese C57BL/6 mice; body weight after 15 days",
+      "species_or_cell": "Male C57BL/6 mice",
+      "sample_size": {
+        "per_group_range": [
+          5,
+          6
+        ]
+      },
+      "dose": {
+        "compound": "Example 1 analog, not independently identified as retatrutide",
+        "amount": 3,
+        "unit": "nmol/kg",
+        "route": "subcutaneous",
+        "schedule": "every 3 days over 15 days"
+      },
+      "comparator": "Vehicle; semaglutide also included in the study",
+      "endpoint": "Within-group percent body-weight change from day 1 to day 15",
+      "result": {
+        "mean_percent_change": -10.04,
+        "sem_percent": 1.14,
+        "vehicle_adjusted_difference_g": -5.42,
+        "sem_g": 0.54
+      },
+      "missing_fields": [
+        "Exact mapping of Example 1 analog to clinical drug",
+        "Independent human scientific review",
+        "Human clinical endpoint"
+      ],
+      "source_location": "PDF page 34, printed page 33, Table 7, Ex. 1 row at 3 nmol/kg; experimental design on PDF page 33",
+      "source_excerpt": "Body Weight Change After Treatment with Exemplary Analogs After Fifteen Days.",
+      "interpretation_limit": "Animal pharmacology supports a hypothesis about an analog. It does not establish retatrutide identity, human efficacy or a clinical trial success probability.",
+      "supporting_pdf_pages": [
+        33,
+        34
+      ]
+    }
+  ],
+  "document_observations": [
+    {
+      "observation": "Table 7 contains mouse pharmacology for numbered analogs; no identity assertion is made for retatrutide.",
+      "pdf_page_1_based": 34,
+      "review_status": "AI page visual check; no human scientific review"
+    }
+  ],
+  "mapping_observations": []
+}

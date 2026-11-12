@@ -1,0 +1,25 @@
+{
+  "id": "season-registration-20261023",
+  "purpose": "registration",
+  "ledger_sha256": "fc25636a01c2a0f2b4993e9d16dac94324623770233969125a01192e26aefcfa",
+  "covered_event_count": 126,
+  "tsa": "FreeTSA",
+  "generated_at_utc": "2026-10-22T16:51:04+00:00",
+  "verified_at_utc": "2026-10-22T16:51:04.530736+00:00",
+  "verification_method": "openssl_ts_verify",
+  "signature_verified": true,
+  "timestamp_response_sha256": "ae823a0830334cc86745bb926043b1c6ce7427c03412ba07b1f84feb8a7553c0",
+  "manifest_sha256": "176191ad9cda14b295ce4f8647f2ecdb9eef5a9b3d36e006c10a2f30ca9e5956",
+  "authority_cert_sha256": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+  "ca_cert_sha256": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+  "public_url": "https://8.148.145.28/api/arena/attestations/season-registration-20261023",
+  "trust_note": "Signature verification trusts the pinned FreeTSA CA. This is not legal notarization.",
+  "files": {
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "manifest.json": "176191ad9cda14b295ce4f8647f2ecdb9eef5a9b3d36e006c10a2f30ca9e5956",
+    "manifest.tsq": "c756890bbaba36ecf0a24f5f890fcf17d4ba555adc8a390afc4aa053d4dc80e6",
+    "manifest.tsr": "ae823a0830334cc86745bb926043b1c6ce7427c03412ba07b1f84feb8a7553c0",
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "verification.txt": "74f920a51ccbcdfc2660e6ea7cf8f9b99c91bb23bc24fff4cadf2a24deb90fa0"
+  }
+}
