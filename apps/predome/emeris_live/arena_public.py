@@ -1,4 +1,4 @@
-"""Clinical-only projection. No calibrated probabilities or internal run metadata."""
+"""Public clinical and research comparisons, without private run metadata."""
 from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 import hashlib
@@ -505,7 +505,11 @@ def _source_assets(store, frozen, sources, verified_assets, snapshot_urls, check
 
 
 def build_public(store):
-    frozen = read_frozen(store)
+    return _public_from_frozen(store, read_frozen(store))
+
+
+def _public_from_frozen(store, frozen):
+    """Project an already verified native snapshot without rereading its ledger."""
     calendar = current_readouts(store, frozen)
     old_targets, old_runs, old_evidence = read_archived(store)
     raw_runs = [r for r in frozen['runs'] if r.get('track') == 'same_evidence' and r.get('condition') == 'clinical_only'] + [r for r in old_runs if r.get('track') == 'archived' and r.get('condition') == 'clinical_only' and r.get('scope') == 'archived_research']
@@ -575,7 +579,10 @@ def detail_from_view(view, target_id):
 
 def build_comparisons(store, target_id):
     """One exact native snapshot, with no private workflow or numeric outputs."""
-    frozen = read_frozen(store)
+    return _comparisons_from_frozen(store, target_id, read_frozen(store))
+
+
+def _comparisons_from_frozen(store, target_id, frozen, public_view=None):
     target = next((t for t in frozen['targets'] if t['id'] == target_id), None)
     result = {'schema_version': arena_comparisons.SCHEMA_VERSION, 'target_id': target_id,
         'patent_comparisons': [], 'agent_comparisons': [],
@@ -583,7 +590,7 @@ def build_comparisons(store, target_id):
     if target is None:
         # A verified historical public record has no new native assignments.
         # Unknown targets still use the original not-found contract.
-        detail_from_view(build_public(store), target_id)
+        detail_from_view(public_view if public_view is not None else _public_from_frozen(store, frozen), target_id)
         return result
     runs = [run for run in frozen['runs'] if run.get('target_id') == target_id
             and run.get('cohort_id') == target.get('cohort_id')]
@@ -628,6 +635,23 @@ def comparisons(target_id: str, request: Request):
         return build_comparisons(request.app.state.store, target_id)
     except (OSError, ValueError, KeyError, TypeError, sqlite3.Error):
         raise HTTPException(503, '公开对照记录暂不可用；未生成替代预测。') from None
+
+
+@router.get('/api/arena/public/targets/{target_id}/comparisons/download')
+def comparison_kit(target_id: str, request: Request):
+    from .arena_comparison_kit import build_kit
+    try:
+        store = request.app.state.store
+        frozen = read_frozen(store)
+        view = _public_from_frozen(store, frozen)
+        selected = detail_from_view(view, target_id)
+        comparisons = _comparisons_from_frozen(store, target_id, frozen, public_view=view)
+        raw, manifest = build_kit(selected, comparisons)
+    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error):
+        raise HTTPException(503, '公开试验对照资料包暂不可用；未生成替代记录。') from None
+    return Response(raw, media_type='application/zip', headers={
+        'Content-Disposition': 'attachment; filename=predome-comparison-research-kit-'+manifest['nct_id']+'.zip',
+        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
 
 
 @router.get('/api/arena/public/targets/{target_id}/record')

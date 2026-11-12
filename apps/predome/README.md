@@ -26,6 +26,8 @@
 
 [公开 Agent／专利对照](docs/PUBLIC_TRIAL_COMPARISONS.md)在同一试验的模型模块中按需展开，保留每个条件自己的运行、失败与来源。严格配对要求冻结和实际执行绑定可核验；判断变化不等于疗效预测改善，Agent 系统不混入基线共识。
 
+[试验对照资料包](docs/COMPARISON_RESEARCH_KIT.md)将所选目标的临床基线、专利条件与 Agent 记录一起保存为离线 HTML／Markdown 报告和机器可读快照，附标准库完整性核验工具。单条结果比较沿用原科学接纳与时间规则，不形成专利／Agent 综合排名；旧 Clinical Brief 和历史证明格式保留。
+
 [Jake 的 TRIUMPH-5 下一批输入审核工作包](docs/reviews/TRIUMPH5_NEXT_FORECAST_JAKE_20261027.md)落实用户指定的科学审核责任，列出原件、页码、遮挡及成功规则等待决项。任务分配不代表账号授权或审核通过；实际科学审核仍待交回。
 
 [独立日程版本](docs/CURRENT_READOUT_UPDATES.md)将精确目标的获批当前日程与预测时的冻结窗口并列保留。AVANZAR 的[新官方指引观察](docs/AVANZAR_READOUT_OBSERVATION_20261027.md)仍待原件采集和独立审核，不作为已批准日程或临床结果发布。
